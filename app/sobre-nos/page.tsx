@@ -20,7 +20,12 @@ export default function AboutPage() {
   return (
     <main>
       <Header />
-      <section className="pageHero"><p className="eyebrow">LANDER RECORDS</p><h1>Sobre Nós</h1><p>Uma estrutura criada para desenvolver música, carreira e negócios de forma integrada.</p></section>
+      <section className="pageHero heroWordmarkPage">
+        <span className="heroWordmark" aria-hidden="true">LANDER</span>
+        <p className="eyebrow">LANDER RECORDS</p>
+        <h1>Sobre Nós</h1>
+        <p>Uma estrutura criada para desenvolver música, carreira e negócios de forma integrada.</p>
+      </section>
       <section className="section">
         <div className="splitFeature">
           <div className="redPanel"><p className="eyebrow">NOSSA HISTÓRIA</p><h3>Da produção à gestão artística.</h3><p>A Lander Records nasceu para reunir criação, operação e estratégia em torno do desenvolvimento de artistas e projetos musicais.</p></div>
