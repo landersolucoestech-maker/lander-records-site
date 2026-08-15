@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { Footer, Header } from "../components/SiteChrome";
-import { artists } from "../data/site";
+import { ArtistFilterGrid } from "./ArtistFilterGrid";
 
 export default function ArtistsPage() {
   return (
@@ -12,15 +11,7 @@ export default function ArtistsPage() {
         <p>Conheça os artistas que fazem parte da Lander Records.</p>
       </section>
       <section className="section artistListingSection">
-        <div className="filterRow"><button className="active">Todos</button><button>DJ</button><button>MC</button><button>Pagodão Baiano</button></div>
-        <div className="artistGrid">
-          {artists.map((artist) => (
-            <Link className="artistTile" key={artist.slug} href={`/artistas/${artist.slug}`}>
-              <div className="artistTileImage" />
-              <div className="artistTileBody"><p>{artist.genre}</p><h2>{artist.name}</h2><span>Ver perfil completo →</span></div>
-            </Link>
-          ))}
-        </div>
+        <ArtistFilterGrid />
       </section>
       <Footer />
     </main>
