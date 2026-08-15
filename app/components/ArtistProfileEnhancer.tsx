@@ -7,6 +7,7 @@ const socialIcons: Record<string, string> = {
   Instagram: "◎",
   YouTube: "▶",
   TikTok: "♪",
+  Spotify: "●",
 };
 
 export function ArtistProfileEnhancer() {
@@ -29,7 +30,7 @@ export function ArtistProfileEnhancer() {
     const rows = Array.from(socialBlock.querySelectorAll<HTMLElement>(".socialMetric"));
     rows.forEach((row) => {
       const label = row.querySelector<HTMLElement>("span")?.textContent?.trim() ?? "";
-      if (label === "Spotify" || label === "SoundCloud") {
+      if (label === "SoundCloud") {
         row.remove();
         return;
       }
@@ -40,6 +41,16 @@ export function ArtistProfileEnhancer() {
       const labelNode = row.querySelector<HTMLElement>("span");
       if (labelNode) labelNode.setAttribute("data-icon", socialIcons[label] ?? "•");
     });
+
+    const hasSpotifyMetric = Array.from(socialBlock.querySelectorAll<HTMLElement>(".socialMetric span"))
+      .some((node) => node.textContent?.trim() === "Spotify");
+
+    if (!hasSpotifyMetric) {
+      const spotifyMetric = document.createElement("div");
+      spotifyMetric.className = "socialMetric artistSocialStat";
+      spotifyMetric.innerHTML = `<span data-icon="${socialIcons.Spotify}">Spotify</span><strong>—</strong>`;
+      socialBlock.appendChild(spotifyMetric);
+    }
 
     const listenBlock = document.createElement("div");
     listenBlock.className = "sidebarBlock artistListenBlock";
