@@ -7,26 +7,31 @@ export function SiteIntro() {
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
-    const closeTimer = window.setTimeout(() => setClosing(true), 1050);
-    const hideTimer = window.setTimeout(() => setHidden(true), 1750);
+    document.documentElement.classList.add("intro-active");
+
+    const closeTimer = window.setTimeout(() => setClosing(true), 700);
+    const hideTimer = window.setTimeout(() => {
+      setHidden(true);
+      document.documentElement.classList.remove("intro-active");
+      document.documentElement.classList.add("intro-complete");
+      window.dispatchEvent(new CustomEvent("lander:intro-complete"));
+    }, 1200);
+
     return () => {
       window.clearTimeout(closeTimer);
       window.clearTimeout(hideTimer);
+      document.documentElement.classList.remove("intro-active");
     };
   }, []);
 
   if (hidden) return null;
 
   return (
-    <div className={`siteIntro siteIntroV2${closing ? " siteIntroClosing" : ""}`} aria-hidden="true">
-      <div className="siteIntroGlow" />
-      <div className="siteIntroMarkV2">
-        <span className="siteIntroEyebrow">LANDER RECORDS</span>
+    <div className={`siteIntro siteIntroSimple${closing ? " siteIntroClosing" : ""}`} aria-hidden="true">
+      <div className="siteIntroSimpleMark">
         <strong>LANDER</strong>
-        <div className="siteIntroRule"><i /></div>
-        <small>MÚSICA · CULTURA · CARREIRA</small>
+        <span>RECORDS</span>
       </div>
-      <div className="siteIntroCorner">LR</div>
     </div>
   );
 }
