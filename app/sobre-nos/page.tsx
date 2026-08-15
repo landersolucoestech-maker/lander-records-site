@@ -1,4 +1,5 @@
 import { Footer, Header } from "../components/SiteChrome";
+import { GroupCompaniesTabs } from "./GroupCompaniesTabs";
 
 const values = [
   ["Missão", "Desenvolver artistas e projetos com estrutura, estratégia e visão de longo prazo."],
@@ -41,6 +42,14 @@ export default function AboutPage() {
             </article>
           ))}
         </div>
+      </section>
+      <section className="section groupCompaniesSection">
+        <div className="sectionHeading compactHeading">
+          <p className="eyebrow dark">ECOSSISTEMA LANDER</p>
+          <h2>Empresas do <span>Grupo Lander.</span></h2>
+          <p className="sectionLead">Conheça as frentes que formam o ecossistema e atuam de forma complementar em música, audiovisual e conteúdo.</p>
+        </div>
+        <GroupCompaniesTabs />
       </section>
       <Footer />
     </main>
