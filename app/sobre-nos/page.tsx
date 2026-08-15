@@ -6,7 +6,14 @@ const values = [
   ["Valores", "Transparência, criatividade, disciplina, parceria e compromisso com resultado."],
 ];
 
-const pillars = ["Artista", "Estratégia", "Produção", "Distribuição", "Conteúdo", "Gestão"];
+const pillars = [
+  ["Artista", "O artista está no centro da operação. Identidade, repertório, posicionamento e objetivos orientam todas as decisões."],
+  ["Estratégia", "Planejamento de carreira, lançamentos, público, calendário e oportunidades com visão de curto, médio e longo prazo."],
+  ["Produção", "Direção artística, produção musical, audiovisual e conteúdo conectados à proposta de cada projeto."],
+  ["Distribuição", "Organização de catálogo, metadados, direitos e presença nas plataformas para ampliar alcance e monetização."],
+  ["Conteúdo", "Narrativas, campanhas e formatos pensados para transformar música em presença cultural e relacionamento com audiência."],
+  ["Gestão", "Agenda, contratos, operação, parceiros e indicadores acompanhados de forma integrada para sustentar crescimento."],
+];
 
 export default function AboutPage() {
   return (
@@ -23,9 +30,17 @@ export default function AboutPage() {
         <div className="sectionHeading inverse compactHeading"><p className="eyebrow">IDENTIDADE</p><h2>Missão, visão e <span>valores.</span></h2></div>
         <div className="detailGrid">{values.map(([title, text], index) => <article className="aboutValueCard" key={title}><span>0{index + 1}</span><h3>{title}</h3><p>{text}</p></article>)}</div>
       </section>
-      <section className="section">
-        <div className="sectionHeading compactHeading"><p className="eyebrow dark">NOSSOS PILARES</p><h2>Uma operação <span>360°.</span></h2></div>
-        <div className="detailGrid">{pillars.map((pillar, index) => <article className="detailCard" key={pillar}><span>0{index + 1}</span><h3>{pillar}</h3></article>)}</div>
+      <section className="section pillarsSection">
+        <div className="sectionHeading compactHeading"><p className="eyebrow dark">NOSSOS PILARES</p><h2>Uma operação <span>360°.</span></h2><p className="sectionLead">Seis frentes que trabalham juntas para transformar música em carreira, catálogo e negócio.</p></div>
+        <div className="detailGrid pillarsGrid">
+          {pillars.map(([pillar, description], index) => (
+            <article className="detailCard pillarCard" key={pillar}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <h3>{pillar}</h3>
+              <p>{description}</p>
+            </article>
+          ))}
+        </div>
       </section>
       <Footer />
     </main>
