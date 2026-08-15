@@ -1,0 +1,168 @@
+.headerCta {
+  white-space: nowrap;
+  min-width: max-content;
+}
+
+.homeArtistGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.siteFooter {
+  display: block;
+  padding: 0 clamp(24px, 8vw, 120px);
+  background: var(--black);
+  color: #fff;
+  border-top: 1px solid var(--line);
+}
+
+.footerMain {
+  display: grid;
+  grid-template-columns: 1.1fr .75fr 1.25fr;
+  gap: clamp(38px, 6vw, 88px);
+  padding: 72px 0 54px;
+}
+
+.footerBrandColumn {
+  max-width: 330px;
+}
+
+.footerBrand {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: .78;
+  margin-bottom: 26px;
+}
+
+.footerBrandName {
+  font-size: 42px;
+  font-weight: 1000;
+  letter-spacing: -.07em;
+}
+
+.footerBrandRecords {
+  margin-top: 11px;
+  color: var(--red);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .4em;
+}
+
+.footerBrandColumn p,
+.footerColumn p {
+  margin: 0;
+  color: #c4c4c4;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.footerColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 13px;
+}
+
+.footerColumn h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.footerColumn > a {
+  color: #ddd;
+  font-size: 13px;
+  transition: color .2s ease, transform .2s ease;
+}
+
+.footerColumn > a:hover {
+  color: var(--red);
+  transform: translateX(3px);
+}
+
+.footerContact {
+  gap: 14px;
+}
+
+.footerContact p strong {
+  color: #fff;
+  font-size: 12px;
+}
+
+.footerSocialTitle {
+  margin-top: 12px !important;
+}
+
+.footerSocials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.footerSocials a {
+  padding: 8px 10px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 4px;
+  color: #ddd;
+  font-size: 11px;
+  font-weight: 800;
+  transition: .2s ease;
+}
+
+.footerSocials a:hover {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.footerBottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 20px 0 22px;
+  border-top: 1px solid rgba(255,255,255,.22);
+  color: #aaa;
+  font-size: 11px;
+}
+
+.footerBottom strong {
+  color: var(--red);
+  font-size: inherit;
+}
+
+@media (max-width: 980px) {
+  .homeArtistGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .footerMain {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .footerBrandColumn {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 620px) {
+  .headerCta {
+    white-space: nowrap;
+  }
+
+  .homeArtistGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .footerMain {
+    grid-template-columns: 1fr;
+    padding-top: 52px;
+  }
+
+  .footerBrandColumn {
+    grid-column: auto;
+  }
+
+  .footerBottom {
+    flex-direction: column;
+  }
+}
