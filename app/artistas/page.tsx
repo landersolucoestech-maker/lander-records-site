@@ -5,7 +5,8 @@ export default function ArtistsPage() {
   return (
     <main>
       <Header />
-      <section className="pageHero">
+      <section className="pageHero heroWordmarkPage">
+        <span className="heroWordmark" aria-hidden="true">ARTISTAS</span>
         <p className="eyebrow">CASTING</p>
         <h1>Nosso Elenco</h1>
         <p>Conheça os artistas que fazem parte da Lander Records.</p>
