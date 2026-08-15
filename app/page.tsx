@@ -109,7 +109,7 @@ export default function Home() {
               const card = (
                 <>
                   <div className="spotifyReleaseCover">
-                    {release.image ? <img src={release.image} alt={`Capa de ${release.title}`} /> : <div className="spotifyReleasePlaceholder">LANDER</div>}
+                    {release.image ? <img src={release.image} alt={`Capa de ${release.title}`} loading="lazy" decoding="async" /> : <div className="spotifyReleasePlaceholder">LANDER</div>}
                     <span className="spotifyIndex">0{index + 1}</span>
                   </div>
                   <div className="spotifyReleaseCopy">
