@@ -92,6 +92,11 @@
   color: #fff;
 }
 
+.ecosystemPanelSimplified {
+  min-height: 360px;
+  grid-template-columns: 1fr;
+}
+
 .ecosystemPanelBrand {
   display: grid;
   place-items: center;
@@ -106,8 +111,15 @@
 .ecosystemPanelCopy {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: clamp(34px,5vw,66px);
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 34px clamp(34px,5vw,66px) clamp(34px,5vw,66px);
+}
+
+.ecosystemPanelSimplified .ecosystemPanelCopy {
+  justify-content: flex-start;
+  align-self: start;
+  padding-top: 30px;
 }
 
 .ecosystemPanelCopy h3 {
