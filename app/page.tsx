@@ -1,10 +1,7 @@
 import Link from "next/link";
 import { Footer, Header } from "./components/SiteChrome";
-import { artists } from "./data/site";
-import { news } from "./data/news";
-import { releases } from "./data/releases";
 
-const homeShortcuts = [
+const shortcuts = [
   ["Contrate para shows", "/artistas/dj-stay"],
   ["Produza sua música", "/servicos/producao-musical"],
   ["Edição & distribuição", "/servicos/edicao-e-distribuicao"],
@@ -12,110 +9,91 @@ const homeShortcuts = [
 ] as const;
 
 export default function Home() {
-  const featuredArtist = artists[0];
-
   return (
-    <main>
+    <main className="homeV2">
       <Header />
 
-      <section className="hero" id="inicio">
-        <div className="heroGlow" />
-        <div className="heroContent">
-          <p className="eyebrow">LANDER RECORDS · BRASIL</p>
-          <h1>Música com <span>estrutura.</span></h1>
-          <p className="heroCopy">Gravadora, produção musical e gestão artística para construir carreira, catálogo e presença.</p>
-          <div className="heroActions">
-            <Link className="button buttonPrimary" href="/artistas">Conheça nossos artistas</Link>
-            <Link className="button buttonGhost" href="/servicos/producao-musical">Produção musical</Link>
-          </div>
-        </div>
-        <div className="heroRail" aria-hidden="true">LANDER · MUSIC · CULTURE · BUSINESS · LANDER · MUSIC · CULTURE · BUSINESS ·</div>
-      </section>
-
-      <section className="section intro" id="sobre">
-        <div className="sectionHeading compactHeading">
-          <p className="eyebrow dark">SOBRE A LANDER</p>
-          <h2>Da música à <span>carreira.</span></h2>
-        </div>
-        <div className="splitFeature">
-          <div className="studioVisual"><div className="visualBadge">ESTÚDIO · PRODUÇÃO · ESTRATÉGIA</div></div>
-          <div className="redPanel">
-            <h3>Gravadora e produtora musical</h3>
-            <p>Uma operação integrada para desenvolvimento artístico, produção, distribuição, conteúdo e gestão.</p>
-            <Link href="/sobre-nos">Conheça nossa história →</Link>
+      <section className="homeHero">
+        <div className="homeHeroBackdrop" />
+        <div className="homeHeroContent">
+          <h1>LANDER</h1>
+          <p>Gravadora e produtora musical com foco em funk.</p>
+          <div className="homeHeroActions">
+            <Link className="button buttonPrimary" href="/contato">Fale conosco</Link>
+            <Link className="button buttonOutline" href="/artistas">Conheça nossos artistas</Link>
           </div>
         </div>
       </section>
 
-      <section className="section shortcutSection" id="servicos">
-        <div className="shortcutGrid">
-          {homeShortcuts.map(([label, href], index) => (
-            <Link className="shortcutOrb" href={href} key={label}>
+      <section className="homeMainSection">
+        <div className="homeIntroCard">
+          <div className="homeIntroImage" />
+          <div className="homeIntroCopy">
+            <h2>Produtora artística e<br/>gravadora musical</h2>
+            <p>A Lander Records reúne produção, desenvolvimento artístico, distribuição e estratégia em uma operação focada em música e carreira.</p>
+            <p>Da criação ao lançamento, cada projeto recebe acompanhamento próximo e execução profissional.</p>
+            <Link href="/sobre-nos">Conheça a Lander →</Link>
+          </div>
+        </div>
+
+        <div className="homeShortcutRow">
+          {shortcuts.map(([label, href], index) => (
+            <Link className="homeShortcutCircle" href={href} key={label}>
               <span>0{index + 1}</span>
               <strong>{label}</strong>
               <i>↗</i>
             </Link>
           ))}
         </div>
-      </section>
 
-      <section className="section darkSection homeArtists" id="artistas">
-        <div className="sectionHeading inverse compactHeading">
-          <p className="eyebrow">CASTING</p>
-          <h2>Nossos <span>artistas.</span></h2>
-        </div>
-        <Link className="homeArtistFeature" href={`/artistas/${featuredArtist.slug}`}>
-          <div className="artistImage" />
-          <div className="artistMeta">
-            <p className="artistTag">{featuredArtist.genre}</p>
-            <h3>{featuredArtist.name}</h3>
-            <p>Perfil, lançamentos, vídeos e plataformas em uma página dedicada.</p>
-            <span className="textLink">Ver perfil completo →</span>
+        <section className="homeBlock">
+          <div className="homeBlockHeader">
+            <h2>NOSSOS <span>ARTISTAS</span></h2>
+            <Link href="/artistas">Ver todos os artistas →</Link>
           </div>
-        </Link>
-        <div className="sectionFooterLink"><Link href="/artistas">Ver todo o casting →</Link></div>
-      </section>
-
-      <section className="section releasesSection">
-        <div className="sectionHeading compactHeading">
-          <p className="eyebrow dark">CATÁLOGO</p>
-          <h2>Últimos <span>lançamentos.</span></h2>
-        </div>
-        <div className="releaseGrid">
-          {releases.map((release, index) => (
-            <article className={`releaseCard ${index === 0 ? "releaseCardFeatured" : ""}`} key={release.slug}>
-              <div className="releaseCover"><span>LANDER</span></div>
-              <div className="releaseInfo"><p>{release.type} · {release.date}</p><h3>{release.title}</h3><strong>{release.artist}</strong><a href="#">Ouvir agora →</a></div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="section homeNews" id="noticias">
-        <div className="sectionHeading compactHeading">
-          <p className="eyebrow dark">PORTAL LANDER</p>
-          <h2>Últimas <span>novidades.</span></h2>
-        </div>
-        <div className="homeNewsGrid">
-          {news.slice(0, 3).map((item, index) => (
-            <Link className={`newsCard ${index === 0 ? "newsCardFeatured" : ""}`} href={`/noticias/${item.slug}`} key={item.slug}>
-              <div className="newsImage"><span>{item.category}</span></div>
-              <div className="newsCardBody">
-                <p className="newsMeta">{item.category} · {item.date}</p>
-                <h2>{item.title}</h2>
-                <p>{item.excerpt}</p>
-                <strong>Ler matéria →</strong>
+          <p className="homeBlockSubtitle">Conheça os talentos que fazem parte do nosso time.</p>
+          <div className="homeArtistGrid">
+            <Link className="homeArtistCard" href="/artistas/dj-stay">
+              <div className="homeArtistPhoto" />
+              <div className="homeArtistInfo">
+                <h3>DJ Stay</h3>
+                <p>DJ / Produtor Musical</p>
+                <span>Ver perfil completo →</span>
               </div>
             </Link>
-          ))}
-        </div>
-        <div className="sectionFooterLink darkLink"><Link href="/noticias">Acessar Portal de Notícias →</Link></div>
-      </section>
+          </div>
+        </section>
 
-      <section className="ctaSection compactCta" id="contato">
-        <p className="eyebrow">CONTATO</p>
-        <h2>Vamos falar sobre o seu <span>projeto.</span></h2>
-        <Link className="button buttonLight" href="/contato">Fale com a Lander</Link>
+        <section className="homeBlock">
+          <div className="homeBlockHeader">
+            <h2>ÚLTIMOS <span>LANÇAMENTOS</span></h2>
+            <Link href="/noticias">Ver todos os lançamentos →</Link>
+          </div>
+          <div className="homeReleaseGrid">
+            <article className="homeReleaseMain"><div className="releaseArtwork releaseArtworkMain"/><div className="releaseOverlay"><button aria-label="Reproduzir">▶</button><strong>Piano dos Cachorrão</strong><span>MC Toy DJ · Prod. DJ WZ7</span></div></article>
+            <div className="homeReleaseSide">
+              <article className="homeReleaseSmall"><div className="releaseArtwork releaseArtwork2"/><div className="releaseSmallCopy"><strong>Eu te Taquei</strong><span>MC 2C</span></div></article>
+              <article className="homeReleaseSmall"><div className="releaseArtwork releaseArtwork3"/><div className="releaseSmallCopy"><strong>Falcatrua</strong><span>DJ Stay</span></div></article>
+            </div>
+          </div>
+        </section>
+
+        <section className="homeBlock homeNewsBlock">
+          <div className="homeBlockHeader">
+            <div><small>PORTAL LANDER</small><h2>ÚLTIMAS <span>NOVIDADES</span></h2></div>
+            <Link href="/noticias">Ver todas as notícias →</Link>
+          </div>
+          <div className="homeNewsEditorial">
+            <Link className="homeNewsFeatured" href="/noticias/faca-parte-do-casting-de-produtores-da-lander-records">
+              <div className="newsFeaturedArtwork" />
+              <div className="newsFeaturedCopy"><em>Mercado</em><h3>Faça Parte do Casting de Produtores da Lander Records</h3><time>23 de mar. de 2026</time></div>
+            </Link>
+            <div className="homeNewsSide">
+              <Link href="/noticias"><em>Notícia</em><h3>Tati Quebra Barraco denuncia uso indevido de músicas e reacende debate sobre direitos no funk</h3><time>23 de mar. de 2026</time></Link>
+              <Link href="/noticias"><em>Lançamento</em><h3>Rapha Radamás celebra 10 anos de carreira com lançamento de “Lá Vem”</h3><time>27 de fev. de 2026</time></Link>
+            </div>
+          </div>
+        </section>
       </section>
 
       <Footer />
