@@ -5,7 +5,11 @@ import { useEffect } from "react";
 const selector = [
   ".homeIntroCard",
   ".homeShortcutCircle",
-  ".homeBlock",
+  ".homeBlockHeader",
+  ".homeArtistCard",
+  ".spotifyReleaseCard",
+  ".homeNewsFeatured",
+  ".homeNewsSide a",
   ".socialMetricCard",
   ".artistTile",
   ".artistProfileBody",
@@ -26,7 +30,7 @@ export function LazyReveal() {
 
     elements.forEach((element, index) => {
       element.classList.add("lazyReveal");
-      element.style.setProperty("--reveal-delay", `${Math.min(index % 4, 3) * 55}ms`);
+      element.style.setProperty("--reveal-delay", `${(index % 5) * 70}ms`);
     });
 
     if (reduceMotion || !("IntersectionObserver" in window)) {
@@ -44,8 +48,8 @@ export function LazyReveal() {
       },
       {
         root: null,
-        rootMargin: "180px 0px 120px",
-        threshold: 0.04,
+        rootMargin: "0px 0px -8% 0px",
+        threshold: 0.12,
       },
     );
 
