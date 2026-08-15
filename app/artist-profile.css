@@ -1,0 +1,219 @@
+.artistProfileHero.artistPhotoHero {
+  min-height: clamp(430px, 58vw, 720px);
+  display: flex;
+  align-items: flex-end;
+  background-position: center 24% !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.artistProfileHero.artistPhotoHero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,.04) 0%, rgba(0,0,0,.08) 45%, rgba(0,0,0,.72) 100%);
+  pointer-events: none;
+}
+
+.artistProfileOverlay {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 clamp(24px, 7vw, 96px) clamp(32px, 6vw, 72px);
+}
+
+.artistProfileOverlay .eyebrow {
+  margin-bottom: 12px;
+}
+
+.artistProfileOverlay h1 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(56px, 9vw, 126px);
+  line-height: .82;
+  letter-spacing: -.065em;
+  text-transform: uppercase;
+}
+
+.artistHeroActions {
+  display: none;
+}
+
+.artistProfileBody {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, .72fr);
+  gap: clamp(46px, 7vw, 96px);
+  align-items: start;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.artistProfileBody > article > .eyebrow {
+  margin-bottom: 10px;
+}
+
+.artistProfileBody > article > h2 {
+  margin: 0 0 20px;
+  font-size: clamp(42px, 5vw, 68px);
+  line-height: .95;
+  letter-spacing: -.05em;
+}
+
+.profileBio {
+  max-width: 760px;
+  color: #5f5f5f;
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+.artistSidebar {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid #ddd;
+}
+
+.artistSidebar .sidebarBlock {
+  padding: 28px 0;
+  border-bottom: 1px solid #ddd;
+  background: transparent;
+}
+
+.artistSidebar .sidebarBlock .eyebrow {
+  margin: 0 0 18px;
+  color: #111;
+  font-size: 11px;
+  letter-spacing: .12em;
+}
+
+.artistSidebar .sidebarBlock .button {
+  width: 100%;
+  justify-content: center;
+}
+
+.artistSocialStatsBlock .socialMetric {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid #ededed;
+}
+
+.artistSocialStatsBlock .socialMetric:last-child {
+  border-bottom: 0;
+}
+
+.artistSocialStatsBlock .socialMetric span {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #222;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.artistSocialStatsBlock .socialMetric span::before {
+  content: attr(data-icon);
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d8d8d8;
+  border-radius: 50%;
+  color: var(--red);
+  font-size: 12px;
+}
+
+.artistSocialStatsBlock .socialMetric strong {
+  color: #111;
+  font-size: 18px;
+  letter-spacing: -.04em;
+}
+
+.artistPlatformLinks {
+  display: grid;
+}
+
+.artistPlatformLinks a {
+  display: grid;
+  grid-template-columns: 34px minmax(0,1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 13px 0;
+  border-bottom: 1px solid #ededed;
+  color: #111;
+  transition: color .2s ease, padding-left .2s ease;
+}
+
+.artistPlatformLinks a:last-child {
+  border-bottom: 0;
+}
+
+.artistPlatformLinks a:hover {
+  padding-left: 5px;
+  color: var(--red);
+}
+
+.artistPlatformLinks .platformIcon {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #111;
+  color: #fff;
+  font-size: 11px;
+}
+
+.artistPlatformLinks strong {
+  font-size: 13px;
+}
+
+.artistPlatformLinks i {
+  font-style: normal;
+  font-size: 14px;
+}
+
+.embedGrid {
+  margin-top: 48px;
+  grid-template-columns: 1fr;
+}
+
+.embedPlaceholder {
+  min-height: 150px;
+}
+
+@media (max-width: 860px) {
+  .artistProfileHero.artistPhotoHero {
+    min-height: 520px;
+    background-position: 58% 20% !important;
+  }
+
+  .artistProfileBody {
+    grid-template-columns: 1fr;
+  }
+
+  .artistSidebar {
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 560px) {
+  .artistProfileHero.artistPhotoHero {
+    min-height: 460px;
+    background-position: 60% center !important;
+  }
+
+  .artistProfileOverlay {
+    padding-bottom: 30px;
+  }
+
+  .artistProfileOverlay h1 {
+    font-size: clamp(48px, 18vw, 82px);
+  }
+}
