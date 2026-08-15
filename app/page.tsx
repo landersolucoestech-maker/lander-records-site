@@ -45,29 +45,28 @@ export default function Home() {
             <h2>Produtora artística e<br/>gravadora musical</h2>
             <p>A Lander Records reúne produção, desenvolvimento artístico, distribuição e estratégia em uma operação focada em música e carreira.</p>
             <p>Da criação ao lançamento, cada projeto recebe acompanhamento próximo e execução profissional.</p>
+
+            <div className="homeSocialMetrics homeSocialMetricsInside" aria-label="Números das redes sociais da Lander Records">
+              <article className="socialMetricCard socialMetricInstagram">
+                <div className="socialMetricTop">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.6" r="1"/></svg>
+                  <span>Instagram</span>
+                </div>
+                <strong data-social-metric="instagram-followers">—</strong>
+                <p>seguidores</p>
+              </article>
+              <article className="socialMetricCard socialMetricYoutube">
+                <div className="socialMetricTop">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9l5 3-5 3z"/></svg>
+                  <span>YouTube</span>
+                </div>
+                <strong data-social-metric="youtube-subscribers">—</strong>
+                <p>inscritos</p>
+              </article>
+            </div>
+
             <Link href="/sobre-nos">Conheça a Lander →</Link>
           </div>
-        </div>
-
-        <div className="homeSocialMetrics" aria-label="Números das redes sociais da Lander Records">
-          <article className="socialMetricCard socialMetricInstagram">
-            <div className="socialMetricTop">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.6" r="1"/></svg>
-              <span>Instagram</span>
-            </div>
-            <strong data-social-metric="instagram-followers">—</strong>
-            <p>seguidores</p>
-            <small>Atualização automática</small>
-          </article>
-          <article className="socialMetricCard socialMetricYoutube">
-            <div className="socialMetricTop">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9l5 3-5 3z"/></svg>
-              <span>YouTube</span>
-            </div>
-            <strong data-social-metric="youtube-subscribers">—</strong>
-            <p>inscritos</p>
-            <small>Atualização automática</small>
-          </article>
         </div>
 
         <div className="homeShortcutRow">
