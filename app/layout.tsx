@@ -4,6 +4,7 @@ import "./architecture.css";
 import "./home-extra.css";
 import "./refinements.css";
 import "./content-completion.css";
+import "./artist-profile.css";
 import { LazyReveal } from "./components/LazyReveal";
 import { SiteIntro } from "./components/SiteIntro";
 import { ArtistProfileEnhancer } from "./components/ArtistProfileEnhancer";
