@@ -46,6 +46,8 @@ export default function Home() {
             <p>A Lander Records reúne produção, desenvolvimento artístico, distribuição e estratégia em uma operação focada em música e carreira.</p>
             <p>Da criação ao lançamento, cada projeto recebe acompanhamento próximo e execução profissional.</p>
 
+            <Link href="/sobre-nos">Conheça a Lander →</Link>
+
             <div className="homeSocialMetrics homeSocialMetricsInside" aria-label="Números das redes sociais da Lander Records">
               <article className="socialMetricCard socialMetricInstagram">
                 <div className="socialMetricTop">
@@ -64,8 +66,6 @@ export default function Home() {
                 <p>inscritos</p>
               </article>
             </div>
-
-            <Link href="/sobre-nos">Conheça a Lander →</Link>
           </div>
         </div>
 
