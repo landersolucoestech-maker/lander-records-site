@@ -1,0 +1,76 @@
+/* Native scroll-driven reveal. Chrome/Edge/Safari modern browsers animate directly from viewport progress. */
+@keyframes landerScrollReveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 84px, 0) scale(.975);
+    filter: blur(7px);
+    clip-path: inset(0 0 18% 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  main > section:not(:first-of-type),
+  main section article,
+  main section aside > div,
+  main .homeShortcutCircle,
+  main .homeBlockHeader,
+  main .filterRow,
+  main .groupCompaniesNav button,
+  main .groupCompaniesPanel,
+  main .serviceGroup,
+  main .serviceWarningPanel,
+  main .serviceExtraPanel,
+  main .articleHeader,
+  main .articleBody,
+  main .embedPlaceholder,
+  main .socialMetric,
+  main .artistPlatformLinks a,
+  footer.siteFooter {
+    animation-name: landerScrollReveal !important;
+    animation-duration: 1ms !important;
+    animation-fill-mode: both !important;
+    animation-timing-function: linear !important;
+    animation-timeline: view() !important;
+    animation-range: entry 5% cover 34% !important;
+    transition: none !important;
+    will-change: opacity, transform, filter, clip-path;
+  }
+
+  /* Disable JS reveal transforms where native scroll timelines are available. */
+  .lazyReveal,
+  .lazyReveal.lazyRevealVisible {
+    transition: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  main > section,
+  main section article,
+  main section aside > div,
+  main .homeShortcutCircle,
+  main .homeBlockHeader,
+  main .filterRow,
+  main .groupCompaniesNav button,
+  main .groupCompaniesPanel,
+  main .serviceGroup,
+  main .serviceWarningPanel,
+  main .serviceExtraPanel,
+  main .articleHeader,
+  main .articleBody,
+  main .embedPlaceholder,
+  main .socialMetric,
+  main .artistPlatformLinks a,
+  footer.siteFooter {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    clip-path: none !important;
+  }
+}
