@@ -33,8 +33,28 @@
 .homeSocialMetrics {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-  margin: 22px 0 0;
+  gap: 12px;
+}
+
+.homeSocialMetricsInside {
+  width: 100%;
+  margin: 14px 0 8px;
+}
+
+.homeSocialMetricsInside .socialMetricCard {
+  min-height: 112px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 6px;
+  background: rgba(8,8,8,.92);
+}
+
+.homeSocialMetricsInside .socialMetricCard::after {
+  right: -54px;
+  bottom: -76px;
+  width: 135px;
+  height: 135px;
+  border-color: rgba(255,255,255,.08);
 }
 
 .socialMetricCard {
@@ -61,26 +81,26 @@
 }
 
 .socialMetricCard:hover {
-  transform: translateY(-4px);
-  border-color: var(--red);
+  transform: translateY(-3px);
+  border-color: #fff;
 }
 
 .socialMetricTop {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   color: #d6d6d6;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 900;
-  letter-spacing: .08em;
+  letter-spacing: .07em;
   text-transform: uppercase;
 }
 
 .socialMetricTop svg {
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
   fill: none;
-  stroke: var(--red);
+  stroke: #fff;
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -90,16 +110,16 @@
   position: relative;
   z-index: 1;
   display: block;
-  margin-top: 20px;
-  font-size: clamp(46px, 5vw, 72px);
+  margin-top: 12px;
+  font-size: clamp(28px, 3vw, 42px);
   line-height: .9;
-  letter-spacing: -.06em;
+  letter-spacing: -.05em;
 }
 
 .socialMetricCard > p {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
   color: #fff;
-  font-size: 15px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -375,9 +395,22 @@
   }
 
   .homeArtistGrid,
-  .spotifyReleaseGrid,
-  .homeSocialMetrics {
+  .spotifyReleaseGrid {
     grid-template-columns: 1fr;
+  }
+
+  .homeSocialMetricsInside {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .homeSocialMetricsInside .socialMetricCard {
+    min-height: 104px;
+    padding: 12px;
+  }
+
+  .homeSocialMetricsInside .socialMetricCard > strong {
+    font-size: 28px;
   }
 
   .footerMain {
