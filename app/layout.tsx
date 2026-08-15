@@ -5,6 +5,7 @@ import "./home-extra.css";
 import "./refinements.css";
 import "./content-completion.css";
 import { LazyReveal } from "./components/LazyReveal";
+import { SiteIntro } from "./components/SiteIntro";
 
 export const metadata: Metadata = {
   title: "Lander Records",
@@ -15,6 +16,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="pt-BR">
       <body>
+        <SiteIntro />
         <LazyReveal />
         {children}
       </body>
