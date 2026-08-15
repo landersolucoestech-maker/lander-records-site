@@ -4,29 +4,20 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 const selector = [
-  ".homeIntroCard",
-  ".homeShortcutCircle",
-  ".homeBlockHeader",
-  ".homeArtistCard",
-  ".spotifyReleaseCard",
-  ".homeNewsFeatured",
-  ".homeNewsSide a",
-  ".socialMetricCard",
-  ".artistTile",
-  ".artistProfileBody",
-  ".sidebarBlock",
-  ".detailCard",
-  ".newsCard",
-  ".articleHeader",
-  ".articleBody",
-  ".aboutValueCard",
-  ".pillarCard",
-  ".serviceGroup",
-  ".serviceWarningPanel",
-  ".serviceExtraPanel",
-  ".groupCompaniesSection",
-  ".contactSection",
-  ".siteFooter",
+  "main > section",
+  "main section article",
+  "main section aside > div",
+  "main .homeShortcutCircle",
+  "main .homeBlockHeader",
+  "main .filterRow",
+  "main .groupCompaniesNav button",
+  "main .groupCompaniesPanel",
+  "main .serviceGroup",
+  "main .serviceWarningPanel",
+  "main .serviceExtraPanel",
+  "main .articleHeader",
+  "main .articleBody",
+  "footer.siteFooter",
 ].join(",");
 
 export function LazyReveal() {
@@ -38,13 +29,14 @@ export function LazyReveal() {
 
     const start = () => {
       cleanup?.();
-
       const observed = new WeakSet<Element>();
 
+      const revealImmediately = (element: HTMLElement) => {
+        element.classList.add("lazyReveal", "lazyRevealVisible");
+      };
+
       if (reduceMotion || !("IntersectionObserver" in window)) {
-        document.querySelectorAll<HTMLElement>(selector).forEach((element) => {
-          element.classList.add("lazyReveal", "lazyRevealVisible");
-        });
+        document.querySelectorAll<HTMLElement>(selector).forEach(revealImmediately);
         return;
       }
 
@@ -59,22 +51,23 @@ export function LazyReveal() {
         },
         {
           root: null,
-          rootMargin: "0px 0px -12% 0px",
-          threshold: 0.08,
+          rootMargin: "0px 0px -10% 0px",
+          threshold: 0.06,
         },
       );
 
       const register = () => {
         const elements = Array.from(document.querySelectorAll<HTMLElement>(selector));
         elements.forEach((element, index) => {
-          if (observed.has(element)) return;
+          if (observed.has(element) || element.closest(".siteIntro")) return;
           observed.add(element);
           element.classList.add("lazyReveal");
           element.classList.remove("lazyRevealVisible");
-          element.style.setProperty("--reveal-delay", `${(index % 4) * 110}ms`);
+          element.style.setProperty("--reveal-delay", `${(index % 5) * 85}ms`);
 
           const rect = element.getBoundingClientRect();
-          if (rect.top < window.innerHeight * 0.18) {
+          const isInitialViewport = rect.top < window.innerHeight * 0.12;
+          if (isInitialViewport) {
             requestAnimationFrame(() => element.classList.add("lazyRevealVisible"));
           } else {
             observer.observe(element);
@@ -83,12 +76,12 @@ export function LazyReveal() {
       };
 
       register();
-      const delayedRegister = window.setTimeout(register, 120);
+      const timers = [80, 220, 500].map((delay) => window.setTimeout(register, delay));
       const mutationObserver = new MutationObserver(register);
       mutationObserver.observe(document.body, { childList: true, subtree: true });
 
       cleanup = () => {
-        window.clearTimeout(delayedRegister);
+        timers.forEach(window.clearTimeout);
         mutationObserver.disconnect();
         observer.disconnect();
       };
@@ -96,7 +89,7 @@ export function LazyReveal() {
 
     const introAlreadyDone = document.documentElement.classList.contains("intro-complete");
     if (introAlreadyDone) {
-      const timer = window.setTimeout(start, 40);
+      const timer = window.setTimeout(start, 50);
       cleanup = () => window.clearTimeout(timer);
     } else {
       window.addEventListener("lander:intro-complete", start, { once: true });
