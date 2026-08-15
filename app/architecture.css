@@ -46,6 +46,8 @@
 .artistTileBody span { font-size: 13px; font-weight: 900; }
 
 .artistProfileHero { position: relative; min-height: 720px; padding-top: 88px; background: #050505; color: white; overflow: hidden; }
+.artistPhotoHero { background-size: cover; background-position: center center; background-repeat: no-repeat; }
+.artistPhotoHero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.04) 30%, rgba(0,0,0,.74) 100%); pointer-events: none; }
 .artistProfileImage { position: absolute; inset: 88px 0 0; background: linear-gradient(90deg,rgba(0,0,0,.65),rgba(0,0,0,.12)), linear-gradient(180deg,rgba(239,22,22,.25),rgba(0,0,0,.78)), radial-gradient(circle at 65% 35%,#333,#080808 62%); }
 .artistProfileOverlay { position: absolute; left: clamp(24px,10vw,160px); bottom: 74px; z-index: 2; }
 .artistProfileOverlay h1 { margin: 0 0 26px; font-size: clamp(60px,8vw,112px); line-height: .9; letter-spacing: -.07em; }
@@ -122,6 +124,7 @@
   .pageHero { min-height: 390px; padding-bottom: 56px; }
   .pageHero h1 { font-size: 46px; }
   .artistProfileHero { min-height: 600px; }
+  .artistPhotoHero { background-position: 58% center; }
   .artistProfileOverlay h1 { font-size: 58px; }
   .articleHeroImage { min-height: 320px; margin-inline: 0; }
 }
