@@ -9,27 +9,22 @@
   z-index: 2;
 }
 
+/* Same visual treatment as the PORTAL wordmark on the news hero. */
 .heroWordmark {
   position: absolute;
   z-index: 0;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  right: 4vw;
+  bottom: -4vw;
   width: max-content;
-  max-width: 118vw;
-  color: rgba(255,255,255,.07);
-  font-family: "Arial Black", Arial, Helvetica, sans-serif;
-  font-size: clamp(96px, 18vw, 280px);
+  color: rgba(255,255,255,.025);
+  font-size: clamp(110px,19vw,290px);
   font-weight: 1000;
-  line-height: .78;
-  letter-spacing: -.055em;
+  line-height: .82;
+  letter-spacing: -.08em;
   text-transform: uppercase;
   white-space: nowrap;
-  filter: none;
+  filter: none !important;
   opacity: 1;
-  text-rendering: geometricPrecision;
-  -webkit-font-smoothing: antialiased;
-  backface-visibility: hidden;
   pointer-events: none;
   user-select: none;
 }
@@ -75,7 +70,8 @@
 
 @media (max-width: 700px) {
   .heroWordmark {
-    font-size: clamp(78px, 25vw, 170px);
-    letter-spacing: -.045em;
+    right: 2vw;
+    bottom: -2vw;
+    font-size: clamp(100px,32vw,190px);
   }
 }
