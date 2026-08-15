@@ -93,30 +93,104 @@
   position: fixed;
   inset: 0;
   z-index: 99999;
-  display: grid;
-  place-items: center;
   overflow: hidden;
-  background: var(--red);
-  color: #fff;
   transform: translateY(0);
-  transition: transform .78s cubic-bezier(.76,0,.24,1);
+  transition: transform .72s cubic-bezier(.76,0,.24,1);
 }
 
-.siteIntro::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, transparent 0 52%, rgba(0,0,0,.16) 52% 100%);
-  pointer-events: none;
+.siteIntroV2 {
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(239,22,22,.18), transparent 28%),
+    #050505;
+  color: #fff;
 }
 
 .siteIntroClosing { transform: translateY(-100%); }
-.siteIntroMark { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; line-height: .78; animation: introMarkIn .65s cubic-bezier(.16,1,.3,1) both; }
-.siteIntroMark strong { font-family: "Arial Black", Arial, Helvetica, sans-serif; font-size: clamp(58px, 11vw, 150px); font-weight: 1000; letter-spacing: -.07em; color: #fff; text-shadow: 8px 8px 0 #090909; }
-.siteIntroMark span { margin-top: 20px; padding: 8px 14px; background: #090909; color: #fff; font-size: clamp(13px, 1.4vw, 20px); font-weight: 1000; letter-spacing: .52em; }
-.siteIntroTrack { position: absolute; z-index: 2; left: 0; right: 0; bottom: 7vh; display: flex; gap: 48px; white-space: nowrap; opacity: .55; transform: translateX(-4%); }
-.siteIntroTrack span { font-size: 11px; font-weight: 1000; letter-spacing: .22em; color: #090909; }
-@keyframes introMarkIn { from { opacity: 0; transform: scale(.88) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+.siteIntroGlow {
+  position: absolute;
+  width: min(68vw, 880px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(239,22,22,.16);
+  border-radius: 50%;
+  box-shadow: 0 0 120px rgba(239,22,22,.08) inset;
+  animation: introGlow 1.25s ease both;
+}
+
+.siteIntroMarkV2 {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  text-align: center;
+  animation: introMarkV2In .62s cubic-bezier(.16,1,.3,1) both;
+}
+
+.siteIntroEyebrow {
+  color: var(--red);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .32em;
+}
+
+.siteIntroMarkV2 strong {
+  font-family: "Arial Black", "Arial Narrow", Arial, Helvetica, sans-serif;
+  font-size: clamp(64px, 12vw, 168px);
+  font-weight: 1000;
+  line-height: .78;
+  letter-spacing: -.075em;
+}
+
+.siteIntroRule {
+  width: min(300px, 42vw);
+  height: 2px;
+  overflow: hidden;
+  background: rgba(255,255,255,.12);
+}
+
+.siteIntroRule i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--red);
+  transform-origin: left center;
+  animation: introProgress 1s cubic-bezier(.16,1,.3,1) .08s both;
+}
+
+.siteIntroMarkV2 small {
+  color: #8f8f8f;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .24em;
+}
+
+.siteIntroCorner {
+  position: absolute;
+  right: 28px;
+  bottom: 24px;
+  color: rgba(255,255,255,.18);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .18em;
+}
+
+@keyframes introMarkV2In {
+  from { opacity: 0; transform: translateY(22px) scale(.975); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes introProgress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes introGlow {
+  from { opacity: 0; transform: scale(.82); }
+  to { opacity: 1; transform: scale(1); }
+}
 
 .groupCompaniesSection { background: #f5f5f5; }
 .groupCompaniesTabs { display: grid; grid-template-columns: minmax(230px,.72fr) minmax(0,1.6fr); gap: 28px; margin-top: 34px; }
@@ -136,7 +210,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .siteIntro { transition-duration: .01ms; }
-  .siteIntroMark, .groupCompaniesPanel { animation: none; }
+  .siteIntroMarkV2, .siteIntroGlow, .siteIntroRule i, .groupCompaniesPanel { animation: none; }
 }
 
 @media (max-width: 920px) {
@@ -157,5 +231,7 @@
   .serviceGroupHeading { grid-template-columns: 1fr; gap: 6px; }
   .groupCompaniesNav { grid-template-columns: 1fr; }
   .groupCompaniesItems { grid-template-columns: 1fr; }
-  .siteIntroMark span { letter-spacing: .35em; }
+  .siteIntroMarkV2 strong { font-size: clamp(58px, 20vw, 104px); }
+  .siteIntroMarkV2 small { letter-spacing: .16em; }
+  .siteIntroCorner { right: 18px; bottom: 18px; }
 }
