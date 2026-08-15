@@ -1,76 +1,35 @@
-/* Native scroll-driven reveal. Chrome/Edge/Safari modern browsers animate directly from viewport progress. */
-@keyframes landerScrollReveal {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 84px, 0) scale(.975);
-    filter: blur(7px);
-    clip-path: inset(0 0 18% 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-    filter: blur(0);
-    clip-path: inset(0 0 0 0);
-  }
+/* Single global reveal layer. JavaScript IntersectionObserver owns the trigger. */
+.lazyReveal {
+  opacity: 0 !important;
+  transform: translate3d(0, 56px, 0) scale(.985) !important;
+  clip-path: inset(0 0 10% 0) !important;
+  transition:
+    opacity .72s cubic-bezier(.16,1,.3,1) var(--reveal-delay,0ms),
+    transform .72s cubic-bezier(.16,1,.3,1) var(--reveal-delay,0ms),
+    clip-path .72s cubic-bezier(.16,1,.3,1) var(--reveal-delay,0ms) !important;
+  will-change: opacity, transform, clip-path;
 }
 
-@supports (animation-timeline: view()) {
-  main > section:not(:first-of-type),
-  main section article,
-  main section aside > div,
-  main .homeShortcutCircle,
-  main .homeBlockHeader,
-  main .filterRow,
-  main .groupCompaniesNav button,
-  main .groupCompaniesPanel,
-  main .serviceGroup,
-  main .serviceWarningPanel,
-  main .serviceExtraPanel,
-  main .articleHeader,
-  main .articleBody,
-  main .embedPlaceholder,
-  main .socialMetric,
-  main .artistPlatformLinks a,
-  footer.siteFooter {
-    animation-name: landerScrollReveal !important;
-    animation-duration: 1ms !important;
-    animation-fill-mode: both !important;
-    animation-timing-function: linear !important;
-    animation-timeline: view() !important;
-    animation-range: entry 5% cover 34% !important;
-    transition: none !important;
-    will-change: opacity, transform, filter, clip-path;
-  }
+.lazyReveal.lazyRevealVisible {
+  opacity: 1 !important;
+  transform: translate3d(0,0,0) scale(1) !important;
+  clip-path: inset(0 0 0 0) !important;
+}
 
-  /* Disable JS reveal transforms where native scroll timelines are available. */
-  .lazyReveal,
-  .lazyReveal.lazyRevealVisible {
-    transition: none !important;
-  }
+/* Never blur content or brand assets during reveal. */
+.lazyReveal,
+.lazyReveal *,
+.lazyReveal img,
+.lazyReveal svg {
+  filter: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  main > section,
-  main section article,
-  main section aside > div,
-  main .homeShortcutCircle,
-  main .homeBlockHeader,
-  main .filterRow,
-  main .groupCompaniesNav button,
-  main .groupCompaniesPanel,
-  main .serviceGroup,
-  main .serviceWarningPanel,
-  main .serviceExtraPanel,
-  main .articleHeader,
-  main .articleBody,
-  main .embedPlaceholder,
-  main .socialMetric,
-  main .artistPlatformLinks a,
-  footer.siteFooter {
-    animation: none !important;
+  .lazyReveal,
+  .lazyReveal.lazyRevealVisible {
     opacity: 1 !important;
     transform: none !important;
-    filter: none !important;
     clip-path: none !important;
+    transition: none !important;
   }
 }
