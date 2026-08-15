@@ -8,15 +8,13 @@ export function SiteIntro() {
 
   useEffect(() => {
     document.documentElement.classList.add("intro-active");
-
-    const closeTimer = window.setTimeout(() => setClosing(true), 700);
+    const closeTimer = window.setTimeout(() => setClosing(true), 900);
     const hideTimer = window.setTimeout(() => {
       setHidden(true);
       document.documentElement.classList.remove("intro-active");
       document.documentElement.classList.add("intro-complete");
       window.dispatchEvent(new CustomEvent("lander:intro-complete"));
-    }, 1200);
-
+    }, 1450);
     return () => {
       window.clearTimeout(closeTimer);
       window.clearTimeout(hideTimer);
@@ -28,7 +26,8 @@ export function SiteIntro() {
 
   return (
     <div className={`siteIntro siteIntroSimple${closing ? " siteIntroClosing" : ""}`} aria-hidden="true">
-      <div className="siteIntroSimpleMark">
+      <div className="siteIntroOriginalLogo" role="presentation">
+        <div className="logoEagle" aria-hidden="true">◆</div>
         <strong>LANDER</strong>
         <span>RECORDS</span>
       </div>
