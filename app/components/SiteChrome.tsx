@@ -17,7 +17,7 @@ export function Header() {
       </Link>
       <nav aria-label="Navegação principal">
         <Link href="/">Início</Link>
-        <Link href="/#sobre">Sobre Nós</Link>
+        <Link href="/sobre-nos">Sobre Nós</Link>
         <Link href="/artistas">Artistas</Link>
         <div className="navDropdown">
           <button type="button">Serviços</button>
@@ -25,10 +25,10 @@ export function Header() {
             {serviceLinks.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}
           </div>
         </div>
-        <Link href="/#noticias">Notícias</Link>
-        <Link href="/#contato">Contato</Link>
+        <Link href="/noticias">Notícias</Link>
+        <Link href="/contato">Contato</Link>
       </nav>
-      <Link className="button buttonPrimary headerCta" href="/#contato">Quero Contratar</Link>
+      <Link className="button buttonPrimary headerCta" href="/contato">Quero Contratar</Link>
     </header>
   );
 }
