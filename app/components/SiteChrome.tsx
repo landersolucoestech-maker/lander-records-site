@@ -35,10 +35,47 @@ export function Header() {
 
 export function Footer() {
   return (
-    <footer>
-      <div><strong>LANDER RECORDS</strong><p>Gravadora · Produtora Musical · Gestão Artística</p></div>
-      <div><p>Governador Valadares · MG</p><p>contato@landerrecords.com</p></div>
-      <div><p>Instagram · YouTube · TikTok · Spotify · SoundCloud</p></div>
+    <footer className="siteFooter">
+      <div className="footerMain">
+        <div className="footerBrandColumn">
+          <Link className="footerBrand" href="/" aria-label="Lander Records">
+            <span className="footerBrandName">LANDER</span>
+            <span className="footerBrandRecords">RECORDS</span>
+          </Link>
+          <p>Entre em contato com a gente e vamos fazer o seu projeto acontecer. Contato para parcerias, shows, publicidades ou criar algo novo.</p>
+        </div>
+
+        <div className="footerColumn">
+          <h3>Mapa do site</h3>
+          <Link href="/">› Início</Link>
+          <Link href="/sobre-nos">› Sobre</Link>
+          <Link href="/artistas">› Artistas</Link>
+          <Link href="/servicos/producao-musical">› Serviços</Link>
+          <Link href="/noticias">› Notícias</Link>
+          <Link href="/contato">› Quero Contratar</Link>
+        </div>
+
+        <div className="footerColumn footerContact">
+          <h3>Contato</h3>
+          <p><strong>Telefone</strong><br/>+55 33 99856 1526</p>
+          <p><strong>E-mail</strong><br/>contato@landerrecords.com</p>
+          <p><strong>Endereço</strong><br/>Rua Joaquim Pereira Duarte Nº 58 · Vila Império<br/>Governador Valadares · MG · 35050-560</p>
+          <p><strong>Horário</strong><br/>Seg–Sex · 08:00–17:00<br/>Fechado aos sábados e domingos</p>
+          <h3 className="footerSocialTitle">Redes Sociais</h3>
+          <div className="footerSocials">
+            <a href="#" aria-label="Instagram">Instagram</a>
+            <a href="#" aria-label="YouTube">YouTube</a>
+            <a href="#" aria-label="TikTok">TikTok</a>
+            <a href="#" aria-label="Spotify">Spotify</a>
+            <a href="#" aria-label="SoundCloud">SoundCloud</a>
+          </div>
+        </div>
+      </div>
+
+      <div className="footerBottom">
+        <span>2026 © Produtora em Governador Valadares | Lander Records. Todos os direitos reservados.</span>
+        <span>Feito por <strong>Lander</strong></span>
+      </div>
     </footer>
   );
 }
