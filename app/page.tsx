@@ -82,7 +82,7 @@ export default function Home() {
 
         <section className="homeBlock">
           <div className="homeBlockHeader">
-            <h2>NOSSOS <span>ARTISTAS</span></h2>
+            <h2 className="homeEditorialTitle">NOSSOS <span>ARTISTAS</span></h2>
             <Link href="/artistas">Ver todos os artistas →</Link>
           </div>
           <p className="homeBlockSubtitle">Conheça os talentos que fazem parte do nosso time.</p>
