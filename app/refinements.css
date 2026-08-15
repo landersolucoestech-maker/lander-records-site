@@ -363,25 +363,27 @@
   font-size: inherit;
 }
 
-/* Visible progressive reveal as content enters the viewport. */
+/* Strong viewport reveal: elements remain visibly staged until they enter the viewport. */
 .lazyReveal {
   opacity: 0;
-  transform: translate3d(0, 44px, 0) scale(.985);
-  filter: blur(4px);
+  transform: translate3d(0, 72px, 0) scale(.965);
+  filter: blur(8px);
+  clip-path: inset(0 0 18% 0);
   transition:
-    opacity .72s cubic-bezier(.16,1,.3,1) var(--reveal-delay, 0ms),
-    transform .72s cubic-bezier(.16,1,.3,1) var(--reveal-delay, 0ms),
-    filter .62s ease var(--reveal-delay, 0ms);
-  will-change: opacity, transform, filter;
+    opacity .82s cubic-bezier(.16,1,.3,1) var(--reveal-delay, 0ms),
+    transform .82s cubic-bezier(.16,1,.3,1) var(--reveal-delay, 0ms),
+    filter .7s ease var(--reveal-delay, 0ms),
+    clip-path .82s cubic-bezier(.16,1,.3,1) var(--reveal-delay, 0ms);
+  will-change: opacity, transform, filter, clip-path;
 }
 
 .lazyReveal.lazyRevealVisible {
   opacity: 1;
   transform: translate3d(0, 0, 0) scale(1);
   filter: blur(0);
+  clip-path: inset(0 0 0 0);
 }
 
-/* Prevent off-screen sections from doing unnecessary paint/layout work. */
 .homeBlock,
 .artistProfileBody,
 .detailGrid,
@@ -397,6 +399,7 @@
     opacity: 1;
     transform: none;
     filter: none;
+    clip-path: none;
     transition: none;
   }
 }
