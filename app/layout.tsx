@@ -6,6 +6,7 @@ import "./refinements.css";
 import "./content-completion.css";
 import { LazyReveal } from "./components/LazyReveal";
 import { SiteIntro } from "./components/SiteIntro";
+import { ArtistProfileEnhancer } from "./components/ArtistProfileEnhancer";
 
 export const metadata: Metadata = {
   title: "Lander Records",
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <SiteIntro />
         <LazyReveal />
+        <ArtistProfileEnhancer />
         {children}
       </body>
     </html>
