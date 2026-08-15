@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./architecture.css";
 import "./home-extra.css";
+import "./refinements.css";
 
 export const metadata: Metadata = {
   title: "Lander Records",
