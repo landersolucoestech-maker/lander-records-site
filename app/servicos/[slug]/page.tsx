@@ -15,7 +15,8 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
   return (
     <main>
       <Header />
-      <section className="pageHero serviceHero">
+      <section className="pageHero serviceHero heroWordmarkPage">
+        <span className="heroWordmark" aria-hidden="true">SERVIÇOS</span>
         <p className="eyebrow">{service.kicker}</p>
         <h1>{service.title}</h1>
         <p>{service.intro}</p>
