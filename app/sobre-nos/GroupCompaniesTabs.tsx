@@ -8,28 +8,22 @@ const companies = [
   {
     id: "records",
     label: "Lander Records",
-    kicker: "GRAVADORA · PRODUTORA",
-    title: "Lander Records",
+    kicker: "LANDER RECORDS · GRAVADORA · PRODUTORA",
     text: "Gravadora e produtora musical dedicada ao desenvolvimento artístico, produção, lançamentos, distribuição, conteúdo e gestão de carreira.",
-    items: ["Produção musical", "Gestão artística", "Distribuição", "Marketing e conteúdo"],
     brand: "records",
   },
   {
     id: "cine",
     label: "Lander Cine",
-    kicker: "AUDIOVISUAL",
-    title: "Lander Cine",
+    kicker: "LANDER CINE · AUDIOVISUAL",
     text: "Frente audiovisual do grupo voltada a videoclipes, campanhas, conteúdos digitais, direção criativa e produção de imagem para artistas e marcas.",
-    items: ["Videoclipes", "Campanhas", "Conteúdo digital", "Direção e pós-produção"],
     brand: "cine",
   },
   {
     id: "portal",
     label: "Portal Lander",
-    kicker: "MÍDIA · CONTEÚDO",
-    title: "Portal Lander",
+    kicker: "PORTAL LANDER · MÍDIA · CONTEÚDO",
     text: "Plataforma editorial do ecossistema Lander para notícias, lançamentos, bastidores, entretenimento e cobertura do mercado musical.",
-    items: ["Notícias", "Lançamentos", "Bastidores", "Mercado e entretenimento"],
     brand: "portal",
   },
 ] as const;
@@ -74,17 +68,10 @@ export function GroupCompaniesTabs() {
         ))}
       </div>
 
-      <div className="groupCompaniesPanel ecosystemPanel" role="tabpanel" key={active.id}>
-        <div className="ecosystemPanelBrand">
-          <CompanyLogo brand={active.brand} />
-        </div>
+      <div className="groupCompaniesPanel ecosystemPanel ecosystemPanelSimplified" role="tabpanel" key={active.id}>
         <div className="ecosystemPanelCopy">
-          <p className="eyebrow dark">{active.kicker}</p>
-          <h3>{active.title}</h3>
+          <p className="eyebrow dark ecosystemCompanyHeading">{active.kicker}</p>
           <p>{active.text}</p>
-          <div className="groupCompaniesItems ecosystemItems">
-            {active.items.map((item) => <span key={item}>{item}</span>)}
-          </div>
         </div>
       </div>
     </div>
