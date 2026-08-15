@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+const basePath = "/lander-records-site";
+
 const companies = [
   {
     id: "records",
@@ -10,6 +12,7 @@ const companies = [
     title: "Lander Records",
     text: "Gravadora e produtora musical dedicada ao desenvolvimento artístico, produção, lançamentos, distribuição, conteúdo e gestão de carreira.",
     items: ["Produção musical", "Gestão artística", "Distribuição", "Marketing e conteúdo"],
+    brand: "records",
   },
   {
     id: "cine",
@@ -18,6 +21,7 @@ const companies = [
     title: "Lander Cine",
     text: "Frente audiovisual do grupo voltada a videoclipes, campanhas, conteúdos digitais, direção criativa e produção de imagem para artistas e marcas.",
     items: ["Videoclipes", "Campanhas", "Conteúdo digital", "Direção e pós-produção"],
+    brand: "cine",
   },
   {
     id: "portal",
@@ -26,16 +30,34 @@ const companies = [
     title: "Portal Lander",
     text: "Plataforma editorial do ecossistema Lander para notícias, lançamentos, bastidores, entretenimento e cobertura do mercado musical.",
     items: ["Notícias", "Lançamentos", "Bastidores", "Mercado e entretenimento"],
+    brand: "portal",
   },
 ] as const;
+
+function CompanyLogo({ brand, compact = false }: { brand: (typeof companies)[number]["brand"]; compact?: boolean }) {
+  if (brand === "records") {
+    return (
+      <div className={`ecosystemLogo ecosystemLogoRecords${compact ? " compact" : ""}`}>
+        <img src={`${basePath}/lander-records-logo.webp`} alt="Lander Records" />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`ecosystemLogo ecosystemWordmark ecosystemWordmark-${brand}${compact ? " compact" : ""}`} aria-label={brand === "cine" ? "Lander Cine" : "Portal Lander"}>
+      <span>LANDER</span>
+      <strong>{brand === "cine" ? "CINE" : "PORTAL"}</strong>
+    </div>
+  );
+}
 
 export function GroupCompaniesTabs() {
   const [activeId, setActiveId] = useState<(typeof companies)[number]["id"]>("records");
   const active = companies.find((company) => company.id === activeId) ?? companies[0];
 
   return (
-    <div className="groupCompaniesTabs">
-      <div className="groupCompaniesNav" role="tablist" aria-label="Empresas do Grupo Lander">
+    <div className="groupCompaniesTabs ecosystemTabs">
+      <div className="groupCompaniesNav ecosystemNav" role="tablist" aria-label="Empresas do Grupo Lander">
         {companies.map((company, index) => (
           <button
             key={company.id}
@@ -45,18 +67,24 @@ export function GroupCompaniesTabs() {
             className={active.id === company.id ? "active" : ""}
             onClick={() => setActiveId(company.id)}
           >
-            <span>0{index + 1}</span>
-            <strong>{company.label}</strong>
+            <span className="ecosystemIndex">0{index + 1}</span>
+            <CompanyLogo brand={company.brand} compact />
+            <strong className="ecosystemNavLabel">{company.label}</strong>
           </button>
         ))}
       </div>
 
-      <div className="groupCompaniesPanel" role="tabpanel" key={active.id}>
-        <p className="eyebrow dark">{active.kicker}</p>
-        <h3>{active.title}</h3>
-        <p>{active.text}</p>
-        <div className="groupCompaniesItems">
-          {active.items.map((item) => <span key={item}>{item}</span>)}
+      <div className="groupCompaniesPanel ecosystemPanel" role="tabpanel" key={active.id}>
+        <div className="ecosystemPanelBrand">
+          <CompanyLogo brand={active.brand} />
+        </div>
+        <div className="ecosystemPanelCopy">
+          <p className="eyebrow dark">{active.kicker}</p>
+          <h3>{active.title}</h3>
+          <p>{active.text}</p>
+          <div className="groupCompaniesItems ecosystemItems">
+            {active.items.map((item) => <span key={item}>{item}</span>)}
+          </div>
         </div>
       </div>
     </div>
