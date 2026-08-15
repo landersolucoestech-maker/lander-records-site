@@ -21,6 +21,9 @@ const selector = [
   ".articleBody",
   ".aboutValueCard",
   ".pillarCard",
+  ".serviceGroup",
+  ".serviceWarningPanel",
+  ".serviceExtraPanel",
   ".groupCompaniesSection",
   ".contactSection",
   ".siteFooter",
@@ -31,16 +34,12 @@ export function LazyReveal() {
 
   useEffect(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const elements = Array.from(document.querySelectorAll<HTMLElement>(selector));
-
-    elements.forEach((element, index) => {
-      element.classList.remove("lazyRevealVisible");
-      element.classList.add("lazyReveal");
-      element.style.setProperty("--reveal-delay", `${(index % 5) * 70}ms`);
-    });
+    const observed = new WeakSet<Element>();
 
     if (reduceMotion || !("IntersectionObserver" in window)) {
-      elements.forEach((element) => element.classList.add("lazyRevealVisible"));
+      document.querySelectorAll<HTMLElement>(selector).forEach((element) => {
+        element.classList.add("lazyReveal", "lazyRevealVisible");
+      });
       return;
     }
 
@@ -48,19 +47,47 @@ export function LazyReveal() {
       (entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
-          entry.target.classList.add("lazyRevealVisible");
-          observer.unobserve(entry.target);
+          const target = entry.target as HTMLElement;
+          requestAnimationFrame(() => target.classList.add("lazyRevealVisible"));
+          observer.unobserve(target);
         });
       },
       {
         root: null,
-        rootMargin: "0px 0px -12% 0px",
-        threshold: 0.16,
+        rootMargin: "0px 0px -18% 0px",
+        threshold: 0.18,
       },
     );
 
-    elements.forEach((element) => observer.observe(element));
-    return () => observer.disconnect();
+    const register = () => {
+      const elements = Array.from(document.querySelectorAll<HTMLElement>(selector));
+      elements.forEach((element, index) => {
+        if (observed.has(element)) return;
+        observed.add(element);
+        element.classList.add("lazyReveal");
+        element.classList.remove("lazyRevealVisible");
+        element.style.setProperty("--reveal-delay", `${(index % 4) * 90}ms`);
+
+        const rect = element.getBoundingClientRect();
+        const alreadyHighInViewport = rect.top < window.innerHeight * 0.45;
+        if (alreadyHighInViewport) {
+          requestAnimationFrame(() => element.classList.add("lazyRevealVisible"));
+          return;
+        }
+        observer.observe(element);
+      });
+    };
+
+    register();
+    const delayedRegister = window.setTimeout(register, 80);
+    const mutationObserver = new MutationObserver(register);
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      window.clearTimeout(delayedRegister);
+      mutationObserver.disconnect();
+      observer.disconnect();
+    };
   }, [pathname]);
 
   return null;
