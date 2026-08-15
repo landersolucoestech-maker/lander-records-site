@@ -57,7 +57,7 @@
 }
 
 .ecosystemLogo.compact { min-height: 70px; }
-.ecosystemLogoRecords img { width: min(240px, 78%); max-height: 160px; object-fit: contain; }
+.ecosystemLogoRecords img { width: min(240px, 78%); max-height: 160px; object-fit: contain; image-rendering: auto; }
 .ecosystemLogoRecords.compact img { width: 66px; max-height: 68px; }
 
 .ecosystemWordmark {
@@ -146,25 +146,31 @@
   color: #e5e5e5;
 }
 
-/* Global viewport reveal: active on every route after the preloader exits. */
+/* Global viewport reveal. Do not blur content/assets: logos and text must remain sharp. */
 .lazyReveal {
   opacity: 0 !important;
   transform: translate3d(0,64px,0) scale(.985) !important;
-  filter: blur(5px) !important;
   clip-path: inset(0 0 14% 0) !important;
   transition:
     opacity .8s cubic-bezier(.16,1,.3,1) var(--reveal-delay,0ms),
     transform .8s cubic-bezier(.16,1,.3,1) var(--reveal-delay,0ms),
-    filter .65s ease var(--reveal-delay,0ms),
     clip-path .8s cubic-bezier(.16,1,.3,1) var(--reveal-delay,0ms) !important;
-  will-change: opacity, transform, filter, clip-path;
+  will-change: opacity, transform, clip-path;
 }
 
 .lazyReveal.lazyRevealVisible {
   opacity: 1 !important;
   transform: translate3d(0,0,0) scale(1) !important;
-  filter: blur(0) !important;
   clip-path: inset(0 0 0 0) !important;
+}
+
+/* Brand assets must never inherit visual blur from reveal/loading effects. */
+.ecosystemNav img,
+.ecosystemLogo img,
+.groupCompaniesSection img {
+  filter: none !important;
+  opacity: 1;
+  backface-visibility: hidden;
 }
 
 @media (prefers-reduced-motion: reduce) {
