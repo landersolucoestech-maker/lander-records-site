@@ -363,6 +363,44 @@
   font-size: inherit;
 }
 
+/* Progressive viewport loading inspired by the pacing of long-form music sites. */
+.lazyReveal {
+  opacity: 0;
+  transform: translate3d(0, 24px, 0);
+  filter: blur(2px);
+  transition:
+    opacity .58s cubic-bezier(.2,.65,.25,1) var(--reveal-delay, 0ms),
+    transform .58s cubic-bezier(.2,.65,.25,1) var(--reveal-delay, 0ms),
+    filter .58s ease var(--reveal-delay, 0ms);
+  will-change: opacity, transform, filter;
+}
+
+.lazyReveal.lazyRevealVisible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  filter: blur(0);
+}
+
+/* Prevent off-screen sections from doing unnecessary paint/layout work. */
+.homeBlock,
+.artistProfileBody,
+.detailGrid,
+.newsGrid,
+.articleBody {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 640px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lazyReveal,
+  .lazyReveal.lazyRevealVisible {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+}
+
 @media (max-width: 1100px) {
   .spotifyReleaseGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
