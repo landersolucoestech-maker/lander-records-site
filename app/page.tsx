@@ -49,6 +49,27 @@ export default function Home() {
           </div>
         </div>
 
+        <div className="homeSocialMetrics" aria-label="Números das redes sociais da Lander Records">
+          <article className="socialMetricCard socialMetricInstagram">
+            <div className="socialMetricTop">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.6" r="1"/></svg>
+              <span>Instagram</span>
+            </div>
+            <strong data-social-metric="instagram-followers">—</strong>
+            <p>seguidores</p>
+            <small>Atualização automática</small>
+          </article>
+          <article className="socialMetricCard socialMetricYoutube">
+            <div className="socialMetricTop">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9l5 3-5 3z"/></svg>
+              <span>YouTube</span>
+            </div>
+            <strong data-social-metric="youtube-subscribers">—</strong>
+            <p>inscritos</p>
+            <small>Atualização automática</small>
+          </article>
+        </div>
+
         <div className="homeShortcutRow">
           {shortcuts.map(([label, href], index) => (
             <Link className="homeShortcutCircle" href={href} key={label}>
@@ -80,7 +101,7 @@ export default function Home() {
         <section className="homeBlock spotifyReleasesSection">
           <div className="homeBlockHeader">
             <div>
-              <h2>ÚLTIMOS <span>LANÇAMENTOS</span></h2>
+              <h2 className="homeEditorialTitle">ÚLTIMOS <span>LANÇAMENTOS</span></h2>
               <p className="spotifySource">Atualizados automaticamente pela playlist oficial da Lander Records no Spotify.</p>
             </div>
           </div>
@@ -112,7 +133,7 @@ export default function Home() {
 
         <section className="homeBlock homeNewsBlock">
           <div className="homeBlockHeader">
-            <div><small>PORTAL LANDER</small><h2>ÚLTIMAS <span>NOVIDADES</span></h2></div>
+            <div><small>PORTAL LANDER</small><h2 className="homeEditorialTitle">ÚLTIMAS <span>NOVIDADES</span></h2></div>
             <Link href="/noticias">Ver todas as notícias →</Link>
           </div>
           <div className="homeNewsEditorial">
