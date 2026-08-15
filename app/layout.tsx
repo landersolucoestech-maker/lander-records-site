@@ -6,6 +6,7 @@ import "./refinements.css";
 import "./content-completion.css";
 import "./artist-profile.css";
 import "./interaction-fixes.css";
+import "./ecosystem-refresh.css";
 import { LazyReveal } from "./components/LazyReveal";
 import { SiteIntro } from "./components/SiteIntro";
 import { ArtistProfileEnhancer } from "./components/ArtistProfileEnhancer";
