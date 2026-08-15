@@ -1,7 +1,15 @@
 import Link from "next/link";
 import { Footer, Header } from "./components/SiteChrome";
-import { artists, services } from "./data/site";
+import { artists } from "./data/site";
 import { news } from "./data/news";
+import { releases } from "./data/releases";
+
+const homeShortcuts = [
+  ["Contrate para shows", "/artistas/dj-stay"],
+  ["Produza sua música", "/servicos/producao-musical"],
+  ["Edição & distribuição", "/servicos/edicao-e-distribuicao"],
+  ["Portal Lander", "/noticias"],
+] as const;
 
 export default function Home() {
   const featuredArtist = artists[0];
@@ -34,23 +42,18 @@ export default function Home() {
           <div className="redPanel">
             <h3>Gravadora e produtora musical</h3>
             <p>Uma operação integrada para desenvolvimento artístico, produção, distribuição, conteúdo e gestão.</p>
-            <a href="#servicos">Conheça nossa estrutura →</a>
+            <Link href="/sobre-nos">Conheça nossa história →</Link>
           </div>
         </div>
       </section>
 
-      <section className="section servicesStrip" id="servicos">
-        <div className="sectionHeading compactHeading">
-          <p className="eyebrow dark">SERVIÇOS</p>
-          <h2>Especialistas em cada <span>etapa.</span></h2>
-          <p>Cada área possui sua própria página, processo e conteúdo.</p>
-        </div>
-        <div className="serviceLinkGrid">
-          {services.map((service, index) => (
-            <Link className="serviceLinkCard" key={service.slug} href={`/servicos/${service.slug}`}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <div><p>{service.kicker}</p><h3>{service.title}</h3></div>
-              <strong>→</strong>
+      <section className="section shortcutSection" id="servicos">
+        <div className="shortcutGrid">
+          {homeShortcuts.map(([label, href], index) => (
+            <Link className="shortcutOrb" href={href} key={label}>
+              <span>0{index + 1}</span>
+              <strong>{label}</strong>
+              <i>↗</i>
             </Link>
           ))}
         </div>
@@ -71,6 +74,21 @@ export default function Home() {
           </div>
         </Link>
         <div className="sectionFooterLink"><Link href="/artistas">Ver todo o casting →</Link></div>
+      </section>
+
+      <section className="section releasesSection">
+        <div className="sectionHeading compactHeading">
+          <p className="eyebrow dark">CATÁLOGO</p>
+          <h2>Últimos <span>lançamentos.</span></h2>
+        </div>
+        <div className="releaseGrid">
+          {releases.map((release, index) => (
+            <article className={`releaseCard ${index === 0 ? "releaseCardFeatured" : ""}`} key={release.slug}>
+              <div className="releaseCover"><span>LANDER</span></div>
+              <div className="releaseInfo"><p>{release.type} · {release.date}</p><h3>{release.title}</h3><strong>{release.artist}</strong><a href="#">Ouvir agora →</a></div>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="section homeNews" id="noticias">
@@ -97,7 +115,7 @@ export default function Home() {
       <section className="ctaSection compactCta" id="contato">
         <p className="eyebrow">CONTATO</p>
         <h2>Vamos falar sobre o seu <span>projeto.</span></h2>
-        <a className="button buttonLight" href="mailto:contato@landerrecords.com">Fale com a Lander</a>
+        <Link className="button buttonLight" href="/contato">Fale com a Lander</Link>
       </section>
 
       <Footer />
