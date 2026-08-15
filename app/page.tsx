@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Footer, Header } from "./components/SiteChrome";
+import spotifyReleases from "./data/spotify-releases.json";
 
 const shortcuts = [
   ["Contrate para shows", "/artistas/dj-stay"],
@@ -8,7 +9,19 @@ const shortcuts = [
   ["Portal Lander", "/noticias"],
 ] as const;
 
+const releaseFallback = Array.from({ length: 5 }, (_, index) => ({
+  id: `placeholder-${index}`,
+  title: "Lançamento Lander Records",
+  artists: "Playlist oficial em configuração",
+  album: "",
+  image: "",
+  spotifyUrl: "",
+  addedAt: "",
+}));
+
 export default function Home() {
+  const releases = spotifyReleases.length ? spotifyReleases : releaseFallback;
+
   return (
     <main className="homeV2">
       <Header />
@@ -64,17 +77,36 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="homeBlock">
+        <section className="homeBlock spotifyReleasesSection">
           <div className="homeBlockHeader">
-            <h2>ÚLTIMOS <span>LANÇAMENTOS</span></h2>
-            <Link href="/noticias">Ver todos os lançamentos →</Link>
-          </div>
-          <div className="homeReleaseGrid">
-            <article className="homeReleaseMain"><div className="releaseArtwork releaseArtworkMain"/><div className="releaseOverlay"><button aria-label="Reproduzir">▶</button><strong>Piano dos Cachorrão</strong><span>MC Toy DJ · Prod. DJ WZ7</span></div></article>
-            <div className="homeReleaseSide">
-              <article className="homeReleaseSmall"><div className="releaseArtwork releaseArtwork2"/><div className="releaseSmallCopy"><strong>Eu te Taquei</strong><span>MC 2C</span></div></article>
-              <article className="homeReleaseSmall"><div className="releaseArtwork releaseArtwork3"/><div className="releaseSmallCopy"><strong>Falcatrua</strong><span>DJ Stay</span></div></article>
+            <div>
+              <h2>ÚLTIMOS <span>LANÇAMENTOS</span></h2>
+              <p className="spotifySource">Atualizados automaticamente pela playlist oficial da Lander Records no Spotify.</p>
             </div>
+          </div>
+          <div className="spotifyReleaseGrid">
+            {releases.slice(0, 5).map((release, index) => {
+              const card = (
+                <>
+                  <div className="spotifyReleaseCover">
+                    {release.image ? <img src={release.image} alt={`Capa de ${release.title}`} /> : <div className="spotifyReleasePlaceholder">LANDER</div>}
+                    <span className="spotifyIndex">0{index + 1}</span>
+                  </div>
+                  <div className="spotifyReleaseCopy">
+                    <small>SPOTIFY</small>
+                    <h3>{release.title}</h3>
+                    <p>{release.artists}</p>
+                    <strong>{release.spotifyUrl ? "Ouvir no Spotify ↗" : "Aguardando integração"}</strong>
+                  </div>
+                </>
+              );
+
+              return release.spotifyUrl ? (
+                <a className="spotifyReleaseCard" href={release.spotifyUrl} target="_blank" rel="noreferrer" key={release.id}>{card}</a>
+              ) : (
+                <article className="spotifyReleaseCard" key={release.id}>{card}</article>
+              );
+            })}
           </div>
         </section>
 
