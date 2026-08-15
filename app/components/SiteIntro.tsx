@@ -26,7 +26,7 @@ export function SiteIntro() {
 
   return (
     <div className={`siteIntro siteIntroSimple${closing ? " siteIntroClosing" : ""}`} aria-hidden="true">
-      <img className="siteIntroLogoImage" src="/lander-records-site/lander-records-logo.webp" alt="" />
+      <img src="/lander-records-site/lander-records-logo.webp" alt="" style={{ width: "min(62vw, 520px)", height: "auto", display: "block", objectFit: "contain" }} />
     </div>
   );
 }
