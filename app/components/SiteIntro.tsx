@@ -7,8 +7,8 @@ export function SiteIntro() {
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
-    const closeTimer = window.setTimeout(() => setClosing(true), 950);
-    const hideTimer = window.setTimeout(() => setHidden(true), 1650);
+    const closeTimer = window.setTimeout(() => setClosing(true), 1050);
+    const hideTimer = window.setTimeout(() => setHidden(true), 1750);
     return () => {
       window.clearTimeout(closeTimer);
       window.clearTimeout(hideTimer);
@@ -18,16 +18,15 @@ export function SiteIntro() {
   if (hidden) return null;
 
   return (
-    <div className={`siteIntro${closing ? " siteIntroClosing" : ""}`} aria-hidden="true">
-      <div className="siteIntroMark">
+    <div className={`siteIntro siteIntroV2${closing ? " siteIntroClosing" : ""}`} aria-hidden="true">
+      <div className="siteIntroGlow" />
+      <div className="siteIntroMarkV2">
+        <span className="siteIntroEyebrow">LANDER RECORDS</span>
         <strong>LANDER</strong>
-        <span>RECORDS</span>
+        <div className="siteIntroRule"><i /></div>
+        <small>MÚSICA · CULTURA · CARREIRA</small>
       </div>
-      <div className="siteIntroTrack">
-        <span>LANDER RECORDS</span>
-        <span>LANDER RECORDS</span>
-        <span>LANDER RECORDS</span>
-      </div>
+      <div className="siteIntroCorner">LR</div>
     </div>
   );
 }
