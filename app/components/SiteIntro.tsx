@@ -26,11 +26,7 @@ export function SiteIntro() {
 
   return (
     <div className={`siteIntro siteIntroSimple${closing ? " siteIntroClosing" : ""}`} aria-hidden="true">
-      <div className="siteIntroOriginalLogo" role="presentation">
-        <div className="logoEagle" aria-hidden="true">◆</div>
-        <strong>LANDER</strong>
-        <span>RECORDS</span>
-      </div>
+      <img className="siteIntroLogoImage" src="/lander-records-site/lander-records-logo.webp" alt="" />
     </div>
   );
 }
