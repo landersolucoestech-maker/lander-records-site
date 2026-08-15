@@ -7,6 +7,7 @@ import "./content-completion.css";
 import "./artist-profile.css";
 import "./interaction-fixes.css";
 import "./ecosystem-refresh.css";
+import "./scroll-reveal.css";
 import { LazyReveal } from "./components/LazyReveal";
 import { ArtistProfileEnhancer } from "./components/ArtistProfileEnhancer";
 
