@@ -3,6 +3,7 @@ import "./globals.css";
 import "./architecture.css";
 import "./home-extra.css";
 import "./refinements.css";
+import { LazyReveal } from "./components/LazyReveal";
 
 export const metadata: Metadata = {
   title: "Lander Records",
@@ -12,7 +13,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body>
+        <LazyReveal />
+        {children}
+      </body>
     </html>
   );
 }
