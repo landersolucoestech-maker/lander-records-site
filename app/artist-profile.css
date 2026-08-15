@@ -1,42 +1,24 @@
 .artistProfileHero.artistPhotoHero {
-  min-height: clamp(430px, 58vw, 720px);
-  display: flex;
-  align-items: flex-end;
-  background-position: center 24% !important;
+  width: min(900px, calc(100% - 48px));
+  min-height: 0;
+  height: clamp(300px, 36vw, 400px);
+  display: block;
+  margin: 150px auto 48px;
+  border-radius: 6px;
+  background-position: center center !important;
   background-size: cover !important;
   background-repeat: no-repeat !important;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 12px 38px rgba(0,0,0,.08);
 }
 
 .artistProfileHero.artistPhotoHero::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,.04) 0%, rgba(0,0,0,.08) 45%, rgba(0,0,0,.72) 100%);
-  pointer-events: none;
+  content: none;
 }
 
 .artistProfileOverlay {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 0 clamp(24px, 7vw, 96px) clamp(32px, 6vw, 72px);
-}
-
-.artistProfileOverlay .eyebrow {
-  margin-bottom: 12px;
-}
-
-.artistProfileOverlay h1 {
-  margin: 0;
-  color: #fff;
-  font-size: clamp(56px, 9vw, 126px);
-  line-height: .82;
-  letter-spacing: -.065em;
-  text-transform: uppercase;
+  display: none;
 }
 
 .artistHeroActions {
@@ -48,8 +30,9 @@
   grid-template-columns: minmax(0, 1.7fr) minmax(280px, .72fr);
   gap: clamp(46px, 7vw, 96px);
   align-items: start;
-  max-width: 1240px;
+  max-width: 960px;
   margin: 0 auto;
+  padding-top: 0;
 }
 
 .artistProfileBody > article > .eyebrow {
@@ -72,21 +55,22 @@
 
 .artistSidebar {
   display: grid;
-  gap: 0;
-  border-top: 1px solid #ddd;
+  gap: 12px;
 }
 
 .artistSidebar .sidebarBlock {
-  padding: 28px 0;
-  border-bottom: 1px solid #ddd;
-  background: transparent;
+  padding: 22px;
+  border: 0;
+  border-radius: 12px;
+  background: #f6f3f3;
 }
 
 .artistSidebar .sidebarBlock .eyebrow {
-  margin: 0 0 18px;
-  color: #111;
+  margin: 0 0 16px;
+  color: var(--red);
   font-size: 11px;
-  letter-spacing: .12em;
+  font-weight: 900;
+  letter-spacing: .08em;
 }
 
 .artistSidebar .sidebarBlock .button {
@@ -94,13 +78,29 @@
   justify-content: center;
 }
 
-.artistSocialStatsBlock .socialMetric {
+.artistSocialStatsBlock {
   display: grid;
-  grid-template-columns: minmax(0,1fr) auto;
-  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.artistSocialStatsBlock > .eyebrow {
+  grid-column: 1 / -1;
+}
+
+.artistSocialStatsBlock .socialMetric {
+  min-height: 78px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  padding: 14px 0;
-  border-bottom: 1px solid #ededed;
+  gap: 6px;
+  padding: 12px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: #0b0b0b;
+  color: #fff;
+  text-align: center;
 }
 
 .artistSocialStatsBlock .socialMetric:last-child {
@@ -111,43 +111,49 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: #222;
-  font-size: 13px;
+  gap: 6px;
+  color: #fff;
+  font-size: 11px;
   font-weight: 800;
 }
 
 .artistSocialStatsBlock .socialMetric span::before {
   content: attr(data-icon);
-  width: 28px;
-  height: 28px;
-  display: grid;
-  place-items: center;
-  border: 1px solid #d8d8d8;
-  border-radius: 50%;
-  color: var(--red);
+  width: auto;
+  height: auto;
+  display: inline;
+  border: 0;
+  border-radius: 0;
+  color: #fff;
   font-size: 12px;
 }
 
 .artistSocialStatsBlock .socialMetric strong {
-  color: #111;
-  font-size: 18px;
-  letter-spacing: -.04em;
+  color: #fff;
+  font-size: 15px;
+  letter-spacing: -.03em;
 }
 
 .artistPlatformLinks {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .artistPlatformLinks a {
-  display: grid;
-  grid-template-columns: 34px minmax(0,1fr) auto;
-  gap: 12px;
+  min-height: 82px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  padding: 13px 0;
-  border-bottom: 1px solid #ededed;
+  gap: 7px;
+  padding: 12px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: #fff;
   color: #111;
-  transition: color .2s ease, padding-left .2s ease;
+  text-align: center;
+  transition: transform .2s ease, color .2s ease, box-shadow .2s ease;
 }
 
 .artistPlatformLinks a:last-child {
@@ -155,47 +161,53 @@
 }
 
 .artistPlatformLinks a:hover {
-  padding-left: 5px;
+  padding-left: 8px;
   color: var(--red);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(0,0,0,.08);
 }
 
 .artistPlatformLinks .platformIcon {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
   border-radius: 50%;
   background: #111;
   color: #fff;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .artistPlatformLinks strong {
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .artistPlatformLinks i {
-  font-style: normal;
-  font-size: 14px;
+  display: none;
 }
 
 .embedGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
   margin-top: 48px;
-  grid-template-columns: 1fr;
 }
 
 .embedPlaceholder {
-  min-height: 150px;
+  min-height: 180px;
 }
 
 @media (max-width: 860px) {
   .artistProfileHero.artistPhotoHero {
-    min-height: 520px;
-    background-position: 58% 20% !important;
+    width: min(760px, calc(100% - 32px));
+    height: clamp(280px, 48vw, 360px);
+    margin-top: 120px;
+    background-position: center center !important;
   }
 
   .artistProfileBody {
     grid-template-columns: 1fr;
+    max-width: 760px;
   }
 
   .artistSidebar {
@@ -205,15 +217,19 @@
 
 @media (max-width: 560px) {
   .artistProfileHero.artistPhotoHero {
-    min-height: 460px;
-    background-position: 60% center !important;
+    width: calc(100% - 24px);
+    height: 260px;
+    margin-top: 96px;
+    margin-bottom: 30px;
+    background-position: center center !important;
   }
 
-  .artistProfileOverlay {
-    padding-bottom: 30px;
+  .embedGrid {
+    grid-template-columns: 1fr;
   }
 
-  .artistProfileOverlay h1 {
-    font-size: clamp(48px, 18vw, 82px);
+  .artistSocialStatsBlock,
+  .artistPlatformLinks {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
