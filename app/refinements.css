@@ -363,21 +363,21 @@
   font-size: inherit;
 }
 
-/* Progressive viewport loading inspired by the pacing of long-form music sites. */
+/* Visible progressive reveal as content enters the viewport. */
 .lazyReveal {
   opacity: 0;
-  transform: translate3d(0, 24px, 0);
-  filter: blur(2px);
+  transform: translate3d(0, 44px, 0) scale(.985);
+  filter: blur(4px);
   transition:
-    opacity .58s cubic-bezier(.2,.65,.25,1) var(--reveal-delay, 0ms),
-    transform .58s cubic-bezier(.2,.65,.25,1) var(--reveal-delay, 0ms),
-    filter .58s ease var(--reveal-delay, 0ms);
+    opacity .72s cubic-bezier(.16,1,.3,1) var(--reveal-delay, 0ms),
+    transform .72s cubic-bezier(.16,1,.3,1) var(--reveal-delay, 0ms),
+    filter .62s ease var(--reveal-delay, 0ms);
   will-change: opacity, transform, filter;
 }
 
 .lazyReveal.lazyRevealVisible {
   opacity: 1;
-  transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0) scale(1);
   filter: blur(0);
 }
 
