@@ -8,7 +8,6 @@ import "./artist-profile.css";
 import "./interaction-fixes.css";
 import "./ecosystem-refresh.css";
 import { LazyReveal } from "./components/LazyReveal";
-import { SiteIntro } from "./components/SiteIntro";
 import { ArtistProfileEnhancer } from "./components/ArtistProfileEnhancer";
 
 export const metadata: Metadata = {
@@ -20,7 +19,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="pt-BR">
       <body>
-        <SiteIntro />
         <LazyReveal />
         <ArtistProfileEnhancer />
         {children}
