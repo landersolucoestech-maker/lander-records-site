@@ -9,8 +9,10 @@ import "./interaction-fixes.css";
 import "./ecosystem-refresh.css";
 import "./scroll-reveal.css";
 import "./hero-wordmarks.css";
+import "./page-transition-loader.css";
 import { LazyReveal } from "./components/LazyReveal";
 import { ArtistProfileEnhancer } from "./components/ArtistProfileEnhancer";
+import { PageTransitionLoader } from "./components/PageTransitionLoader";
 
 export const metadata: Metadata = {
   title: "Lander Records",
@@ -21,6 +23,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="pt-BR">
       <body>
+        <PageTransitionLoader />
         <LazyReveal />
         <ArtistProfileEnhancer />
         {children}
