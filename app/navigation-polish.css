@@ -74,17 +74,26 @@
 .mobileNav > nav .mobileNavCta { margin-top: 7px; justify-content: center; background: var(--red); }
 .mobileNav > nav .mobileNavCta:hover { background: #d90f0f; transform: none; }
 
-.socialIconDisabled {
+.socialIconDisabled,
+.contactSocialDisabled {
   width: 38px;
   height: 38px;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(255,255,255,.1);
   border-radius: 50%;
-  color: rgba(255,255,255,.34);
   cursor: not-allowed;
 }
-.footerSocialIcons .socialIconDisabled svg {
+.socialIconDisabled {
+  border: 1px solid rgba(255,255,255,.1);
+  color: rgba(255,255,255,.34);
+}
+.contactSocialDisabled {
+  border: 1px solid #d9d9d9;
+  background: #f5f5f5;
+  color: #9b9b9b;
+}
+.footerSocialIcons .socialIconDisabled svg,
+.contactSocialDisabled svg {
   width: 19px;
   height: 19px;
   fill: none;
@@ -92,6 +101,10 @@
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+.contactSocialDisabled svg path {
+  fill: currentColor;
+  stroke: none;
 }
 
 .methodologySummary {
