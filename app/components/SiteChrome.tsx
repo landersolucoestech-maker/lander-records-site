@@ -13,7 +13,7 @@ export function Header() {
     <header className="siteHeader">
       <Link className="brand" href="/" aria-label="Lander Records"><span className="brandWing">LANDER</span><span className="brandRecords">RECORDS</span></Link>
       <nav aria-label="Navegação principal">
-        <Link href="/">Início</Link><Link href="/sobre-nos">Sobre Nós</Link><Link href="/artistas">Artistas</Link><Link href="/sobre-nos#metodologia">Metodologia</Link><Link href="/noticias">Notícias</Link><Link href="/contato">Contato</Link>
+        <Link href="/">Início</Link><Link href="/sobre-nos">Sobre Nós</Link><Link href="/artistas">Artistas</Link><Link href="/noticias">Notícias</Link><Link href="/contato">Contato</Link>
       </nav>
       <Link className="button buttonPrimary headerCta" href="/contato">Quero Contratar</Link>
     </header>
