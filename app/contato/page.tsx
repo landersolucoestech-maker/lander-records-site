@@ -1,4 +1,11 @@
 import { Footer, Header } from "../components/SiteChrome";
+import siteContent from "../content/site.json";
+
+const contactSocials = [
+  ["Instagram", siteContent.socials.instagram, <svg key="instagram" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.6" r="1"/></svg>],
+  ["YouTube", siteContent.socials.youtube, <svg key="youtube" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9l5 3-5 3z"/></svg>],
+  ["TikTok", siteContent.socials.tiktok, <svg key="tiktok" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3v11.2a4.6 4.6 0 1 1-3.8-4.53v3.1a1.7 1.7 0 1 0 .8 1.43V3h3c.35 2 1.55 3.45 3.5 4v3.05A7.5 7.5 0 0 1 15 8.7V3z"/></svg>],
+] as const;
 
 export default function ContactPage() {
   return (
@@ -15,14 +22,16 @@ export default function ContactPage() {
           <p className="eyebrow dark">LANDER RECORDS</p>
           <h2>Vamos falar sobre o seu projeto.</h2>
           <div className="contactLines">
-            <div><span>E-mail</span><strong>contato@landerrecords.com</strong></div>
-            <div><span>Localização</span><strong>Governador Valadares · MG</strong></div>
+            <div><span>E-mail</span><strong>{siteContent.contact.email}</strong></div>
+            <div><span>Localização</span><strong>{siteContent.contact.location}</strong></div>
             <div className="contactSocialRow">
               <span>Redes</span>
               <strong className="contactSocialIcons" aria-label="Redes sociais">
-                <a href="#" aria-label="Instagram" title="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.6" r="1"/></svg></a>
-                <a href="#" aria-label="YouTube" title="YouTube"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9l5 3-5 3z"/></svg></a>
-                <a href="#" aria-label="TikTok" title="TikTok"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3v11.2a4.6 4.6 0 1 1-3.8-4.53v3.1a1.7 1.7 0 1 0 .8 1.43V3h3c.35 2 1.55 3.45 3.5 4v3.05A7.5 7.5 0 0 1 15 8.7V3z"/></svg></a>
+                {contactSocials.map(([label, href, icon]) => href ? (
+                  <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label} title={label}>{icon}</a>
+                ) : (
+                  <span key={label} className="contactSocialDisabled" aria-label={`${label} ainda não configurado`} title={`${label} ainda não configurado`}>{icon}</span>
+                ))}
               </strong>
             </div>
           </div>
