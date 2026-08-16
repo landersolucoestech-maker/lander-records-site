@@ -3,6 +3,7 @@ import "./globals.css";
 import "./architecture.css";
 import "./home-extra.css";
 import "./home-artist-card.css";
+import "./artists-grid-image.css";
 import "./refinements.css";
 import "./content-completion.css";
 import "./artist-profile.css";
