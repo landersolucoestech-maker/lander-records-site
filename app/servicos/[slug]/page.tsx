@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Footer, Header } from "../../components/SiteChrome";
 import { services } from "../../data/site";
@@ -75,11 +74,6 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
         ) : null}
       </section>
 
-      <section className="ctaSection compactCta" id="contato">
-        <p className="eyebrow">FALE COM A LANDER</p>
-        <h2>Vamos construir seu próximo passo.</h2>
-        <Link className="button buttonLight" href="/contato">Entrar em contato</Link>
-      </section>
       <Footer />
     </main>
   );
