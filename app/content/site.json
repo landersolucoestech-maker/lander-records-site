@@ -1,0 +1,20 @@
+{
+  "brand": {
+    "name": "Lander Records",
+    "tagline": "Gravadora, produtora musical e gestão artística 360°."
+  },
+  "contact": {
+    "email": "contato@landerrecords.com",
+    "phone": "+55 33 99856 1526",
+    "location": "Governador Valadares · MG",
+    "address": "Rua Joaquim Pereira Duarte Nº 58 · Vila Império · Governador Valadares · MG · 35050-560",
+    "hours": "Seg–Sex · 08:00–17:00"
+  },
+  "socials": {
+    "instagram": "",
+    "youtube": "",
+    "tiktok": "",
+    "spotify": "",
+    "soundcloud": ""
+  }
+}
