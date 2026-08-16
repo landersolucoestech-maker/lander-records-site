@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { artists } from "../data/site";
+import artists from "../content/artists.json";
 
 const filters = ["Todos", "DJ", "MC", "Pagodão Baiano"] as const;
-const basePath = "/lander-records-site";
 
 type Filter = (typeof filters)[number];
 
@@ -37,12 +36,12 @@ export function ArtistFilterGrid() {
           {filtered.map((artist) => (
             <Link className="artistTile" key={artist.slug} href={`/artistas/${artist.slug}`}>
               <div className="artistTileImage">
-                {artist.slug === "dj-stay" ? (
+                {artist.cardImage ? (
                   <img
                     className="artistTileRealImage"
-                    src={`${basePath}/dj-stay-home-card.webp`}
+                    src={artist.cardImage}
                     alt={artist.name}
-                    loading="eager"
+                    loading="lazy"
                     decoding="async"
                   />
                 ) : null}
