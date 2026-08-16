@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import siteContent from "../content/site.json";
 
 function InstagramIcon() {
@@ -25,7 +26,7 @@ const socials = [
   ["SoundCloud", siteContent.socials.soundcloud, <SoundCloudIcon key="soundcloud-icon" />],
 ] as const;
 
-function SocialIcon({ label, href, icon }: { label: string; href: string; icon: React.ReactNode }) {
+function SocialIcon({ label, href, icon }: { label: string; href: string; icon: ReactNode }) {
   if (!href) {
     return <span className="socialIconDisabled" aria-label={`${label} ainda não configurado`} title={`${label} ainda não configurado`}>{icon}</span>;
   }
