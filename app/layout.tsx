@@ -13,6 +13,7 @@ import "./hero-wordmarks.css";
 import "./page-transition-loader.css";
 import "./artists-grid-image.css";
 import "./site-polish.css";
+import "./home-current-polish.css";
 import "./navigation-polish.css";
 import { LazyReveal } from "./components/LazyReveal";
 import { ArtistProfileEnhancer } from "./components/ArtistProfileEnhancer";
