@@ -35,7 +35,17 @@ export function ArtistFilterGrid() {
         <div className="artistGrid">
           {filtered.map((artist) => (
             <Link className="artistTile" key={artist.slug} href={`/artistas/${artist.slug}`}>
-              <div className="artistTileImage" />
+              <div
+                className="artistTileImage"
+                style={artist.slug === "dj-stay" ? {
+                  backgroundImage: "url('/dj-stay-home-card.webp')",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  backgroundRepeat: "no-repeat",
+                } : undefined}
+                role="img"
+                aria-label={artist.name}
+              />
               <div className="artistTileBody">
                 <p>{artist.genre}</p>
                 <h2>{artist.name}</h2>
