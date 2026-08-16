@@ -1,0 +1,20 @@
+.artistTileImage {
+  position: relative;
+  overflow: hidden;
+}
+
+.artistTileRealImage {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 1;
+}
+
+.artistTile:hover .artistTileRealImage {
+  transform: scale(1.035);
+  transition: transform .35s ease;
+}
