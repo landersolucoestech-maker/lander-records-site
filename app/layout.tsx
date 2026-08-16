@@ -12,6 +12,7 @@ import "./scroll-reveal.css";
 import "./hero-wordmarks.css";
 import "./page-transition-loader.css";
 import "./artists-grid-image.css";
+import "./site-polish.css";
 import { LazyReveal } from "./components/LazyReveal";
 import { ArtistProfileEnhancer } from "./components/ArtistProfileEnhancer";
 import { PageTransitionLoader } from "./components/PageTransitionLoader";
