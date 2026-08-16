@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { artists } from "../data/site";
 
 const filters = ["Todos", "DJ", "MC", "Pagodão Baiano"] as const;
+const basePath = "/lander-records-site";
 
 type Filter = (typeof filters)[number];
 
@@ -38,7 +39,7 @@ export function ArtistFilterGrid() {
               <div
                 className="artistTileImage"
                 style={artist.slug === "dj-stay" ? {
-                  backgroundImage: "url('/dj-stay-home-card.webp')",
+                  backgroundImage: `url('${basePath}/dj-stay-home-card.webp')`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                   backgroundRepeat: "no-repeat",
