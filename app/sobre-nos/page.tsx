@@ -16,6 +16,16 @@ const pillars = [
   ["Gestão", "Agenda, contratos, operação, parceiros e indicadores acompanhados de forma integrada para sustentar crescimento."],
 ];
 
+const methodology = [
+  ["Produção musical e audiovisual", "Criação e produção de conteúdo musical e visual de alta qualidade."],
+  ["Branding e identidade artística", "Desenvolvimento e fortalecimento da marca pessoal do artista."],
+  ["Marketing e lançamentos digitais", "Estratégias de divulgação e promoção em plataformas digitais."],
+  ["Planejamento de carreira e repertório", "Definição de metas claras e seleção estratégica de conteúdo."],
+  ["Agenciamento de shows e parcerias", "Negociação e gestão de apresentações ao vivo e colaborações."],
+  ["Assessoria jurídica e estratégica", "Suporte em questões legais e tomadas de decisão importantes."],
+  ["Distribuição musical e editorial", "Gestão dos direitos autorais e distribuição em plataformas digitais."],
+];
+
 export default function AboutPage() {
   return (
     <main>
@@ -55,6 +65,28 @@ export default function AboutPage() {
           <p className="sectionLead">Conheça as frentes que formam o ecossistema e atuam de forma complementar em música, audiovisual e conteúdo.</p>
         </div>
         <GroupCompaniesTabs />
+      </section>
+      <section className="section methodologySection">
+        <div className="sectionHeading compactHeading">
+          <p className="eyebrow dark">METODOLOGIA</p>
+          <h2>Gestão Artística <span>360°.</span></h2>
+          <p className="sectionLead">Nossa atuação conecta todas as etapas do desenvolvimento artístico em um único ecossistema, da criação ao posicionamento no mercado.</p>
+        </div>
+        <div className="methodologyGrid">
+          {methodology.map(([title, description], index) => (
+            <article className="methodologyItem" key={title}>
+              <span className="methodologyNumber">{index + 1}</span>
+              <div>
+                <h3>{title}</h3>
+                <p>{description}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+        <div className="methodologySummary">
+          <strong>Estratégia integrada.</strong>
+          <p>Todos os setores trabalham conectados por metas, dados e decisões compartilhadas para construir carreiras consistentes e sustentáveis.</p>
+        </div>
       </section>
       <Footer />
     </main>
