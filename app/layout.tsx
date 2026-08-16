@@ -6,7 +6,6 @@ import "./home-artist-card.css";
 import "./refinements.css";
 import "./content-completion.css";
 import "./artist-profile.css";
-import "./interaction-fixes.css";
 import "./ecosystem-refresh.css";
 import "./scroll-reveal.css";
 import "./hero-wordmarks.css";
