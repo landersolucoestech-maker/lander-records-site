@@ -110,7 +110,7 @@ async function hydrateArtists(baseArtists: Array<typeof artists.$inferSelect>): 
     db.select().from(mediaAssets).where(eq(mediaAssets.status, "active")),
     db.select({ artistId: artistRoleRelations.artistId, name: artistRoles.name }).from(artistRoleRelations).innerJoin(artistRoles, eq(artistRoleRelations.roleId, artistRoles.id)).where(and(inArray(artistRoleRelations.artistId, ids), eq(artistRoles.active, true))).orderBy(asc(artistRoleRelations.position)),
     db.select({ artistId: artistGenreRelations.artistId, name: musicGenres.name }).from(artistGenreRelations).innerJoin(musicGenres, eq(artistGenreRelations.genreId, musicGenres.id)).where(and(inArray(artistGenreRelations.artistId, ids), eq(musicGenres.active, true))).orderBy(asc(artistGenreRelations.position)),
-    db.select().from(artistMetrics).where(inArray(artistMetrics.artistId, ids)),
+    db.select().from(artistMetrics).where(and(inArray(artistMetrics.artistId, ids), eq(artistMetrics.source, "soundcharts"))),
     db.select().from(artistProfiles).where(inArray(artistProfiles.artistId, ids)),
     db.select({ artistId: artistPublicationPlacements.artistId, key: artistPublicationDestinations.key }).from(artistPublicationPlacements).innerJoin(artistPublicationDestinations, eq(artistPublicationPlacements.destinationId, artistPublicationDestinations.id)).where(and(inArray(artistPublicationPlacements.artistId, ids), eq(artistPublicationPlacements.enabled, true), eq(artistPublicationDestinations.active, true))).orderBy(asc(artistPublicationDestinations.position)),
   ]);
