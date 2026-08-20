@@ -37,16 +37,13 @@ function SocialIcon({ label, href, icon }: { label: string; href: string; icon: 
 }
 
 export async function Header() {
-  const { settings, logoUrl, navigation } = await getSiteChrome();
+  const { settings, navigation } = await getSiteChrome();
   const primary = navigation.filter((item) => item.menuKey === "primary" && !item.parentId);
 
   return (
     <header className="siteHeader">
       <Link className="brand" href="/" aria-label={settings.brandName}>
-        {logoUrl ? <img src={logoUrl} alt={settings.brandName} style={{ maxWidth: 170, maxHeight: 46, width: "auto", height: "auto" }} /> : <>
-          <span className="brandWing">LANDER</span>
-          <span className="brandRecords">RECORDS</span>
-        </>}
+        <img src="/lander-records-brand.svg" alt={settings.brandName} style={{ maxWidth: 170, maxHeight: 46, width: "auto", height: "auto" }} />
       </Link>
 
       <nav className="desktopNav" aria-label="Navegação principal">
@@ -68,19 +65,21 @@ export async function Header() {
 }
 
 export async function Footer() {
-  const { settings, logoUrl, navigation, socials } = await getSiteChrome();
+  const { settings, navigation, socials } = await getSiteChrome();
   const footerLinks = navigation.filter((item) => item.menuKey === "footer" && !item.parentId);
 
   return (
     <footer className="siteFooter">
       <div className="footerMain">
         <div className="footerBrandColumn">
-          <Link className="footerBrand" href="/" aria-label={settings.brandName}>{logoUrl ? <img src={logoUrl} alt={settings.brandName} style={{ maxWidth: 220, maxHeight: 70, width: "auto", height: "auto" }} /> : <><span className="footerBrandName">LANDER</span><span className="footerBrandRecords">RECORDS</span></>}</Link>
+          <Link className="footerBrand" href="/" aria-label={settings.brandName}><img src="/lander-records-brand.svg" alt={settings.brandName} style={{ maxWidth: 220, maxHeight: 70, width: "auto", height: "auto" }} /></Link>
           <p>Entre em contato com a gente e vamos fazer o seu projeto acontecer. Contato para parcerias, shows, publicidades ou criar algo novo.</p>
         </div>
         <div className="footerColumn">
           <h3>Mapa do site</h3>
           {footerLinks.map((item) => <SiteLink key={item.id} href={item.url} newTab={item.newTab}>› {item.label}</SiteLink>)}
+          <Link href="/politica-de-privacidade">› Política de Privacidade</Link>
+          <Link href="/termos-e-condicoes">› Termos e Condições</Link>
         </div>
         <div className="footerColumn footerContact">
           <h3>Contato</h3>
