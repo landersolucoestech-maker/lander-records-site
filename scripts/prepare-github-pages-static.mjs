@@ -83,18 +83,18 @@ await fs.writeFile(aboutPath, about);
 
 const artistPath = path.join(siteDir, "app/artistas/[slug]/page.tsx");
 let artistPage = await fs.readFile(artistPath, "utf8");
-const artistFooterMarker = `      <Footer />`;
-const artistBookingBanner = `      <Link className="artistBookingBanner" href="/contato" aria-label="Agende seu show com a Lander Records">\n        <span className="artistBookingBannerCopy">\n          <span>AGENDE SEU SHOW</span>\n          <strong>ENTRE EM CONTATO<br />COM A GENTE</strong>\n        </span>\n        <span className="artistBookingBannerCta">SAIBA MAIS <b aria-hidden="true">→</b></span>\n        <span className="artistBookingBannerBrand">LANDER <small>RECORDS</small></span>\n      </Link>\n`;
+const socialFrameMarker = `          <div className="sidebarBlock"><p className="eyebrow dark">REDES E PLATAFORMAS</p>{artist.socials.map((social) => <div className="socialMetric" key={social}><span>{social}</span><strong>Sincronização automática</strong></div>)}</div>`;
+const djStayPoster = `\n          {artist.slug === "dj-stay" ? (\n            <Link className="artistPromoPoster" href="/contato" aria-label="Contrate DJ Stay">\n              <img src={djStayBanner} alt="Contrate DJ Stay" />\n            </Link>\n          ) : null}`;
 
-if (!artistPage.includes(artistFooterMarker)) {
-  throw new Error("Could not locate the footer marker on the static Artist detail snapshot.");
+if (!artistPage.includes(socialFrameMarker)) {
+  throw new Error("Could not locate the artist social/platform frame in the static Artist detail snapshot.");
 }
-if (!artistPage.includes('className="artistBookingBanner"')) {
-  artistPage = artistPage.replace(artistFooterMarker, artistBookingBanner + artistFooterMarker);
+if (!artistPage.includes('className="artistPromoPoster"')) {
+  artistPage = artistPage.replace(socialFrameMarker, socialFrameMarker + djStayPoster);
 }
-if (!artistPage.includes('className="artistBookingBanner"')) {
-  throw new Error("Artist booking banner was not inserted into the static Artist detail snapshot.");
+if (!artistPage.includes('className="artistPromoPoster"') || artistPage.includes('className="artistBookingBanner"')) {
+  throw new Error("DJ Stay poster placement below the social frame was not prepared correctly.");
 }
 await fs.writeFile(artistPath, artistPage);
 
-console.log("GitHub Pages static public snapshot prepared with Home banner, About ordering, legal static compatibility, and Artist booking CTA.");
+console.log("GitHub Pages static public snapshot prepared with Home banner, About ordering, legal static compatibility, and the DJ Stay poster directly below the artist social frame.");
