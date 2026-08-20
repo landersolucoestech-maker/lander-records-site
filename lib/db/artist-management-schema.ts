@@ -69,6 +69,7 @@ export const artistMetrics = pgTable("artist_metrics", {
   artistId: uuid("artist_id").notNull().references(() => artists.id, { onDelete: "cascade" }),
   platform: varchar("platform", { length: 80 }).notNull(),
   value: bigint("value", { mode: "number" }).default(0).notNull(),
+  source: varchar("source", { length: 40 }).default("legacy").notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 }, (table) => ({
   pk: primaryKey({ columns: [table.artistId, table.platform] }),
