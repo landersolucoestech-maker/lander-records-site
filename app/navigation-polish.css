@@ -1,3 +1,11 @@
+.siteHeader {
+  padding-inline: clamp(24px, 4.5vw, 72px);
+}
+
+.siteHeader .brand img {
+  max-height: 64px !important;
+}
+
 .headerActions {
   display: flex;
   align-items: center;
@@ -123,6 +131,7 @@
 }
 
 @media (max-width: 620px) {
+  .siteHeader { padding: 0 18px; }
   .mobileNav summary span { display: none; }
   .mobileNav summary { padding: 0 11px; }
   .headerActions { gap: 8px; }
