@@ -23,6 +23,17 @@ export type AdminSession = {
   sessionId: string;
 };
 
+const AUTH_DISABLED_SESSION: AdminSession = {
+  sessionId: "authentication-disabled",
+  user: {
+    id: "00000000-0000-0000-0000-000000000000",
+    email: "",
+    name: "Lander CMS",
+    role: "owner",
+    mustChangePassword: false,
+  },
+};
+
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
@@ -31,37 +42,9 @@ function roleLevel(role: AdminRole) {
   return { viewer: 1, editor: 2, admin: 3, owner: 4 }[role];
 }
 
-async function getAuthenticationDisabledSession(): Promise<AdminSession> {
-  const rows = await getDb()
-    .select({
-      id: adminUsers.id,
-      email: adminUsers.email,
-      name: adminUsers.name,
-    })
-    .from(adminUsers)
-    .where(eq(adminUsers.isActive, true))
-    .limit(1);
-
-  const user = rows[0];
-  if (!user) {
-    throw new Error("A autenticação do CMS está desativada, mas não existe nenhum usuário administrativo ativo para servir como identidade de auditoria.");
-  }
-
-  return {
-    sessionId: "authentication-disabled",
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name || "Lander CMS",
-      role: "owner",
-      mustChangePassword: false,
-    },
-  };
-}
-
 export async function getAdminSession(): Promise<AdminSession | null> {
   if (!AUTHENTICATION_ENABLED) {
-    return getAuthenticationDisabledSession();
+    return AUTH_DISABLED_SESSION;
   }
 
   const cookieStore = await cookies();
@@ -139,6 +122,8 @@ export async function createAdminSession(userId: string) {
 }
 
 export async function destroyAdminSession() {
+  if (!AUTHENTICATION_ENABLED) return;
+
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
 
@@ -176,7 +161,7 @@ export async function audit(
 ) {
   const db = getDb();
   await db.insert(auditLogs).values({
-    actorUserId: actorUserId || null,
+    actorUserId: AUTHENTICATION_ENABLED ? actorUserId || null : null,
     action,
     entityType,
     entityId: entityId || null,
