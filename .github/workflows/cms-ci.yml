@@ -1,10 +1,6 @@
 name: CMS Foundation CI
 
 on:
-  push:
-    branches:
-      - cms-backoffice-foundation
-      - dev
   pull_request:
     branches:
       - dev
@@ -34,7 +30,6 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/lander_records_test
       NEXT_PUBLIC_SITE_URL: http://localhost:3000
       CONTACT_IP_HASH_SALT: ci-contact-ip-salt-not-for-production
-      AUTH_SECRET: ci-auth-secret-not-for-production
       NODE_ENV: test
 
     steps:
@@ -43,19 +38,14 @@ jobs:
         with:
           node-version: 20
           cache: npm
-
       - name: Install dependencies
         run: npm install
-
-      - name: Apply CMS migration
+      - name: Apply CMS migrations
         run: npm run db:migrate
-
       - name: Integration checks
         run: npm run test:integration
-
       - name: Typecheck
         run: npm run typecheck
-
       - name: Build
         env:
           NODE_ENV: production
