@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Footer, Header } from "./components/SiteChrome";
-import { getFeaturedReleases, getPageContent, getPublishedArtists, getPublishedPosts } from "../lib/content";
+import { getPageContent, getPublishedArtists, getPublishedPosts } from "../lib/content";
+import { getCachedSpotifyReleases, getLanderRecordsSocialMetrics } from "../lib/integrations/sync";
 import { buildMetadata } from "../lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -37,11 +38,12 @@ function newsBackground(image: string) {
 }
 
 export default async function Home() {
-  const [content, featuredArtists, featuredPosts, featuredReleases] = await Promise.all([
+  const [content, featuredArtists, featuredPosts, spotifyReleases, socialMetrics] = await Promise.all([
     getPageContent("home"),
     getPublishedArtists(true),
     getPublishedPosts(true),
-    getFeaturedReleases(),
+    getCachedSpotifyReleases(),
+    getLanderRecordsSocialMetrics(),
   ]);
 
   if (!content) throw new Error("The home page has not been seeded in the CMS.");
@@ -52,6 +54,8 @@ export default async function Home() {
   const artistsSection = sectionByKey(content, "artists");
   const releasesSection = sectionByKey(content, "releases");
   const newsSection = sectionByKey(content, "news");
+  const instagramFollowers = socialMetrics["instagram:followers"];
+  const youtubeSubscribers = socialMetrics["youtube:subscribers"];
 
   return (
     <main className="homeV2">
@@ -83,8 +87,8 @@ export default async function Home() {
               {bodyParagraphs(intro.body).map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
               {intro.items[0]?.url ? <Link href={intro.items[0].url}>{intro.items[0].label || intro.items[0].title} →</Link> : null}
               <div className="homeSocialMetrics homeSocialMetricsInside" aria-label="Números das redes sociais da Lander Records">
-                <article className="socialMetricCard socialMetricInstagram"><div className="socialMetricTop"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.6" r="1"/></svg><span>Instagram</span></div><strong data-social-metric="instagram-followers">—</strong><p>seguidores</p></article>
-                <article className="socialMetricCard socialMetricYoutube"><div className="socialMetricTop"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9l5 3-5 3z"/></svg><span>YouTube</span></div><strong data-social-metric="youtube-subscribers">—</strong><p>inscritos</p></article>
+                <article className="socialMetricCard socialMetricInstagram"><div className="socialMetricTop"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.6" r="1"/></svg><span>Instagram</span></div><strong>{typeof instagramFollowers === "number" ? instagramFollowers.toLocaleString("pt-BR") : "—"}</strong><p>seguidores</p></article>
+                <article className="socialMetricCard socialMetricYoutube"><div className="socialMetricTop"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9l5 3-5 3z"/></svg><span>YouTube</span></div><strong>{typeof youtubeSubscribers === "number" ? youtubeSubscribers.toLocaleString("pt-BR") : "—"}</strong><p>inscritos</p></article>
               </div>
             </div>
           </div>
@@ -131,17 +135,9 @@ export default async function Home() {
               {releasesSection.items[0]?.url ? <a href={releasesSection.items[0].url} target="_blank" rel="noreferrer">{releasesSection.items[0].label} →</a> : null}
             </div>
             <div className="releaseGrid">
-              {featuredReleases.slice(0, 5).map(({ release, coverUrl }, index) => (
-                <a
-                  className={`releaseCard ${index === 0 ? "releaseFeatured" : ""}`}
-                  href={release.platformUrl || "#"}
-                  target={release.platformUrl ? "_blank" : undefined}
-                  rel={release.platformUrl ? "noreferrer" : undefined}
-                  key={release.id}
-                >
-                  <div className="releaseCover" style={coverUrl ? { backgroundImage: `url(${coverUrl})` } : undefined}>
-                    <span>{release.platform}</span>
-                  </div>
+              {spotifyReleases.map((release, index) => (
+                <a className={`releaseCard ${index === 0 ? "releaseFeatured" : ""}`} href={release.spotifyUrl} target="_blank" rel="noreferrer" key={release.albumId}>
+                  <div className="releaseCover" style={release.coverUrl ? { backgroundImage: `url(${release.coverUrl})` } : undefined}><span>Spotify</span></div>
                   <div><strong>{release.title}</strong><p>{release.artistName}</p></div>
                 </a>
               ))}
@@ -149,39 +145,17 @@ export default async function Home() {
           </section>
         ) : null}
 
-        <img
-          src="/lander-records-anuncie-banner.webp"
-          alt="Anuncie com a Lander Records"
-          width={1280}
-          height={426}
-          style={{ display: "block", width: "100%", height: "auto" }}
-        />
+        <img src="/lander-records-anuncie-banner.webp" alt="Anuncie com a Lander Records" width={1280} height={426} style={{ display: "block", width: "100%", height: "auto" }} />
 
         {newsSection ? (
           <section className="homeBlock">
             <div className="homeBlockHeader">
-              <div>
-                <p className="homePortalLabel">{newsSection.eyebrow}</p>
-                <h2 className="homeEditorialTitle">{editorialTitle(newsSection.title)}</h2>
-              </div>
+              <div><p className="homePortalLabel">{newsSection.eyebrow}</p><h2 className="homeEditorialTitle">{editorialTitle(newsSection.title)}</h2></div>
               <Link href="/noticias">Ver todas as notícias →</Link>
             </div>
             <div className="homeNewsEditorial">
-              {featuredPosts[0] ? (
-                <Link className="homeNewsLead" href={`/noticias/${featuredPosts[0].slug}`} style={newsBackground(featuredPosts[0].coverImage)}>
-                  <span>{featuredPosts[0].category?.name || "Notícia"}</span>
-                  <strong>{featuredPosts[0].title}</strong>
-                  <small>{featuredPosts[0].publishedAt ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(featuredPosts[0].publishedAt) : ""}</small>
-                </Link>
-              ) : null}
-              <div className="homeNewsSide">
-                {featuredPosts.slice(1, 3).map((post) => (
-                  <Link href={`/noticias/${post.slug}`} key={post.id} style={newsBackground(post.coverImage)}>
-                    <span>{post.category?.name || "Notícia"}</span>
-                    <strong>{post.title}</strong>
-                  </Link>
-                ))}
-              </div>
+              {featuredPosts[0] ? <Link className="homeNewsLead" href={`/noticias/${featuredPosts[0].slug}`} style={newsBackground(featuredPosts[0].coverImage)}><span>{featuredPosts[0].category?.name || "Notícia"}</span><strong>{featuredPosts[0].title}</strong><small>{featuredPosts[0].publishedAt ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(featuredPosts[0].publishedAt) : ""}</small></Link> : null}
+              <div className="homeNewsSide">{featuredPosts.slice(1, 3).map((post) => <Link href={`/noticias/${post.slug}`} key={post.id} style={newsBackground(post.coverImage)}><span>{post.category?.name || "Notícia"}</span><strong>{post.title}</strong></Link>)}</div>
             </div>
           </section>
         ) : null}
