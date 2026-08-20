@@ -1,7 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { AUTHENTICATION_ENABLED } from "./lib/auth-config";
+
 const SESSION_COOKIE = "lander_admin_session";
 
 export function middleware(request: NextRequest) {
+  if (!AUTHENTICATION_ENABLED) return NextResponse.next();
+
   const pathname = request.nextUrl.pathname;
   const isAdminApi = pathname.startsWith("/api/admin");
   const isProtectedAdmin =
