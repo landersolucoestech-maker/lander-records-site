@@ -57,7 +57,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
       : artist.eyebrow || artist.categories.map((category) => category.name).join(" · ");
   const metrics = Object.entries(artist.metrics).filter(([, value]) => value > 0);
   const bookingHref = `/contato?assunto=contratacao-de-artista&artista=${encodeURIComponent(artist.name)}`;
-  const promoImage = artist.slug === "dj-stay" ? (artist.heroImage || artist.cardImage) : "";
+  const promoImage = artist.slug === "dj-stay" ? "/dj-stay-promo.webp" : "";
 
   return (
     <main>
