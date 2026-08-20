@@ -19,13 +19,14 @@ CREATE TABLE IF NOT EXISTS page_section_bindings (
 );
 
 INSERT INTO section_definitions (key, name, type, description, active)
-SELECT DISTINCT
+SELECT DISTINCT ON (section_key)
   section_key,
   initcap(replace(section_key, '_', ' ')),
   type,
   'Seção cadastrada no catálogo do CMS e vinculável às páginas públicas.',
   true
 FROM page_sections
+ORDER BY section_key, created_at ASC, id ASC
 ON CONFLICT (key) DO UPDATE SET type = EXCLUDED.type, active = true, updated_at = now();
 
 INSERT INTO page_section_bindings (page_section_id, definition_id)
