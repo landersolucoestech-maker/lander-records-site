@@ -14,6 +14,14 @@ function embedUrl(type: string, url: string) {
   return url;
 }
 
+const metricLabels: Record<string, string> = {
+  instagram: "Instagram",
+  youtube: "YouTube",
+  tiktok: "TikTok",
+  soundcloud: "SoundCloud",
+  spotify: "Spotify",
+};
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const artist = await getPublishedArtistBySlug(slug);
@@ -35,7 +43,12 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
     notFound();
   }
 
-  const genre = artist.eyebrow || artist.categories.map((category) => category.name).join(" · ");
+  const identityLine = artist.genres.length
+    ? artist.genres.join(" · ")
+    : artist.roles.length
+      ? artist.roles.join(" · ")
+      : artist.eyebrow || artist.categories.map((category) => category.name).join(" · ");
+  const metrics = Object.entries(artist.metrics).filter(([, value]) => value > 0);
 
   return (
     <main>
@@ -49,11 +62,11 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
         }}
       >
         <div className="artistProfileOverlay">
-          <p className="eyebrow">{genre}</p>
+          <p className="eyebrow">{identityLine}</p>
           <h1>{artist.name}</h1>
           <div className="artistHeroActions">
             {artist.embeds.length ? <a className="button buttonPrimary" href="#midia">Ouvir agora</a> : null}
-            <Link className="button buttonGhost" href={`/contato?assunto=contratacao-de-artista&artista=${encodeURIComponent(artist.name)}`}>Contratar</Link>
+            <Link className="button buttonGhost" href={`/contato?assunto=contratacao-de-artista&artista=${encodeURIComponent(artist.name)}`}>{artist.profile.hireButtonLabel}</Link>
           </div>
         </div>
       </section>
@@ -82,7 +95,17 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
         </article>
 
         <aside className="artistSidebar">
-          <div className="sidebarBlock"><p className="eyebrow dark">CONTRATAÇÃO</p><Link className="button buttonPrimary" href={`/contato?assunto=contratacao-de-artista&artista=${encodeURIComponent(artist.name)}`}>Quero contratar</Link></div>
+          <div className="sidebarBlock">
+            <p className="eyebrow dark">{artist.profile.hireTitle.toUpperCase()}</p>
+            {artist.profile.hireText ? <p>{artist.profile.hireText}</p> : null}
+            <Link className="button buttonPrimary" href={`/contato?assunto=contratacao-de-artista&artista=${encodeURIComponent(artist.name)}`}>{artist.profile.hireButtonLabel}</Link>
+          </div>
+          {metrics.length ? (
+            <div className="sidebarBlock">
+              <p className="eyebrow dark">MÉTRICAS</p>
+              <div className="artistPlatformLinks">{metrics.map(([platform, value]) => <div key={platform}><strong>{metricLabels[platform] || platform}</strong><i>{value.toLocaleString("pt-BR")}</i></div>)}</div>
+            </div>
+          ) : null}
           {artist.links.length ? (
             <div className="sidebarBlock">
               <p className="eyebrow dark">REDES E PLATAFORMAS</p>
@@ -104,6 +127,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
             url: absoluteUrl(`/artistas/${artist.slug}`),
             image: artist.heroImage || artist.cardImage || undefined,
             description: artist.shortBio || artist.biography,
+            genre: artist.genres,
             sameAs: artist.links.map((link) => link.url),
           }),
         }}
