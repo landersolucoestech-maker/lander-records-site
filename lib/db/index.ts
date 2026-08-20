@@ -3,8 +3,9 @@ import postgres from "postgres";
 import * as coreSchema from "./schema";
 import * as artistManagementSchema from "./artist-management-schema";
 import * as newsManagementSchema from "./news-management-schema";
+import * as pageManagementSchema from "./page-management-schema";
 
-const schema = { ...coreSchema, ...artistManagementSchema, ...newsManagementSchema };
+const schema = { ...coreSchema, ...artistManagementSchema, ...newsManagementSchema, ...pageManagementSchema };
 
 let client: ReturnType<typeof postgres> | null = null;
 type Database = ReturnType<typeof drizzle<typeof schema>>;
