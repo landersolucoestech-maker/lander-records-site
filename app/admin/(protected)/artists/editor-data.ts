@@ -40,7 +40,7 @@ export async function loadArtistEditor(id: string) {
     db.select().from(artistRoleRelations).where(eq(artistRoleRelations.artistId, id)).orderBy(asc(artistRoleRelations.position)),
     db.select().from(artistGenreRelations).where(eq(artistGenreRelations.artistId, id)).orderBy(asc(artistGenreRelations.position)),
     db.select().from(artistPublicationPlacements).where(and(eq(artistPublicationPlacements.artistId, id), eq(artistPublicationPlacements.enabled, true))),
-    db.select().from(artistMetrics).where(eq(artistMetrics.artistId, id)),
+    db.select().from(artistMetrics).where(and(eq(artistMetrics.artistId, id), eq(artistMetrics.source, "soundcharts"))),
     db.select().from(artistLinks).where(and(eq(artistLinks.artistId, id), eq(artistLinks.active, true))).orderBy(asc(artistLinks.position)),
     db.select().from(artistEmbeds).where(and(eq(artistEmbeds.artistId, id), eq(artistEmbeds.active, true))).orderBy(asc(artistEmbeds.position)),
     db.select({ id: mediaAssets.id, url: mediaAssets.url }).from(mediaAssets).where(eq(mediaAssets.status, "active")),
