@@ -2,43 +2,47 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { news } from "../data/news";
 
-const filters = ["Todos", "Bastidores", "Lançamentos", "Notícias", "Entretenimento", "Mercado"] as const;
-type Filter = (typeof filters)[number];
+type Category = { id: string; name: string; slug: string };
+type Post = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  publishedAt: string | null;
+  coverImage: string;
+  category: Category | null;
+};
 
-export function NewsFilterGrid() {
-  const [active, setActive] = useState<Filter>("Todos");
+export function NewsFilterGrid({ posts, categories, showFilters = true, showList = true }: { posts: Post[]; categories: Category[]; showFilters?: boolean; showList?: boolean }) {
+  const [active, setActive] = useState("all");
   const filtered = useMemo(
-    () => active === "Todos" ? news : news.filter((item) => item.category === active),
-    [active],
+    () => active === "all" ? posts : posts.filter((post) => post.category?.slug === active),
+    [active, posts],
   );
 
   return (
     <>
-      <div className="filterRow" role="tablist" aria-label="Filtrar notícias por categoria">
-        {filters.map((filter) => (
-          <button
-            key={filter}
-            type="button"
-            className={active === filter ? "active" : ""}
-            aria-pressed={active === filter}
-            onClick={() => setActive(filter)}
-          >
-            {filter}
+      {showFilters ? <div className="filterRow" role="tablist" aria-label="Filtrar notícias por categoria">
+        <button type="button" className={active === "all" ? "active" : ""} aria-pressed={active === "all"} onClick={() => setActive("all")}>Todos</button>
+        {categories.map((category) => (
+          <button key={category.id} type="button" className={active === category.slug ? "active" : ""} aria-pressed={active === category.slug} onClick={() => setActive(category.slug)}>
+            {category.name}
           </button>
         ))}
-      </div>
+      </div> : null}
 
-      {filtered.length > 0 ? (
+      {showList ? (filtered.length > 0 ? (
         <div className="newsGrid">
-          {filtered.map((item, index) => (
-            <Link className={`newsCard ${index === 0 ? "newsCardFeatured" : ""}`} href={`/noticias/${item.slug}`} key={item.slug}>
-              <div className="newsImage"><span>{item.category}</span></div>
+          {filtered.map((post, index) => (
+            <Link className={`newsCard ${index === 0 ? "newsCardFeatured" : ""}`} href={`/noticias/${post.slug}`} key={post.id}>
+              <div className="newsImage" style={post.coverImage ? { backgroundImage: `url(${post.coverImage})` } : undefined}>
+                {post.category ? <span>{post.category.name}</span> : null}
+              </div>
               <div className="newsCardBody">
-                <p className="newsMeta">{item.category} · {item.date}</p>
-                <h2>{item.title}</h2>
-                <p>{item.excerpt}</p>
+                <p className="newsMeta">{post.category?.name || "Notícia"} · {post.publishedAt ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(new Date(post.publishedAt)) : ""}</p>
+                <h2>{post.title}</h2>
+                <p>{post.excerpt}</p>
                 <strong>Ler matéria →</strong>
               </div>
             </Link>
@@ -47,9 +51,9 @@ export function NewsFilterGrid() {
       ) : (
         <div className="filterEmptyState">
           <strong>Nenhuma publicação nesta categoria ainda.</strong>
-          <p>Novos conteúdos aparecem aqui automaticamente quando forem publicados nessa categoria.</p>
+          <p>Novos conteúdos publicados aparecem aqui automaticamente.</p>
         </div>
-      )}
+      )) : null}
     </>
   );
 }
