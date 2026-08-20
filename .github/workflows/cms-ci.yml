@@ -1,0 +1,62 @@
+name: CMS Foundation CI
+
+on:
+  push:
+    branches:
+      - cms-backoffice-foundation
+      - dev
+  pull_request:
+    branches:
+      - dev
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: lander_records_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d lander_records_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/lander_records_test
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      CONTACT_IP_HASH_SALT: ci-contact-ip-salt-not-for-production
+      AUTH_SECRET: ci-auth-secret-not-for-production
+      NODE_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Apply CMS migration
+        run: npm run db:migrate
+
+      - name: Integration checks
+        run: npm run test:integration
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        env:
+          NODE_ENV: production
+        run: npm run build

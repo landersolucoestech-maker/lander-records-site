@@ -2,31 +2,37 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import artists from "../content/artists.json";
 
-const filters = ["Todos", "DJ", "MC", "Pagodão Baiano"] as const;
+type Category = { id: string; name: string; slug: string };
+type Artist = {
+  id: string;
+  slug: string;
+  name: string;
+  eyebrow: string;
+  cardImage: string;
+  categories: Array<{ id: string; name: string; slug: string; isPrimary: boolean }>;
+};
 
-type Filter = (typeof filters)[number];
-
-export function ArtistFilterGrid() {
-  const [active, setActive] = useState<Filter>("Todos");
+export function ArtistFilterGrid({ artists, categories }: { artists: Artist[]; categories: Category[] }) {
+  const [active, setActive] = useState("all");
   const filtered = useMemo(
-    () => active === "Todos" ? artists : artists.filter((artist) => artist.category === active),
-    [active],
+    () => active === "all" ? artists : artists.filter((artist) => artist.categories.some((category) => category.slug === active)),
+    [active, artists],
   );
 
   return (
     <>
       <div className="filterRow" role="tablist" aria-label="Filtrar artistas por categoria">
-        {filters.map((filter) => (
+        <button type="button" className={active === "all" ? "active" : ""} aria-pressed={active === "all"} onClick={() => setActive("all")}>Todos</button>
+        {categories.map((category) => (
           <button
-            key={filter}
+            key={category.id}
             type="button"
-            className={active === filter ? "active" : ""}
-            aria-pressed={active === filter}
-            onClick={() => setActive(filter)}
+            className={active === category.slug ? "active" : ""}
+            aria-pressed={active === category.slug}
+            onClick={() => setActive(category.slug)}
           >
-            {filter}
+            {category.name}
           </button>
         ))}
       </div>
@@ -34,20 +40,12 @@ export function ArtistFilterGrid() {
       {filtered.length > 0 ? (
         <div className="artistGrid">
           {filtered.map((artist) => (
-            <Link className="artistTile" key={artist.slug} href={`/artistas/${artist.slug}`}>
+            <Link className="artistTile" key={artist.id} href={`/artistas/${artist.slug}`}>
               <div className="artistTileImage">
-                {artist.cardImage ? (
-                  <img
-                    className="artistTileRealImage"
-                    src={artist.cardImage}
-                    alt={artist.name}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ) : null}
+                {artist.cardImage ? <img className="artistTileRealImage" src={artist.cardImage} alt={artist.name} loading="lazy" decoding="async" /> : null}
               </div>
               <div className="artistTileBody">
-                <p>{artist.genre}</p>
+                <p>{artist.eyebrow || artist.categories.map((category) => category.name).join(" · ")}</p>
                 <h2>{artist.name}</h2>
                 <span>Ver perfil completo →</span>
               </div>
@@ -57,7 +55,7 @@ export function ArtistFilterGrid() {
       ) : (
         <div className="filterEmptyState">
           <strong>Nenhum artista nesta categoria ainda.</strong>
-          <p>Quando um novo nome for cadastrado nessa categoria, ele aparecerá aqui automaticamente.</p>
+          <p>Quando um artista publicado for associado a essa categoria, ele aparecerá aqui automaticamente.</p>
         </div>
       )}
     </>

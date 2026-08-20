@@ -14,12 +14,16 @@ import "./artists-grid-image.css";
 import "./site-polish.css";
 import "./home-current-polish.css";
 import "./navigation-polish.css";
+import "./admin/admin.css";
 import { LazyReveal } from "./components/LazyReveal";
-import { ArtistProfileEnhancer } from "./components/ArtistProfileEnhancer";
 import { PageTransitionLoader } from "./components/PageTransitionLoader";
 
 export const metadata: Metadata = {
-  title: "Lander Records",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://landerrecords.com"),
+  title: {
+    default: "Lander Records",
+    template: "%s | Lander Records",
+  },
   description: "Gravadora, produtora musical e gestão artística 360°.",
 };
 
@@ -29,7 +33,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <PageTransitionLoader />
         <LazyReveal />
-        <ArtistProfileEnhancer />
         {children}
       </body>
     </html>
