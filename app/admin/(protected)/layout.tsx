@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "../../../lib/auth";
 import { logoutAction } from "../actions";
 
+export const dynamic = "force-dynamic";
+
 const nav = [
   ["Dashboard", "/admin"],
   ["Artistas", "/admin/artists"],
