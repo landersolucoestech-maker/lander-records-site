@@ -56,6 +56,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
       ? artist.roles.join(" · ")
       : artist.eyebrow || artist.categories.map((category) => category.name).join(" · ");
   const metrics = Object.entries(artist.metrics).filter(([, value]) => value > 0);
+  const bookingHref = `/contato?assunto=contratacao-de-artista&artista=${encodeURIComponent(artist.name)}`;
 
   return (
     <main>
@@ -73,7 +74,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
           <h1>{artist.name}</h1>
           <div className="artistHeroActions">
             {artist.embeds.length ? <a className="button buttonPrimary" href="#midia">Ouvir agora</a> : null}
-            <Link className="button buttonGhost" href={`/contato?assunto=contratacao-de-artista&artista=${encodeURIComponent(artist.name)}`}>{artist.profile.hireButtonLabel}</Link>
+            <Link className="button buttonGhost" href={bookingHref}>{artist.profile.hireButtonLabel}</Link>
           </div>
         </div>
       </section>
@@ -111,7 +112,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
           <div className="sidebarBlock">
             <p className="eyebrow dark">{artist.profile.hireTitle.toUpperCase()}</p>
             {artist.profile.hireText ? <p>{artist.profile.hireText}</p> : null}
-            <Link className="button buttonPrimary" href={`/contato?assunto=contratacao-de-artista&artista=${encodeURIComponent(artist.name)}`}>{artist.profile.hireButtonLabel}</Link>
+            <Link className="button buttonPrimary" href={bookingHref}>{artist.profile.hireButtonLabel}</Link>
           </div>
           {metrics.length ? (
             <div className="sidebarBlock">
@@ -129,6 +130,15 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
           ) : null}
         </aside>
       </section>
+
+      <Link className="artistBookingBanner" href={bookingHref} aria-label={`Agende seu show com ${artist.name}`}>
+        <span className="artistBookingBannerCopy">
+          <span>AGENDE SEU SHOW</span>
+          <strong>ENTRE EM CONTATO<br />COM A GENTE</strong>
+        </span>
+        <span className="artistBookingBannerCta">SAIBA MAIS <b aria-hidden="true">→</b></span>
+        <span className="artistBookingBannerBrand">LANDER <small>RECORDS</small></span>
+      </Link>
 
       <script
         type="application/ld+json"
