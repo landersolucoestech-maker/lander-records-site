@@ -19,7 +19,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
   return (
     <main className="adminAuthPage">
       <section className="adminAuthCard">
-        <div className="adminWordmark">LANDER <span>CMS</span></div>
+        <div className="adminWordmark">LANDER <span>PORTAL</span></div>
         <p className="adminEyebrow">PAINEL ADMINISTRATIVO</p>
         <h1>Acesso restrito</h1>
         <p>Gerencie o conteúdo público da Lander Records.</p>
