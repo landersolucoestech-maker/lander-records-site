@@ -11,6 +11,7 @@ export async function generateMetadata() {
     title: content?.page.seoTitle || content?.page.title,
     description: content?.page.seoDescription || undefined,
     canonical: content?.page.canonicalUrl || undefined,
+    image: content?.ogImageUrl || undefined,
   });
 }
 
@@ -21,22 +22,26 @@ export default async function NewsPage() {
     getPageContent("news"),
   ]);
   const hero = content?.sections.find((section) => section.sectionKey === "hero");
+  const categoriesSection = content?.sections.find((section) => section.sectionKey === "news_categories");
+  const listSection = content?.sections.find((section) => section.sectionKey === "news_list");
 
   return (
     <main>
       <Header />
-      <section className="pageHero portalHero">
+      {hero ? <section className="pageHero portalHero">
         <span className="portalWord" aria-hidden="true">PORTAL</span>
-        <p className="eyebrow">{hero?.eyebrow || "LANDER RECORDS"}</p>
-        <h1>{hero?.title || content?.page.title || ""}</h1>
-        {hero?.subtitle ? <p>{hero.subtitle}</p> : null}
-      </section>
-      <section className="section newsListingSection">
+        <p className="eyebrow">{hero.eyebrow}</p>
+        <h1>{hero.title}</h1>
+        {hero.subtitle ? <p>{hero.subtitle}</p> : null}
+      </section> : null}
+      {categoriesSection || listSection ? <section className="section newsListingSection">
         <NewsFilterGrid
           posts={posts.map((post) => ({ ...post, publishedAt: post.publishedAt?.toISOString() ?? null }))}
           categories={categories}
+          showFilters={Boolean(categoriesSection)}
+          showList={Boolean(listSection)}
         />
-      </section>
+      </section> : null}
       <Footer />
     </main>
   );
