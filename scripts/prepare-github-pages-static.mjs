@@ -71,4 +71,20 @@ if (about.indexOf('className="section methodologySection"') > about.indexOf('cla
 }
 await fs.writeFile(aboutPath, about);
 
-console.log("GitHub Pages static public snapshot prepared with supplied banner and About page ordering.");
+const artistPath = path.join(siteDir, "app/artistas/[slug]/page.tsx");
+let artistPage = await fs.readFile(artistPath, "utf8");
+const artistFooterMarker = `      <Footer />`;
+const artistBookingBanner = `      <Link className="artistBookingBanner" href="/contato" aria-label="Agende seu show com a Lander Records">\n        <span className="artistBookingBannerCopy">\n          <span>AGENDE SEU SHOW</span>\n          <strong>ENTRE EM CONTATO<br />COM A GENTE</strong>\n        </span>\n        <span className="artistBookingBannerCta">SAIBA MAIS <b aria-hidden="true">→</b></span>\n        <span className="artistBookingBannerBrand">LANDER <small>RECORDS</small></span>\n      </Link>\n`;
+
+if (!artistPage.includes(artistFooterMarker)) {
+  throw new Error("Could not locate the footer marker on the static Artist detail snapshot.");
+}
+if (!artistPage.includes('className="artistBookingBanner"')) {
+  artistPage = artistPage.replace(artistFooterMarker, artistBookingBanner + artistFooterMarker);
+}
+if (!artistPage.includes('className="artistBookingBanner"')) {
+  throw new Error("Artist booking banner was not inserted into the static Artist detail snapshot.");
+}
+await fs.writeFile(artistPath, artistPage);
+
+console.log("GitHub Pages static public snapshot prepared with supplied Home banner, About ordering, and Artist booking CTA.");
