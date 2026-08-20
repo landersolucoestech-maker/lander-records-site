@@ -112,17 +112,98 @@ try {
   const updatedArtist = await sql`SELECT name FROM artists WHERE id=${artist[0].id}`;
   assert.equal(updatedArtist[0].name, "Integration Artist Updated", "Artist edits must persist");
 
+  const seededPostProfiles = await sql`SELECT count(*)::int AS count FROM post_profiles`;
+  const seededPostCount = await sql`SELECT count(*)::int AS count FROM posts`;
+  assert.equal(seededPostProfiles[0].count, seededPostCount[0].count, "Existing news must receive publication profiles");
+
   const postCategory = await sql`SELECT id FROM post_categories WHERE active=true ORDER BY position LIMIT 1`;
+  const seededMedia = await sql`SELECT id FROM media_assets WHERE status='active' ORDER BY created_at LIMIT 1`;
+  assert.equal(seededMedia.length, 1, "A seeded media asset is required for news image reuse test");
+
   const post = await sql`
-    INSERT INTO posts (title, slug, excerpt, content_markdown, author_name, category_id, status)
-    VALUES ('Integration Post', ${`integration-post-${suffix}`}, 'Resumo', 'Conteúdo', 'CI', ${postCategory[0].id}, 'draft')
-    RETURNING id
+    INSERT INTO posts (
+      title, slug, excerpt, content_markdown, author_name, category_id, status,
+      cover_media_id, og_media_id, featured_on_home, home_position
+    ) VALUES (
+      'Integration Post', ${`integration-post-${suffix}`}, 'Resumo', 'Conteúdo completo', 'CI', ${postCategory[0].id}, 'draft',
+      ${seededMedia[0].id}, ${seededMedia[0].id}, true, 90
+    )
+    RETURNING id, slug, cover_media_id, og_media_id
   `;
+  assert.equal(post[0].cover_media_id, post[0].og_media_id, "News main image must also be its social/OG image by default");
+
+  await sql`
+    INSERT INTO post_profiles (post_id, author_media_id, publication_link)
+    VALUES (${post[0].id}, ${seededMedia[0].id}, ${`/noticias/${post[0].slug}`})
+  `;
+  await sql`
+    INSERT INTO post_links (post_id, platform, url) VALUES
+      (${post[0].id}, 'facebook', 'https://example.com/facebook'),
+      (${post[0].id}, 'instagram', 'https://example.com/instagram'),
+      (${post[0].id}, 'youtube', 'https://example.com/youtube'),
+      (${post[0].id}, 'tiktok', 'https://example.com/tiktok')
+  `;
+
+  const postRelations = await sql`
+    SELECT
+      p.publication_link,
+      p.author_media_id,
+      (SELECT count(*)::int FROM post_links l WHERE l.post_id=${post[0].id}) AS links
+    FROM post_profiles p WHERE p.post_id=${post[0].id}
+  `;
+  assert.equal(postRelations.length, 1, "News publication profile must persist");
+  assert.equal(postRelations[0].publication_link, `/noticias/${post[0].slug}`);
+  assert.equal(postRelations[0].author_media_id, seededMedia[0].id);
+  assert.equal(postRelations[0].links, 4, "News social links must persist separately from content");
+
   let publicPost = await sql`SELECT id FROM posts WHERE id = ${post[0].id} AND status = 'published'`;
   assert.equal(publicPost.length, 0, "Draft posts must not be public");
-  await sql`UPDATE posts SET status='published', published_at=now() WHERE id=${post[0].id}`;
-  publicPost = await sql`SELECT id FROM posts WHERE id=${post[0].id} AND status='published' AND published_at <= now()`;
+  await sql`UPDATE posts SET title='Integration Post Updated', status='published', published_at=now(), updated_at=now() WHERE id=${post[0].id}`;
+  await sql`UPDATE post_profiles SET publication_link=${`/noticias/${post[0].slug}?updated=1`}, updated_at=now() WHERE post_id=${post[0].id}`;
+  publicPost = await sql`SELECT id, title FROM posts WHERE id=${post[0].id} AND status='published' AND published_at <= now()`;
   assert.equal(publicPost.length, 1, "Published posts must be queryable");
+  assert.equal(publicPost[0].title, "Integration Post Updated", "News edits must persist");
+  const updatedPublicationProfile = await sql`SELECT publication_link FROM post_profiles WHERE post_id=${post[0].id}`;
+  assert.equal(updatedPublicationProfile[0].publication_link, `/noticias/${post[0].slug}?updated=1`, "Publication link edits must persist");
+
+  const definitions = await sql`SELECT id, key, type FROM section_definitions WHERE key IN ('hero','news_list','artist_list') AND active=true`;
+  assert.ok(definitions.length >= 3, "Permanent section definitions must exist");
+  const newsListDefinition = definitions.find((row) => row.key === "news_list");
+  assert.ok(newsListDefinition, "News list section definition must exist");
+
+  const seededBindings = await sql`
+    SELECT ps.id, ps.section_key, b.definition_id
+    FROM page_sections ps
+    JOIN page_section_bindings b ON b.page_section_id=ps.id
+    WHERE ps.section_key IN ('hero','news_list','artist_list')
+  `;
+  assert.ok(seededBindings.length >= 3, "Existing public sections must be explicitly bound to permanent definitions");
+
+  const testPage = await sql`
+    INSERT INTO pages (key, title, slug, enabled, seo_title, seo_description)
+    VALUES (${`integration-page-${suffix}`}, 'Integration Page', ${`integration-page-${suffix}`}, true, 'Integration Page', 'Integration page test')
+    RETURNING id, slug
+  `;
+  const testSection = await sql`
+    INSERT INTO page_sections (page_id, section_key, type, title, position, enabled)
+    VALUES (${testPage[0].id}, ${newsListDefinition.key}, ${newsListDefinition.type}, 'Listagem', 1, true)
+    RETURNING id
+  `;
+  await sql`
+    INSERT INTO page_section_bindings (page_section_id, definition_id)
+    VALUES (${testSection[0].id}, ${newsListDefinition.id})
+  `;
+  const boundSection = await sql`
+    SELECT p.id AS page_id, ps.id AS section_id, ps.section_key, sd.id AS definition_id, sd.key AS definition_key
+    FROM pages p
+    JOIN page_sections ps ON ps.page_id=p.id
+    JOIN page_section_bindings b ON b.page_section_id=ps.id
+    JOIN section_definitions sd ON sd.id=b.definition_id
+    WHERE p.id=${testPage[0].id}
+  `;
+  assert.equal(boundSection.length, 1, "Page must bind to a selectable permanent section definition");
+  assert.equal(boundSection[0].definition_key, "news_list");
+  assert.equal(boundSection[0].section_key, "news_list");
 
   const topic = await sql`SELECT id FROM contact_topics WHERE slug='outro' LIMIT 1`;
   const idempotencyKey = randomUUID();
@@ -139,7 +220,7 @@ try {
     VALUES ('site.contact.submitted','contact_submission',${contact[0].id},${sql.json({ contactSubmissionId: contact[0].id })})
   `;
   const outbox = await sql`SELECT id FROM integration_outbox WHERE aggregate_id=${contact[0].id}`;
-  assert.equal(outbox.length, 1, "Contact submission must create a durable outbox event");
+  assert.equal(outbox.length, 1, "Public contact submission must create a durable outbox event for the external SaaS");
 
   let duplicateRejected = false;
   try {
@@ -157,22 +238,39 @@ try {
   assert.equal(duplicateRejected, true, "Contact idempotency key must be unique");
 
   await sql`DELETE FROM artists WHERE id=${artist[0].id}`;
-  const cascaded = await sql`
+  const cascadedArtist = await sql`
     SELECT
       (SELECT count(*)::int FROM artist_profiles WHERE artist_id=${artist[0].id}) AS profiles,
       (SELECT count(*)::int FROM artist_metrics WHERE artist_id=${artist[0].id}) AS metrics,
       (SELECT count(*)::int FROM artist_publication_placements WHERE artist_id=${artist[0].id}) AS placements
   `;
-  assert.equal(cascaded[0].profiles, 0, "Artist delete must cascade profile data");
-  assert.equal(cascaded[0].metrics, 0, "Artist delete must cascade metrics");
-  assert.equal(cascaded[0].placements, 0, "Artist delete must cascade publication placements");
-
+  assert.equal(cascadedArtist[0].profiles, 0, "Artist delete must cascade profile data");
+  assert.equal(cascadedArtist[0].metrics, 0, "Artist delete must cascade metrics");
+  assert.equal(cascadedArtist[0].placements, 0, "Artist delete must cascade publication placements");
   await sql`DELETE FROM artist_categories WHERE id=${category[0].id}`;
+
   await sql`DELETE FROM posts WHERE id=${post[0].id}`;
+  const cascadedPost = await sql`
+    SELECT
+      (SELECT count(*)::int FROM post_profiles WHERE post_id=${post[0].id}) AS profiles,
+      (SELECT count(*)::int FROM post_links WHERE post_id=${post[0].id}) AS links
+  `;
+  assert.equal(cascadedPost[0].profiles, 0, "News delete must cascade publication profile");
+  assert.equal(cascadedPost[0].links, 0, "News delete must cascade social links");
+
+  await sql`DELETE FROM pages WHERE id=${testPage[0].id}`;
+  const cascadedPage = await sql`
+    SELECT
+      (SELECT count(*)::int FROM page_sections WHERE id=${testSection[0].id}) AS sections,
+      (SELECT count(*)::int FROM page_section_bindings WHERE page_section_id=${testSection[0].id}) AS bindings
+  `;
+  assert.equal(cascadedPage[0].sections, 0, "Page delete must cascade section instances");
+  assert.equal(cascadedPage[0].bindings, 0, "Page delete must cascade section bindings");
+
   await sql`DELETE FROM integration_outbox WHERE aggregate_id=${contact[0].id}`;
   await sql`DELETE FROM contact_submissions WHERE id=${contact[0].id}`;
 
-  console.log("Integration checks passed: artist model/CRUD, independent publication destinations, category filters, metrics/platform relations, post publication, contact outbox/idempotency.");
+  console.log("Integration checks passed: artist CRUD/publication destinations, news CRUD/main-image reuse, page/section registry bindings, and public contact outbox/idempotency.");
 } finally {
   await sql.end({ timeout: 5 });
 }
