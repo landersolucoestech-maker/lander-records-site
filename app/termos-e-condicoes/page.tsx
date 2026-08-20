@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Footer, Header } from "../components/SiteChrome";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Termos e Condições",
   description: "Termos e Condições de uso do site da Lander Records.",
