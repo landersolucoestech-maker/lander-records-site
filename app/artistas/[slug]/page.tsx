@@ -57,7 +57,6 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
       : artist.eyebrow || artist.categories.map((category) => category.name).join(" · ");
   const metrics = Object.entries(artist.metrics).filter(([, value]) => value > 0);
   const bookingHref = `/contato?assunto=contratacao-de-artista&artista=${encodeURIComponent(artist.name)}`;
-  const promoImage = artist.slug === "dj-stay" ? "/dj-stay-promo.webp" : "";
 
   return (
     <main>
@@ -107,6 +106,12 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
               })}
             </div>
           ) : null}
+
+          {artist.slug === "dj-stay" ? (
+            <Link className="artistMediaPromo" href={bookingHref} aria-label={`Contrate ${artist.name}`}>
+              <img src="/dj-stay-wide.webp" alt={`Contrate ${artist.name}`} width={1200} height={675} />
+            </Link>
+          ) : null}
         </article>
 
         <aside className="artistSidebar">
@@ -128,11 +133,6 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
                 {artist.links.map((link) => <a key={link.id} href={link.url} target="_blank" rel="noreferrer"><strong>{link.label || link.platform}</strong><i>↗</i></a>)}
               </div>
             </div>
-          ) : null}
-          {promoImage ? (
-            <Link className="artistPromoPoster" href={bookingHref} aria-label={`Contrate ${artist.name}`}>
-              <img src={promoImage} alt={`Contrate ${artist.name}`} />
-            </Link>
           ) : null}
         </aside>
       </section>
