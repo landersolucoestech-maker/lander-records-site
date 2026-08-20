@@ -62,6 +62,7 @@
 .embedPlaceholder { min-height: 230px; width: 100%; }
 
 .artistPromoPoster {
+  order: 999;
   display: block;
   width: 100%;
   overflow: hidden;
