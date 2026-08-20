@@ -11,7 +11,7 @@ if (!page.includes("lander-records-anuncie-banner.webp")) {
   if (!page.includes(newsMarker)) throw new Error("Home marker for banner insertion was not found.");
   page = page.replace(
     newsMarker,
-    `</div></section>\n        <section className=\"homeBlock\" aria-label=\"Publicidade Lander Records\"><img src=\"/lander-records-site/lander-records-anuncie-banner.webp\" alt=\"Anuncie com a Lander Records\" width={1280} height={426} style={{display:\"block\",width:\"100%\",maxWidth:\"100%\",height:\"auto\",objectFit:\"contain\",borderRadius:10}} /></section>\n        <section className=\"homeBlock\"><div className=\"homeBlockHeader\"><div><p className=\"homePortalLabel\">PORTAL LANDER</p>`
+    `</div></section>\n        <section aria-label=\"Publicidade Lander Records\" style={{width:\"min(1280px, calc(100vw - 28px))\",margin:\"34px 0 22px 50%\",transform:\"translateX(-50%)\"}}><img src=\"/lander-records-site/lander-records-anuncie-banner.webp\" alt=\"Anuncie com a Lander Records\" width={1280} height={426} style={{display:\"block\",width:\"100%\",height:\"auto\"}} /></section>\n        <section className=\"homeBlock\"><div className=\"homeBlockHeader\"><div><p className=\"homePortalLabel\">PORTAL LANDER</p>`
   );
 }
 await fs.writeFile(pagePath, page);
