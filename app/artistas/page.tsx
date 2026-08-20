@@ -11,6 +11,7 @@ export async function generateMetadata() {
     title: content?.page.seoTitle || content?.page.title,
     description: content?.page.seoDescription || undefined,
     canonical: content?.page.canonicalUrl || undefined,
+    image: content?.ogImageUrl || undefined,
   });
 }
 
@@ -21,19 +22,21 @@ export default async function ArtistsPage() {
     getPageContent("artists"),
   ]);
   const hero = content?.sections.find((section) => section.sectionKey === "hero");
+  const filtersSection = content?.sections.find((section) => section.sectionKey === "artist_filters");
+  const listSection = content?.sections.find((section) => section.sectionKey === "artist_list");
 
   return (
     <main>
       <Header />
-      <section className="pageHero heroWordmarkPage">
+      {hero ? <section className="pageHero heroWordmarkPage">
         <span className="heroWordmark" aria-hidden="true">ARTISTAS</span>
-        <p className="eyebrow">{hero?.eyebrow || "CASTING"}</p>
-        <h1>{hero?.title || content?.page.title || ""}</h1>
-        {hero?.subtitle ? <p>{hero.subtitle}</p> : null}
-      </section>
-      <section className="section artistListingSection">
-        <ArtistFilterGrid artists={artists} categories={categories} />
-      </section>
+        <p className="eyebrow">{hero.eyebrow}</p>
+        <h1>{hero.title}</h1>
+        {hero.subtitle ? <p>{hero.subtitle}</p> : null}
+      </section> : null}
+      {filtersSection || listSection ? <section className="section artistListingSection">
+        <ArtistFilterGrid artists={artists} categories={categories} showFilters={Boolean(filtersSection)} showList={Boolean(listSection)} />
+      </section> : null}
       <Footer />
     </main>
   );
