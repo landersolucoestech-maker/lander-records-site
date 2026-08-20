@@ -6,15 +6,10 @@ import { logoutAction } from "../actions";
 const nav = [
   ["Dashboard", "/admin"],
   ["Artistas", "/admin/artists"],
-  ["Categorias", "/admin/categories"],
   ["Notícias / Posts", "/admin/posts"],
-  ["Tags", "/admin/tags"],
-  ["Lançamentos", "/admin/releases"],
-  ["Páginas e seções", "/admin/pages"],
-  ["Navegação", "/admin/navigation"],
-  ["Mídia", "/admin/media"],
-  ["Configurações", "/admin/settings"],
-  ["Usuários", "/admin/users"],
+  ["Páginas & Seções", "/admin/pages"],
+  ["Biblioteca de mídia", "/admin/media"],
+  ["Usuários & Roles", "/admin/users"],
   ["Auditoria", "/admin/audit"],
 ] as const;
 
