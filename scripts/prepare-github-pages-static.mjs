@@ -88,36 +88,42 @@ await fs.writeFile(aboutPath, about);
 const artistPath = path.join(siteDir, "app/artistas/[slug]/page.tsx");
 let artistPage = await fs.readFile(artistPath, "utf8");
 
-// Remove any legacy sidebar promo injected by an older deploy pass.
+// Remove all previous DJ Stay promo placements so there is only one canonical location.
 artistPage = artistPage.replace(/\n\s*\{artist\.slug === "dj-stay" \? \(\n\s*<Link className="artistPromoPoster"[\s\S]*?<\/Link>\n\s*\) : null\}/g, "");
+artistPage = artistPage.replace(/\n\s*\{artist\.slug === "dj-stay" \? \(\n\s*<Link className="artistMediaPromo"[\s\S]*?<\/Link>\n\s*\) : null\}/g, "");
+artistPage = artistPage.replace(/\n\s*\{artist\.slug === "dj-stay" \? \(\n\s*<section className="artistMediaPromoSection"[\s\S]*?<\/section>\n\s*\) : null\}/g, "");
 
-const articleStart = artistPage.indexOf("        <article>");
-const articleClose = "        </article>";
-const articleEnd = artistPage.indexOf(articleClose, articleStart);
-if (articleStart < 0 || articleEnd < 0) {
-  throw new Error("Could not locate the artist article in the static Artist detail snapshot.");
+const profileSectionStart = artistPage.indexOf('<section className="section artistProfileBody">');
+const sidebarStart = artistPage.indexOf('<aside className="artistSidebar">', profileSectionStart);
+const sidebarClose = "        </aside>";
+const sidebarEnd = artistPage.indexOf(sidebarClose, sidebarStart);
+const profileSectionClose = "      </section>";
+const profileSectionEnd = artistPage.indexOf(profileSectionClose, sidebarEnd);
+const embedIndex = artistPage.indexOf('className="embedGrid"', profileSectionStart);
+
+if (profileSectionStart < 0 || sidebarStart < 0 || sidebarEnd < 0 || profileSectionEnd < 0 || embedIndex < 0) {
+  throw new Error("Could not locate the full artist media/social section in the static Artist detail snapshot.");
 }
 
-const djStayWideArtwork = `\n          {artist.slug === "dj-stay" ? (\n            <Link className="artistMediaPromo" href="/contato" aria-label="Contrate DJ Stay">\n              <img src="/lander-records-site/dj-stay-wide.webp" alt="Contrate DJ Stay" width={1200} height={675} />\n            </Link>\n          ) : null}\n`;
+const insertAt = profileSectionEnd + profileSectionClose.length;
+const djStayWideArtwork = `\n\n      {artist.slug === "dj-stay" ? (\n        <section className="artistMediaPromoSection" aria-label="Contrate DJ Stay">\n          <Link className="artistMediaPromo" href="/contato" aria-label="Contrate DJ Stay">\n            <img src="/lander-records-site/dj-stay-wide.webp" alt="Contrate DJ Stay" width={1200} height={675} />\n          </Link>\n        </section>\n      ) : null}`;
 
-if (!artistPage.includes('className="artistMediaPromo"')) {
-  artistPage = artistPage.slice(0, articleEnd) + djStayWideArtwork + artistPage.slice(articleEnd);
-}
+artistPage = artistPage.slice(0, insertAt) + djStayWideArtwork + artistPage.slice(insertAt);
 
-const mediaPromoIndex = artistPage.indexOf('className="artistMediaPromo"', articleStart);
-const embedIndex = artistPage.indexOf('className="embedGrid"', articleStart);
-const sidebarIndex = artistPage.indexOf('<aside className="artistSidebar">', articleStart);
+const mediaPromoIndex = artistPage.indexOf('className="artistMediaPromoSection"', insertAt);
+const finalSidebarEnd = artistPage.indexOf(sidebarClose, profileSectionStart);
+const finalProfileSectionEnd = artistPage.indexOf(profileSectionClose, finalSidebarEnd);
 if (
   mediaPromoIndex < 0 ||
   embedIndex < 0 ||
-  sidebarIndex < 0 ||
-  mediaPromoIndex < embedIndex ||
-  mediaPromoIndex > sidebarIndex ||
+  finalSidebarEnd < 0 ||
+  finalProfileSectionEnd < 0 ||
+  mediaPromoIndex < finalProfileSectionEnd ||
   !artistPage.includes("dj-stay-wide.webp") ||
   artistPage.includes('className="artistPromoPoster"')
 ) {
-  throw new Error("DJ Stay wide artwork was not placed immediately after the media embeds and before the sidebar.");
+  throw new Error("DJ Stay wide artwork was not placed below the complete Spotify/YouTube and social section.");
 }
 await fs.writeFile(artistPath, artistPage);
 
-console.log("GitHub Pages static public snapshot prepared with the DJ Stay wide artwork directly below the Spotify/YouTube media embeds.");
+console.log("GitHub Pages static public snapshot prepared with the DJ Stay wide artwork below Spotify, YouTube, and the full social section.");
