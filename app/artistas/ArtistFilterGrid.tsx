@@ -13,7 +13,7 @@ type Artist = {
   categories: Array<{ id: string; name: string; slug: string; isPrimary: boolean }>;
 };
 
-export function ArtistFilterGrid({ artists, categories }: { artists: Artist[]; categories: Category[] }) {
+export function ArtistFilterGrid({ artists, categories, showFilters = true, showList = true }: { artists: Artist[]; categories: Category[]; showFilters?: boolean; showList?: boolean }) {
   const [active, setActive] = useState("all");
   const filtered = useMemo(
     () => active === "all" ? artists : artists.filter((artist) => artist.categories.some((category) => category.slug === active)),
@@ -22,7 +22,7 @@ export function ArtistFilterGrid({ artists, categories }: { artists: Artist[]; c
 
   return (
     <>
-      <div className="filterRow" role="tablist" aria-label="Filtrar artistas por categoria">
+      {showFilters ? <div className="filterRow" role="tablist" aria-label="Filtrar artistas por categoria">
         <button type="button" className={active === "all" ? "active" : ""} aria-pressed={active === "all"} onClick={() => setActive("all")}>Todos</button>
         {categories.map((category) => (
           <button
@@ -35,9 +35,9 @@ export function ArtistFilterGrid({ artists, categories }: { artists: Artist[]; c
             {category.name}
           </button>
         ))}
-      </div>
+      </div> : null}
 
-      {filtered.length > 0 ? (
+      {showList ? (filtered.length > 0 ? (
         <div className="artistGrid">
           {filtered.map((artist) => (
             <Link className="artistTile" key={artist.id} href={`/artistas/${artist.slug}`}>
@@ -57,7 +57,7 @@ export function ArtistFilterGrid({ artists, categories }: { artists: Artist[]; c
           <strong>Nenhum artista nesta categoria ainda.</strong>
           <p>Quando um artista publicado for associado a essa categoria, ele aparecerá aqui automaticamente.</p>
         </div>
-      )}
+      )) : null}
     </>
   );
 }
