@@ -41,9 +41,9 @@ const bannerDestination = path.join(siteDir, "public", "lander-records-anuncie-b
 await fs.mkdir(path.dirname(bannerDestination), { recursive: true });
 await fs.copyFile(bannerSource, bannerDestination);
 
-const artistPromoSource = path.join(controlRoot, "public", "dj-stay-promo.webp");
-const artistPromoDestination = path.join(siteDir, "public", "dj-stay-promo.webp");
-await fs.copyFile(artistPromoSource, artistPromoDestination);
+const artistWideSource = path.join(controlRoot, "public", "dj-stay-wide.webp");
+const artistWideDestination = path.join(siteDir, "public", "dj-stay-wide.webp");
+await fs.copyFile(artistWideSource, artistWideDestination);
 
 const homePath = path.join(siteDir, "app/page.tsx");
 let home = await fs.readFile(homePath, "utf8");
@@ -87,18 +87,37 @@ await fs.writeFile(aboutPath, about);
 
 const artistPath = path.join(siteDir, "app/artistas/[slug]/page.tsx");
 let artistPage = await fs.readFile(artistPath, "utf8");
-const socialFrameMarker = `          <div className="sidebarBlock"><p className="eyebrow dark">REDES E PLATAFORMAS</p>{artist.socials.map((social) => <div className="socialMetric" key={social}><span>{social}</span><strong>Sincronização automática</strong></div>)}</div>`;
-const djStayPoster = `\n          {artist.slug === "dj-stay" ? (\n            <Link className="artistPromoPoster" href="/contato" aria-label="Contrate DJ Stay">\n              <img src="/lander-records-site/dj-stay-promo.webp" alt="Contrate DJ Stay" width={350} height={622} />\n            </Link>\n          ) : null}`;
 
-if (!artistPage.includes(socialFrameMarker)) {
-  throw new Error("Could not locate the artist social/platform frame in the static Artist detail snapshot.");
+// Remove any legacy sidebar promo injected by an older deploy pass.
+artistPage = artistPage.replace(/\n\s*\{artist\.slug === "dj-stay" \? \(\n\s*<Link className="artistPromoPoster"[\s\S]*?<\/Link>\n\s*\) : null\}/g, "");
+
+const articleStart = artistPage.indexOf("        <article>");
+const articleClose = "        </article>";
+const articleEnd = artistPage.indexOf(articleClose, articleStart);
+if (articleStart < 0 || articleEnd < 0) {
+  throw new Error("Could not locate the artist article in the static Artist detail snapshot.");
 }
-if (!artistPage.includes('className="artistPromoPoster"')) {
-  artistPage = artistPage.replace(socialFrameMarker, socialFrameMarker + djStayPoster);
+
+const djStayWideArtwork = `\n          {artist.slug === "dj-stay" ? (\n            <Link className="artistMediaPromo" href="/contato" aria-label="Contrate DJ Stay">\n              <img src="/lander-records-site/dj-stay-wide.webp" alt="Contrate DJ Stay" width={1200} height={675} />\n            </Link>\n          ) : null}\n`;
+
+if (!artistPage.includes('className="artistMediaPromo"')) {
+  artistPage = artistPage.slice(0, articleEnd) + djStayWideArtwork + artistPage.slice(articleEnd);
 }
-if (!artistPage.includes('className="artistPromoPoster"') || !artistPage.includes("dj-stay-promo.webp") || artistPage.includes('className="artistBookingBanner"')) {
-  throw new Error("DJ Stay poster placement or image asset was not prepared correctly.");
+
+const mediaPromoIndex = artistPage.indexOf('className="artistMediaPromo"', articleStart);
+const embedIndex = artistPage.indexOf('className="embedGrid"', articleStart);
+const sidebarIndex = artistPage.indexOf('<aside className="artistSidebar">', articleStart);
+if (
+  mediaPromoIndex < 0 ||
+  embedIndex < 0 ||
+  sidebarIndex < 0 ||
+  mediaPromoIndex < embedIndex ||
+  mediaPromoIndex > sidebarIndex ||
+  !artistPage.includes("dj-stay-wide.webp") ||
+  artistPage.includes('className="artistPromoPoster"')
+) {
+  throw new Error("DJ Stay wide artwork was not placed immediately after the media embeds and before the sidebar.");
 }
 await fs.writeFile(artistPath, artistPage);
 
-console.log("GitHub Pages static public snapshot prepared with Home banner, About ordering, legal static compatibility, and the DJ Stay promo image below the artist social frame.");
+console.log("GitHub Pages static public snapshot prepared with the DJ Stay wide artwork directly below the Spotify/YouTube media embeds.");
