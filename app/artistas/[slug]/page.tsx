@@ -106,12 +106,6 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
               })}
             </div>
           ) : null}
-
-          {artist.slug === "dj-stay" ? (
-            <Link className="artistMediaPromo" href={bookingHref} aria-label={`Contrate ${artist.name}`}>
-              <img src="/dj-stay-wide.webp" alt={`Contrate ${artist.name}`} width={1200} height={675} />
-            </Link>
-          ) : null}
         </article>
 
         <aside className="artistSidebar">
@@ -136,6 +130,14 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
           ) : null}
         </aside>
       </section>
+
+      {artist.slug === "dj-stay" ? (
+        <section className="artistMediaPromoSection" aria-label={`Contrate ${artist.name}`}>
+          <Link className="artistMediaPromo" href={bookingHref} aria-label={`Contrate ${artist.name}`}>
+            <img src="/dj-stay-wide.webp" alt={`Contrate ${artist.name}`} width={1200} height={675} />
+          </Link>
+        </section>
+      ) : null}
 
       <script
         type="application/ld+json"
