@@ -149,6 +149,14 @@ export default async function Home() {
           </section>
         ) : null}
 
+        <img
+          src="/lander-records-anuncie-banner.webp"
+          alt="Anuncie com a Lander Records"
+          width={1280}
+          height={426}
+          style={{ display: "block", width: "100%", height: "auto" }}
+        />
+
         {newsSection ? (
           <section className="homeBlock">
             <div className="homeBlockHeader">
