@@ -34,7 +34,6 @@ jobs:
 
       - name: Apply requested public-site changes
         run: |
-          cp control/public/lander-records-anuncie-banner.webp site/public/lander-records-anuncie-banner.webp
           cp control/public/lander-records-logo.webp site/public/lander-records-logo.webp
           mkdir -p site/app/politica-de-privacidade site/app/termos-e-condicoes
           cp control/app/politica-de-privacidade/page.tsx site/app/politica-de-privacidade/page.tsx
