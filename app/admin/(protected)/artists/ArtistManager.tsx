@@ -35,7 +35,6 @@ export default function ArtistManager({ artists, deleted }: { artists: ArtistSum
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
   const [category, setCategory] = useState("all");
-  const [view, setView] = useState<"table" | "list">("table");
   const [menuId, setMenuId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ArtistSummary | null>(null);
 
@@ -56,7 +55,7 @@ export default function ArtistManager({ artists, deleted }: { artists: ArtistSum
         <button className={styles.more} type="button" aria-label={`Ações de ${artist.name}`} aria-expanded={menuId === artist.id} onClick={() => setMenuId(menuId === artist.id ? null : artist.id)}>•••</button>
         {menuId === artist.id ? (
           <div className={styles.menu}>
-            <Link href={`/admin/artists/${artist.id}/view`} onClick={() => setMenuId(null)}>Visualizar</Link>
+            <Link href={`/admin/artists/${artist.id}/view`} onClick={() => setMenuId(null)}>Ver</Link>
             <Link href={`/admin/artists/${artist.id}`} onClick={() => setMenuId(null)}>Editar</Link>
             <button className={styles.danger} type="button" onClick={() => { setMenuId(null); setDeleteTarget(artist); }}>Excluir</button>
           </div>
@@ -82,38 +81,21 @@ export default function ArtistManager({ artists, deleted }: { artists: ArtistSum
             <option value="all">Todas as categorias</option>
             {categories.map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
-          <div className={styles.viewToggle} aria-label="Modo de visualização">
-            <button type="button" className={view === "table" ? styles.active : ""} onClick={() => setView("table")}>Table View</button>
-            <button type="button" className={view === "list" ? styles.active : ""} onClick={() => setView("list")}>List View</button>
-          </div>
           <span className={styles.count}>{filtered.length} de {artists.length} artistas</span>
         </div>
       </section>
 
       {!filtered.length ? (
         <div className={styles.empty}><strong>Nenhum artista encontrado.</strong>Ajuste os filtros ou cadastre um novo artista.</div>
-      ) : view === "table" ? (
-        <section className={`adminPanel ${styles.tableWrap}`}>
-          <table className="adminTable">
-            <thead><tr><th>Artista</th><th>Funções</th><th>Gêneros</th><th>Publicação</th><th>Status</th><th>Atualizado</th><th aria-label="Ações" /></tr></thead>
-            <tbody>{filtered.map((artist) => (
-              <tr key={artist.id}>
-                <td><div className={styles.artistCell}>{artist.cardImage ? <img className={styles.avatar} src={artist.cardImage} alt="" /> : <div className={styles.avatar}>{artist.name.slice(0, 2).toUpperCase()}</div>}<div><strong>{artist.name}</strong><small>/artistas/{artist.slug}</small></div></div></td>
-                <td><div className={styles.chips}>{artist.roles.length ? artist.roles.map((role) => <span className={styles.chip} key={role}>{role}</span>) : <span className={styles.chip}>Sem função</span>}</div></td>
-                <td><div className={styles.chips}>{artist.genres.length ? artist.genres.map((genre) => <span className={styles.chip} key={genre}>{genre}</span>) : <span className={styles.chip}>Sem gênero</span>}</div></td>
-                <td><div className={styles.chips}>{artist.destinations.length ? artist.destinations.map((destination) => <span className={`${styles.chip} ${styles.destination}`} key={destination}>{destination}</span>) : <span className={styles.chip}>Nenhum destino</span>}</div></td>
-                <td><StatusBadge status={artist.status} /></td>
-                <td>{artist.updatedAt}</td>
-                <td>{actions(artist)}</td>
-              </tr>
-            ))}</tbody>
-          </table>
-        </section>
       ) : (
         <div className={styles.list}>{filtered.map((artist) => (
           <article className={styles.listCard} key={artist.id}>
             {artist.cardImage ? <img className={styles.avatar} src={artist.cardImage} alt="" /> : <div className={styles.avatar}>{artist.name.slice(0, 2).toUpperCase()}</div>}
-            <div><div className={styles.statusLine}><strong>{artist.name}</strong><StatusBadge status={artist.status} /></div><div className={styles.meta}>/artistas/{artist.slug} · atualizado {artist.updatedAt}</div><div className={styles.chips}>{[...artist.roles, ...artist.genres].map((item) => <span className={styles.chip} key={item}>{item}</span>)}</div></div>
+            <div>
+              <div className={styles.statusLine}><strong>{artist.name}</strong><StatusBadge status={artist.status} /></div>
+              <div className={styles.meta}>/artistas/{artist.slug} · atualizado {artist.updatedAt}</div>
+              <div className={styles.chips}>{[...artist.roles, ...artist.genres].map((item) => <span className={styles.chip} key={item}>{item}</span>)}</div>
+            </div>
             <div className={styles.meta}><strong>Métricas</strong><br />Instagram {artist.metrics.instagram?.toLocaleString("pt-BR") || 0}<br />Spotify {artist.metrics.spotify?.toLocaleString("pt-BR") || 0}</div>
             <div className={styles.chips}>{artist.destinations.length ? artist.destinations.map((destination) => <span className={`${styles.chip} ${styles.destination}`} key={destination}>{destination}</span>) : <span className={styles.chip}>Sem destinos</span>}</div>
             {actions(artist)}
