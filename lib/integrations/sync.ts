@@ -190,9 +190,9 @@ export async function syncArtistSoundcharts(artistId: string, force = false) {
         },
       });
       for (const metric of metrics) {
-        await tx.insert(artistMetrics).values({ artistId, platform: metric.platform, value: metric.value, updatedAt: new Date() }).onConflictDoUpdate({
+        await tx.insert(artistMetrics).values({ artistId, platform: metric.platform, value: metric.value, source: "soundcharts", updatedAt: new Date() }).onConflictDoUpdate({
           target: [artistMetrics.artistId, artistMetrics.platform],
-          set: { value: metric.value, updatedAt: new Date() },
+          set: { value: metric.value, source: "soundcharts", updatedAt: new Date() },
         });
         await tx.insert(integrationMetricCache).values({
           entityType: "artist",
