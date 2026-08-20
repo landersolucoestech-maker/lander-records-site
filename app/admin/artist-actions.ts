@@ -1,8 +1,10 @@
 "use server";
 
+import { put } from "@vercel/blob";
 import { and, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import sharp from "sharp";
 import { audit, requireAdmin } from "../../lib/auth";
 import { getDb } from "../../lib/db";
 import {
@@ -18,6 +20,7 @@ import {
   artistEmbeds,
   artistLinks,
   artists,
+  mediaAssets,
   slugRedirects,
 } from "../../lib/db/schema";
 import { slugify } from "../../lib/slug";
@@ -26,13 +29,10 @@ export type ArtistActionState = { ok: boolean; error?: string };
 
 const metricPlatforms = ["instagram", "youtube", "tiktok", "soundcloud", "spotify"] as const;
 const socialPlatforms = ["facebook", "instagram", "spotify", "youtube", "tiktok", "soundcloud"] as const;
+const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
 
 function text(formData: FormData, name: string) {
   return String(formData.get(name) || "").trim();
-}
-
-function checked(formData: FormData, name: string) {
-  return formData.get(name) === "on" || formData.get(name) === "true";
 }
 
 function integer(formData: FormData, name: string) {
@@ -73,6 +73,29 @@ function platformLabel(platform: string) {
   return labels[platform] || platform;
 }
 
+async function prepareArtistImage(formData: FormData, fieldName: string, slug: string, kind: "card" | "hero") {
+  const file = formData.get(fieldName);
+  if (!(file instanceof File) || file.size === 0) return null;
+  if (!file.type.startsWith("image/")) throw new Error("A imagem enviada precisa ser um arquivo de imagem válido.");
+  if (file.size > MAX_IMAGE_BYTES) throw new Error("A imagem enviada excede o limite de 12 MB.");
+  if (!process.env.BLOB_READ_WRITE_TOKEN) throw new Error("O armazenamento de mídia não está configurado para uploads.");
+
+  const source = Buffer.from(await file.arrayBuffer());
+  const output = await sharp(source).rotate().resize({ width: 2400, height: 2400, fit: "inside", withoutEnlargement: true }).webp({ quality: 84 }).toBuffer({ resolveWithObject: true });
+  const key = `media/artists/${slug}/${kind}-${crypto.randomUUID()}.webp`;
+  const blob = await put(key, output.data, { access: "public", addRandomSuffix: false, contentType: "image/webp" });
+  return {
+    storageProvider: "vercel_blob" as const,
+    storageKey: key,
+    url: blob.url,
+    mimeType: "image/webp",
+    byteSize: output.info.size,
+    width: output.info.width,
+    height: output.info.height,
+    originalFilename: file.name,
+  };
+}
+
 export async function saveArtistAction(_: ArtistActionState, formData: FormData): Promise<ArtistActionState> {
   const session = await requireAdmin("editor");
   const id = uuidOrNull(text(formData, "id"));
@@ -90,12 +113,34 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
   if (!roleIds.length) return { ok: false, error: "Selecione ao menos uma função do artista." };
   if (!genreIds.length) return { ok: false, error: "Selecione ao menos um gênero musical." };
 
+  let cardUpload: Awaited<ReturnType<typeof prepareArtistImage>> = null;
+  let heroUpload: Awaited<ReturnType<typeof prepareArtistImage>> = null;
+  try {
+    [cardUpload, heroUpload] = await Promise.all([
+      prepareArtistImage(formData, "cardMediaUpload", slug, "card"),
+      prepareArtistImage(formData, "heroMediaUpload", slug, "hero"),
+    ]);
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Falha ao processar as imagens do artista." };
+  }
+
   const db = getDb();
   let artistId = id || "";
   let previousSlug = "";
 
   try {
     artistId = await db.transaction(async (tx) => {
+      let cardMediaId = uuidOrNull(text(formData, "cardMediaId"));
+      let heroMediaId = uuidOrNull(text(formData, "heroMediaId"));
+      if (cardUpload) {
+        const rows = await tx.insert(mediaAssets).values({ ...cardUpload, altText: `${name} — imagem principal`, status: "active", createdBy: session.user.id, updatedBy: session.user.id }).returning({ id: mediaAssets.id });
+        cardMediaId = rows[0].id;
+      }
+      if (heroUpload) {
+        const rows = await tx.insert(mediaAssets).values({ ...heroUpload, altText: `${name} — banner`, status: "active", createdBy: session.user.id, updatedBy: session.user.id }).returning({ id: mediaAssets.id });
+        heroMediaId = rows[0].id;
+      }
+
       let resolvedId = id;
       if (resolvedId) {
         const current = (await tx.select().from(artists).where(eq(artists.id, resolvedId)).limit(1))[0];
@@ -106,8 +151,8 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
           slug,
           shortBio: text(formData, "shortBio"),
           biography: text(formData, "biography"),
-          cardMediaId: uuidOrNull(text(formData, "cardMediaId")),
-          heroMediaId: uuidOrNull(text(formData, "heroMediaId")),
+          cardMediaId,
+          heroMediaId,
           ogMediaId: uuidOrNull(text(formData, "ogMediaId")),
           isPublished: status === "published",
           publishedAt: status === "published" ? (current.publishedAt || new Date()) : null,
@@ -126,8 +171,8 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
           slug,
           shortBio: text(formData, "shortBio"),
           biography: text(formData, "biography"),
-          cardMediaId: uuidOrNull(text(formData, "cardMediaId")),
-          heroMediaId: uuidOrNull(text(formData, "heroMediaId")),
+          cardMediaId,
+          heroMediaId,
           ogMediaId: uuidOrNull(text(formData, "ogMediaId")),
           isPublished: status === "published",
           publishedAt: status === "published" ? new Date() : null,
@@ -180,22 +225,24 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
       await tx.insert(artistGenreRelations).values(genreIds.map((genreId, index) => ({ artistId: resolvedId!, genreId, position: index })));
 
       for (const platform of metricPlatforms) {
-        await tx.insert(artistMetrics).values({ artistId: resolvedId, platform, value: metric(formData, `metric_${platform}`), updatedAt: new Date() }).onConflictDoUpdate({
+        const value = metric(formData, `metric_${platform}`);
+        await tx.insert(artistMetrics).values({ artistId: resolvedId, platform, value, updatedAt: new Date() }).onConflictDoUpdate({
           target: [artistMetrics.artistId, artistMetrics.platform],
-          set: { value: metric(formData, `metric_${platform}`), updatedAt: new Date() },
+          set: { value, updatedAt: new Date() },
         });
       }
 
       const recognizedLinkNames = socialPlatforms.flatMap((platform) => [platform, platformLabel(platform)]);
       await tx.delete(artistLinks).where(and(eq(artistLinks.artistId, resolvedId), inArray(artistLinks.platform, recognizedLinkNames)));
-      const links = socialPlatforms.map((platform, position) => ({
-        platform,
-        url: text(formData, `link_${platform}`),
-        position,
-      })).filter((item) => item.url);
+      const links = socialPlatforms.map((platform, position) => ({ platform, url: text(formData, `link_${platform}`), position })).filter((item) => item.url);
       if (links.length) await tx.insert(artistLinks).values(links.map((item) => ({
-        artistId: resolvedId!, kind: item.platform === "spotify" || item.platform === "youtube" || item.platform === "soundcloud" ? "platform" : "social",
-        platform: item.platform, label: platformLabel(item.platform), url: item.url, position: item.position, active: true,
+        artistId: resolvedId!,
+        kind: item.platform === "spotify" || item.platform === "youtube" || item.platform === "soundcloud" ? "platform" : "social",
+        platform: item.platform,
+        label: platformLabel(item.platform),
+        url: item.url,
+        position: item.position,
+        active: true,
       })));
 
       await tx.delete(artistEmbeds).where(and(eq(artistEmbeds.artistId, resolvedId), inArray(artistEmbeds.type, ["youtube", "spotify"])));
@@ -208,7 +255,9 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
       if (destinationIds.length) {
         const validDestinations = await tx.select({ id: artistPublicationDestinations.id, key: artistPublicationDestinations.key }).from(artistPublicationDestinations).where(and(inArray(artistPublicationDestinations.id, destinationIds), eq(artistPublicationDestinations.active, true)));
         await tx.insert(artistPublicationPlacements).values(validDestinations.map((destination) => ({
-          artistId: resolvedId!, destinationId: destination.id, enabled: true,
+          artistId: resolvedId!,
+          destinationId: destination.id,
+          enabled: true,
           position: destination.key === "home_artists" ? integer(formData, "homePosition") : integer(formData, "listPosition"),
           updatedAt: new Date(),
         })));
