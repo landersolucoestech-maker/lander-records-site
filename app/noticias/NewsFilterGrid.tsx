@@ -14,7 +14,7 @@ type Post = {
   category: Category | null;
 };
 
-export function NewsFilterGrid({ posts, categories }: { posts: Post[]; categories: Category[] }) {
+export function NewsFilterGrid({ posts, categories, showFilters = true, showList = true }: { posts: Post[]; categories: Category[]; showFilters?: boolean; showList?: boolean }) {
   const [active, setActive] = useState("all");
   const filtered = useMemo(
     () => active === "all" ? posts : posts.filter((post) => post.category?.slug === active),
@@ -23,16 +23,16 @@ export function NewsFilterGrid({ posts, categories }: { posts: Post[]; categorie
 
   return (
     <>
-      <div className="filterRow" role="tablist" aria-label="Filtrar notícias por categoria">
+      {showFilters ? <div className="filterRow" role="tablist" aria-label="Filtrar notícias por categoria">
         <button type="button" className={active === "all" ? "active" : ""} aria-pressed={active === "all"} onClick={() => setActive("all")}>Todos</button>
         {categories.map((category) => (
           <button key={category.id} type="button" className={active === category.slug ? "active" : ""} aria-pressed={active === category.slug} onClick={() => setActive(category.slug)}>
             {category.name}
           </button>
         ))}
-      </div>
+      </div> : null}
 
-      {filtered.length > 0 ? (
+      {showList ? (filtered.length > 0 ? (
         <div className="newsGrid">
           {filtered.map((post, index) => (
             <Link className={`newsCard ${index === 0 ? "newsCardFeatured" : ""}`} href={`/noticias/${post.slug}`} key={post.id}>
@@ -53,7 +53,7 @@ export function NewsFilterGrid({ posts, categories }: { posts: Post[]; categorie
           <strong>Nenhuma publicação nesta categoria ainda.</strong>
           <p>Novos conteúdos publicados aparecem aqui automaticamente.</p>
         </div>
-      )}
+      )) : null}
     </>
   );
 }
