@@ -21,7 +21,7 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
   return (
     <div className="adminShell">
       <aside className="adminSidebar">
-        <Link href="/admin" className="adminWordmark">LANDER <span>CMS</span></Link>
+        <Link href="/admin" className="adminWordmark">LANDER <span>PORTAL</span></Link>
         <nav aria-label="Painel administrativo">
           {nav.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}
         </nav>
