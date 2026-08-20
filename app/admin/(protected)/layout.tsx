@@ -9,6 +9,7 @@ const nav = [
   ["Notícias / Posts", "/admin/posts"],
   ["Páginas & Seções", "/admin/pages"],
   ["Biblioteca de mídia", "/admin/media"],
+  ["Configurações da Lander Records", "/admin/settings/lander-records"],
   ["Usuários & Roles", "/admin/users"],
   ["Auditoria", "/admin/audit"],
 ] as const;
