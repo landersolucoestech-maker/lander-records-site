@@ -29,6 +29,13 @@ function SiteLink({ href, children, newTab = false, className }: { href: string;
   return <Link className={className} href={href}>{children}</Link>;
 }
 
+function SocialIcon({ label, href, icon }: { label: string; href: string; icon: ReactNode }) {
+  if (!href) {
+    return <span className="socialIconDisabled" aria-label={`${label} ainda não configurado`} title={`${label} ainda não configurado`}>{icon}</span>;
+  }
+  return <a href={href} target="_blank" rel="noreferrer" aria-label={label} title={label}>{icon}</a>;
+}
+
 export async function Header() {
   const { settings, logoUrl, navigation } = await getSiteChrome();
   const primary = navigation.filter((item) => item.menuKey === "primary" && !item.parentId);
@@ -69,7 +76,7 @@ export async function Footer() {
       <div className="footerMain">
         <div className="footerBrandColumn">
           <Link className="footerBrand" href="/" aria-label={settings.brandName}>{logoUrl ? <img src={logoUrl} alt={settings.brandName} style={{ maxWidth: 220, maxHeight: 70, width: "auto", height: "auto" }} /> : <><span className="footerBrandName">LANDER</span><span className="footerBrandRecords">RECORDS</span></>}</Link>
-          <p>{settings.tagline}</p>
+          <p>Entre em contato com a gente e vamos fazer o seu projeto acontecer. Contato para parcerias, shows, publicidades ou criar algo novo.</p>
         </div>
         <div className="footerColumn">
           <h3>Mapa do site</h3>
@@ -80,17 +87,14 @@ export async function Footer() {
           {settings.contactPhone ? <p><strong>Telefone</strong><br/>{settings.contactPhone}</p> : null}
           {settings.contactEmail ? <p><strong>E-mail</strong><br/>{settings.contactEmail}</p> : null}
           {settings.address ? <p><strong>Endereço</strong><br/>{settings.address}</p> : null}
-          {settings.hours ? <p><strong>Horário</strong><br/>{settings.hours}</p> : null}
-          {socials.length ? <><h3 className="footerSocialTitle">Redes Sociais</h3><div className="footerSocials footerSocialIcons">
-            {socials.map((social) => (
-              social.url ? <a key={social.id} href={social.url} target="_blank" rel="noreferrer" aria-label={social.label} title={social.label}>
-                {iconByPlatform[social.platform.toLowerCase()] ?? <span aria-hidden="true">↗</span>}
-              </a> : null
-            ))}
-          </div></> : null}
+          {settings.hours ? <p><strong>Horário</strong><br/>{settings.hours}<br/>Fechado aos sábados e domingos</p> : null}
+          <h3 className="footerSocialTitle">Redes Sociais</h3>
+          <div className="footerSocials footerSocialIcons">
+            {socials.map((social) => <SocialIcon key={social.id} label={social.label} href={social.url} icon={iconByPlatform[social.platform.toLowerCase()] ?? <span aria-hidden="true">↗</span>} />)}
+          </div>
         </div>
       </div>
-      <div className="footerBottom"><span>{new Date().getFullYear()} © {settings.brandName}. Todos os direitos reservados.</span><span>Feito por <strong>Lander</strong></span></div>
+      <div className="footerBottom"><span>2026 © Produtora em Governador Valadares | Lander Records. Todos os direitos reservados.</span><span>Feito por <strong>Lander</strong></span></div>
     </footer>
   );
 }
