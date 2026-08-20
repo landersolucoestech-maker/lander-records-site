@@ -28,6 +28,14 @@ function editorialTitle(title: string) {
   return <>{parts.join(" ")} {last ? <span>{last}</span> : null}</>;
 }
 
+function newsBackground(image: string) {
+  return image ? {
+    backgroundImage: `linear-gradient(145deg,rgba(0,0,0,.12),rgba(0,0,0,.38)),url(${image})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+  } : undefined;
+}
+
 export default async function Home() {
   const [content, featuredArtists, featuredPosts, featuredReleases] = await Promise.all([
     getPageContent("home"),
@@ -74,6 +82,10 @@ export default async function Home() {
               <h2>{intro.title}</h2>
               {bodyParagraphs(intro.body).map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
               {intro.items[0]?.url ? <Link href={intro.items[0].url}>{intro.items[0].label || intro.items[0].title} →</Link> : null}
+              <div className="homeSocialMetrics homeSocialMetricsInside" aria-label="Números das redes sociais da Lander Records">
+                <article className="socialMetricCard socialMetricInstagram"><div className="socialMetricTop"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.6" r="1"/></svg><span>Instagram</span></div><strong data-social-metric="instagram-followers">—</strong><p>seguidores</p></article>
+                <article className="socialMetricCard socialMetricYoutube"><div className="socialMetricTop"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9l5 3-5 3z"/></svg><span>YouTube</span></div><strong data-social-metric="youtube-subscribers">—</strong><p>inscritos</p></article>
+              </div>
             </div>
           </div>
         ) : null}
@@ -103,7 +115,7 @@ export default async function Home() {
                   <div className="homeArtistPhoto" style={artist.cardImage ? { backgroundImage: `url(${artist.cardImage})` } : undefined} />
                   <div className="homeArtistInfo">
                     <strong>{artist.name}</strong>
-                    <span>{artist.eyebrow || artist.categories.map((category) => category.name).join(" · ")}</span>
+                    <span>{artist.eyebrow || artist.roles.join(" · ") || artist.categories.map((category) => category.name).join(" · ")}</span>
                     <small>VER PERFIL COMPLETO →</small>
                   </div>
                 </Link>
@@ -148,7 +160,7 @@ export default async function Home() {
             </div>
             <div className="homeNewsEditorial">
               {featuredPosts[0] ? (
-                <Link className="homeNewsLead" href={`/noticias/${featuredPosts[0].slug}`}>
+                <Link className="homeNewsLead" href={`/noticias/${featuredPosts[0].slug}`} style={newsBackground(featuredPosts[0].coverImage)}>
                   <span>{featuredPosts[0].category?.name || "Notícia"}</span>
                   <strong>{featuredPosts[0].title}</strong>
                   <small>{featuredPosts[0].publishedAt ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(featuredPosts[0].publishedAt) : ""}</small>
@@ -156,7 +168,7 @@ export default async function Home() {
               ) : null}
               <div className="homeNewsSide">
                 {featuredPosts.slice(1, 3).map((post) => (
-                  <Link href={`/noticias/${post.slug}`} key={post.id}>
+                  <Link href={`/noticias/${post.slug}`} key={post.id} style={newsBackground(post.coverImage)}>
                     <span>{post.category?.name || "Notícia"}</span>
                     <strong>{post.title}</strong>
                   </Link>
