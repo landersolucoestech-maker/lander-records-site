@@ -36,9 +36,13 @@ jobs:
         run: |
           cp control/public/lander-records-logo.webp site/public/lander-records-logo.webp
           cp control/app/navigation-polish.css site/app/navigation-polish.css
+          cp control/app/home-shortcut-premium.css site/app/home-shortcut-premium.css
           mkdir -p site/app/politica-de-privacidade site/app/termos-e-condicoes
           cp control/app/politica-de-privacidade/page.tsx site/app/politica-de-privacidade/page.tsx
           cp control/app/termos-e-condicoes/page.tsx site/app/termos-e-condicoes/page.tsx
+          if ! grep -q 'home-shortcut-premium.css' site/app/layout.tsx; then
+            sed -i '/import "\.\/navigation-polish\.css";/a import "./home-shortcut-premium.css";' site/app/layout.tsx
+          fi
           node control/scripts/prepare-github-pages-static.mjs site
 
       - name: Setup Node
