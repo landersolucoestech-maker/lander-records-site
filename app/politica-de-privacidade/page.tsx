@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Footer, Header } from "../components/SiteChrome";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Política de Privacidade",
   description: "Política de Privacidade da Lander Records e informações sobre tratamento de dados pessoais.",
