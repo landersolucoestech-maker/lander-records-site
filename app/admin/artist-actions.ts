@@ -9,12 +9,13 @@ import { audit, requireAdmin } from "../../lib/auth";
 import { getDb } from "../../lib/db";
 import {
   artistGenreRelations,
+  artistMetrics,
   artistProfiles,
   artistPublicationDestinations,
   artistPublicationPlacements,
   artistRoleRelations,
 } from "../../lib/db/artist-management-schema";
-import { artistExternalIdentities } from "../../lib/db/integration-schema";
+import { artistExternalIdentities, integrationMetricCache } from "../../lib/db/integration-schema";
 import {
   artistCategoryRelations,
   artistEmbeds,
@@ -30,6 +31,7 @@ import { slugify } from "../../lib/slug";
 export type ArtistActionState = { ok: boolean; error?: string };
 
 const socialPlatforms = ["facebook", "instagram", "spotify", "youtube", "tiktok", "soundcloud"] as const;
+const soundchartsPlatforms = ["instagram", "spotify", "youtube", "tiktok", "soundcloud"] as const;
 const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
 
 function text(formData: FormData, name: string) {
@@ -106,6 +108,16 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
   if (!roleIds.length) return { ok: false, error: "Selecione ao menos uma função do artista." };
   if (!genreIds.length) return { ok: false, error: "Selecione ao menos um gênero musical." };
 
+  let normalizedLinks: Array<{ platform: typeof socialPlatforms[number]; url: string; position: number }>;
+  try {
+    normalizedLinks = socialPlatforms
+      .map((platform, position) => ({ platform, url: text(formData, `link_${platform}`), position }))
+      .filter((item) => item.url)
+      .map((item) => ({ ...item, url: normalizeExternalUrl(item.url) }));
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Uma URL de plataforma é inválida." };
+  }
+
   let cardUpload: Awaited<ReturnType<typeof prepareArtistImage>> = null;
   let heroUpload: Awaited<ReturnType<typeof prepareArtistImage>> = null;
   try {
@@ -120,6 +132,16 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
   const db = getDb();
   let artistId = id || "";
   let previousSlug = "";
+  const previousLinks = id
+    ? await db.select({ platform: artistLinks.platform, url: artistLinks.url }).from(artistLinks).where(and(eq(artistLinks.artistId, id), eq(artistLinks.active, true)))
+    : [];
+  const previousSoundchartsLinks = new Map(previousLinks
+    .filter((item) => soundchartsPlatforms.includes(item.platform.toLowerCase() as typeof soundchartsPlatforms[number]))
+    .map((item) => [item.platform.toLowerCase(), item.url]));
+  const nextSoundchartsLinks = new Map(normalizedLinks
+    .filter((item) => soundchartsPlatforms.includes(item.platform as typeof soundchartsPlatforms[number]))
+    .map((item) => [item.platform, item.url]));
+  const soundchartsLinksChanged = !id || soundchartsPlatforms.some((platform) => (previousSoundchartsLinks.get(platform) || "") !== (nextSoundchartsLinks.get(platform) || ""));
 
   try {
     artistId = await db.transaction(async (tx) => {
@@ -179,15 +201,19 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
 
       const recognizedLinkNames = socialPlatforms.flatMap((platform) => [platform, platformLabel(platform)]);
       await tx.delete(artistLinks).where(and(eq(artistLinks.artistId, resolvedId), inArray(artistLinks.platform, recognizedLinkNames)));
-      const links = socialPlatforms.map((platform, position) => ({ platform, url: text(formData, `link_${platform}`), position })).filter((item) => item.url).map((item) => ({ ...item, url: normalizeExternalUrl(item.url) }));
-      if (links.length) await tx.insert(artistLinks).values(links.map((item) => ({
+      if (normalizedLinks.length) await tx.insert(artistLinks).values(normalizedLinks.map((item) => ({
         artistId: resolvedId!, kind: item.platform === "spotify" || item.platform === "youtube" || item.platform === "soundcloud" ? "platform" : "social",
         platform: item.platform, label: platformLabel(item.platform), url: item.url, position: item.position, active: true,
       })));
-      await tx.insert(artistExternalIdentities).values({ artistId: resolvedId, resolutionStatus: "unresolved", soundchartsArtistUuid: "", matchedViaPlatform: "", matchedViaIdentifier: "", lastError: "", updatedAt: new Date() }).onConflictDoUpdate({
-        target: artistExternalIdentities.artistId,
-        set: { resolutionStatus: "unresolved", soundchartsArtistUuid: "", matchedViaPlatform: "", matchedViaIdentifier: "", lastResolvedAt: null, lastSyncedAt: null, lastError: "", updatedAt: new Date() },
-      });
+
+      if (soundchartsLinksChanged) {
+        await tx.delete(artistMetrics).where(eq(artistMetrics.artistId, resolvedId));
+        await tx.delete(integrationMetricCache).where(and(eq(integrationMetricCache.entityType, "artist"), eq(integrationMetricCache.entityId, resolvedId)));
+        await tx.insert(artistExternalIdentities).values({ artistId: resolvedId, resolutionStatus: "unresolved", soundchartsArtistUuid: "", matchedViaPlatform: "", matchedViaIdentifier: "", lastError: "", updatedAt: new Date() }).onConflictDoUpdate({
+          target: artistExternalIdentities.artistId,
+          set: { resolutionStatus: "unresolved", soundchartsArtistUuid: "", matchedViaPlatform: "", matchedViaIdentifier: "", lastResolvedAt: null, lastSyncedAt: null, lastError: "", updatedAt: new Date() },
+        });
+      }
 
       await tx.delete(artistEmbeds).where(and(eq(artistEmbeds.artistId, resolvedId), inArray(artistEmbeds.type, ["youtube", "spotify"])));
       const youtubeVideo = text(formData, "youtubeVideo");
@@ -212,8 +238,8 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
     return { ok: false, error: message };
   }
 
-  await audit(session.user.id, id ? "artist.updated" : "artist.created", "artist", artistId, { name, slug, status, destinations: destinationIds.length });
-  await syncArtistSoundcharts(artistId, true).catch(() => null);
+  await audit(session.user.id, id ? "artist.updated" : "artist.created", "artist", artistId, { name, slug, status, destinations: destinationIds.length, soundchartsIdentityInvalidated: soundchartsLinksChanged });
+  await syncArtistSoundcharts(artistId, soundchartsLinksChanged).catch(() => null);
   revalidateArtistContent([previousSlug, slug]);
   redirect(`/admin/artists/${artistId}?saved=1`);
 }
@@ -225,7 +251,10 @@ export async function deleteArtistAction(formData: FormData) {
   const db = getDb();
   const current = (await db.select({ slug: artists.slug, name: artists.name }).from(artists).where(eq(artists.id, id)).limit(1))[0];
   if (!current) throw new Error("Artista não encontrado.");
-  await db.delete(artists).where(eq(artists.id, id));
+  await db.transaction(async (tx) => {
+    await tx.delete(integrationMetricCache).where(and(eq(integrationMetricCache.entityType, "artist"), eq(integrationMetricCache.entityId, id)));
+    await tx.delete(artists).where(eq(artists.id, id));
+  });
   await audit(session.user.id, "artist.deleted", "artist", id, { name: current.name, slug: current.slug });
   revalidateArtistContent([current.slug]);
   redirect("/admin/artists?deleted=1");
