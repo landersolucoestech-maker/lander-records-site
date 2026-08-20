@@ -1,20 +1,39 @@
 import Link from "next/link";
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { getDb } from "../../../../lib/db";
-import { posts } from "../../../../lib/db/schema";
+import { mediaAssets, postCategories, posts } from "../../../../lib/db/schema";
+import PostManager, { type PostSummary } from "./PostManager";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminPostsPage() {
-  const rows = await getDb().select().from(posts).orderBy(desc(posts.createdAt));
+export default async function AdminPostsPage({ searchParams }: { searchParams: Promise<{ deleted?: string }> }) {
+  const rows = await getDb().select({ post: posts, categoryName: postCategories.name, coverImage: mediaAssets.url })
+    .from(posts)
+    .leftJoin(postCategories, eq(posts.categoryId, postCategories.id))
+    .leftJoin(mediaAssets, eq(posts.coverMediaId, mediaAssets.id))
+    .orderBy(desc(posts.updatedAt), desc(posts.createdAt));
+
+  const summary: PostSummary[] = rows.map(({ post, categoryName, coverImage }) => ({
+    id: post.id,
+    title: post.title,
+    slug: post.slug,
+    status: post.status,
+    category: categoryName || "Sem categoria",
+    authorName: post.authorName,
+    publishedAt: post.publishedAt ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short" }).format(post.publishedAt) : "",
+    coverImage: coverImage || "",
+    featuredOnHome: post.featuredOnHome,
+    updatedAt: new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(post.updatedAt),
+  }));
+  const { deleted } = await searchParams;
+
   return (
     <div className="adminPage">
-      <header className="adminPageHeader"><div><p className="adminEyebrow">EDITORIAL</p><h1>Notícias / Posts</h1><p>Rascunho, publicação, agendamento, destaque, conteúdo e SEO.</p></div><Link className="adminButton primary" href="/admin/posts/new">Nova publicação</Link></header>
-      <section className="adminPanel">
-        <table className="adminTable"><thead><tr><th>Título</th><th>Slug</th><th>Status</th><th>Publicação</th><th>Home</th><th></th></tr></thead>
-          <tbody>{rows.map((post) => <tr key={post.id}><td><strong>{post.title}</strong></td><td>{post.slug}</td><td><span className={`adminBadge ${post.status === "published" ? "live" : post.status === "archived" ? "archived" : "draft"}`}>{post.status}</span></td><td>{post.publishedAt ? new Intl.DateTimeFormat("pt-BR").format(post.publishedAt) : "—"}</td><td>{post.featuredOnHome ? "Sim" : "Não"}</td><td><Link href={`/admin/posts/${post.id}`}>Editar →</Link></td></tr>)}</tbody>
-        </table>
-      </section>
+      <header className="adminPageHeader">
+        <div><p className="adminEyebrow">EDITORIAL</p><h1>Notícias</h1><p>Gestão de publicações no mesmo padrão operacional do módulo Artistas.</p></div>
+        <Link className="adminButton primary" href="/admin/posts/new">Nova notícia</Link>
+      </header>
+      <PostManager posts={summary} deleted={deleted === "1"} />
     </div>
   );
 }
