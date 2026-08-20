@@ -6,6 +6,13 @@ import { artists, auditLogs, pages, posts } from "../../../lib/db/schema";
 
 export const dynamic = "force-dynamic";
 
+type AuditItem = {
+  id: string;
+  action: string;
+  entityType: string;
+  createdAt: Date;
+};
+
 function countValue(rows: Array<{ count: number }>) {
   return rows[0]?.count ?? 0;
 }
@@ -33,43 +40,61 @@ function activityLabel(action: string) {
 }
 
 export default async function AdminDashboardPage() {
-  const db = getDb();
-  const [
-    artistTotalRows,
-    artistActiveRows,
-    artistInactiveRows,
-    artistPublishedRows,
-    publishedPostRows,
-    draftArtistRows,
-    draftPostRows,
-    activePageRows,
-    recentAudits,
-  ] = await Promise.all([
-    db.select({ count: sql<number>`count(*)::int` }).from(artists).where(isNull(artists.archivedAt)),
-    db.select({ count: sql<number>`count(*)::int` }).from(artistProfiles).where(eq(artistProfiles.isActive, true)),
-    db.select({ count: sql<number>`count(*)::int` }).from(artistProfiles).where(eq(artistProfiles.isActive, false)),
-    db.select({ count: sql<number>`count(*)::int` }).from(artists).where(and(eq(artists.isPublished, true), isNull(artists.archivedAt))),
-    db.select({ count: sql<number>`count(*)::int` }).from(posts).where(and(eq(posts.status, "published"), isNull(posts.archivedAt))),
-    db.select({ count: sql<number>`count(*)::int` }).from(artists).where(and(eq(artists.isPublished, false), isNull(artists.archivedAt))),
-    db.select({ count: sql<number>`count(*)::int` }).from(posts).where(and(eq(posts.status, "draft"), isNull(posts.archivedAt))),
-    db.select({ count: sql<number>`count(*)::int` }).from(pages).where(eq(pages.enabled, true)),
-    db.select().from(auditLogs).orderBy(desc(auditLogs.createdAt)).limit(12),
-  ]);
+  let artistTotal = 0;
+  let artistActive = 0;
+  let artistInactive = 0;
+  let artistPublished = 0;
+  let postPublished = 0;
+  let drafts = 0;
+  let activePages = 0;
+  let recentAudits: AuditItem[] = [];
+  let databaseAvailable = Boolean(process.env.DATABASE_URL);
 
-  const artistTotal = countValue(artistTotalRows);
-  const artistActive = countValue(artistActiveRows);
-  const artistInactive = countValue(artistInactiveRows);
-  const artistPublished = countValue(artistPublishedRows);
-  const postPublished = countValue(publishedPostRows);
-  const drafts = countValue(draftArtistRows) + countValue(draftPostRows);
-  const activePages = countValue(activePageRows);
+  if (databaseAvailable) {
+    try {
+      const db = getDb();
+      const [
+        artistTotalRows,
+        artistActiveRows,
+        artistInactiveRows,
+        artistPublishedRows,
+        publishedPostRows,
+        draftArtistRows,
+        draftPostRows,
+        activePageRows,
+        auditRows,
+      ] = await Promise.all([
+        db.select({ count: sql<number>`count(*)::int` }).from(artists).where(isNull(artists.archivedAt)),
+        db.select({ count: sql<number>`count(*)::int` }).from(artistProfiles).where(eq(artistProfiles.isActive, true)),
+        db.select({ count: sql<number>`count(*)::int` }).from(artistProfiles).where(eq(artistProfiles.isActive, false)),
+        db.select({ count: sql<number>`count(*)::int` }).from(artists).where(and(eq(artists.isPublished, true), isNull(artists.archivedAt))),
+        db.select({ count: sql<number>`count(*)::int` }).from(posts).where(and(eq(posts.status, "published"), isNull(posts.archivedAt))),
+        db.select({ count: sql<number>`count(*)::int` }).from(artists).where(and(eq(artists.isPublished, false), isNull(artists.archivedAt))),
+        db.select({ count: sql<number>`count(*)::int` }).from(posts).where(and(eq(posts.status, "draft"), isNull(posts.archivedAt))),
+        db.select({ count: sql<number>`count(*)::int` }).from(pages).where(eq(pages.enabled, true)),
+        db.select().from(auditLogs).orderBy(desc(auditLogs.createdAt)).limit(12),
+      ]);
+
+      artistTotal = countValue(artistTotalRows);
+      artistActive = countValue(artistActiveRows);
+      artistInactive = countValue(artistInactiveRows);
+      artistPublished = countValue(artistPublishedRows);
+      postPublished = countValue(publishedPostRows);
+      drafts = countValue(draftArtistRows) + countValue(draftPostRows);
+      activePages = countValue(activePageRows);
+      recentAudits = auditRows;
+    } catch (error) {
+      console.error("CMS dashboard database unavailable; rendering temporary preview mode.", error);
+      databaseAvailable = false;
+    }
+  }
 
   const cards = [
-    ["Total de artistas", artistTotal, `${artistActive} ativos · ${artistInactive} inativos`, "/admin/artists"],
-    ["Artistas publicados", artistPublished, `${Math.max(artistTotal - artistPublished, 0)} fora de publicação`, "/admin/artists"],
-    ["Notícias publicadas", postPublished, "Conteúdo editorial público", "/admin/posts"],
-    ["Rascunhos", drafts, "Artistas + notícias aguardando publicação", "/admin/posts"],
-    ["Páginas ativas", activePages, "Estrutura detectada no projeto", "/admin/pages"],
+    ["Total de artistas", artistTotal, databaseAvailable ? `${artistActive} ativos · ${artistInactive} inativos` : "Banco ainda não conectado", "/admin/artists"],
+    ["Artistas publicados", artistPublished, databaseAvailable ? `${Math.max(artistTotal - artistPublished, 0)} fora de publicação` : "Visualização temporária", "/admin/artists"],
+    ["Notícias publicadas", postPublished, databaseAvailable ? "Conteúdo editorial público" : "Visualização temporária", "/admin/posts"],
+    ["Rascunhos", drafts, databaseAvailable ? "Artistas + notícias aguardando publicação" : "Visualização temporária", "/admin/posts"],
+    ["Páginas ativas", activePages, databaseAvailable ? "Estrutura detectada no projeto" : "Visualização temporária", "/admin/pages"],
   ] as const;
 
   return (
@@ -80,6 +105,13 @@ export default async function AdminDashboardPage() {
           <p>Painel operacional do conteúdo publicado, pendências editoriais e atividades recentes do site.</p>
         </div>
       </header>
+
+      {!databaseAvailable ? (
+        <section className="adminPanel adminStack">
+          <strong>CMS liberado para visualização</strong>
+          <span>O acesso está sem autenticação neste momento. O banco de dados da Lander Records ainda não está conectado neste ambiente, então os indicadores aparecem zerados temporariamente.</span>
+        </section>
+      ) : null}
 
       <div className="adminMetricGrid">
         {cards.map(([label, value, detail, href]) => (
@@ -98,7 +130,7 @@ export default async function AdminDashboardPage() {
             <strong>{activityLabel(item.action)}</strong>
             <span>{item.entityType} · {new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(item.createdAt)}</span>
           </div>
-        )) : <div className="adminEmpty">Nenhuma atividade registrada.</div>}
+        )) : <div className="adminEmpty">{databaseAvailable ? "Nenhuma atividade registrada." : "Atividades ficarão disponíveis quando o banco for conectado."}</div>}
       </section>
     </div>
   );
