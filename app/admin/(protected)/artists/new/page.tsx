@@ -1,22 +1,18 @@
 import Link from "next/link";
-import { createArtist } from "../../../actions";
+import ArtistForm from "../ArtistForm";
+import { loadArtistOptions } from "../editor-data";
 
-export default function NewArtistPage() {
+export const dynamic = "force-dynamic";
+
+export default async function NewArtistPage() {
+  const options = await loadArtistOptions();
   return (
     <div className="adminPage">
-      <header className="adminPageHeader"><div><p className="adminEyebrow">ARTISTAS</p><h1>Novo artista</h1><p>Crie o registro; depois complete mídia, categorias, plataformas, publicação e SEO.</p></div><Link className="adminButton" href="/admin/artists">Voltar</Link></header>
-      <section className="adminPanel">
-        <form action={createArtist} className="adminForm">
-          <div className="adminFormGrid">
-            <label>Nome<input name="name" required maxLength={180} /></label>
-            <label>Slug<input name="slug" maxLength={200} placeholder="gerado pelo nome se vazio" /></label>
-            <label>Descrição curta / gênero<input name="eyebrow" maxLength={180} /></label>
-            <label className="full">Resumo<textarea name="shortBio" /></label>
-            <label className="full">Biografia<textarea name="biography" /></label>
-          </div>
-          <div className="adminActions"><button className="adminButton primary" type="submit">Criar artista</button></div>
-        </form>
-      </section>
+      <header className="adminPageHeader">
+        <div><p className="adminEyebrow">ARTISTAS</p><h1>Novo artista</h1><p>Cadastre identidade, funções, gênero, métricas, plataformas, mídia e destinos de publicação em um único fluxo.</p></div>
+        <Link className="adminButton" href="/admin/artists">Voltar</Link>
+      </header>
+      <ArtistForm {...options} />
     </div>
   );
 }
