@@ -9,12 +9,12 @@ import { audit, requireAdmin } from "../../lib/auth";
 import { getDb } from "../../lib/db";
 import {
   artistGenreRelations,
-  artistMetrics,
   artistProfiles,
   artistPublicationDestinations,
   artistPublicationPlacements,
   artistRoleRelations,
 } from "../../lib/db/artist-management-schema";
+import { artistExternalIdentities } from "../../lib/db/integration-schema";
 import {
   artistCategoryRelations,
   artistEmbeds,
@@ -23,11 +23,12 @@ import {
   mediaAssets,
   slugRedirects,
 } from "../../lib/db/schema";
+import { normalizeExternalUrl } from "../../lib/integrations/identity";
+import { syncArtistSoundcharts } from "../../lib/integrations/sync";
 import { slugify } from "../../lib/slug";
 
 export type ArtistActionState = { ok: boolean; error?: string };
 
-const metricPlatforms = ["instagram", "youtube", "tiktok", "soundcloud", "spotify"] as const;
 const socialPlatforms = ["facebook", "instagram", "spotify", "youtube", "tiktok", "soundcloud"] as const;
 const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
 
@@ -38,14 +39,6 @@ function text(formData: FormData, name: string) {
 function integer(formData: FormData, name: string) {
   const value = Number.parseInt(text(formData, name), 10);
   return Number.isFinite(value) ? value : 0;
-}
-
-function metric(formData: FormData, name: string) {
-  const raw = text(formData, name).replace(/[^0-9]/g, "");
-  if (!raw) return 0;
-  const value = Number(raw);
-  if (!Number.isSafeInteger(value) || value < 0) throw new Error(`Métrica inválida: ${name}.`);
-  return value;
 }
 
 function uuidOrNull(value: string) {
@@ -147,103 +140,54 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
         if (!current) throw new Error("Artista não encontrado.");
         previousSlug = current.slug;
         await tx.update(artists).set({
-          name,
-          slug,
-          shortBio: text(formData, "shortBio"),
-          biography: text(formData, "biography"),
-          cardMediaId,
-          heroMediaId,
-          ogMediaId: uuidOrNull(text(formData, "ogMediaId")),
-          isPublished: status === "published",
-          publishedAt: status === "published" ? (current.publishedAt || new Date()) : null,
-          featureOnHome: false,
-          homePosition: integer(formData, "homePosition"),
-          listPosition: integer(formData, "listPosition"),
-          seoTitle: text(formData, "seoTitle"),
-          seoDescription: text(formData, "seoDescription"),
-          canonicalUrl: text(formData, "canonicalUrl"),
-          updatedBy: session.user.id,
-          updatedAt: new Date(),
+          name, slug, shortBio: text(formData, "shortBio"), biography: text(formData, "biography"), cardMediaId, heroMediaId,
+          ogMediaId: uuidOrNull(text(formData, "ogMediaId")), isPublished: status === "published",
+          publishedAt: status === "published" ? (current.publishedAt || new Date()) : null, featureOnHome: false,
+          homePosition: integer(formData, "homePosition"), listPosition: integer(formData, "listPosition"),
+          seoTitle: text(formData, "seoTitle"), seoDescription: text(formData, "seoDescription"), canonicalUrl: text(formData, "canonicalUrl"),
+          updatedBy: session.user.id, updatedAt: new Date(),
         }).where(eq(artists.id, resolvedId));
       } else {
         const inserted = await tx.insert(artists).values({
-          name,
-          slug,
-          shortBio: text(formData, "shortBio"),
-          biography: text(formData, "biography"),
-          cardMediaId,
-          heroMediaId,
-          ogMediaId: uuidOrNull(text(formData, "ogMediaId")),
-          isPublished: status === "published",
-          publishedAt: status === "published" ? new Date() : null,
-          featureOnHome: false,
-          homePosition: integer(formData, "homePosition"),
-          listPosition: integer(formData, "listPosition"),
-          seoTitle: text(formData, "seoTitle"),
-          seoDescription: text(formData, "seoDescription"),
-          canonicalUrl: text(formData, "canonicalUrl"),
-          createdBy: session.user.id,
-          updatedBy: session.user.id,
+          name, slug, shortBio: text(formData, "shortBio"), biography: text(formData, "biography"), cardMediaId, heroMediaId,
+          ogMediaId: uuidOrNull(text(formData, "ogMediaId")), isPublished: status === "published", publishedAt: status === "published" ? new Date() : null,
+          featureOnHome: false, homePosition: integer(formData, "homePosition"), listPosition: integer(formData, "listPosition"),
+          seoTitle: text(formData, "seoTitle"), seoDescription: text(formData, "seoDescription"), canonicalUrl: text(formData, "canonicalUrl"),
+          createdBy: session.user.id, updatedBy: session.user.id,
         }).returning({ id: artists.id });
         resolvedId = inserted[0].id;
       }
 
       if (previousSlug && previousSlug !== slug) {
-        await tx.insert(slugRedirects).values({ entityType: "artist", oldSlug: previousSlug, newSlug: slug }).onConflictDoUpdate({
-          target: [slugRedirects.entityType, slugRedirects.oldSlug],
-          set: { newSlug: slug },
-        });
+        await tx.insert(slugRedirects).values({ entityType: "artist", oldSlug: previousSlug, newSlug: slug }).onConflictDoUpdate({ target: [slugRedirects.entityType, slugRedirects.oldSlug], set: { newSlug: slug } });
       }
 
       await tx.insert(artistProfiles).values({
-        artistId: resolvedId,
-        isActive: status !== "inactive",
-        pageLink: text(formData, "pageLink") || `/artistas/${slug}`,
-        hireTitle: text(formData, "hireTitle") || "Contrate",
-        hireText: text(formData, "hireText"),
-        hireButtonLabel: text(formData, "hireButtonLabel") || "Quero contratar",
-        updatedAt: new Date(),
-      }).onConflictDoUpdate({
-        target: artistProfiles.artistId,
-        set: {
-          isActive: status !== "inactive",
-          pageLink: text(formData, "pageLink") || `/artistas/${slug}`,
-          hireTitle: text(formData, "hireTitle") || "Contrate",
-          hireText: text(formData, "hireText"),
-          hireButtonLabel: text(formData, "hireButtonLabel") || "Quero contratar",
-          updatedAt: new Date(),
-        },
-      });
+        artistId: resolvedId, isActive: status !== "inactive", pageLink: text(formData, "pageLink") || `/artistas/${slug}`,
+        hireTitle: text(formData, "hireTitle") || "Contrate", hireText: text(formData, "hireText"), hireButtonLabel: text(formData, "hireButtonLabel") || "Quero contratar", updatedAt: new Date(),
+      }).onConflictDoUpdate({ target: artistProfiles.artistId, set: {
+        isActive: status !== "inactive", pageLink: text(formData, "pageLink") || `/artistas/${slug}`,
+        hireTitle: text(formData, "hireTitle") || "Contrate", hireText: text(formData, "hireText"), hireButtonLabel: text(formData, "hireButtonLabel") || "Quero contratar", updatedAt: new Date(),
+      }});
 
       await tx.delete(artistCategoryRelations).where(eq(artistCategoryRelations.artistId, resolvedId));
       if (categoryIds.length) await tx.insert(artistCategoryRelations).values(categoryIds.map((categoryId, index) => ({ artistId: resolvedId!, categoryId, isPrimary: index === 0, position: index })));
-
       await tx.delete(artistRoleRelations).where(eq(artistRoleRelations.artistId, resolvedId));
       await tx.insert(artistRoleRelations).values(roleIds.map((roleId, index) => ({ artistId: resolvedId!, roleId, position: index })));
-
       await tx.delete(artistGenreRelations).where(eq(artistGenreRelations.artistId, resolvedId));
       await tx.insert(artistGenreRelations).values(genreIds.map((genreId, index) => ({ artistId: resolvedId!, genreId, position: index })));
 
-      for (const platform of metricPlatforms) {
-        const value = metric(formData, `metric_${platform}`);
-        await tx.insert(artistMetrics).values({ artistId: resolvedId, platform, value, updatedAt: new Date() }).onConflictDoUpdate({
-          target: [artistMetrics.artistId, artistMetrics.platform],
-          set: { value, updatedAt: new Date() },
-        });
-      }
-
       const recognizedLinkNames = socialPlatforms.flatMap((platform) => [platform, platformLabel(platform)]);
       await tx.delete(artistLinks).where(and(eq(artistLinks.artistId, resolvedId), inArray(artistLinks.platform, recognizedLinkNames)));
-      const links = socialPlatforms.map((platform, position) => ({ platform, url: text(formData, `link_${platform}`), position })).filter((item) => item.url);
+      const links = socialPlatforms.map((platform, position) => ({ platform, url: text(formData, `link_${platform}`), position })).filter((item) => item.url).map((item) => ({ ...item, url: normalizeExternalUrl(item.url) }));
       if (links.length) await tx.insert(artistLinks).values(links.map((item) => ({
-        artistId: resolvedId!,
-        kind: item.platform === "spotify" || item.platform === "youtube" || item.platform === "soundcloud" ? "platform" : "social",
-        platform: item.platform,
-        label: platformLabel(item.platform),
-        url: item.url,
-        position: item.position,
-        active: true,
+        artistId: resolvedId!, kind: item.platform === "spotify" || item.platform === "youtube" || item.platform === "soundcloud" ? "platform" : "social",
+        platform: item.platform, label: platformLabel(item.platform), url: item.url, position: item.position, active: true,
       })));
+      await tx.insert(artistExternalIdentities).values({ artistId: resolvedId, resolutionStatus: "unresolved", soundchartsArtistUuid: "", matchedViaPlatform: "", matchedViaIdentifier: "", lastError: "", updatedAt: new Date() }).onConflictDoUpdate({
+        target: artistExternalIdentities.artistId,
+        set: { resolutionStatus: "unresolved", soundchartsArtistUuid: "", matchedViaPlatform: "", matchedViaIdentifier: "", lastResolvedAt: null, lastSyncedAt: null, lastError: "", updatedAt: new Date() },
+      });
 
       await tx.delete(artistEmbeds).where(and(eq(artistEmbeds.artistId, resolvedId), inArray(artistEmbeds.type, ["youtube", "spotify"])));
       const youtubeVideo = text(formData, "youtubeVideo");
@@ -255,15 +199,11 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
       if (destinationIds.length) {
         const validDestinations = await tx.select({ id: artistPublicationDestinations.id, key: artistPublicationDestinations.key }).from(artistPublicationDestinations).where(and(inArray(artistPublicationDestinations.id, destinationIds), eq(artistPublicationDestinations.active, true)));
         await tx.insert(artistPublicationPlacements).values(validDestinations.map((destination) => ({
-          artistId: resolvedId!,
-          destinationId: destination.id,
-          enabled: true,
-          position: destination.key === "home_artists" ? integer(formData, "homePosition") : integer(formData, "listPosition"),
-          updatedAt: new Date(),
+          artistId: resolvedId!, destinationId: destination.id, enabled: true,
+          position: destination.key === "home_artists" ? integer(formData, "homePosition") : integer(formData, "listPosition"), updatedAt: new Date(),
         })));
         await tx.update(artists).set({ featureOnHome: validDestinations.some((item) => item.key === "home_artists") }).where(eq(artists.id, resolvedId));
       }
-
       return resolvedId;
     });
   } catch (error) {
@@ -273,6 +213,7 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
   }
 
   await audit(session.user.id, id ? "artist.updated" : "artist.created", "artist", artistId, { name, slug, status, destinations: destinationIds.length });
+  await syncArtistSoundcharts(artistId, true).catch(() => null);
   revalidateArtistContent([previousSlug, slug]);
   redirect(`/admin/artists/${artistId}?saved=1`);
 }
