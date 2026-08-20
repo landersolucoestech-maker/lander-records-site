@@ -47,4 +47,28 @@ if (!home.includes("lander-records-anuncie-banner.webp")) {
 }
 await fs.writeFile(homePath, home);
 
-console.log("GitHub Pages static public snapshot prepared with supplied banner.");
+const aboutPath = path.join(siteDir, "app/sobre-nos/page.tsx");
+let aboutLines = (await fs.readFile(aboutPath, "utf8")).split("\n");
+aboutLines = aboutLines.filter((line) => !line.startsWith("const pillars = ") && !line.includes('className="section pillarsSection"'));
+
+const methodologyIndex = aboutLines.findIndex((line) => line.includes('className="section methodologySection"'));
+const companiesIndex = aboutLines.findIndex((line) => line.includes('className="section groupCompaniesSection"'));
+if (methodologyIndex < 0 || companiesIndex < 0) {
+  throw new Error("Could not locate Methodology or Group Companies on the static About snapshot.");
+}
+if (methodologyIndex > companiesIndex) {
+  const [methodologyLine] = aboutLines.splice(methodologyIndex, 1);
+  const refreshedCompaniesIndex = aboutLines.findIndex((line) => line.includes('className="section groupCompaniesSection"'));
+  aboutLines.splice(refreshedCompaniesIndex, 0, methodologyLine);
+}
+
+const about = aboutLines.join("\n");
+if (about.includes("NOSSOS PILARES") || about.includes('className="section pillarsSection"')) {
+  throw new Error("The Our Pillars section was not removed from the static About snapshot.");
+}
+if (about.indexOf('className="section methodologySection"') > about.indexOf('className="section groupCompaniesSection"')) {
+  throw new Error("Methodology was not moved into the former Our Pillars position.");
+}
+await fs.writeFile(aboutPath, about);
+
+console.log("GitHub Pages static public snapshot prepared with supplied banner and About page ordering.");
