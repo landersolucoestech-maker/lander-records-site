@@ -4,6 +4,8 @@
 
 .siteHeader .brand img {
   max-height: 78px !important;
+  transform: scale(1.75);
+  transform-origin: left center;
 }
 
 .headerActions {
@@ -125,7 +127,10 @@
     grid-template-columns: minmax(120px,1fr) auto;
     gap: 16px;
   }
-  .siteHeader .brand img { max-height: 64px !important; }
+  .siteHeader .brand img {
+    max-height: 64px !important;
+    transform: none;
+  }
   .desktopNav { display: none !important; }
   .mobileNav { display: block; }
   .headerActions { grid-column: 2; }
