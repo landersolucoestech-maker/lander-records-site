@@ -2,8 +2,9 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as coreSchema from "./schema";
 import * as artistManagementSchema from "./artist-management-schema";
+import * as newsManagementSchema from "./news-management-schema";
 
-const schema = { ...coreSchema, ...artistManagementSchema };
+const schema = { ...coreSchema, ...artistManagementSchema, ...newsManagementSchema };
 
 let client: ReturnType<typeof postgres> | null = null;
 type Database = ReturnType<typeof drizzle<typeof schema>>;
