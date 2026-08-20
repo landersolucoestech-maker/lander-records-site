@@ -4,9 +4,17 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Footer, Header } from "../../components/SiteChrome";
 import { getPublishedPostBySlug, getPublishedPosts, getSlugRedirect } from "../../../lib/content";
+import { getPublicPostPresentation } from "../../../lib/news-content";
 import { absoluteUrl, buildMetadata } from "../../../lib/seo";
 
 export const dynamic = "force-dynamic";
+
+const socialLabels: Record<string, string> = {
+  facebook: "Facebook",
+  instagram: "Instagram",
+  youtube: "YouTube",
+  tiktok: "TikTok",
+};
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -16,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: article.seoTitle || article.title,
     description: article.seoDescription || article.excerpt,
     canonical: article.canonicalUrl || absoluteUrl(`/noticias/${article.slug}`),
-    image: article.ogImage || article.coverImage || undefined,
+    image: article.coverImage || undefined,
     type: "article",
   });
 }
@@ -29,7 +37,9 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
     if (nextSlug) redirect(`/noticias/${nextSlug}`);
     notFound();
   }
+  const presentation = await getPublicPostPresentation(article.id);
   const related = allPosts.filter((item) => item.slug !== article.slug).slice(0, 2);
+  const publicationUrl = presentation.publicationLink || `/noticias/${article.slug}`;
 
   return (
     <main>
@@ -43,13 +53,21 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
           <h1>{article.title}</h1>
           <div className="articleByline">
             <span>{article.publishedAt ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(article.publishedAt) : ""}</span>
-            <span>{article.authorName}</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+              {presentation.authorImage ? <img src={presentation.authorImage} alt={article.authorName} style={{ width: 30, height: 30, borderRadius: "50%", objectFit: "cover" }} /> : null}
+              {article.authorName}
+            </span>
           </div>
         </div>
         <div className="articleBody">
           <div className="articleContent markdownContent">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{article.contentMarkdown}</ReactMarkdown>
           </div>
+          <aside className="shareRail">
+            <span>Compartilhe</span>
+            {Object.entries(presentation.links).map(([platform, url]) => <a key={platform} href={url} target="_blank" rel="noreferrer">{socialLabels[platform] || platform}</a>)}
+            <a href={publicationUrl}>Link</a>
+          </aside>
         </div>
       </article>
       <section className="section relatedNews">
@@ -72,7 +90,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
             headline: article.title,
             description: article.excerpt,
             datePublished: article.publishedAt?.toISOString(),
-            author: { "@type": "Organization", name: article.authorName },
+            author: { "@type": "Person", name: article.authorName, image: presentation.authorImage || undefined },
             publisher: { "@type": "Organization", name: "Lander Records" },
             mainEntityOfPage: absoluteUrl(`/noticias/${article.slug}`),
             image: article.coverImage || undefined,
