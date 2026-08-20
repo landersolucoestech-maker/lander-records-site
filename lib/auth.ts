@@ -3,6 +3,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { and, eq, gt } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { AUTHENTICATION_ENABLED } from "./auth-config";
 import { getDb } from "./db";
 import { adminSessions, adminUsers, auditLogs } from "./db/schema";
 
@@ -30,7 +31,39 @@ function roleLevel(role: AdminRole) {
   return { viewer: 1, editor: 2, admin: 3, owner: 4 }[role];
 }
 
+async function getAuthenticationDisabledSession(): Promise<AdminSession> {
+  const rows = await getDb()
+    .select({
+      id: adminUsers.id,
+      email: adminUsers.email,
+      name: adminUsers.name,
+    })
+    .from(adminUsers)
+    .where(eq(adminUsers.isActive, true))
+    .limit(1);
+
+  const user = rows[0];
+  if (!user) {
+    throw new Error("A autenticação do CMS está desativada, mas não existe nenhum usuário administrativo ativo para servir como identidade de auditoria.");
+  }
+
+  return {
+    sessionId: "authentication-disabled",
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name || "Lander CMS",
+      role: "owner",
+      mustChangePassword: false,
+    },
+  };
+}
+
 export async function getAdminSession(): Promise<AdminSession | null> {
+  if (!AUTHENTICATION_ENABLED) {
+    return getAuthenticationDisabledSession();
+  }
+
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
   if (!token) return null;
