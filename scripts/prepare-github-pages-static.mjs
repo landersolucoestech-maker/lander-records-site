@@ -41,6 +41,10 @@ const bannerDestination = path.join(siteDir, "public", "lander-records-anuncie-b
 await fs.mkdir(path.dirname(bannerDestination), { recursive: true });
 await fs.copyFile(bannerSource, bannerDestination);
 
+const artistPromoSource = path.join(controlRoot, "public", "dj-stay-promo.webp");
+const artistPromoDestination = path.join(siteDir, "public", "dj-stay-promo.webp");
+await fs.copyFile(artistPromoSource, artistPromoDestination);
+
 const homePath = path.join(siteDir, "app/page.tsx");
 let home = await fs.readFile(homePath, "utf8");
 const newsMarker = `        <section className="homeBlock"><div className="homeBlockHeader"><div><p className="homePortalLabel">PORTAL LANDER</p><h2 className="homeEditorialTitle">ÚLTIMAS <span>NOVIDADES</span></h2></div>`;
@@ -84,7 +88,7 @@ await fs.writeFile(aboutPath, about);
 const artistPath = path.join(siteDir, "app/artistas/[slug]/page.tsx");
 let artistPage = await fs.readFile(artistPath, "utf8");
 const socialFrameMarker = `          <div className="sidebarBlock"><p className="eyebrow dark">REDES E PLATAFORMAS</p>{artist.socials.map((social) => <div className="socialMetric" key={social}><span>{social}</span><strong>Sincronização automática</strong></div>)}</div>`;
-const djStayPoster = `\n          {artist.slug === "dj-stay" ? (\n            <Link className="artistPromoPoster" href="/contato" aria-label="Contrate DJ Stay">\n              <img src={djStayBanner} alt="Contrate DJ Stay" />\n            </Link>\n          ) : null}`;
+const djStayPoster = `\n          {artist.slug === "dj-stay" ? (\n            <Link className="artistPromoPoster" href="/contato" aria-label="Contrate DJ Stay">\n              <img src="/lander-records-site/dj-stay-promo.webp" alt="Contrate DJ Stay" width={350} height={622} />\n            </Link>\n          ) : null}`;
 
 if (!artistPage.includes(socialFrameMarker)) {
   throw new Error("Could not locate the artist social/platform frame in the static Artist detail snapshot.");
@@ -92,9 +96,9 @@ if (!artistPage.includes(socialFrameMarker)) {
 if (!artistPage.includes('className="artistPromoPoster"')) {
   artistPage = artistPage.replace(socialFrameMarker, socialFrameMarker + djStayPoster);
 }
-if (!artistPage.includes('className="artistPromoPoster"') || artistPage.includes('className="artistBookingBanner"')) {
-  throw new Error("DJ Stay poster placement below the social frame was not prepared correctly.");
+if (!artistPage.includes('className="artistPromoPoster"') || !artistPage.includes("dj-stay-promo.webp") || artistPage.includes('className="artistBookingBanner"')) {
+  throw new Error("DJ Stay poster placement or image asset was not prepared correctly.");
 }
 await fs.writeFile(artistPath, artistPage);
 
-console.log("GitHub Pages static public snapshot prepared with Home banner, About ordering, legal static compatibility, and the DJ Stay poster directly below the artist social frame.");
+console.log("GitHub Pages static public snapshot prepared with Home banner, About ordering, legal static compatibility, and the DJ Stay promo image below the artist social frame.");
