@@ -1,5 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { materializeBanner } from "./materialize-banner.mjs";
 
 const siteDir = process.argv[2];
 if (!siteDir) throw new Error("Usage: node prepare-github-pages-static.mjs <site-dir>");
@@ -23,4 +25,26 @@ if (!chrome.includes("lander-records-logo.webp") || !chrome.includes("/politica-
 }
 await fs.writeFile(chromePath, chrome);
 
-console.log("GitHub Pages static public snapshot prepared.");
+const controlRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const bannerSource = await materializeBanner(controlRoot);
+const bannerDestination = path.join(siteDir, "public", "lander-records-anuncie-banner.webp");
+await fs.mkdir(path.dirname(bannerDestination), { recursive: true });
+await fs.copyFile(bannerSource, bannerDestination);
+
+const homePath = path.join(siteDir, "app/page.tsx");
+let home = await fs.readFile(homePath, "utf8");
+const newsMarker = `        <section className="homeBlock"><div className="homeBlockHeader"><div><p className="homePortalLabel">PORTAL LANDER</p><h2 className="homeEditorialTitle">ÚLTIMAS <span>NOVIDADES</span></h2></div>`;
+const bannerSection = `        <section aria-label="Anuncie com a Lander Records" style={{marginTop:24}}><img src="/lander-records-site/lander-records-anuncie-banner.webp" alt="Anuncie com a gente — Lander Records" width={2048} height={682} style={{display:"block",width:"100%",height:"auto"}} /></section>\n`;
+
+if (!home.includes(newsMarker)) {
+  throw new Error("Could not locate the news section in the static Home snapshot.");
+}
+if (!home.includes("lander-records-anuncie-banner.webp")) {
+  home = home.replace(newsMarker, bannerSection + newsMarker);
+}
+if (!home.includes("lander-records-anuncie-banner.webp")) {
+  throw new Error("Static advertising banner was not inserted correctly.");
+}
+await fs.writeFile(homePath, home);
+
+console.log("GitHub Pages static public snapshot prepared with supplied banner.");
