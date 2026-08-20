@@ -58,11 +58,10 @@ CREATE TABLE IF NOT EXISTS integration_metric_cache (
 CREATE INDEX IF NOT EXISTS integration_metric_cache_fetched_idx
   ON integration_metric_cache(fetched_at);
 
--- Existing artist_metrics values predate the Soundcharts-only source rule and have no
--- provenance column. Remove them once during this migration so the public site can never
--- present a legacy/manual number as if it came from Soundcharts. Fresh values are written
--- only by the server-side Soundcharts synchronization layer.
-DELETE FROM artist_metrics;
+-- Mark all pre-integration artist metrics as legacy. The migration runner intentionally
+-- replays SQL files, so only non-Soundcharts rows are removed on later executions.
+ALTER TABLE artist_metrics ADD COLUMN IF NOT EXISTS source varchar(40) NOT NULL DEFAULT 'legacy';
+DELETE FROM artist_metrics WHERE source <> 'soundcharts';
 
 CREATE TABLE IF NOT EXISTS spotify_release_cache (
   position integer PRIMARY KEY CHECK (position BETWEEN 1 AND 5),
