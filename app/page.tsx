@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Footer, Header } from "./components/SiteChrome";
+import { advertisingBannerSrc } from "./banner-data";
 import { getPageContent, getPublishedArtists, getPublishedPosts } from "../lib/content";
 import { getCachedSpotifyReleases, getLanderRecordsSocialMetrics } from "../lib/integrations/sync";
 import { buildMetadata } from "../lib/seo";
@@ -146,7 +147,7 @@ export default async function Home() {
         ) : null}
 
         <section className="homeBlock" aria-label="Publicidade Lander Records">
-          <img src="/lander-records-anuncie-banner.webp" alt="Anuncie com a Lander Records" width={1280} height={426} style={{ display: "block", width: "100%", maxWidth: "100%", height: "auto", objectFit: "contain", borderRadius: 10 }} />
+          <img src={advertisingBannerSrc} alt="Anuncie com a Lander Records" width={1280} height={426} style={{ display: "block", width: "100%", maxWidth: "100%", height: "auto", objectFit: "contain", borderRadius: 10 }} />
         </section>
 
         {newsSection ? (
