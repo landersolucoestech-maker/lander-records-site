@@ -61,17 +61,15 @@
 }
 .embedPlaceholder { min-height: 230px; width: 100%; }
 
-.artistPromoPoster {
-  order: 2147483647 !important;
+.artistMediaPromo {
   display: block;
   width: 100%;
-  overflow: hidden;
-  border-radius: 12px;
-  background: #050505;
+  margin-top: 16px;
   line-height: 0;
+  overflow: hidden;
   cursor: pointer;
 }
-.artistPromoPoster img {
+.artistMediaPromo img {
   display: block;
   width: 100%;
   height: auto;
@@ -82,7 +80,6 @@
   .artistProfileHero.artistPhotoHero { width: min(760px,calc(100% - 32px)); height: clamp(280px,48vw,360px); margin-top: 120px; background-position: center center !important; }
   .artistProfileBody { grid-template-columns: 1fr; width: min(760px,calc(100% - 32px)); }
   .artistSidebar { margin-top: 10px; }
-  .artistPromoPoster { width: min(350px,100%); }
 }
 
 @media (max-width: 560px) {
@@ -90,5 +87,4 @@
   .artistProfileBody { width: calc(100% - 24px); padding-bottom: 24px; }
   .embedGrid { grid-template-columns: 1fr; }
   .artistSocialStatsBlock,.artistPlatformLinks { grid-template-columns: repeat(2,minmax(0,1fr)); }
-  .artistPromoPoster { width: 100%; }
 }
