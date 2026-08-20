@@ -1,17 +1,18 @@
 import Link from "next/link";
-import { createPost } from "../../../actions";
+import PostForm from "../PostForm";
+import { loadPostOptions } from "../editor-data";
 
-export default function NewPostPage() {
+export const dynamic = "force-dynamic";
+
+export default async function NewPostPage() {
+  const options = await loadPostOptions();
   return (
     <div className="adminPage">
-      <header className="adminPageHeader"><div><p className="adminEyebrow">EDITORIAL</p><h1>Nova publicação</h1><p>O registro começa como rascunho e só aparece publicamente quando for publicado.</p></div><Link className="adminButton" href="/admin/posts">Voltar</Link></header>
-      <section className="adminPanel">
-        <form action={createPost} className="adminForm">
-          <label>Título<input name="title" required /></label>
-          <label>Slug<input name="slug" placeholder="gerado pelo título se vazio" /></label>
-          <button className="adminButton primary" type="submit">Criar rascunho</button>
-        </form>
-      </section>
+      <header className="adminPageHeader">
+        <div><p className="adminEyebrow">NOTÍCIAS</p><h1>Nova notícia</h1><p>Cadastre publicação, imagem principal, autor, texto, links e conteúdo em um único fluxo.</p></div>
+        <Link className="adminButton" href="/admin/posts">Voltar</Link>
+      </header>
+      <PostForm {...options} />
     </div>
   );
 }
