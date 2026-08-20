@@ -45,6 +45,7 @@ jobs:
             sed -i '/import "\.\/navigation-polish\.css";/a import "./home-shortcut-premium.css";' site/app/layout.tsx
           fi
           node control/scripts/prepare-github-pages-static.mjs site
+          node control/scripts/fix-dj-stay-poster-order.mjs site
 
       - name: Setup Node
         uses: actions/setup-node@v4
