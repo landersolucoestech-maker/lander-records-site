@@ -13,6 +13,7 @@ import "./page-transition-loader.css";
 import "./artists-grid-image.css";
 import "./site-polish.css";
 import "./home-current-polish.css";
+import "./home-shortcut-premium.css";
 import "./navigation-polish.css";
 import "./admin/admin.css";
 import { LazyReveal } from "./components/LazyReveal";
