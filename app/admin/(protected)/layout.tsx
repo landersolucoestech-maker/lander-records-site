@@ -4,17 +4,15 @@ import { requireAdmin } from "../../../lib/auth";
 import { logoutAction } from "../actions";
 
 const nav = [
-  ["Visão geral", "/admin"],
+  ["Dashboard", "/admin"],
   ["Artistas", "/admin/artists"],
-  ["Categorias de artistas", "/admin/artist-categories"],
+  ["Categorias", "/admin/categories"],
   ["Notícias / Posts", "/admin/posts"],
-  ["Categorias de posts", "/admin/post-categories"],
   ["Tags", "/admin/tags"],
   ["Lançamentos", "/admin/releases"],
   ["Páginas e seções", "/admin/pages"],
   ["Navegação", "/admin/navigation"],
   ["Mídia", "/admin/media"],
-  ["Contatos / Leads", "/admin/contacts"],
   ["Configurações", "/admin/settings"],
   ["Usuários", "/admin/users"],
   ["Auditoria", "/admin/audit"],
