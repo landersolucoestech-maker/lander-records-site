@@ -57,6 +57,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
       : artist.eyebrow || artist.categories.map((category) => category.name).join(" · ");
   const metrics = Object.entries(artist.metrics).filter(([, value]) => value > 0);
   const bookingHref = `/contato?assunto=contratacao-de-artista&artista=${encodeURIComponent(artist.name)}`;
+  const promoImage = artist.slug === "dj-stay" ? (artist.heroImage || artist.cardImage) : "";
 
   return (
     <main>
@@ -128,17 +129,13 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
               </div>
             </div>
           ) : null}
+          {promoImage ? (
+            <Link className="artistPromoPoster" href={bookingHref} aria-label={`Contrate ${artist.name}`}>
+              <img src={promoImage} alt={`Contrate ${artist.name}`} />
+            </Link>
+          ) : null}
         </aside>
       </section>
-
-      <Link className="artistBookingBanner" href={bookingHref} aria-label={`Agende seu show com ${artist.name}`}>
-        <span className="artistBookingBannerCopy">
-          <span>AGENDE SEU SHOW</span>
-          <strong>ENTRE EM CONTATO<br />COM A GENTE</strong>
-        </span>
-        <span className="artistBookingBannerCta">SAIBA MAIS <b aria-hidden="true">→</b></span>
-        <span className="artistBookingBannerBrand">LANDER <small>RECORDS</small></span>
-      </Link>
 
       <script
         type="application/ld+json"
