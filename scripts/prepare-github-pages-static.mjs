@@ -25,6 +25,16 @@ if (!chrome.includes("lander-records-logo.webp") || !chrome.includes("/politica-
 }
 await fs.writeFile(chromePath, chrome);
 
+for (const legalRelativePath of ["app/politica-de-privacidade/page.tsx", "app/termos-e-condicoes/page.tsx"]) {
+  const legalPath = path.join(siteDir, legalRelativePath);
+  let legalPage = await fs.readFile(legalPath, "utf8");
+  legalPage = legalPage.replace(/\nexport const dynamic = "force-dynamic";\n/, "\n");
+  if (legalPage.includes('export const dynamic = "force-dynamic"')) {
+    throw new Error(`Could not make ${legalRelativePath} static-export compatible.`);
+  }
+  await fs.writeFile(legalPath, legalPage);
+}
+
 const controlRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const bannerSource = await materializeBanner(controlRoot);
 const bannerDestination = path.join(siteDir, "public", "lander-records-anuncie-banner.webp");
@@ -87,4 +97,4 @@ if (!artistPage.includes('className="artistBookingBanner"')) {
 }
 await fs.writeFile(artistPath, artistPage);
 
-console.log("GitHub Pages static public snapshot prepared with supplied Home banner, About ordering, and Artist booking CTA.");
+console.log("GitHub Pages static public snapshot prepared with Home banner, About ordering, legal static compatibility, and Artist booking CTA.");
