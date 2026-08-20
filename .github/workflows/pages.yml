@@ -1,15 +1,79 @@
-name: Legacy GitHub Pages Freeze
+name: Deploy Public Site to GitHub Pages
 
 on:
+  push:
+    branches:
+      - dev
   workflow_dispatch:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
-  notice:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          echo "This repository is migrating from static GitHub Pages to a dynamic Next.js CMS runtime."
-          echo "The last known-good GitHub Pages artifact remains the public fallback until the dynamic cutover is completed."
+      - name: Checkout current dev
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          path: control
+
+      - name: Checkout static public-site baseline
+        uses: actions/checkout@v4
+        with:
+          ref: b15b3bdd8af102f496166aab1bb011b73f2b63a1
+          path: site
+
+      - name: Apply requested public-site changes
+        run: |
+          cp control/public/lander-records-anuncie-banner.webp site/public/lander-records-anuncie-banner.webp
+          cp control/public/lander-records-logo.webp site/public/lander-records-logo.webp
+          mkdir -p site/app/politica-de-privacidade site/app/termos-e-condicoes
+          cp control/app/politica-de-privacidade/page.tsx site/app/politica-de-privacidade/page.tsx
+          cp control/app/termos-e-condicoes/page.tsx site/app/termos-e-condicoes/page.tsx
+          node control/scripts/prepare-github-pages-static.mjs site
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install dependencies
+        working-directory: site
+        run: npm ci
+
+      - name: Typecheck static public site
+        working-directory: site
+        run: npm run typecheck
+
+      - name: Build static public site
+        working-directory: site
+        run: npm run build
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/out
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
