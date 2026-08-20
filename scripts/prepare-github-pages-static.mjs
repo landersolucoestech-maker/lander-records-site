@@ -4,18 +4,6 @@ import path from "node:path";
 const siteDir = process.argv[2];
 if (!siteDir) throw new Error("Usage: node prepare-github-pages-static.mjs <site-dir>");
 
-const pagePath = path.join(siteDir, "app/page.tsx");
-let page = await fs.readFile(pagePath, "utf8");
-const newsMarker = "</div></section>\n        <section className=\"homeBlock\"><div className=\"homeBlockHeader\"><div><p className=\"homePortalLabel\">PORTAL LANDER</p>";
-if (!page.includes("lander-records-anuncie-banner.webp")) {
-  if (!page.includes(newsMarker)) throw new Error("Home marker for banner insertion was not found.");
-  page = page.replace(
-    newsMarker,
-    `</div></section>\n        <section aria-label=\"Publicidade Lander Records\" style={{width:\"min(1280px, calc(100vw - 28px))\",margin:\"34px 0 22px 50%\",transform:\"translateX(-50%)\"}}><img src=\"/lander-records-site/lander-records-anuncie-banner.webp\" alt=\"Anuncie com a Lander Records\" width={1280} height={426} style={{display:\"block\",width:\"100%\",height:\"auto\"}} /></section>\n        <section className=\"homeBlock\"><div className=\"homeBlockHeader\"><div><p className=\"homePortalLabel\">PORTAL LANDER</p>`
-  );
-}
-await fs.writeFile(pagePath, page);
-
 const chromePath = path.join(siteDir, "app/components/SiteChrome.tsx");
 let chrome = await fs.readFile(chromePath, "utf8");
 chrome = chrome.replace(
