@@ -7,9 +7,16 @@ import { absoluteUrl, buildMetadata } from "../../../lib/seo";
 export const dynamic = "force-dynamic";
 
 function embedUrl(type: string, url: string) {
-  if (type.toLowerCase() === "youtube") {
+  const normalizedType = type.toLowerCase();
+  if (normalizedType === "youtube") {
     const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&?/]+)/);
     return match ? `https://www.youtube.com/embed/${match[1]}` : url;
+  }
+  if (normalizedType === "spotify") {
+    const iframeSrc = url.match(/src=["']([^"']+)["']/i)?.[1];
+    const source = iframeSrc || url;
+    const match = source.match(/open\.spotify\.com\/(?:embed\/)?(artist|album|track|playlist|show|episode)\/([A-Za-z0-9]+)/i);
+    return match ? `https://open.spotify.com/embed/${match[1].toLowerCase()}/${match[2]}` : "";
   }
   return url;
 }
@@ -79,17 +86,23 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
 
           {artist.embeds.length ? (
             <div className="embedGrid" id="midia">
-              {artist.embeds.map((embed) => (
-                <div className="artistEmbed" key={embed.id}>
-                  <span>{embed.type.toUpperCase()}</span>
-                  <strong>{embed.title}</strong>
-                  {embed.type.toLowerCase() === "youtube" ? (
-                    <iframe src={embedUrl(embed.type, embed.url)} title={embed.title || `Vídeo de ${artist.name}`} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-                  ) : (
-                    <a className="button buttonOutline" href={embed.url} target="_blank" rel="noreferrer">Abrir {embed.type} ↗</a>
-                  )}
-                </div>
-              ))}
+              {artist.embeds.map((embed) => {
+                const type = embed.type.toLowerCase();
+                const resolvedEmbedUrl = embedUrl(embed.type, embed.url);
+                return (
+                  <div className="artistEmbed" key={embed.id}>
+                    <span>{embed.type.toUpperCase()}</span>
+                    <strong>{embed.title}</strong>
+                    {type === "youtube" ? (
+                      <iframe src={resolvedEmbedUrl} title={embed.title || `Vídeo de ${artist.name}`} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+                    ) : type === "spotify" && resolvedEmbedUrl ? (
+                      <iframe src={resolvedEmbedUrl} title={embed.title || `Spotify de ${artist.name}`} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
+                    ) : (
+                      <a className="button buttonOutline" href={embed.url} target="_blank" rel="noreferrer">Abrir {embed.type} ↗</a>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           ) : null}
         </article>
