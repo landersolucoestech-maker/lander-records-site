@@ -1,12 +1,12 @@
 "use server";
 
-import { put } from "@vercel/blob";
 import { and, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import sharp from "sharp";
 import { audit, requireAdmin } from "../../lib/auth";
 import { getDb } from "../../lib/db";
+import { uploadMedia as uploadStoredMedia } from "@/lib/storage";
 import { postLinks, postProfiles } from "../../lib/db/news-management-schema";
 import { mediaAssets, postTags, posts, slugRedirects } from "../../lib/db/schema";
 import { slugify } from "../../lib/slug";
@@ -49,16 +49,14 @@ async function prepareImage(formData: FormData, fieldName: string, slug: string,
   if (!(file instanceof File) || file.size === 0) return null;
   if (!file.type.startsWith("image/")) throw new Error("O arquivo enviado precisa ser uma imagem válida.");
   if (file.size > MAX_IMAGE_BYTES) throw new Error("A imagem enviada excede o limite de 12 MB.");
-  if (!process.env.BLOB_READ_WRITE_TOKEN) throw new Error("O armazenamento de mídia não está configurado para uploads.");
-
   const source = Buffer.from(await file.arrayBuffer());
   const output = await sharp(source).rotate().resize({ width: 2400, height: 2400, fit: "inside", withoutEnlargement: true }).webp({ quality: 84 }).toBuffer({ resolveWithObject: true });
   const key = `media/news/${slug}/${kind}-${crypto.randomUUID()}.webp`;
-  const blob = await put(key, output.data, { access: "public", addRandomSuffix: false, contentType: "image/webp" });
+  const stored = await uploadStoredMedia(key, output.data, "image/webp");
   return {
-    storageProvider: "vercel_blob" as const,
+    storageProvider: "supabase_storage" as const,
     storageKey: key,
-    url: blob.url,
+    url: stored.url,
     mimeType: "image/webp",
     byteSize: output.info.size,
     width: output.info.width,

@@ -1,6 +1,5 @@
 "use server";
 
-import { put } from "@vercel/blob";
 import { and, eq, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -15,6 +14,7 @@ import {
 } from "../../lib/auth";
 import { dispatchOutboxEvent } from "../../lib/contact";
 import { getDb } from "../../lib/db";
+import { deleteMedia, uploadMedia as uploadStoredMedia } from "@/lib/storage";
 import {
   adminSessions,
   adminUsers,
@@ -688,29 +688,30 @@ export async function uploadMedia(formData: FormData) {
   if (!file.type.startsWith("image/")) throw new Error("A biblioteca de mídia aceita imagens neste estágio.");
   if (file.size > 12 * 1024 * 1024) throw new Error("Arquivo maior que 12 MB.");
 
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    throw new Error("BLOB_READ_WRITE_TOKEN não configurado. Upload real de mídia permanece bloqueado até o storage ser provisionado.");
-  }
-
   const buffer = Buffer.from(await file.arrayBuffer());
   const image = sharp(buffer).rotate().resize({ width: 2400, height: 2400, fit: "inside", withoutEnlargement: true }).webp({ quality: 84 });
   const output = await image.toBuffer({ resolveWithObject: true });
-  const key = `media/${crypto.randomUUID()}.webp`;
-  const blob = await put(key, output.data, { access: "public", addRandomSuffix: false, contentType: "image/webp" });
-
-  const rows = await getDb().insert(mediaAssets).values({
-    storageProvider: "vercel_blob",
-    storageKey: key,
-    url: blob.url,
-    mimeType: "image/webp",
-    byteSize: output.data.byteLength,
-    width: output.info.width,
-    height: output.info.height,
-    altText,
-    originalFilename: file.name,
-    createdBy: session.user.id,
-    updatedBy: session.user.id,
-  }).returning({ id: mediaAssets.id });
+  const key = `site/${crypto.randomUUID()}.webp`;
+  const stored = await uploadStoredMedia(key, output.data, "image/webp");
+  let rows;
+  try {
+    rows = await getDb().insert(mediaAssets).values({
+      storageProvider: "supabase_storage",
+      storageKey: stored.key,
+      url: stored.url,
+      mimeType: "image/webp",
+      byteSize: output.data.byteLength,
+      width: output.info.width,
+      height: output.info.height,
+      altText,
+      originalFilename: file.name,
+      createdBy: session.user.id,
+      updatedBy: session.user.id,
+    }).returning({ id: mediaAssets.id });
+  } catch (error) {
+    await deleteMedia(stored.key).catch(() => undefined);
+    throw error;
+  }
 
   await audit(session.user.id, "media.uploaded", "media_asset", rows[0].id, { originalFilename: file.name, byteSize: output.data.byteLength });
   revalidatePath("/admin/media");

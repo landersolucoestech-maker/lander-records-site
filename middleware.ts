@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { AUTHENTICATION_ENABLED } from "./lib/auth-config";
+import { AUTHENTICATION_ENABLED } from "./lib/auth/config";
 
 const SESSION_COOKIE = "lander_admin_session";
 

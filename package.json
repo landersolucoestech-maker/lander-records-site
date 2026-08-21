@@ -8,14 +8,15 @@
     "prebuild": "node scripts/materialize-banner.mjs",
     "build": "next build",
     "start": "next start",
+    "smoke": "node scripts/deploy/ionos-smoke.mjs",
     "typecheck": "tsc --noEmit",
     "db:migrate": "node scripts/migrate.mjs",
-    "db:seed": "node scripts/migrate.mjs",
-    "test:integration": "node scripts/integration-test.mjs && node scripts/integrations-db-test.mjs",
+    "db:seed": "node scripts/seed.mjs",
+    "test:integration": "node tests/integration/cms.mjs && node tests/integration/integrations-db.mjs",
     "admin:bootstrap": "node scripts/bootstrap-admin.mjs"
   },
   "dependencies": {
-    "@vercel/blob": "^1.1.1",
+    "@supabase/supabase-js": "^2.112.3",
     "bcryptjs": "^3.0.2",
     "drizzle-orm": "^0.44.5",
     "next": "^15.1.3",

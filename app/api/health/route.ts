@@ -7,8 +7,8 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     await getDb().execute(sql`select 1`);
-    return NextResponse.json({ ok: true, service: "lander-records-cms" }, { status: 200 });
+    return NextResponse.json({ status: "ok", application: "ok", database: "ok" }, { status: 200 });
   } catch {
-    return NextResponse.json({ ok: false, service: "lander-records-cms" }, { status: 503 });
+    return NextResponse.json({ status: "error", application: "ok", database: "error" }, { status: 503 });
   }
 }

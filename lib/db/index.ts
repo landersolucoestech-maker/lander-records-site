@@ -8,9 +8,15 @@ import * as integrationSchema from "./integration-schema";
 
 const schema = { ...coreSchema, ...artistManagementSchema, ...newsManagementSchema, ...pageManagementSchema, ...integrationSchema };
 
-let client: ReturnType<typeof postgres> | null = null;
 type Database = ReturnType<typeof drizzle<typeof schema>>;
-let database: Database | null = null;
+type DbGlobal = {
+  client?: ReturnType<typeof postgres>;
+  database?: Database;
+  databaseUrl?: string;
+};
+
+const dbGlobal = globalThis as typeof globalThis & { __landerRecordsDb?: DbGlobal };
+const state = dbGlobal.__landerRecordsDb ?? (dbGlobal.__landerRecordsDb = {});
 
 export function getDb() {
   const databaseUrl = process.env.DATABASE_URL;
@@ -18,17 +24,20 @@ export function getDb() {
     throw new Error("DATABASE_URL is not configured. The CMS requires PostgreSQL.");
   }
 
-  if (!client) {
-    client = postgres(databaseUrl, {
-      max: process.env.NODE_ENV === "production" ? 10 : 3,
+  if (!state.client || state.databaseUrl !== databaseUrl) {
+    state.client = postgres(databaseUrl, {
+      max: process.env.NODE_ENV === "production" ? 5 : 1,
       prepare: false,
-      idle_timeout: 20,
+      connect_timeout: 10,
+      idle_timeout: 10,
     });
+    state.databaseUrl = databaseUrl;
+    state.database = undefined;
   }
 
-  if (!database) {
-    database = drizzle(client, { schema });
+  if (!state.database) {
+    state.database = drizzle(state.client, { schema });
   }
 
-  return database;
+  return state.database;
 }

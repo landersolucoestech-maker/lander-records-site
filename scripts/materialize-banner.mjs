@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 const EXPECTED_PARTS = 8;
 const EXPECTED_SHA256 = "277dccbef14b3006ada836ba1760fa7465e43d718a8371bcbefd6e6d35eb7570";
@@ -41,7 +42,7 @@ export async function materializeBanner(rootDir = process.cwd()) {
   return outputPath;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const outputPath = await materializeBanner();
   console.log(`Banner asset materialized: ${outputPath}`);
 }

@@ -50,7 +50,7 @@ CREATE INDEX IF NOT EXISTS audit_logs_entity_idx ON audit_logs(entity_type, enti
 
 CREATE TABLE IF NOT EXISTS media_assets (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  storage_provider varchar(40) NOT NULL DEFAULT 'vercel_blob',
+  storage_provider varchar(40) NOT NULL DEFAULT 'local',
   storage_key text NOT NULL UNIQUE,
   url text NOT NULL,
   mime_type varchar(120) NOT NULL,

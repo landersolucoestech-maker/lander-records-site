@@ -9,13 +9,15 @@ Required capabilities:
 - Node-compatible Next.js runtime;
 - PostgreSQL connection (`DATABASE_URL`);
 - HTTPS;
-- object storage token for media;
+- Supabase Storage bucket `media` and server-only service-role credentials;
 - environment secrets;
 - ability to run the migration once before serving traffic.
 
 ## Recommended target
 
-A Next.js-native deployment platform with managed PostgreSQL and object storage is the simplest operational fit. The application does not depend on Supabase.
+An IONOS Node.js runtime with PostgreSQL is the intended production fit. The application does not depend on Supabase or a platform-specific object storage service.
+
+The manual deployment workflow is `.github/workflows/deploy-ionos.yml`. Configure `IONOS_HOST`, `IONOS_USER` and `IONOS_SSH_KEY` as GitHub Actions secrets before using it.
 
 ## Required environment variables
 
@@ -29,7 +31,9 @@ Mandatory before public traffic:
 
 Mandatory before admin media upload:
 
-- `BLOB_READ_WRITE_TOKEN`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_STORAGE_BUCKET=media`
 
 Optional until the Lander SaaS endpoint exists:
 
@@ -43,7 +47,7 @@ Optional until the Lander SaaS endpoint exists:
 3. set runtime variables;
 4. run `npm run db:migrate`;
 5. create first owner with `npm run admin:bootstrap`;
-6. provision object storage and set its token;
+6. create or validate the Supabase Storage bucket `media`;
 7. deploy this branch to a preview;
 8. validate public routes and `/admin`;
 9. validate artist/category/post CRUD and publication;

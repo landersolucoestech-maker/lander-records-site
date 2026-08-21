@@ -9,7 +9,7 @@ This branch replaces the former GitHub Pages static-export content model with a 
 - Next.js App Router
 - PostgreSQL
 - Drizzle ORM
-- Vercel Blob-compatible media storage
+- Local persistent media storage under `public/uploads`
 - Server-side admin sessions and RBAC
 - Structured page sections instead of arbitrary page-builder JSON
 - Durable contact submission + integration outbox

@@ -104,7 +104,7 @@ When no real synchronized value exists, the UI renders an unavailable state (`â€
 
 - Spotify release refresh window: 6 hours.
 - Soundcharts social refresh window: 24 hours. This intentionally avoids a provider request on every pageview and is compatible with social-stat refresh frequencies that are not real-time.
-- Scheduled server sync: `/api/cron/integrations`, protected by `CRON_SECRET` and scheduled every six hours in `vercel.json`; Soundcharts internally skips while its 24-hour cache remains fresh.
+- Scheduled server sync: `/api/cron/integrations`, protected by `CRON_SECRET` and scheduled every six hours by the hosting provider; Soundcharts internally skips while its 24-hour cache remains fresh.
 - Provider errors are persisted for CMS observability.
 - A failed external request does not zero or delete the last valid metric/release values.
 - Soundcharts 429 responses are surfaced as rate-limit errors; Spotify respects `Retry-After` for short retries.

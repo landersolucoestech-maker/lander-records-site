@@ -76,7 +76,7 @@ export function PageTransitionLoader() {
       <div className="pageTransitionLoaderInner">
         <img
           className="pageTransitionLoaderLogo"
-          src="/lander-records-site/lander-records-logo.webp"
+          src="/lander-records-logo.webp"
           alt="Lander Records"
           draggable={false}
         />
