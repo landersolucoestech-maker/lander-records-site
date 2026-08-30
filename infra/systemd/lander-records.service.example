@@ -1,15 +1,25 @@
 [Unit]
 Description=Lander Records Next.js application
-After=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
 WorkingDirectory=/var/www/lander-records/current
 EnvironmentFile=/var/www/lander-records/shared/.env.production
+Environment=HOSTNAME=127.0.0.1
+Environment=PORT=3000
 ExecStart=/usr/bin/node server.js
-Restart=always
+Restart=on-failure
 RestartSec=5
-User=lander
+TimeoutStopSec=30
+User=landerrecords
+Group=landerrecords
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/www/lander-records/shared /var/www/lander-records/current/.next/cache
 
 [Install]
 WantedBy=multi-user.target

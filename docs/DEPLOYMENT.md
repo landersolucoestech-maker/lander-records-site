@@ -15,9 +15,9 @@ Required capabilities:
 
 ## Recommended target
 
-An IONOS Node.js runtime with PostgreSQL is the intended production fit. The application does not depend on Supabase or a platform-specific object storage service.
+An IONOS Node.js runtime with PostgreSQL is the intended production fit. Media storage currently uses Supabase when enabled; it is not the application database.
 
-The manual deployment workflow is `.github/workflows/deploy-ionos.yml`. Configure `IONOS_HOST`, `IONOS_USER` and `IONOS_SSH_KEY` as GitHub Actions secrets before using it.
+The manual deployment workflow is `.github/workflows/deploy-ionos.yml`, but it is deliberately blocked by `PRODUCTION_DEPLOY_ENABLED` while the real host is unknown. Follow `PRODUCTION_INFRASTRUCTURE.md`, `ENVIRONMENT_CONTRACT.md`, `DEPLOYMENT_RUNBOOK.md` and `ROLLBACK_RUNBOOK.md` before enabling it.
 
 ## Required environment variables
 
@@ -45,8 +45,8 @@ Optional until the Lander SaaS endpoint exists:
 1. provision dynamic Next.js project;
 2. provision PostgreSQL;
 3. set runtime variables;
-4. run `npm run db:migrate`;
-5. create first owner with `npm run admin:bootstrap`;
+4. complete the separately approved database gate in `docs/runbooks/DB_0010_RELEASE.md`; never run a bare remote migration;
+5. in a separate one-time authorized operation, create the first owner with temporary bootstrap variables and remove them afterward;
 6. create or validate the Supabase Storage bucket `media`;
 7. deploy this branch to a preview;
 8. validate public routes and `/admin`;

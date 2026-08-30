@@ -1,13 +1,8 @@
-name: Deploy to IONOS
+name: IONOS readiness validation (deployment blocked)
 
 on:
   workflow_dispatch:
     inputs:
-      pitr_verified:
-        description: "Confirm provider PITR is enabled and covers this release window"
-        required: true
-        type: boolean
-        default: false
       deploy_commit:
         description: "Exact full commit SHA approved for production"
         required: true
@@ -21,70 +16,39 @@ concurrency:
   group: ionos-production
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Validate deployment inputs
+        env:
+          DEPLOY_COMMIT: ${{ inputs.deploy_commit }}
+          CHANGE_TICKET: ${{ inputs.change_ticket }}
+        run: |
+          case "$DEPLOY_COMMIT" in *[!0-9a-f]*|'') exit 1 ;; esac
+          test "$(printf '%s' "$DEPLOY_COMMIT" | wc -c)" -eq 40
+          test -n "$CHANGE_TICKET"
+      - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.deploy_commit }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       - run: npm run typecheck
       - run: npm run build
 
-  deploy:
+  deployment-blocked:
     needs: validate
-    if: ${{ inputs.pitr_verified == true }}
+    if: ${{ vars.PRODUCTION_DEPLOY_ENABLED == 'true' }}
     runs-on: ubuntu-latest
-    environment: production
-    env:
-      DEPLOY_COMMIT: ${{ inputs.deploy_commit }}
-      CHANGE_TICKET: ${{ inputs.change_ticket }}
+    environment: Production
     steps:
-      - name: Deploy over SSH
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.IONOS_HOST }}
-          username: ${{ secrets.IONOS_USER }}
-          key: ${{ secrets.IONOS_SSH_KEY }}
-          envs: DEPLOY_COMMIT,CHANGE_TICKET
-          script: |
-            set -eu
-            cd /var/www/lander-records-site
-            test -r /etc/lander-records/release.env
-            set -a
-            . /etc/lander-records/release.env
-            set +a
-            case "$DEPLOY_COMMIT" in *[!0-9a-f]*|'') exit 1 ;; esac
-            test "$(printf '%s' "$DEPLOY_COMMIT" | wc -c)" -eq 40
-            git fetch origin "$DEPLOY_COMMIT"
-            test "$(git rev-parse FETCH_HEAD)" = "$DEPLOY_COMMIT"
-            git checkout --detach "$DEPLOY_COMMIT"
-            npm ci --omit=dev
-            npm run build
-            test -r "$PITR_EVIDENCE"
-            PRECHECK_MANIFEST="$(mktemp /var/backups/lander-records/precheck.XXXXXX.json)"
-            rm -f "$PRECHECK_MANIFEST"
-            export PRECHECK_MANIFEST
-            node scripts/release/db-0010-release.mjs precheck --commit="$DEPLOY_COMMIT" --change-ticket="$CHANGE_TICKET" --pitr-evidence="$PITR_EVIDENCE" --output="$PRECHECK_MANIFEST"
-            BACKUP_OUTPUT="$(infra/backup/backup-db.sh)"
-            printf '%s\n' "$BACKUP_OUTPUT"
-            BACKUP_FILE="$(printf '%s\n' "$BACKUP_OUTPUT" | sed -n 's/^BACKUP_VERIFIED=//p')"
-            BACKUP_MANIFEST="$(printf '%s\n' "$BACKUP_OUTPUT" | sed -n 's/^BACKUP_MANIFEST=//p')"
-            test -n "$BACKUP_FILE"; test -n "$BACKUP_MANIFEST"
-            REHEARSAL_EVIDENCE="$(mktemp /var/backups/lander-records/rehearsal.XXXXXX.json)"
-            rm -f "$REHEARSAL_EVIDENCE"
-            infra/backup/rehearse-db.sh "$BACKUP_FILE" "$REHEARSAL_EVIDENCE"
-            node scripts/release/db-0010-release.mjs apply --allow-remote-write --confirm=APPLY_0010_AND_CHECKSUM_TRANSITIONS --commit="$DEPLOY_COMMIT" --change-ticket="$CHANGE_TICKET" --pitr-evidence="$PITR_EVIDENCE" --precheck="$PRECHECK_MANIFEST" --backup-manifest="$BACKUP_MANIFEST" --rehearsal-evidence="$REHEARSAL_EVIDENCE"
-            POST_AUDIT_MANIFEST="$(mktemp /var/backups/lander-records/post-audit.XXXXXX.json)"
-            rm -f "$POST_AUDIT_MANIFEST"
-            node scripts/release/db-0010-release.mjs post-audit --precheck="$PRECHECK_MANIFEST" --output="$POST_AUDIT_MANIFEST"
-            sudo systemctl restart lander-records
-            PUBLIC_STATUS="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' --max-time 20 http://127.0.0.1:8082/)"
-            ADMIN_STATUS="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' --max-time 20 http://127.0.0.1:8082/admin/)"
-            test "$PUBLIC_STATUS" = "200"
-            case "$ADMIN_STATUS" in 307|401|403) ;; *) exit 1 ;; esac
+      - name: Refuse deployment until the real server is inventoried
+        run: |
+          echo "Deployment remains blocked: implement and review the atomic host-specific release path first." >&2
+          exit 1
