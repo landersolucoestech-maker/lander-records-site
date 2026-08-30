@@ -1,4 +1,3 @@
-import { Footer, Header } from "@/app/components/SiteChrome";
 import { ContactForm } from "./ContactForm";
 import { getContactTopics } from "@/lib/content";
 import { getPageContent, getSiteChrome } from "@/modules/pages";
@@ -21,8 +20,7 @@ export default async function ContactPage() {
   const intro = content?.sections.find((section) => section.sectionKey === "intro");
 
   return (
-    <main>
-      <Header />
+    <>
       <section className="pageHero heroWordmarkPage">
         <span className="heroWordmark" aria-hidden="true">CONTATO</span>
         <p className="eyebrow">{hero?.eyebrow || "CONTATO"}</p>
@@ -41,7 +39,6 @@ export default async function ContactPage() {
         </div>
         <ContactForm topics={topics.map((topic) => ({ id: topic.id, name: topic.name, slug: topic.slug }))} />
       </section>
-      <Footer />
-    </main>
+    </>
   );
 }

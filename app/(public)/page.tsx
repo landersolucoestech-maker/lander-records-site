@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Footer, Header } from "@/app/components/SiteChrome";
 import { getPageContent } from "@/modules/pages";
 import { getPublishedArtists } from "@/modules/artists";
 import { getPublishedPosts } from "@/modules/posts";
@@ -61,8 +60,7 @@ export default async function Home() {
   const youtubeSubscribers = socialMetrics["youtube:subscribers"];
 
   return (
-    <main className="homeV2">
-      <Header />
+    <div className="homeV2">
 
       {hero ? (
         <section className="homeHero">
@@ -171,7 +169,6 @@ export default async function Home() {
           </section>
         ) : null}
       </section>
-      <Footer />
-    </main>
+    </div>
   );
 }

@@ -45,7 +45,11 @@ for (const viewport of viewports) {
         const failures = collectRuntimeFailures(page);
         const response = await page.goto(route, { waitUntil: "networkidle" });
         expect(response?.status()).toBe(200);
-        await expect(page.locator("main")).toBeVisible();
+        await expect(page.locator("main#main-content")).toBeVisible();
+        await expect(page.locator("main")).toHaveCount(1);
+        await expect(page.locator("main header, main footer")).toHaveCount(0);
+        await expect(page.locator("body > header.siteHeader")).toHaveCount(1);
+        await expect(page.locator("body > footer.siteFooter")).toHaveCount(1);
         await page.waitForTimeout(1100);
         await expect(page.locator(".pageTransitionLoader")).not.toHaveClass(/isVisible/);
 
@@ -91,6 +95,50 @@ test("public detail routes and mobile navigation remain reachable", async ({ pag
   expect(failures).toEqual([]);
 });
 
+test("skip link is first, visible on focus and moves focus to main content", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.keyboard.press("Tab");
+  const skipLink = page.getByRole("link", { name: "Pular para o conteúdo" });
+  await expect(skipLink).toBeFocused();
+  await expect(skipLink).toBeVisible();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("main#main-content")).toBeFocused();
+  expect(await page.evaluate(() => window.location.hash)).toBe("#main-content");
+});
+
+test("mobile menu exposes state, closes with Escape and restores focus", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 900 });
+  await page.goto("/", { waitUntil: "networkidle" });
+  const toggle = page.getByLabel("Abrir menu de navegação");
+  const menu = page.locator("#mobile-navigation-menu");
+
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await expect(menu).not.toBeVisible();
+  await toggle.click();
+  const closeToggle = page.getByLabel("Fechar menu de navegação");
+  await expect(closeToggle).toHaveAttribute("aria-expanded", "true");
+  await expect(menu).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await expect(toggle).toBeFocused();
+  await expect(menu).not.toBeVisible();
+});
+
+test("artist navigation exposes a non-blocking streaming loading state", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.route(/\/artistas\/?\?.*_rsc=/, async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+    await route.continue();
+  });
+
+  await page.locator('.desktopNav a[href="/artistas/"]').click();
+  const loading = page.getByRole("status");
+  await expect(loading).toContainText("Carregando artistas");
+  await expect(page.locator(".pageTransitionLoader")).not.toHaveClass(/isVisible/, { timeout: 9000 });
+  await expect(page.locator(".artistListingSection")).toBeVisible();
+});
+
 test("contact form retains native required and email validation", async ({ page }) => {
   await page.goto("/contato/", { waitUntil: "networkidle" });
   const form = page.locator("form");
@@ -123,8 +171,29 @@ test("server-rendered loader fails open when JavaScript is disabled", async ({ b
   const page = await context.newPage();
   await page.goto("/", { waitUntil: "load" });
   await expect(page.locator("main")).toBeVisible();
+  await expect(page.locator("header")).toBeVisible();
+  await expect(page.locator("footer")).toBeVisible();
+  await expect(page.locator(".lazyReveal")).toHaveCount(0);
   await expect(page.locator(".pageTransitionLoader")).not.toHaveClass(/isVisible/);
   await context.close();
+});
+
+test("reduced motion keeps reveal content immediately visible", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/", { waitUntil: "networkidle" });
+  await expect(page.locator(".lazyReveal:not(.lazyRevealVisible)")).toHaveCount(0);
+  await expect(page.locator(".homeShortcutCircle").first()).toBeVisible();
+});
+
+test("reveal never hides content already inside the initial viewport", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+  const hiddenInViewport = await page.locator(".lazyReveal:not(.lazyRevealVisible)").evaluateAll((elements) =>
+    elements.filter((element) => {
+      const rect = element.getBoundingClientRect();
+      return rect.top < window.innerHeight && rect.bottom > 0;
+    }).length,
+  );
+  expect(hiddenInViewport).toBe(0);
 });
 
 test("article sharing copies the canonical link without navigating", async ({ page }) => {
@@ -167,4 +236,15 @@ test("home content progressively reveals while scrolling", async ({ page }, test
   const unrevealed = await page.locator(".lazyReveal:not(.lazyRevealVisible)").count();
   expect(unrevealed).toBe(0);
   await page.screenshot({ path: testInfo.outputPath("home-1440-scrolled.png"), fullPage: true });
+});
+
+test("reveal remains healthy across navigation, back and forward", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 900 });
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/sobre-nos/", { waitUntil: "networkidle" });
+  await page.goBack({ waitUntil: "networkidle" });
+  await page.goForward({ waitUntil: "networkidle" });
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.waitForTimeout(900);
+  await expect(page.locator(".lazyReveal:not(.lazyRevealVisible)")).toHaveCount(0);
 });

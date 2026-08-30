@@ -1,4 +1,3 @@
-import { Footer, Header } from "@/app/components/SiteChrome";
 import { NewsFilterGrid } from "./NewsFilterGrid";
 import { getPageContent } from "@/modules/pages";
 import { getPostCategoriesForPublic, getPublishedPosts } from "@/modules/posts";
@@ -27,8 +26,7 @@ export default async function NewsPage() {
   const listSection = content?.sections.find((section) => section.sectionKey === "news_list");
 
   return (
-    <main>
-      <Header />
+    <>
       {hero ? <section className="pageHero portalHero">
         <span className="portalWord" aria-hidden="true">PORTAL</span>
         <p className="eyebrow">{hero.eyebrow}</p>
@@ -43,7 +41,6 @@ export default async function NewsPage() {
           showList={Boolean(listSection)}
         />
       </section> : null}
-      <Footer />
-    </main>
+    </>
   );
 }

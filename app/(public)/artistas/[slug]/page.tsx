@@ -1,7 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Footer, Header } from "@/app/components/SiteChrome";
 import { getPublishedArtistBySlug, getSlugRedirect } from "@/modules/artists";
 import { absoluteUrl, buildMetadata } from "@/lib/seo";
 import { trustedEmbedUrl, trustedExternalUrl } from "@/lib/media-embed";
@@ -46,8 +45,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
   const bookingHref = `/contato?assunto=contratacao-de-artista&artista=${encodeURIComponent(artist.name)}`;
 
   return (
-    <main>
-      <Header />
+    <>
       <section
         className="artistProfileHero artistPhotoHero"
         style={{
@@ -142,7 +140,6 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
           }),
         }}
       />
-      <Footer />
-    </main>
+    </>
   );
 }

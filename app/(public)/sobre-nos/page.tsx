@@ -1,4 +1,3 @@
-import { Footer, Header } from "@/app/components/SiteChrome";
 import { GroupCompaniesTabs } from "./GroupCompaniesTabs";
 import { getPageContent } from "@/modules/pages";
 import { buildMetadata } from "@/lib/seo";
@@ -25,8 +24,7 @@ export default async function AboutPage() {
   const methodology = byKey("methodology");
 
   return (
-    <main>
-      <Header />
+    <>
       {hero ? <section className="pageHero heroWordmarkPage"><span className="heroWordmark" aria-hidden="true">LANDER</span><p className="eyebrow">{hero.eyebrow}</p><h1>{hero.title}</h1><p>{hero.subtitle}</p></section> : null}
 
       {history ? <section className="section"><div className="splitFeature"><div className="redPanel"><p className="eyebrow">{history.eyebrow}</p><h3>{history.title}</h3><p>{history.body}</p></div><div className="studioVisual"><div className="visualBadge">{history.subtitle}</div></div></div></section> : null}
@@ -37,7 +35,6 @@ export default async function AboutPage() {
 
       {companies ? <section className="section groupCompaniesSection"><div className="sectionHeading compactHeading"><p className="eyebrow dark">{companies.eyebrow}</p><h2>{companies.title}</h2><p className="sectionLead">{companies.subtitle}</p></div><GroupCompaniesTabs companies={companies.items} /></section> : null}
 
-      <Footer />
-    </main>
+    </>
   );
 }

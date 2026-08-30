@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Footer, Header } from "@/app/components/SiteChrome";
 import { getPublishedPostBySlug, getPublishedPosts, getSlugRedirect, getPublicPostPresentation } from "@/modules/posts";
 import { absoluteUrl, buildMetadata } from "@/lib/seo";
 import { CopyArticleLink } from "@/app/components/CopyArticleLink";
@@ -43,8 +42,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
   const publicationUrl = presentation.publicationLink || `/noticias/${article.slug}`;
 
   return (
-    <main>
-      <Header />
+    <>
       <article className="articlePage">
         <div className="articleHeroImage" style={article.coverImage ? { backgroundImage: `url(${article.coverImage})` } : undefined}>
           {article.category ? <span>{article.category.name}</span> : null}
@@ -98,7 +96,6 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
           }),
         }}
       />
-      <Footer />
-    </main>
+    </>
   );
 }

@@ -1,4 +1,3 @@
-import { Footer, Header } from "@/app/components/SiteChrome";
 import { ArtistFilterGrid } from "./ArtistFilterGrid";
 import { getArtistCategoriesForPublic, getPublishedArtists } from "@/modules/artists";
 import { getPageContent } from "@/modules/pages";
@@ -27,8 +26,7 @@ export default async function ArtistsPage() {
   const listSection = content?.sections.find((section) => section.sectionKey === "artist_list");
 
   return (
-    <main>
-      <Header />
+    <>
       {hero ? <section className="pageHero heroWordmarkPage">
         <span className="heroWordmark" aria-hidden="true">ARTISTAS</span>
         <p className="eyebrow">{hero.eyebrow}</p>
@@ -38,7 +36,6 @@ export default async function ArtistsPage() {
       {filtersSection || listSection ? <section className="section artistListingSection">
         <ArtistFilterGrid artists={artists} categories={categories} showFilters={Boolean(filtersSection)} showList={Boolean(listSection)} />
       </section> : null}
-      <Footer />
-    </main>
+    </>
   );
 }

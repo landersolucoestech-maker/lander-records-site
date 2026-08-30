@@ -1,10 +1,11 @@
 "use client";
 
-import { useLayoutEffect } from "react";
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 const revealSelector = [
   "main > section:not(:first-of-type)",
+  "main .homeV2 > section:not(:first-of-type)",
   "main section > article",
   "main section > aside",
   "main section [class*='Card']",
@@ -28,31 +29,12 @@ const revealSelector = [
 export function LazyReveal() {
   const pathname = usePathname();
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion || !("IntersectionObserver" in window)) return;
+
     const observed = new WeakSet<Element>();
-
-    document.documentElement.classList.add("lazyRevealEnabled");
-
-    document.querySelectorAll<HTMLImageElement>("img").forEach((img) => {
-      const rect = img.getBoundingClientRect();
-      if (rect.top > window.innerHeight) {
-        img.loading = "lazy";
-        img.decoding = "async";
-      }
-    });
-
-    document.querySelectorAll<HTMLIFrameElement>("iframe").forEach((iframe) => {
-      const rect = iframe.getBoundingClientRect();
-      if (rect.top > window.innerHeight) iframe.loading = "lazy";
-    });
-
-    const elements = () => Array.from(document.querySelectorAll<HTMLElement>(revealSelector));
-
-    if (reduceMotion || !("IntersectionObserver" in window)) {
-      elements().forEach((element) => element.classList.add("lazyReveal", "lazyRevealVisible"));
-      return () => document.documentElement.classList.remove("lazyRevealEnabled");
-    }
+    let revealIndex = 0;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -70,36 +52,35 @@ export function LazyReveal() {
       },
     );
 
-    const register = () => {
-      elements().forEach((element, index) => {
-        if (observed.has(element)) return;
+    const register = (elements: Iterable<HTMLElement>) => {
+      for (const element of elements) {
+        if (observed.has(element)) continue;
         observed.add(element);
 
-        element.classList.add("lazyReveal");
-        element.style.setProperty("--reveal-delay", `${(index % 4) * 70}ms`);
+        element.style.setProperty("--reveal-delay", `${(revealIndex % 4) * 70}ms`);
+        revealIndex += 1;
 
         const rect = element.getBoundingClientRect();
-        const alreadyPassed = rect.top < 72;
-
-        if (alreadyPassed) {
-          element.classList.add("lazyRevealVisible");
+        if (element.classList.contains("lazyRevealVisible") || (rect.top < window.innerHeight * 0.92 && rect.bottom > 0)) {
+          element.classList.add("lazyReveal", "lazyRevealVisible");
         } else {
-          element.classList.remove("lazyRevealVisible");
+          element.classList.add("lazyReveal");
           observer.observe(element);
         }
-      });
+      }
     };
 
-    register();
-    const timers = [100, 300, 700].map((delay) => window.setTimeout(register, delay));
-    const mutationObserver = new MutationObserver(register);
-    mutationObserver.observe(document.body, { childList: true, subtree: true });
+    let secondFrame = 0;
+    const firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(() => {
+        register(document.querySelectorAll<HTMLElement>(revealSelector));
+      });
+    });
 
     return () => {
-      timers.forEach(window.clearTimeout);
-      mutationObserver.disconnect();
+      window.cancelAnimationFrame(firstFrame);
+      window.cancelAnimationFrame(secondFrame);
       observer.disconnect();
-      document.documentElement.classList.remove("lazyRevealEnabled");
     };
   }, [pathname]);
 

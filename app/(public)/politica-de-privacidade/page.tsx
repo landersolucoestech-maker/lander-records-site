@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Footer, Header } from "@/app/components/SiteChrome";
 
 export const dynamic = "force-dynamic";
 
@@ -61,8 +60,7 @@ const sections = [
 
 export default function PrivacyPolicyPage() {
   return (
-    <main>
-      <Header />
+    <>
       <section className="pageHero heroWordmarkPage">
         <span className="heroWordmark" aria-hidden="true">PRIVACIDADE</span>
         <p className="eyebrow">LANDER RECORDS</p>
@@ -79,7 +77,6 @@ export default function PrivacyPolicyPage() {
           ))}
         </div>
       </section>
-      <Footer />
-    </main>
+    </>
   );
 }

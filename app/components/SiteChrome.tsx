@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { getSiteChrome } from "@/modules/pages";
+import { MobileNavigation } from "./MobileNavigation";
 
 function InstagramIcon() {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.6" r="1"/></svg>;
@@ -18,6 +19,34 @@ const iconByPlatform: Record<string, ReactNode> = {
   spotify: <SpotifyIcon />,
   soundcloud: <SoundCloudIcon />,
 };
+
+type ChromeView = {
+  settings: { brandName: string; contactPhone: string; contactEmail: string; address: string; hours: string };
+  navigation: Array<{ id: string; menuKey: string; parentId: string | null; label: string; url: string; newTab: boolean }>;
+  socials: Array<{ id: string; label: string; url: string; platform: string }>;
+};
+
+const fallbackNavigation: ChromeView["navigation"] = [
+  { id: "fallback-home", menuKey: "primary", parentId: null, label: "Início", url: "/", newTab: false },
+  { id: "fallback-about", menuKey: "primary", parentId: null, label: "Sobre Nós", url: "/sobre-nos/", newTab: false },
+  { id: "fallback-artists", menuKey: "primary", parentId: null, label: "Artistas", url: "/artistas/", newTab: false },
+  { id: "fallback-news", menuKey: "primary", parentId: null, label: "Notícias", url: "/noticias/", newTab: false },
+  { id: "fallback-contact", menuKey: "primary", parentId: null, label: "Contato", url: "/contato/", newTab: false },
+];
+
+async function getChromeView(): Promise<ChromeView> {
+  try {
+    const { settings, navigation, socials } = await getSiteChrome();
+    return { settings, navigation, socials };
+  } catch {
+    console.error("[site-chrome] Configuração pública temporariamente indisponível.");
+    return {
+      settings: { brandName: "Lander Records", contactPhone: "", contactEmail: "", address: "", hours: "" },
+      navigation: fallbackNavigation,
+      socials: [],
+    };
+  }
+}
 
 function isExternal(url: string) {
   return /^https?:\/\//i.test(url);
@@ -38,7 +67,7 @@ function SocialIcon({ label, href, icon }: { label: string; href: string; icon: 
 }
 
 export async function Header() {
-  const { settings, navigation } = await getSiteChrome();
+  const { settings, navigation } = await getChromeView();
   const primary = navigation.filter((item) => item.menuKey === "primary" && !item.parentId);
 
   return (
@@ -52,13 +81,7 @@ export async function Header() {
       </nav>
 
       <div className="headerActions">
-        <details className="mobileNav">
-          <summary aria-label="Abrir menu de navegação"><span>Menu</span><i aria-hidden="true" /></summary>
-          <nav aria-label="Navegação mobile">
-            {primary.map((item) => <SiteLink key={item.id} href={item.url} newTab={item.newTab}>{item.label}</SiteLink>)}
-            <Link className="mobileNavCta" href="/contato">Quero Contratar</Link>
-          </nav>
-        </details>
+        <MobileNavigation items={primary.map(({ id, label, url, newTab }) => ({ id, label, url, newTab }))} />
         <Link className="button buttonPrimary headerCta" href="/contato">Quero Contratar</Link>
       </div>
     </header>
@@ -66,7 +89,7 @@ export async function Header() {
 }
 
 export async function Footer() {
-  const { settings, navigation, socials } = await getSiteChrome();
+  const { settings, navigation, socials } = await getChromeView();
   const footerLinks = navigation.filter((item) => item.menuKey === "footer" && !item.parentId);
 
   return (
