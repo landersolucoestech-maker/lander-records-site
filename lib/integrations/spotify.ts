@@ -7,6 +7,10 @@ import { decryptIntegrationSecret, encryptIntegrationSecret } from "./secrets";
 const ACCOUNTS_BASE = "https://accounts.spotify.com";
 const API_BASE = "https://api.spotify.com/v1";
 const OAUTH_SCOPES = ["playlist-read-private", "playlist-read-collaborative", "user-read-private"];
+const SPOTIFY_REQUEST_TIMEOUT_MS = 10_000;
+const SPOTIFY_API_HOST = "api.spotify.com";
+const SPOTIFY_OPEN_HOST = "open.spotify.com";
+const SPOTIFY_IMAGE_HOST = "i.scdn.co";
 
 export type SpotifyRelease = {
   albumId: string;
@@ -53,6 +57,19 @@ export function spotifyCredentialsConfigured() {
   );
 }
 
+export function spotifyAdminRedirectUrl(destination: "login" | "connected" | "error") {
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://landerrecords.com";
+  let base: URL;
+  try { base = new URL(configured); } catch { throw new Error("NEXT_PUBLIC_SITE_URL inválida."); }
+  const loopback = base.hostname === "localhost" || base.hostname === "127.0.0.1" || base.hostname === "[::1]";
+  if ((base.protocol !== "https:" && !(loopback && base.protocol === "http:"))
+    || base.username || base.password || base.search || base.hash) {
+    throw new Error("NEXT_PUBLIC_SITE_URL deve definir uma origem canônica segura.");
+  }
+  const path = destination === "login" ? "/admin/login" : `/admin/settings/lander-records?spotify=${destination}`;
+  return new URL(path, base.origin);
+}
+
 function oauthConfig() {
   const clientId = process.env.SPOTIFY_CLIENT_ID?.trim();
   const clientSecret = process.env.SPOTIFY_CLIENT_SECRET?.trim();
@@ -60,14 +77,66 @@ function oauthConfig() {
   if (!clientId || !clientSecret || !redirectUri) {
     throw new Error("Spotify não configurado: SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET e SPOTIFY_REDIRECT_URI são obrigatórios.");
   }
+  validateRedirectUri(redirectUri);
   return { clientId, clientSecret, redirectUri };
+}
+
+function validateRedirectUri(raw: string) {
+  let url: URL;
+  try { url = new URL(raw); } catch { throw new Error("SPOTIFY_REDIRECT_URI inválida."); }
+  const loopback = url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "[::1]";
+  if ((url.protocol !== "https:" && !(loopback && url.protocol === "http:"))
+    || url.username || url.password || url.hash || url.search
+    || url.pathname !== "/api/integrations/spotify/callback") {
+    throw new Error("SPOTIFY_REDIRECT_URI deve usar HTTPS (ou loopback HTTP) e o callback Spotify conhecido.");
+  }
+}
+
+/** Resolve and validate every URL that will receive a Spotify bearer token. */
+export function resolveSpotifyApiUrl(urlOrPath: string) {
+  if (!urlOrPath || urlOrPath.startsWith("//")) throw new Error("Endpoint Spotify não permitido.");
+  let url: URL;
+  try { url = urlOrPath.startsWith("/") ? new URL(`${API_BASE}${urlOrPath}`) : new URL(urlOrPath); } catch { throw new Error("Endpoint Spotify não permitido."); }
+  if (url.protocol !== "https:" || url.hostname !== SPOTIFY_API_HOST || url.port
+    || url.username || url.password || url.hash) throw new Error("Endpoint Spotify não permitido.");
+
+  const playlist = /^\/v1\/playlists\/[A-Za-z0-9]+$/.test(url.pathname);
+  const items = /^\/v1\/playlists\/[A-Za-z0-9]+\/items$/.test(url.pathname);
+  if (url.pathname === "/v1/me") {
+    if (url.search) throw new Error("Parâmetros Spotify não permitidos.");
+  } else if (playlist) {
+    if (url.searchParams.size !== 1 || url.searchParams.get("fields") !== "id,name,snapshot_id,owner(id)") {
+      throw new Error("Parâmetros Spotify não permitidos.");
+    }
+  } else if (items) {
+    const allowed = new Set(["limit", "offset", "additional_types"]);
+    if ([...url.searchParams.keys()].some((key) => !allowed.has(key))) throw new Error("Parâmetros Spotify não permitidos.");
+    const limit = url.searchParams.get("limit");
+    const offset = url.searchParams.get("offset");
+    if (!limit || !/^\d+$/.test(limit) || Number(limit) < 1 || Number(limit) > 50
+      || !offset || !/^\d+$/.test(offset) || Number(offset) < 0
+      || url.searchParams.get("additional_types") !== "track") throw new Error("Parâmetros Spotify não permitidos.");
+  } else {
+    throw new Error("Endpoint Spotify não permitido.");
+  }
+  return url.toString();
+}
+
+function safePublicSpotifyUrl(raw: string | undefined, kind: "album" | "image") {
+  if (!raw) return "";
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "https:" || url.port || url.username || url.password || url.hash) return "";
+    if (kind === "image") return url.hostname === SPOTIFY_IMAGE_HOST ? url.toString() : "";
+    return url.hostname === SPOTIFY_OPEN_HOST && /^\/album\/[A-Za-z0-9]+\/?$/.test(url.pathname) && !url.search ? url.toString() : "";
+  } catch { return ""; }
 }
 
 function hashState(value: string) {
   return createHash("sha256").update(value).digest("hex");
 }
 
-async function tokenRequest(body: URLSearchParams) {
+export async function spotifyTokenRequest(body: URLSearchParams) {
   const { clientId, clientSecret } = oauthConfig();
   const response = await fetch(`${ACCOUNTS_BASE}/api/token`, {
     method: "POST",
@@ -77,11 +146,12 @@ async function tokenRequest(body: URLSearchParams) {
     },
     body,
     cache: "no-store",
+    redirect: "error",
+    signal: AbortSignal.timeout(SPOTIFY_REQUEST_TIMEOUT_MS),
   });
   const payload = await response.json().catch(() => ({})) as Record<string, unknown>;
   if (!response.ok || typeof payload.access_token !== "string") {
-    const code = typeof payload.error === "string" ? payload.error : `HTTP ${response.status}`;
-    throw new Error(`Falha de autenticação no Spotify: ${code}.`);
+    throw new Error(`Falha de autenticação no Spotify (HTTP ${response.status}).`);
   }
   return payload as { access_token: string; refresh_token?: string; expires_in?: number; scope?: string };
 }
@@ -109,11 +179,13 @@ export async function createSpotifyAuthorizationUrl(adminUserId: string) {
   return url.toString();
 }
 
-async function spotifyApi(accessToken: string, urlOrPath: string, retryRateLimit = true): Promise<unknown> {
-  const url = urlOrPath.startsWith("http") ? urlOrPath : `${API_BASE}${urlOrPath}`;
+export async function spotifyApi(accessToken: string, urlOrPath: string, retryRateLimit = true): Promise<unknown> {
+  const url = resolveSpotifyApiUrl(urlOrPath);
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${accessToken}`, Accept: "application/json" },
     cache: "no-store",
+    redirect: "error",
+    signal: AbortSignal.timeout(SPOTIFY_REQUEST_TIMEOUT_MS),
   });
   if (response.status === 429 && retryRateLimit) {
     const waitSeconds = Number(response.headers.get("retry-after") || "0");
@@ -140,7 +212,7 @@ export async function completeSpotifyAuthorization(code: string, state: string, 
   if (!rows[0]) throw new Error("Estado OAuth do Spotify inválido ou expirado.");
   await db.delete(spotifyOauthStates).where(eq(spotifyOauthStates.stateHash, hashState(state)));
 
-  const token = await tokenRequest(new URLSearchParams({
+  const token = await spotifyTokenRequest(new URLSearchParams({
     grant_type: "authorization_code",
     code,
     redirect_uri: redirectUri,
@@ -174,7 +246,7 @@ export async function getSpotifyUserAccessToken() {
   const settings = (await getDb().select().from(landerRecordsIntegrationSettings).where(eq(landerRecordsIntegrationSettings.key, "lander_records")).limit(1))[0];
   if (!settings?.spotifyRefreshTokenEncrypted) throw new Error("Conta Spotify ainda não conectada no CMS.");
   const refreshToken = decryptIntegrationSecret(settings.spotifyRefreshTokenEncrypted);
-  const token = await tokenRequest(new URLSearchParams({ grant_type: "refresh_token", refresh_token: refreshToken }));
+  const token = await spotifyTokenRequest(new URLSearchParams({ grant_type: "refresh_token", refresh_token: refreshToken }));
   if (token.refresh_token && token.refresh_token !== refreshToken) {
     await getDb().update(landerRecordsIntegrationSettings).set({
       spotifyRefreshTokenEncrypted: encryptIntegrationSecret(token.refresh_token),
@@ -195,7 +267,11 @@ function releaseDateSortValue(date: string, precision: string) {
 
 function chooseCover(images: Array<{ url?: string; width?: number | null }> | undefined) {
   if (!images?.length) return "";
-  return [...images].sort((a, b) => (b.width || 0) - (a.width || 0))[0]?.url || "";
+  for (const image of [...images].sort((a, b) => (b.width || 0) - (a.width || 0))) {
+    const safeUrl = safePublicSpotifyUrl(image.url, "image");
+    if (safeUrl) return safeUrl;
+  }
+  return "";
 }
 
 export async function fetchLatestSpotifyPlaylistReleases(playlistId: string) {
@@ -218,7 +294,7 @@ export async function fetchLatestSpotifyPlaylistReleases(playlistId: string) {
   for (const row of allItems) {
     const track = row.item || row.track;
     if (!track || track.type !== "track" || !track.album?.id || !track.album.name || !track.album.release_date || !track.album.release_date_precision) continue;
-    const spotifyUrl = track.album.external_urls?.spotify;
+    const spotifyUrl = safePublicSpotifyUrl(track.album.external_urls?.spotify, "album");
     if (!spotifyUrl) continue;
     const candidate: SpotifyRelease = {
       albumId: track.album.id,

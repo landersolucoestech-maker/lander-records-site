@@ -65,7 +65,7 @@ export const auditLogs = pgTable("audit_logs", {
 
 export const mediaAssets = pgTable("media_assets", {
   id: uuid("id").defaultRandom().primaryKey(),
-  storageProvider: varchar("storage_provider", { length: 40 }).default("local").notNull(),
+  storageProvider: varchar("storage_provider", { length: 40 }).default("supabase_storage").notNull(),
   storageKey: text("storage_key").notNull(),
   url: text("url").notNull(),
   mimeType: varchar("mime_type", { length: 120 }).notNull(),

@@ -1,5 +1,4 @@
 ALTER TABLE media_assets ALTER COLUMN storage_provider SET DEFAULT 'local';
 
-UPDATE media_assets
-SET storage_provider = 'local'
-WHERE storage_provider <> 'local';
+-- Change only the default for future rows. Existing provider values are provenance
+-- and must remain untouched, including external and Supabase-backed assets.

@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { MediaStorage, StoredMedia } from "./types";
+import type { MediaStorage } from "./types";
 
 let client: SupabaseClient | null = null;
 

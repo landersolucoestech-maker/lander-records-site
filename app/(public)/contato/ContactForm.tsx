@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { createContactIdempotencyKey, idempotencyKeyAfterAttempt } from "../../../lib/contact-idempotency";
 
 type Topic = { id: string; name: string; slug: string };
 
@@ -9,7 +10,7 @@ export function ContactForm({ topics }: { topics: Topic[] }) {
   const searchParams = useSearchParams();
   const defaultTopic = searchParams.get("assunto") || "";
   const artist = searchParams.get("artista") || "";
-  const idempotencyKey = useMemo(() => crypto.randomUUID(), []);
+  const idempotencyKey = useRef(createContactIdempotencyKey());
   const [state, setState] = useState<{ status: "idle" | "sending" | "success" | "error"; message: string }>({ status: "idle", message: "" });
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -20,7 +21,7 @@ export function ContactForm({ topics }: { topics: Topic[] }) {
     const form = new FormData(event.currentTarget);
     const params = new URLSearchParams(window.location.search);
     const payload = {
-      idempotencyKey,
+      idempotencyKey: idempotencyKey.current,
       name: String(form.get("name") || ""),
       email: String(form.get("email") || ""),
       phone: String(form.get("phone") || ""),
@@ -49,6 +50,7 @@ export function ContactForm({ topics }: { topics: Topic[] }) {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Não foi possível enviar a mensagem.");
       event.currentTarget.reset();
+      idempotencyKey.current = idempotencyKeyAfterAttempt(idempotencyKey.current, true);
       setState({ status: "success", message: "Mensagem enviada com sucesso. Nossa equipe recebeu seu contato." });
     } catch (error) {
       setState({ status: "error", message: error instanceof Error ? error.message : "Falha ao enviar a mensagem." });

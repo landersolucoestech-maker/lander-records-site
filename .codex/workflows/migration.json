@@ -1,0 +1,15 @@
+{
+  "id": "migration",
+  "steps": [
+    "discover",
+    "impact-L5-floor-if-destructive",
+    "requirements",
+    "migration-plan",
+    "backup/recovery-plan",
+    "implement",
+    "verify",
+    "database-review",
+    "adversarial",
+    "completion-gate"
+  ]
+}

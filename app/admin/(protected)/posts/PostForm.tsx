@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
@@ -80,7 +81,7 @@ export default function PostForm({
       <section className={styles.section}>
         <div className={styles.sectionHeader}><div><h2>Imagem principal</h2><p>Esta única imagem alimenta automaticamente a seção de Notícias da Home, a página geral de Notícias e o banner da notícia individual.</p></div><Link className="adminButton" href="/admin/media">Abrir biblioteca de mídia</Link></div>
         <div className={styles.mediaPicker}>
-          <div className={styles.mediaPreview}>{initial.coverImage ? <img src={initial.coverImage} alt="" /> : <div className={styles.mediaPlaceholder}>Sem imagem<br />principal</div>}<label className={styles.field} style={{ flex: 1 }}>Selecionar existente<select name="coverMediaId" defaultValue={initial.coverMediaId || ""}><option value="">Sem imagem</option>{media.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div>
+          <div className={styles.mediaPreview}>{initial.coverImage ? <Image src={initial.coverImage} alt="" width={1200} height={675} unoptimized /> : <div className={styles.mediaPlaceholder}>Sem imagem<br />principal</div>}<label className={styles.field} style={{ flex: 1 }}>Selecionar existente<select name="coverMediaId" defaultValue={initial.coverMediaId || ""}><option value="">Sem imagem</option>{media.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div>
           <label className={styles.field}>Ou enviar nova imagem<input name="coverMediaUpload" type="file" accept="image/*" /><span className={styles.hint}>Se enviado, o novo arquivo substitui a seleção acima.</span></label>
         </div>
       </section>
@@ -89,7 +90,7 @@ export default function PostForm({
         <div className={styles.sectionHeader}><div><h2>Autor</h2><p>Identificação editorial exibida na publicação.</p></div></div>
         <div className={styles.grid}>
           <label className={styles.field}>Autor<input name="authorName" required defaultValue={initial.authorName || "Lander Records"} /></label>
-          <div className={styles.mediaPreview}>{initial.authorImage ? <img src={initial.authorImage} alt="" /> : <div className={styles.mediaPlaceholder}>Sem imagem<br />do autor</div>}<label className={styles.field} style={{ flex: 1 }}>Imagem do autor<select name="authorMediaId" defaultValue={initial.authorMediaId || ""}><option value="">Sem imagem</option>{media.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div>
+          <div className={styles.mediaPreview}>{initial.authorImage ? <Image src={initial.authorImage} alt="" width={800} height={800} unoptimized /> : <div className={styles.mediaPlaceholder}>Sem imagem<br />do autor</div>}<label className={styles.field} style={{ flex: 1 }}>Imagem do autor<select name="authorMediaId" defaultValue={initial.authorMediaId || ""}><option value="">Sem imagem</option>{media.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div>
           <label className={`${styles.field} ${styles.full}`}>Ou enviar nova imagem do autor<input name="authorMediaUpload" type="file" accept="image/*" /></label>
         </div>
       </section>

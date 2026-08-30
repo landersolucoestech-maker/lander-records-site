@@ -1,4 +1,5 @@
 import { and, asc, eq } from "drizzle-orm";
+import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
 import {
   artistGenreRelations,
@@ -20,6 +21,7 @@ import {
 } from "../../../../lib/db/schema";
 
 export async function loadArtistOptions() {
+  await requireAdmin("editor");
   const db = getDb();
   const [media, categories, roles, genres, destinations] = await Promise.all([
     db.select({ id: mediaAssets.id, name: mediaAssets.originalFilename, url: mediaAssets.url }).from(mediaAssets).where(eq(mediaAssets.status, "active")).orderBy(asc(mediaAssets.originalFilename)),
@@ -32,6 +34,7 @@ export async function loadArtistOptions() {
 }
 
 export async function loadArtistEditor(id: string) {
+  await requireAdmin("editor");
   const db = getDb();
   const [artistRows, profileRows, categoryRows, roleRows, genreRows, destinationRows, metrics, links, embeds, mediaRows] = await Promise.all([
     db.select().from(artists).where(eq(artists.id, id)).limit(1),

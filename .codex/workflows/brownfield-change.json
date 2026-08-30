@@ -1,0 +1,15 @@
+{
+  "id": "brownfield-change",
+  "steps": [
+    "discover",
+    "impact",
+    "requirements",
+    "plan",
+    "implement",
+    "verify",
+    "independent-review",
+    "adversarial-if-L3+",
+    "git-audit",
+    "completion-gate"
+  ]
+}

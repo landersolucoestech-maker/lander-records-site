@@ -1,0 +1,9 @@
+{
+  "id": "production",
+  "default": "require-explicit-authorization",
+  "rules": [
+    "record-side-effects",
+    "define-rollback-or-recovery",
+    "post-action-validation"
+  ]
+}

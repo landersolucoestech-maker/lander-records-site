@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
@@ -78,7 +79,7 @@ export default function PostManager({ posts, deleted }: { posts: PostSummary[]; 
       {!filtered.length ? <div className={styles.empty}><strong>Nenhuma notícia encontrada.</strong>Ajuste os filtros ou crie uma nova publicação.</div> : (
         <div className={styles.list}>{filtered.map((post) => (
           <article className={styles.listCard} key={post.id}>
-            {post.coverImage ? <img className={styles.avatar} src={post.coverImage} alt="" /> : <div className={styles.avatar}>NT</div>}
+            {post.coverImage ? <Image className={styles.avatar} src={post.coverImage} alt="" width={96} height={96} unoptimized /> : <div className={styles.avatar}>NT</div>}
             <div>
               <div className={styles.statusLine}><strong>{post.title}</strong><StatusBadge status={post.status} /></div>
               <div className={styles.meta}>/noticias/{post.slug} · atualizado {post.updatedAt}</div>

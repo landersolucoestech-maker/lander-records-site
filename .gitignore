@@ -8,3 +8,11 @@ out
 !.env.example
 .DS_Store
 npm-debug.log*
+
+# Local runtime and generated verification state
+.local/
+build-gate.*
+*.tsbuildinfo
+.codex/project-profile.json
+.codex/state/*
+!.codex/state/*.example.json

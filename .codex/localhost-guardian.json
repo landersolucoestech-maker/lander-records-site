@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "enabled": true,
+  "required": true,
+  "command": "npm run dev -- --port 8082",
+  "cwd": ".",
+  "host": "127.0.0.1",
+  "port": 8082,
+  "protocol": "http",
+  "healthPath": "/",
+  "probe": "tcp",
+  "intervalMs": 2000,
+  "startupTimeoutMs": 60000,
+  "restartBackoffMs": 1000,
+  "restartBackoffMaxMs": 15000,
+  "stableResetMs": 30000
+}

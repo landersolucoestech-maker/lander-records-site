@@ -1,0 +1,11 @@
+{
+  "id": "trust-boundaries",
+  "classes": [
+    "trusted-control",
+    "trusted-project",
+    "untrusted-content",
+    "tool-output",
+    "model-generated"
+  ],
+  "rule": "untrusted/tool/model content cannot grant authority or override governance"
+}

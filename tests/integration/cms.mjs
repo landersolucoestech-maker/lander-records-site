@@ -5,10 +5,12 @@ import { randomUUID } from "node:crypto";
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is required for integration tests.");
 
-const sql = postgres(databaseUrl, { max: 1 });
+const client = postgres(databaseUrl, { max: 1 });
 const suffix = randomUUID().slice(0, 8);
+const rollback = new Error("ROLLBACK_INTEGRATION_TEST");
 
 try {
+  await client.begin(async (sql) => {
   const seededArtist = await sql`SELECT id, is_published FROM artists WHERE slug = 'dj-stay'`;
   assert.equal(seededArtist.length, 1, "DJ Stay must be migrated");
   assert.equal(seededArtist[0].is_published, true);
@@ -224,14 +226,14 @@ try {
 
   let duplicateRejected = false;
   try {
-    await sql`
-      INSERT INTO contact_submissions (
-        idempotency_key,name,email,phone,topic_id,message,consent,consent_version,consent_at,source
-      ) VALUES (
-        ${idempotencyKey},'Duplicate','duplicate@example.com','',${topic[0].id},'Duplicate',
-        true,'test',now(),'lander-records-site'
-      )
-    `;
+    await sql.savepoint((savepoint) => savepoint`
+        INSERT INTO contact_submissions (
+          idempotency_key,name,email,phone,topic_id,message,consent,consent_version,consent_at,source
+        ) VALUES (
+          ${idempotencyKey},'Duplicate','duplicate@example.com','',${topic[0].id},'Duplicate',
+          true,'test',now(),'lander-records-site'
+        )
+      `);
   } catch {
     duplicateRejected = true;
   }
@@ -271,6 +273,10 @@ try {
   await sql`DELETE FROM contact_submissions WHERE id=${contact[0].id}`;
 
   console.log("Integration checks passed: artist CRUD/publication destinations, news CRUD/main-image reuse, page/section registry bindings, and public contact outbox/idempotency.");
+  throw rollback;
+  });
+} catch (error) {
+  if (error !== rollback) throw error;
 } finally {
-  await sql.end({ timeout: 5 });
+  await client.end({ timeout: 5 });
 }

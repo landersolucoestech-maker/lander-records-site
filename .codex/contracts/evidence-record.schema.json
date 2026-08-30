@@ -1,0 +1,54 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "criterionId",
+    "kind",
+    "result",
+    "producer",
+    "timestamp"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "criterionId": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "result": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "BLOCKED"
+      ]
+    },
+    "producer": {
+      "type": "string"
+    },
+    "command": {
+      "type": "string"
+    },
+    "exitCode": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "workspaceFingerprint": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "invalidatesOnChange": {
+      "type": "boolean"
+    },
+    "timestamp": {
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

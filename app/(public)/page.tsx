@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Footer, Header } from "@/app/components/SiteChrome";
 import { getPageContent } from "@/modules/pages";
@@ -148,7 +149,7 @@ export default async function Home() {
         ) : null}
 
         <section aria-label="Anuncie com a Lander Records" style={{ marginTop: 24 }}>
-          <img
+          <Image
             src="/lander-records-anuncie-banner.webp"
             alt="Anuncie com a gente — Lander Records"
             width={2048}

@@ -1,0 +1,20 @@
+{
+  "0002_initial_content.sql": [
+    {
+      "from": "4b1db53e75fb8dfa2d5c8d67bae0f50201095b6991a274edfcbb136d886f5506",
+      "to": "f393069e5ab3a666bca19d21c8ef4057aca28dfd445280d63486d1e8319c8d46"
+    }
+  ],
+  "0007_external_integrations.sql": [
+    {
+      "from": "3198489e34822db78c107c5098911806d9dfd4e7589642d0e07c537869879295",
+      "to": "9965feaa53addce5a649335207ce4e47b266364c439a33ab0cd2d0a8e299904f"
+    }
+  ],
+  "0008_local_media_storage.sql": [
+    {
+      "from": "dd3fec9fc7bce589d03259d43446156bf747d9bf1db04422871bdb869d61b4db",
+      "to": "871b0c0baa7287ee0d1b66a7267e6f639a42982c22e75f8769d97296dfc5b3a4"
+    }
+  ]
+}

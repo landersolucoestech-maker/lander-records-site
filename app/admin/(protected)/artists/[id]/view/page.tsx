@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { loadArtistEditor, loadArtistOptions } from "../../editor-data";
@@ -33,7 +34,7 @@ export default async function ArtistViewPage({ params }: { params: Promise<{ id:
       </header>
 
       <section className={styles.hero}>
-        {artist.cardImage ? <img className={styles.portrait} src={artist.cardImage} alt={`Imagem principal de ${artist.name}`} /> : <div className={styles.portrait}>{artist.name.slice(0, 2).toUpperCase()}</div>}
+        {artist.cardImage ? <Image className={styles.portrait} src={artist.cardImage} alt={`Imagem principal de ${artist.name}`} width={800} height={800} unoptimized /> : <div className={styles.portrait}>{artist.name.slice(0, 2).toUpperCase()}</div>}
         <div>
           <span className={statusClass}>{statusLabel}</span>
           <h1>{artist.name}</h1>
@@ -57,8 +58,8 @@ export default async function ArtistViewPage({ params }: { params: Promise<{ id:
       <section className={styles.card}><h2>Biografia</h2><div className={styles.bio}>{artist.biography || "Biografia não cadastrada."}</div></section>
 
       <div className={styles.grid}>
-        <section className={styles.card}><h2>Imagem principal</h2>{artist.cardImage ? <img className={styles.banner} src={artist.cardImage} alt={`Imagem principal de ${artist.name}`} /> : <p className={styles.empty}>Imagem principal não cadastrada.</p>}</section>
-        <section className={styles.card}><h2>Imagem Banner / Hero</h2>{artist.heroImage ? <img className={styles.banner} src={artist.heroImage} alt={`Banner de ${artist.name}`} /> : <p className={styles.empty}>Imagem Banner não cadastrada.</p>}</section>
+        <section className={styles.card}><h2>Imagem principal</h2>{artist.cardImage ? <Image className={styles.banner} src={artist.cardImage} alt={`Imagem principal de ${artist.name}`} width={1200} height={675} unoptimized /> : <p className={styles.empty}>Imagem principal não cadastrada.</p>}</section>
+        <section className={styles.card}><h2>Imagem Banner / Hero</h2>{artist.heroImage ? <Image className={styles.banner} src={artist.heroImage} alt={`Banner de ${artist.name}`} width={1200} height={675} unoptimized /> : <p className={styles.empty}>Imagem Banner não cadastrada.</p>}</section>
       </div>
 
       <div className={styles.grid}>

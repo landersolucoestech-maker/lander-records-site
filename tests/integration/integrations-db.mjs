@@ -5,12 +5,14 @@ import { randomUUID } from "node:crypto";
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is required for integration tests.");
 
-const sql = postgres(databaseUrl, { max: 1 });
+const client = postgres(databaseUrl, { max: 1 });
 const suffix = randomUUID().slice(0, 8);
 const artistSlug = `integration-soundcharts-${suffix}`;
 const playlistId = `playlist-${suffix}`;
+const rollback = new Error("ROLLBACK_INTEGRATION_TEST");
 
 try {
+  await client.begin(async (sql) => {
   const settings = await sql`SELECT key FROM lander_records_integration_settings WHERE key='lander_records'`;
   assert.equal(settings.length, 1, "Lander Records integration settings must be seeded exactly once");
 
@@ -106,6 +108,10 @@ try {
   `;
 
   console.log("Integration persistence checks passed: Lander settings, Soundcharts identities/metrics, and five-position Spotify cache.");
+  throw rollback;
+  });
+} catch (error) {
+  if (error !== rollback) throw error;
 } finally {
-  await sql.end({ timeout: 5 });
+  await client.end({ timeout: 5 });
 }

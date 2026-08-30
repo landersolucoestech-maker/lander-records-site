@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -42,7 +43,7 @@ export function ArtistFilterGrid({ artists, categories, showFilters = true, show
           {filtered.map((artist) => (
             <Link className="artistTile" key={artist.id} href={`/artistas/${artist.slug}`}>
               <div className="artistTileImage">
-                {artist.cardImage ? <img className="artistTileRealImage" src={artist.cardImage} alt={artist.name} loading="lazy" decoding="async" /> : null}
+                {artist.cardImage ? <Image className="artistTileRealImage" src={artist.cardImage} alt={artist.name} width={800} height={800} unoptimized /> : null}
               </div>
               <div className="artistTileBody">
                 <p>{artist.eyebrow || artist.categories.map((category) => category.name).join(" · ")}</p>

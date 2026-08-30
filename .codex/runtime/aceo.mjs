@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+import {spawnSync} from 'node:child_process';import path from 'node:path';import {fileURLToPath} from 'node:url';
+const dir=path.dirname(fileURLToPath(import.meta.url)),cmd=process.argv[2],map={doctor:'doctor.mjs',discover:'discover.mjs',preflight:'preflight.mjs',impact:'impact.mjs',mission:'mission.mjs',evidence:'evidence.mjs',review:'review.mjs',finding:'finding.mjs','side-effect':'side-effect.mjs',ownership:'ownership.mjs',checkpoint:'checkpoint.mjs',policy:'policy-gate.mjs',graph:'execution-graph.mjs',context:'context-packet.mjs',guardian:'localhost-guardian.mjs',exec:'safe-exec.mjs',gate:'completion-gate.mjs',validate:'validate-pack.mjs',selftest:'self-test.mjs',integrity:'verify-integrity.mjs'};
+if(!map[cmd]){console.error(`Usage: aceo.mjs ${Object.keys(map).join('|')}`);process.exit(64)}const p=spawnSync(process.execPath,[path.join(dir,map[cmd]),...process.argv.slice(3)],{stdio:'inherit'});process.exit(p.status??1);

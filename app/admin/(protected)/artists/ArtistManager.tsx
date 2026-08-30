@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
@@ -90,7 +91,7 @@ export default function ArtistManager({ artists, deleted }: { artists: ArtistSum
       ) : (
         <div className={styles.list}>{filtered.map((artist) => (
           <article className={styles.listCard} key={artist.id}>
-            {artist.cardImage ? <img className={styles.avatar} src={artist.cardImage} alt="" /> : <div className={styles.avatar}>{artist.name.slice(0, 2).toUpperCase()}</div>}
+            {artist.cardImage ? <Image className={styles.avatar} src={artist.cardImage} alt="" width={96} height={96} unoptimized /> : <div className={styles.avatar}>{artist.name.slice(0, 2).toUpperCase()}</div>}
             <div>
               <div className={styles.statusLine}><strong>{artist.name}</strong><StatusBadge status={artist.status} /></div>
               <div className={styles.meta}>/artistas/{artist.slug} · atualizado {artist.updatedAt}</div>

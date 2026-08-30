@@ -3,14 +3,14 @@ import { createHash, randomBytes } from "node:crypto";
 import { and, eq, gt } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { AUTHENTICATION_ENABLED } from "./config";
 import { getDb } from "../db";
 import { adminSessions, adminUsers, auditLogs } from "../db/schema";
+import { evaluateAdminAuthorization, isValidSessionRecord, type AdminRole } from "./policy";
 
 export const SESSION_COOKIE = "lander_admin_session";
 const SESSION_DAYS = 7;
 
-export type AdminRole = "owner" | "admin" | "editor" | "viewer";
+export type { AdminRole } from "./policy";
 
 export type AdminSession = {
   user: {
@@ -23,30 +23,11 @@ export type AdminSession = {
   sessionId: string;
 };
 
-const AUTH_DISABLED_SESSION: AdminSession = {
-  sessionId: "authentication-disabled",
-  user: {
-    id: "00000000-0000-0000-0000-000000000000",
-    email: "",
-    name: "Lander CMS",
-    role: "owner",
-    mustChangePassword: false,
-  },
-};
-
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
 
-function roleLevel(role: AdminRole) {
-  return { viewer: 1, editor: 2, admin: 3, owner: 4 }[role];
-}
-
 export async function getAdminSession(): Promise<AdminSession | null> {
-  if (!AUTHENTICATION_ENABLED) {
-    return AUTH_DISABLED_SESSION;
-  }
-
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
   if (!token) return null;
@@ -61,6 +42,7 @@ export async function getAdminSession(): Promise<AdminSession | null> {
       role: adminUsers.role,
       isActive: adminUsers.isActive,
       mustChangePassword: adminUsers.mustChangePassword,
+      expiresAt: adminSessions.expiresAt,
     })
     .from(adminSessions)
     .innerJoin(adminUsers, eq(adminSessions.userId, adminUsers.id))
@@ -74,7 +56,7 @@ export async function getAdminSession(): Promise<AdminSession | null> {
     .limit(1);
 
   const row = rows[0];
-  if (!row || !row.isActive) return null;
+  if (!isValidSessionRecord(row)) return null;
 
   return {
     sessionId: row.sessionId,
@@ -82,7 +64,7 @@ export async function getAdminSession(): Promise<AdminSession | null> {
       id: row.userId,
       email: row.email,
       name: row.name,
-      role: row.role as AdminRole,
+      role: row.role,
       mustChangePassword: row.mustChangePassword,
     },
   };
@@ -90,10 +72,12 @@ export async function getAdminSession(): Promise<AdminSession | null> {
 
 export async function requireAdmin(minimumRole: AdminRole = "viewer") {
   const session = await getAdminSession();
+  const decision = evaluateAdminAuthorization(session, minimumRole);
+  if (decision === "unauthenticated") redirect("/admin/login");
+  if (decision === "password-change-required") redirect("/admin/change-password");
+  if (decision === "forbidden") redirect("/admin?error=forbidden");
+  // Defensive narrowing: `authorized` is impossible without a session.
   if (!session) redirect("/admin/login");
-  if (roleLevel(session.user.role) < roleLevel(minimumRole)) {
-    redirect("/admin?error=forbidden");
-  }
   return session;
 }
 
@@ -122,8 +106,6 @@ export async function createAdminSession(userId: string) {
 }
 
 export async function destroyAdminSession() {
-  if (!AUTHENTICATION_ENABLED) return;
-
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
 
@@ -161,7 +143,7 @@ export async function audit(
 ) {
   const db = getDb();
   await db.insert(auditLogs).values({
-    actorUserId: AUTHENTICATION_ENABLED ? actorUserId || null : null,
+    actorUserId: actorUserId || null,
     action,
     entityType,
     entityId: entityId || null,

@@ -1,0 +1,11 @@
+{
+  "id": "recovery",
+  "steps": [
+    "classify-failure",
+    "new-hypothesis",
+    "repair",
+    "targeted-verify",
+    "regression",
+    "completion-gate"
+  ]
+}

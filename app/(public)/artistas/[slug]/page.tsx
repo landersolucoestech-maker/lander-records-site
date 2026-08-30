@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { Footer, Header } from "@/app/components/SiteChrome";
 import { getPublishedArtistBySlug, getSlugRedirect } from "@/modules/artists";
@@ -134,7 +135,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
       {artist.slug === "dj-stay" ? (
         <section className="artistMediaPromoSection" aria-label={`Contrate ${artist.name}`}>
           <Link className="artistMediaPromo" href={bookingHref} aria-label={`Contrate ${artist.name}`}>
-            <img src="/dj-stay-wide.webp" alt={`Contrate ${artist.name}`} width={1200} height={675} />
+            <Image src="/dj-stay-wide.webp" alt={`Contrate ${artist.name}`} width={1200} height={675} />
           </Link>
         </section>
       ) : null}

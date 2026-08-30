@@ -72,8 +72,18 @@ export const artistMetrics = pgTable("artist_metrics", {
   source: varchar("source", { length: 40 }).default("legacy").notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 }, (table) => ({
-  pk: primaryKey({ columns: [table.artistId, table.platform] }),
+  pk: primaryKey({ columns: [table.artistId, table.platform, table.source] }),
 }));
+
+export const artistMetricHistory = pgTable("artist_metric_history", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  artistId: uuid("artist_id").notNull().references(() => artists.id, { onDelete: "cascade" }),
+  platform: varchar("platform", { length: 80 }).notNull(),
+  value: bigint("value", { mode: "number" }).notNull(),
+  source: varchar("source", { length: 40 }).notNull(),
+  observedAt: timestamp("observed_at", { withTimezone: true }),
+  recordedAt: timestamp("recorded_at", { withTimezone: true }).defaultNow().notNull(),
+});
 
 export const artistPublicationDestinations = pgTable("artist_publication_destinations", {
   id: uuid("id").defaultRandom().primaryKey(),

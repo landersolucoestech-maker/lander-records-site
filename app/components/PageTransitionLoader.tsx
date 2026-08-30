@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 const MIN_VISIBLE_MS = 760;
@@ -10,7 +11,7 @@ export function PageTransitionLoader() {
   const pathname = usePathname();
   const [visible, setVisible] = useState(true);
   const [progress, setProgress] = useState(18);
-  const startedAtRef = useRef<number>(Date.now());
+  const startedAtRef = useRef<number>(0);
   const firstRunRef = useRef(true);
 
   useEffect(() => {
@@ -74,10 +75,12 @@ export function PageTransitionLoader() {
   return (
     <div className={`pageTransitionLoader${visible ? " isVisible" : ""}`} aria-hidden={!visible}>
       <div className="pageTransitionLoaderInner">
-        <img
+        <Image
           className="pageTransitionLoaderLogo"
           src="/lander-records-logo.webp"
           alt="Lander Records"
+          width={512}
+          height={512}
           draggable={false}
         />
         <div className="pageTransitionProgress" aria-hidden="true">

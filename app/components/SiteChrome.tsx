@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { getSiteChrome } from "@/modules/pages";
@@ -43,7 +44,7 @@ export async function Header() {
   return (
     <header className="siteHeader">
       <Link className="brand" href="/" aria-label={settings.brandName}>
-        <img src="/lander-records-brand.svg" alt={settings.brandName} style={{ maxWidth: 170, maxHeight: 46, width: "auto", height: "auto" }} />
+        <Image src="/lander-records-brand.svg" alt={settings.brandName} width={170} height={46} style={{ maxWidth: 170, maxHeight: 46, width: "auto", height: "auto" }} />
       </Link>
 
       <nav className="desktopNav" aria-label="Navegação principal">
@@ -72,7 +73,7 @@ export async function Footer() {
     <footer className="siteFooter">
       <div className="footerMain">
         <div className="footerBrandColumn">
-          <Link className="footerBrand" href="/" aria-label={settings.brandName}><img src="/lander-records-brand.svg" alt={settings.brandName} style={{ maxWidth: 220, maxHeight: 70, width: "auto", height: "auto" }} /></Link>
+          <Link className="footerBrand" href="/" aria-label={settings.brandName}><Image src="/lander-records-brand.svg" alt={settings.brandName} width={220} height={70} style={{ maxWidth: 220, maxHeight: 70, width: "auto", height: "auto" }} /></Link>
           <p>Entre em contato com a gente e vamos fazer o seu projeto acontecer. Contato para parcerias, shows, publicidades ou criar algo novo.</p>
         </div>
         <div className="footerColumn">

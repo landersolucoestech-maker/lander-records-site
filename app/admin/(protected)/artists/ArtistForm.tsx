@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
@@ -79,7 +80,7 @@ export default function ArtistForm({ initial = {}, media, categories, roles, gen
       <section className={styles.section}>
         <div className={styles.sectionHeader}><div><h2>Imagem principal</h2><p>Thumbnail/foto utilizada em cards, listagens e outras áreas do site.</p></div><Link className="adminButton" href="/admin/media">Abrir biblioteca de mídia</Link></div>
         <div className={styles.mediaPicker}>
-          <div className={styles.mediaPreview}>{initial.cardImage ? <img src={initial.cardImage} alt="" /> : <div className={styles.mediaPlaceholder}>Sem imagem<br />principal</div>}<label className={styles.field} style={{ flex: 1 }}>Selecionar existente<select name="cardMediaId" defaultValue={initial.cardMediaId || ""}><option value="">Sem imagem</option>{media.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div>
+          <div className={styles.mediaPreview}>{initial.cardImage ? <Image src={initial.cardImage} alt="" width={800} height={800} unoptimized /> : <div className={styles.mediaPlaceholder}>Sem imagem<br />principal</div>}<label className={styles.field} style={{ flex: 1 }}>Selecionar existente<select name="cardMediaId" defaultValue={initial.cardMediaId || ""}><option value="">Sem imagem</option>{media.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div>
           <label className={styles.field}>Ou enviar nova imagem<input name="cardMediaUpload" type="file" accept="image/*" /><span className={styles.hint}>Se enviado, o novo arquivo substitui a seleção acima.</span></label>
         </div>
       </section>
@@ -115,7 +116,7 @@ export default function ArtistForm({ initial = {}, media, categories, roles, gen
 
       <section className={styles.section}>
         <div className={styles.sectionHeader}><div><h2>Mídia da página do artista</h2><p>Banner horizontal do Hero, vídeo principal e player do Spotify.</p></div><Link className="adminButton" href="/admin/media">Abrir biblioteca de mídia</Link></div>
-        <div className={styles.mediaPicker}><div className={styles.mediaPreview}>{initial.heroImage ? <img src={initial.heroImage} alt="" /> : <div className={styles.mediaPlaceholder}>Sem banner<br />Hero</div>}<label className={styles.field} style={{ flex: 1 }}>Imagem Banner<select name="heroMediaId" defaultValue={initial.heroMediaId || ""}><option value="">Sem banner</option>{media.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div><label className={styles.field}>Ou enviar novo banner<input name="heroMediaUpload" type="file" accept="image/*" /><span className={styles.hint}>Imagem horizontal usada no Hero da página individual.</span></label></div>
+        <div className={styles.mediaPicker}><div className={styles.mediaPreview}>{initial.heroImage ? <Image src={initial.heroImage} alt="" width={1200} height={675} unoptimized /> : <div className={styles.mediaPlaceholder}>Sem banner<br />Hero</div>}<label className={styles.field} style={{ flex: 1 }}>Imagem Banner<select name="heroMediaId" defaultValue={initial.heroMediaId || ""}><option value="">Sem banner</option>{media.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div><label className={styles.field}>Ou enviar novo banner<input name="heroMediaUpload" type="file" accept="image/*" /><span className={styles.hint}>Imagem horizontal usada no Hero da página individual.</span></label></div>
         <div className={styles.grid}><label className={styles.field}>Vídeo YouTube<input name="youtubeVideo" type="url" defaultValue={initial.youtubeVideo || ""} placeholder="https://youtube.com/watch?v=..." /></label><label className={styles.field}>Embed Spotify<input name="spotifyEmbed" defaultValue={initial.spotifyEmbed || ""} placeholder="URL do embed Spotify" /></label><label className={styles.field}>Imagem social / OG<select name="ogMediaId" defaultValue={initial.ogMediaId || ""}><option value="">Usar banner/imagem principal</option>{media.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div>
       </section>
 

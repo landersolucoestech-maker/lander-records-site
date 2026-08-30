@@ -1,0 +1,47 @@
+{
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "mission",
+    "impact",
+    "requirements",
+    "criteria",
+    "evidence",
+    "reviews",
+    "findings",
+    "sideEffects"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer"
+    },
+    "mission": {
+      "type": "object"
+    },
+    "impact": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "requirements": {
+      "type": "array"
+    },
+    "criteria": {
+      "type": "array"
+    },
+    "evidence": {
+      "type": "array"
+    },
+    "findings": {
+      "type": "array"
+    },
+    "sideEffects": {
+      "type": "array"
+    },
+    "reviews": {
+      "type": "array"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

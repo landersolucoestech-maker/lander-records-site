@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import ReactMarkdown from "react-markdown";
@@ -53,7 +54,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
           <div className="articleByline">
             <span>{article.publishedAt ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(article.publishedAt) : ""}</span>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-              {presentation.authorImage ? <img src={presentation.authorImage} alt={article.authorName} style={{ width: 30, height: 30, borderRadius: "50%", objectFit: "cover" }} /> : null}
+              {presentation.authorImage ? <Image src={presentation.authorImage} alt={article.authorName} width={30} height={30} unoptimized style={{ borderRadius: "50%", objectFit: "cover" }} /> : null}
               {article.authorName}
             </span>
           </div>

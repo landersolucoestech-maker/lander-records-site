@@ -1,9 +1,11 @@
-import { and, asc, eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
+import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
 import { postLinks, postProfiles } from "../../../../lib/db/news-management-schema";
 import { mediaAssets, postCategories, postTags, posts, tags } from "../../../../lib/db/schema";
 
 export async function loadPostOptions() {
+  await requireAdmin("editor");
   const db = getDb();
   const [media, categories, allTags] = await Promise.all([
     db.select({ id: mediaAssets.id, name: mediaAssets.originalFilename, url: mediaAssets.url }).from(mediaAssets).where(eq(mediaAssets.status, "active")).orderBy(asc(mediaAssets.originalFilename)),
@@ -14,6 +16,7 @@ export async function loadPostOptions() {
 }
 
 export async function loadPostEditor(id: string) {
+  await requireAdmin("editor");
   const db = getDb();
   const [postRows, profileRows, linkRows, tagRows, mediaRows] = await Promise.all([
     db.select().from(posts).where(eq(posts.id, id)).limit(1),

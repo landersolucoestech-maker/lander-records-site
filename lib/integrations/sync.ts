@@ -1,6 +1,6 @@
 import { and, asc, eq, gt, inArray, isNull } from "drizzle-orm";
 import { getDb } from "../db";
-import { artistMetrics } from "../db/artist-management-schema";
+import { artistMetricHistory, artistMetrics } from "../db/artist-management-schema";
 import {
   artistExternalIdentities,
   integrationMetricCache,
@@ -190,8 +190,17 @@ export async function syncArtistSoundcharts(artistId: string, force = false) {
         },
       });
       for (const metric of metrics) {
-        await tx.insert(artistMetrics).values({ artistId, platform: metric.platform, value: metric.value, source: "soundcharts", updatedAt: new Date() }).onConflictDoUpdate({
-          target: [artistMetrics.artistId, artistMetrics.platform],
+        const recordedAt = new Date();
+        await tx.insert(artistMetricHistory).values({
+          artistId,
+          platform: metric.platform,
+          value: metric.value,
+          source: "soundcharts",
+          observedAt: metric.observedAt,
+          recordedAt,
+        });
+        await tx.insert(artistMetrics).values({ artistId, platform: metric.platform, value: metric.value, source: "soundcharts", updatedAt: recordedAt }).onConflictDoUpdate({
+          target: [artistMetrics.artistId, artistMetrics.platform, artistMetrics.source],
           set: { value: metric.value, source: "soundcharts", updatedAt: new Date() },
         });
         await tx.insert(integrationMetricCache).values({

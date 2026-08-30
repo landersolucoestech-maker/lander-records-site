@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "requirementId",
+    "text",
+    "mandatory"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "requirementId": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string"
+    },
+    "mandatory": {
+      "type": "boolean"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
