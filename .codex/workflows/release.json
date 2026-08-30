@@ -1,0 +1,11 @@
+{
+  "id": "release",
+  "steps": [
+    "scope-audit",
+    "test-evidence",
+    "security-if-triggered",
+    "release-readiness",
+    "external-action-authority-gate",
+    "post-release-validation"
+  ]
+}

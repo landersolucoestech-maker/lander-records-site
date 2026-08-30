@@ -1,0 +1,103 @@
+
+> lander-records-site@1.0.0 predev
+> node scripts/materialize-banner.mjs
+
+Banner asset materialized: C:\Users\deyvi\OneDrive\Documents\lander-records-site-portal\public\lander-records-anuncie-banner.webp
+
+> lander-records-site@1.0.0 dev
+> next dev
+
+   ▲ Next.js 15.5.23
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.100:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1822ms
+ ○ Compiling / ...
+ ✓ Compiled / in 720ms (805 modules)
+ GET / 200 in 5852ms
+ ○ Compiling /artistas/[slug] ...
+ ✓ Compiled /artistas/[slug] in 1089ms (801 modules)
+ GET /artistas/dj-stay/ 200 in 3567ms
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 1014ms (116 modules)
+ ○ Compiling /admin ...
+ ✓ Compiled /admin in 1368ms (878 modules)
+ GET /admin/ 200 in 4719ms
+ ○ Compiling /admin/artists ...
+ ✓ Compiled /admin/posts in 24.7s (1214 modules)
+ GET /admin/posts/ 200 in 10062ms
+ GET /admin/artists/ 200 in 32158ms
+ GET /admin/artists/ 200 in 782ms
+ GET / 200 in 11521ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 653ms (1198 modules)
+ GET / 404 in 996ms
+ ✓ Compiled in 581ms (999 modules)
+ ○ Compiling /admin/login ...
+ ✓ Compiled /admin/login in 624ms (1161 modules)
+ GET /admin/login/?next=%2Fadmin%2Fposts%2F 200 in 918ms
+ ✓ Compiled in 458ms (887 modules)
+ GET /admin/login/?next=%2Fadmin%2Fposts%2F 200 in 235ms
+ ✓ Compiled in 99ms (115 modules)
+ ✓ Compiled in 114ms (274 modules)
+ ✓ Compiled in 2.5s (887 modules)
+ GET /admin/login/?next=%2Fadmin%2Fposts%2F 200 in 1355ms
+ ✓ Compiled in 295ms (274 modules)
+ ✓ Compiled in 368ms (274 modules)
+ GET /admin/login/?next=%2Fadmin%2Fposts%2F 200 in 247ms
+ ○ Compiling /noticias ...
+ ✓ Compiled /noticias in 1158ms (1191 modules)
+ GET /noticias/ 200 in 2463ms
+ ○ Compiling /sobre-nos ...
+ ✓ Compiled /sobre-nos in 731ms (1199 modules)
+ GET /sobre-nos/ 200 in 1942ms
+ ○ Compiling / ...
+ ✓ Compiled / in 521ms (929 modules)
+ GET / 200 in 2546ms
+ GET /admin/login/?next=%2Fadmin%2Fposts%2F 200 in 396ms
+ ✓ Compiled in 463ms (929 modules)
+ ✓ Compiled in 558ms (929 modules)
+ ✓ Compiled /artistas/[slug] in 501ms (931 modules)
+ GET /artistas/dj-stay/ 200 in 2215ms
+ ✓ Compiled in 554ms (931 modules)
+ ✓ Compiled in 457ms (925 modules)
+ GET / 200 in 1678ms
+ ✓ Compiled in 807ms (925 modules)
+ ✓ Compiled in 849ms (925 modules)
+ ✓ Compiled in 5.6s (1165 modules)
+ ✓ Compiled in 214ms (278 modules)
+ GET /admin/login/?next=%2Fadmin%2Fposts%2F 200 in 486ms
+ POST /admin/login/?next=%2Fadmin%2Fposts%2F 303 in 738ms
+ GET /admin/login/?error=credentials 200 in 102ms
+ ✓ Compiled in 379ms (278 modules)
+ ○ Compiling /noticias ...
+ ✓ Compiled /noticias in 605ms (915 modules)
+ GET /noticias/ 200 in 2719ms
+ ✓ Compiled / in 370ms (929 modules)
+ GET / 200 in 3826ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 753ms (1170 modules)
+ GET /admin/login/?error=credentials 404 in 1213ms
+ ✓ Compiled / in 405ms (924 modules)
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 3.4s (1553 modules)
+ GET /admin/login/?error=credentials 500 in 9228ms
+ GET /admin/login/?error=credentials 500 in 947ms
+ GET / 500 in 12807ms
+ GET / 500 in 948ms
+ GET /admin/login/?error=credentials 500 in 774ms
+ GET /admin/login/?error=credentials 500 in 316ms
+ GET /admin/login/?error=credentials 500 in 660ms
+ GET /admin/login/?error=credentials 500 in 291ms
+ GET / 500 in 1473ms
+ GET / 500 in 354ms
+ GET / 500 in 4166ms
+ GET / 500 in 3896ms
+ GET / 500 in 3775ms
+ GET / 500 in 4056ms
+ ○ Compiling / ...
+ GET / 500 in 2393ms
+ GET / 500 in 141ms
+ GET / 500 in 26ms

@@ -1,0 +1,13 @@
+{
+  "id": "incident",
+  "steps": [
+    "contain",
+    "preserve-evidence",
+    "investigate",
+    "root-cause",
+    "recovery-plan",
+    "repair",
+    "verify",
+    "post-incident-review"
+  ]
+}

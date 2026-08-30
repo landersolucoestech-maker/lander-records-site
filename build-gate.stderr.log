@@ -1,0 +1,38 @@
+<w> [webpack.cache.PackFileCacheStrategy] Skipped not serializable cache item 'Compilation/modules|javascript/auto|C:\Users\deyvi\OneDrive\Documents\lander-records-site-portal\node_modules\next\dist\build\webpack\loaders\next-flight-css-loader.js??ruleSet[1].rules[14].oneOf[5].use[0]!C:\Users\deyvi\OneDrive\Documents\lander-records-site-portal\node_modules\next\dist\build\webpack\loaders\css-loader\src\index.js??ruleSet[1].rules[14].oneOf[5].use[1]!C:\Users\deyvi\OneDrive\Documents\lander-records-site-portal\node_modules\next\dist\build\webpack\loaders\postcss-loader\src\index.js??ruleSet[1].rules[14].oneOf[5].use[2]!C:\Users\deyvi\OneDrive\Documents\lander-records-site-portal\app\admin\(protected)\artists\ArtistForm.module.css|ssr': No serializer registered for Warning
+<w> while serializing webpack/lib/cache/PackFileCacheStrategy.PackContentItems -> webpack/lib/NormalModule -> Array { 1 items } -> webpack/lib/ModuleWarning -> Warning
+ ⚠ Compiled with warnings in 5.9s
+
+./app/admin/(protected)/artists/ArtistForm.module.css
+Warning
+
+(1:200) autoprefixer: start value has mixed support, consider using flex-start instead
+
+Import trace for requested module:
+./app/admin/(protected)/artists/ArtistForm.module.css
+./app/admin/(protected)/artists/ArtistForm.tsx
+
+<w> [webpack.cache.PackFileCacheStrategy] Skipped not serializable cache item 'Compilation/modules|C:\Users\deyvi\OneDrive\Documents\lander-records-site-portal\node_modules\next\dist\build\webpack\loaders\css-loader\src\index.js??ruleSet[1].rules[14].oneOf[10].use[2]!C:\Users\deyvi\OneDrive\Documents\lander-records-site-portal\node_modules\next\dist\build\webpack\loaders\postcss-loader\src\index.js??ruleSet[1].rules[14].oneOf[10].use[3]!C:\Users\deyvi\OneDrive\Documents\lander-records-site-portal\app\admin\admin.css': No serializer registered for Warning
+<w> while serializing webpack/lib/cache/PackFileCacheStrategy.PackContentItems -> webpack/lib/NormalModule -> Array { 1 items } -> webpack/lib/ModuleWarning -> Warning
+<w> [webpack.cache.PackFileCacheStrategy] Skipped not serializable cache item 'Compilation/modules|C:\Users\deyvi\OneDrive\Documents\lander-records-site-portal\node_modules\next\dist\build\webpack\loaders\css-loader\src\index.js??ruleSet[1].rules[14].oneOf[5].use[2]!C:\Users\deyvi\OneDrive\Documents\lander-records-site-portal\node_modules\next\dist\build\webpack\loaders\postcss-loader\src\index.js??ruleSet[1].rules[14].oneOf[5].use[3]!C:\Users\deyvi\OneDrive\Documents\lander-records-site-portal\app\admin\(protected)\artists\ArtistForm.module.css': No serializer registered for Warning
+<w> while serializing webpack/lib/cache/PackFileCacheStrategy.PackContentItems -> webpack/lib/NormalModule -> Array { 1 items } -> webpack/lib/ModuleWarning -> Warning
+ ⚠ Compiled with warnings in 2.1s
+
+./app/admin/(protected)/artists/ArtistForm.module.css.webpack[javascript/auto]!=!./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[5].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[5].use[3]!./app/admin/(protected)/artists/ArtistForm.module.css
+Warning
+
+(1:200) autoprefixer: start value has mixed support, consider using flex-start instead
+
+Import trace for requested module:
+./app/admin/(protected)/artists/ArtistForm.module.css.webpack[javascript/auto]!=!./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[5].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[5].use[3]!./app/admin/(protected)/artists/ArtistForm.module.css
+./app/admin/(protected)/artists/ArtistForm.module.css
+./app/admin/(protected)/artists/ArtistForm.tsx
+
+./app/admin/admin.css.webpack[javascript/auto]!=!./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/admin/admin.css
+Warning
+
+(1:1336) autoprefixer: end value has mixed support, consider using flex-end instead
+
+Import trace for requested module:
+./app/admin/admin.css.webpack[javascript/auto]!=!./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[10].use[3]!./app/admin/admin.css
+./app/admin/admin.css
+

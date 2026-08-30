@@ -1,0 +1,288 @@
+{
+  "schemaVersion": 1,
+  "selectionRule": "activate smallest sufficient set based on impact+risk+signals+ownership; reviewers read-only; writers disjoint",
+  "agents": [
+    {
+      "name": "mission-controller",
+      "group": "core",
+      "mode": "read",
+      "path": ".codex/agents/core/mission-controller.md"
+    },
+    {
+      "name": "repo-intelligence",
+      "group": "core",
+      "mode": "read",
+      "path": ".codex/agents/core/repo-intelligence.md"
+    },
+    {
+      "name": "autonomous-planner",
+      "group": "core",
+      "mode": "read",
+      "path": ".codex/agents/core/autonomous-planner.md"
+    },
+    {
+      "name": "implementation-lead",
+      "group": "core",
+      "mode": "write",
+      "path": ".codex/agents/core/implementation-lead.md"
+    },
+    {
+      "name": "verification-controller",
+      "group": "core",
+      "mode": "read",
+      "path": ".codex/agents/core/verification-controller.md"
+    },
+    {
+      "name": "risk-controller",
+      "group": "core",
+      "mode": "read",
+      "path": ".codex/agents/core/risk-controller.md"
+    },
+    {
+      "name": "evidence-controller",
+      "group": "core",
+      "mode": "read",
+      "path": ".codex/agents/core/evidence-controller.md"
+    },
+    {
+      "name": "completion-controller",
+      "group": "core",
+      "mode": "read",
+      "path": ".codex/agents/core/completion-controller.md"
+    },
+    {
+      "name": "runtime-continuity-controller",
+      "group": "core",
+      "mode": "read",
+      "path": ".codex/agents/core/runtime-continuity-controller.md"
+    },
+    {
+      "name": "repo-investigator",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/repo-investigator.md"
+    },
+    {
+      "name": "requirements-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/requirements-reviewer.md"
+    },
+    {
+      "name": "architecture-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/architecture-reviewer.md"
+    },
+    {
+      "name": "security-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/security-reviewer.md"
+    },
+    {
+      "name": "adversarial-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/adversarial-reviewer.md"
+    },
+    {
+      "name": "git-auditor",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/git-auditor.md"
+    },
+    {
+      "name": "test-strategy-engineer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/test-strategy-engineer.md"
+    },
+    {
+      "name": "qa-engineer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/qa-engineer.md"
+    },
+    {
+      "name": "regression-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/regression-reviewer.md"
+    },
+    {
+      "name": "frontend-engineer",
+      "group": "specialist",
+      "mode": "write",
+      "path": ".codex/agents/specialists/frontend-engineer.md"
+    },
+    {
+      "name": "frontend-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/frontend-reviewer.md"
+    },
+    {
+      "name": "accessibility-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/accessibility-reviewer.md"
+    },
+    {
+      "name": "ui-ux-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/ui-ux-reviewer.md"
+    },
+    {
+      "name": "backend-engineer",
+      "group": "specialist",
+      "mode": "write",
+      "path": ".codex/agents/specialists/backend-engineer.md"
+    },
+    {
+      "name": "backend-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/backend-reviewer.md"
+    },
+    {
+      "name": "api-contract-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/api-contract-reviewer.md"
+    },
+    {
+      "name": "database-engineer",
+      "group": "specialist",
+      "mode": "write",
+      "path": ".codex/agents/specialists/database-engineer.md"
+    },
+    {
+      "name": "database-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/database-reviewer.md"
+    },
+    {
+      "name": "distributed-systems-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/distributed-systems-reviewer.md"
+    },
+    {
+      "name": "integration-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/integration-reviewer.md"
+    },
+    {
+      "name": "dependency-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/dependency-reviewer.md"
+    },
+    {
+      "name": "supply-chain-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/supply-chain-reviewer.md"
+    },
+    {
+      "name": "performance-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/performance-reviewer.md"
+    },
+    {
+      "name": "reliability-observability-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/reliability-observability-reviewer.md"
+    },
+    {
+      "name": "ai-llm-systems-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/ai-llm-systems-reviewer.md"
+    },
+    {
+      "name": "data-engineering-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/data-engineering-reviewer.md"
+    },
+    {
+      "name": "cloud-infrastructure-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/cloud-infrastructure-reviewer.md"
+    },
+    {
+      "name": "devops-ci-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/devops-ci-reviewer.md"
+    },
+    {
+      "name": "compliance-privacy-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/compliance-privacy-reviewer.md"
+    },
+    {
+      "name": "cost-efficiency-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/cost-efficiency-reviewer.md"
+    },
+    {
+      "name": "mobile-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/mobile-reviewer.md"
+    },
+    {
+      "name": "payments-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/payments-reviewer.md"
+    },
+    {
+      "name": "incident-investigator",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/incident-investigator.md"
+    },
+    {
+      "name": "root-cause-investigator",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/root-cause-investigator.md"
+    },
+    {
+      "name": "recovery-engineer",
+      "group": "specialist",
+      "mode": "write",
+      "path": ".codex/agents/specialists/recovery-engineer.md"
+    },
+    {
+      "name": "production-validator",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/production-validator.md"
+    },
+    {
+      "name": "documentation-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/documentation-reviewer.md"
+    },
+    {
+      "name": "technology-selection-reviewer",
+      "group": "specialist",
+      "mode": "read",
+      "path": ".codex/agents/specialists/technology-selection-reviewer.md"
+    }
+  ]
+}

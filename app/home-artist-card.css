@@ -1,0 +1,8 @@
+.homeArtistPhoto {
+  background: #050505 url("/dj-stay-home-card.webp") center center / cover no-repeat !important;
+  image-rendering: auto;
+}
+
+.homeArtistPhoto::after {
+  content: none !important;
+}

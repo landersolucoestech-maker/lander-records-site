@@ -1,0 +1,35 @@
+/* Single global reveal layer. JavaScript IntersectionObserver owns the trigger. */
+.lazyReveal {
+  opacity: 0 !important;
+  transform: translate3d(0, 56px, 0) scale(.985) !important;
+  clip-path: inset(0 0 10% 0) !important;
+  transition:
+    opacity .72s cubic-bezier(.16,1,.3,1) var(--reveal-delay,0ms),
+    transform .72s cubic-bezier(.16,1,.3,1) var(--reveal-delay,0ms),
+    clip-path .72s cubic-bezier(.16,1,.3,1) var(--reveal-delay,0ms) !important;
+  will-change: opacity, transform, clip-path;
+}
+
+.lazyReveal.lazyRevealVisible {
+  opacity: 1 !important;
+  transform: translate3d(0,0,0) scale(1) !important;
+  clip-path: inset(0 0 0 0) !important;
+}
+
+/* Never blur content or brand assets during reveal. */
+.lazyReveal,
+.lazyReveal *,
+.lazyReveal img,
+.lazyReveal svg {
+  filter: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lazyReveal,
+  .lazyReveal.lazyRevealVisible {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    transition: none !important;
+  }
+}

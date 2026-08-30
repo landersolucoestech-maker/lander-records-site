@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "leases": [
+    {
+      "id": "LEASE-MTBBD3O6-D90E49",
+      "owner": "recovery-engineer",
+      "paths": [
+        ".git"
+      ],
+      "status": "ACTIVE",
+      "acquiredAt": "2026-08-27T09:21:52.854Z"
+    }
+  ]
+}

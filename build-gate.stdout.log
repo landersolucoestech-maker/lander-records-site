@@ -1,0 +1,79 @@
+
+> lander-records-site@1.0.0 prebuild
+> node scripts/materialize-banner.mjs
+
+Banner asset materialized: C:\Users\deyvi\OneDrive\Documents\lander-records-site-portal\public\lander-records-anuncie-banner.webp
+
+> lander-records-site@1.0.0 build
+> next build
+
+   ▲ Next.js 15.5.23
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 8.7s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/5) ...
+   Generating static pages (1/5) 
+   Generating static pages (2/5) 
+   Generating static pages (3/5) 
+ ✓ Generating static pages (5/5)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ƒ /                                      172 B         106 kB
+├ ○ /_not-found                            998 B         104 kB
+├ ƒ /admin                                 187 B         106 kB
+├ ƒ /admin/artist-categories               186 B         103 kB
+├ ƒ /admin/artists                       2.45 kB         109 kB
+├ ƒ /admin/artists/[id]                    133 B         110 kB
+├ ƒ /admin/artists/[id]/view               405 B         106 kB
+├ ƒ /admin/artists/new                     132 B         110 kB
+├ ƒ /admin/audit                           187 B         106 kB
+├ ƒ /admin/categories                    1.48 kB         104 kB
+├ ƒ /admin/change-password                 186 B         103 kB
+├ ƒ /admin/login                           186 B         103 kB
+├ ƒ /admin/media                           186 B         103 kB
+├ ƒ /admin/navigation                      186 B         103 kB
+├ ƒ /admin/pages                         1.59 kB         108 kB
+├ ƒ /admin/pages/[id]                      187 B         106 kB
+├ ƒ /admin/pages/[id]/view                 405 B         106 kB
+├ ƒ /admin/pages/new                       187 B         106 kB
+├ ƒ /admin/post-categories                 186 B         103 kB
+├ ƒ /admin/posts                         2.37 kB         108 kB
+├ ƒ /admin/posts/[id]                      129 B         109 kB
+├ ƒ /admin/posts/[id]/view                 405 B         106 kB
+├ ƒ /admin/posts/new                       132 B         109 kB
+├ ƒ /admin/releases                        186 B         103 kB
+├ ƒ /admin/settings                        186 B         103 kB
+├ ƒ /admin/settings/lander-records         186 B         103 kB
+├ ƒ /admin/tags                            186 B         103 kB
+├ ƒ /admin/users                           186 B         103 kB
+├ ƒ /api/contact                           186 B         103 kB
+├ ƒ /api/cron/integrations                 186 B         103 kB
+├ ƒ /api/health                            186 B         103 kB
+├ ƒ /api/integrations/spotify/callback     186 B         103 kB
+├ ƒ /api/integrations/spotify/connect      186 B         103 kB
+├ ƒ /artistas                              855 B         107 kB
+├ ƒ /artistas/[slug]                       172 B         106 kB
+├ ƒ /contato                             1.59 kB         108 kB
+├ ƒ /noticias                              960 B         107 kB
+├ ƒ /noticias/[slug]                       172 B         106 kB
+├ ƒ /politica-de-privacidade               187 B         106 kB
+├ ○ /robots.txt                            186 B         103 kB
+├ ƒ /sitemap.xml                           186 B         103 kB
+├ ƒ /sobre-nos                             649 B         107 kB
+└ ƒ /termos-e-condicoes                    187 B         106 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/1255-73c62fd077d3c0f5.js      46.4 kB
+  ├ chunks/4bd1b696-f785427dddbba9fb.js  54.2 kB
+  └ other shared chunks (total)          2.03 kB
+
+
+ƒ Middleware                             34.2 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

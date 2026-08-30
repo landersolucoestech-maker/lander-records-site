@@ -1,0 +1,12 @@
+{
+  "id": "destructive-operations",
+  "default": "block",
+  "examples": [
+    "git reset --hard",
+    "git clean -fd",
+    "drop/truncate database",
+    "delete production data",
+    "force push",
+    "destroy infrastructure"
+  ]
+}

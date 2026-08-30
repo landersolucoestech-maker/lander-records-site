@@ -1,0 +1,45 @@
+{
+  "name": "lander-records-site",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "predev": "node scripts/materialize-banner.mjs",
+    "dev": "next dev",
+    "prebuild": "node scripts/materialize-banner.mjs",
+    "build": "next build",
+    "start": "next start",
+    "smoke": "node scripts/deploy/ionos-smoke.mjs",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test:auth": "node --test tests/auth/*.test.mjs",
+    "test:spotify": "node --test tests/spotify-security.test.cjs",
+    "test:database": "node --test tests/database/*.test.mjs",
+    "test:unit": "node --test tests/unit/*.test.mjs",
+    "test": "npm run test:auth && npm run test:spotify && npm run test:database && npm run test:unit",
+    "db:migrate": "node scripts/migrate.mjs",
+    "db:seed": "node scripts/seed.mjs",
+    "test:integration": "node tests/integration/cms.mjs && node tests/integration/integrations-db.mjs",
+    "admin:bootstrap": "node scripts/bootstrap-admin.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.112.3",
+    "bcryptjs": "^3.0.2",
+    "drizzle-orm": "0.45.2",
+    "next": "16.3.3",
+    "postgres": "^3.4.7",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "sharp": "0.35.4",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.3",
+    "@types/react-dom": "^19.0.2",
+    "eslint": "9.35.0",
+    "eslint-config-next": "16.3.3",
+    "typescript": "^5.7.2"
+  }
+}

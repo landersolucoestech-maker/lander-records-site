@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-29T13:12:15.823Z",
+  "root": "C:\\Users\\deyvi\\OneDrive\\Documents\\lander-records-site-portal",
+  "repository": null,
+  "branch": null,
+  "remote": null,
+  "fileCount": 203,
+  "languages": [
+    "javascript",
+    "typescript",
+    "typescript-react"
+  ],
+  "packageManagers": [
+    "npm"
+  ],
+  "commands": {
+    "dev": "npm run dev",
+    "start": "npm run start",
+    "typecheck": "npm run typecheck",
+    "build": "npm run build"
+  },
+  "riskSurfaces": [
+    "authentication",
+    "database",
+    "ai-llm",
+    "public-api"
+  ],
+  "localRuntime": {
+    "detected": true,
+    "framework": "next",
+    "command": "npm run dev",
+    "port": 8082,
+    "guardianRequired": true
+  },
+  "notes": [
+    "heuristic discovery; repository documentation and executable configuration remain authoritative"
+  ]
+}

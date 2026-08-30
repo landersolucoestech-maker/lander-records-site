@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "severity",
+    "status",
+    "summary",
+    "producer"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "severity": {
+      "enum": [
+        "INFO",
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL",
+        "BLOCKER"
+      ]
+    },
+    "status": {
+      "enum": [
+        "OPEN",
+        "RESOLVED",
+        "WAIVED"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "producer": {
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

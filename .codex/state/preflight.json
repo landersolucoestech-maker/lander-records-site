@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-08-30T00:22:35.787Z",
+  "workspaceFingerprint": "edb0344004166d0c55e9e7d7e98a79b7b2b260fc15d503a95aae8c6633180f9e",
+  "checks": [
+    {
+      "name": "doctor",
+      "ok": true,
+      "result": {
+        "status": "PASS",
+        "checks": [
+          {
+            "name": "node>=20",
+            "ok": true,
+            "detail": "24.15.0"
+          },
+          {
+            "name": "git",
+            "ok": true,
+            "detail": ""
+          },
+          {
+            "name": "AGENTS.md",
+            "ok": true,
+            "detail": ""
+          },
+          {
+            "name": ".codex",
+            "ok": true,
+            "detail": ""
+          },
+          {
+            "name": ".codex/agents/registry.json",
+            "ok": true,
+            "detail": ""
+          },
+          {
+            "name": ".codex/runtime/preflight.mjs",
+            "ok": true,
+            "detail": ""
+          },
+          {
+            "name": ".codex/runtime/localhost-guardian.mjs",
+            "ok": true,
+            "detail": ""
+          },
+          {
+            "name": ".codex/policies/localhost-continuity.json",
+            "ok": true,
+            "detail": ""
+          },
+          {
+            "name": "localhost-guardian-config",
+            "ok": true,
+            "detail": "loaded"
+          }
+        ]
+      }
+    },
+    {
+      "name": "localhost-guardian",
+      "ok": true,
+      "result": {
+        "ok": true,
+        "action": "watcher-started",
+        "pid": 35252,
+        "health": {
+          "ok": true,
+          "action": "already-healthy",
+          "probe": {
+            "ok": true,
+            "detail": "tcp-connect",
+            "cfg": {
+              "enabled": true,
+              "required": true,
+              "command": "npm run dev -- --port 8082",
+              "cwd": "C:\\Users\\deyvi\\OneDrive\\Documents\\lander-records-site-portal",
+              "host": "127.0.0.1",
+              "port": 8082,
+              "protocol": "http",
+              "healthPath": "/",
+              "url": "http://127.0.0.1:8082/",
+              "probe": "tcp",
+              "intervalMs": 2000,
+              "startupTimeoutMs": 60000,
+              "restartBackoffMs": 1000,
+              "restartBackoffMaxMs": 15000,
+              "stableResetMs": 30000,
+              "detectedReason": "next"
+            }
+          }
+        }
+      },
+      "detail": ""
+    }
+  ]
+}

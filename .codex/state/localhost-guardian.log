@@ -1,0 +1,20 @@
+{"ts":"2026-08-27T09:05:55.954Z","event":"server-spawned","pid":11416,"command":"npm run dev","port":5173}
+{"ts":"2026-08-27T09:09:10.577Z","event":"watcher-started","pid":11940,"port":8082,"reason":"vite"}
+{"ts":"2026-08-27T09:29:04.138Z","event":"server-spawned","pid":15740,"command":"npm run dev","port":5173}
+{"ts":"2026-08-27T09:38:45.599Z","event":"server-spawned","pid":10072,"command":"npm run dev","port":8082}
+{"ts":"2026-08-27T09:38:48.421Z","event":"server-healthy","detail":"http-200","degraded":false}
+{"ts":"2026-08-27T09:38:48.588Z","event":"watcher-started","pid":15300,"port":8082,"reason":"vite"}
+{"ts":"2026-08-27T09:43:02.051Z","event":"watcher-started","pid":11508,"port":8082,"reason":"vite"}
+{"ts":"2026-08-27T17:16:34.802Z","event":"server-spawned","pid":14144,"command":"npm run dev","port":8082}
+{"ts":"2026-08-27T17:16:50.465Z","event":"server-healthy","detail":"http-failed:http-timeout;tcp-ok","degraded":true}
+{"ts":"2026-08-27T17:16:51.105Z","event":"watcher-started","pid":15712,"port":8082,"reason":"vite"}
+{"ts":"2026-08-27T17:29:19.265Z","event":"legacy-watcher-upgrade","pid":15712}
+{"ts":"2026-08-27T17:29:19.509Z","event":"watcher-started","pid":16680,"port":8082,"reason":"vite"}
+{"ts":"2026-08-29T13:12:23.311Z","event":"server-spawned","pid":33468,"command":"npm run dev","port":8082}
+{"ts":"2026-08-29T13:15:15.205Z","event":"server-spawned","pid":36776,"command":"npm run dev -- --port 8082","port":8082}
+{"ts":"2026-08-29T13:15:16.723Z","event":"server-healthy","detail":"tcp-connect","degraded":false}
+{"ts":"2026-08-29T13:15:16.812Z","event":"watcher-started","pid":33296,"port":8082,"reason":"next"}
+{"ts":"2026-08-29T13:42:30.410Z","event":"watcher-started","pid":27588,"port":8082,"reason":"next"}
+{"ts":"2026-08-30T00:22:35.349Z","event":"watcher-started","pid":35252,"port":8082,"reason":"next"}
+{"ts":"2026-08-30T00:26:57.834Z","event":"server-spawned","pid":33676,"command":"npm run dev -- --port 8082","port":8082}
+{"ts":"2026-08-30T00:27:01.913Z","event":"server-healthy","detail":"tcp-connect","degraded":false}

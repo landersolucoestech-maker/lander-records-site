@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "status": "HEALTHY",
+  "childPid": 33676,
+  "command": "npm run dev -- --port 8082",
+  "port": 8082,
+  "url": "http://127.0.0.1:8082/",
+  "lastStartAt": "2026-08-30T00:26:57.830Z",
+  "updatedAt": "2026-08-30T00:27:01.910Z",
+  "lastHealthyAt": "2026-08-30T00:27:01.907Z",
+  "degraded": false,
+  "watcherPid": null,
+  "watcherOwnershipToken": "bc9a4bd2d1a5a1a966341947e2bff7166aa5152771bdcde3",
+  "projectRoot": "c:/users/deyvi/onedrive/documents/lander-records-site-portal",
+  "childOwnershipToken": "dac15fefba3b364dc86898c899b5550985ebfa04ff3837df",
+  "childCommandHash": "19bfb72334c8d9ead200bbd175fca66707cd7297643a6c5b268c5a07d99e399f",
+  "lastFailureAt": "2026-08-29T13:13:23.753Z",
+  "failure": "ECONNREFUSED"
+}

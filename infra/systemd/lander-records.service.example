@@ -1,0 +1,15 @@
+[Unit]
+Description=Lander Records Next.js application
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/var/www/lander-records/current
+EnvironmentFile=/var/www/lander-records/shared/.env.production
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=5
+User=lander
+
+[Install]
+WantedBy=multi-user.target

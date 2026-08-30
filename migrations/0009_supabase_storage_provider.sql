@@ -1,0 +1,1 @@
+ALTER TABLE media_assets ALTER COLUMN storage_provider SET DEFAULT 'supabase_storage';
