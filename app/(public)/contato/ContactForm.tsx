@@ -58,7 +58,7 @@ export function ContactForm({ topics }: { topics: Topic[] }) {
   }
 
   return (
-    <form className="contactForm" onSubmit={submit} noValidate>
+    <form className="contactForm" onSubmit={submit}>
       <label>Nome<input name="name" autoComplete="name" required minLength={2} maxLength={180} placeholder="Seu nome" /></label>
       <label>E-mail<input name="email" type="email" autoComplete="email" required maxLength={320} placeholder="voce@email.com" /></label>
       <label>Telefone<input name="phone" type="tel" autoComplete="tel" maxLength={80} placeholder="(00) 00000-0000" /></label>
@@ -73,7 +73,7 @@ export function ContactForm({ topics }: { topics: Topic[] }) {
       <label className="contactHoneypot" aria-hidden="true">Website<input name="website" tabIndex={-1} autoComplete="off" /></label>
       <div className="fullField">
         <button className="button buttonPrimary" type="submit" disabled={state.status === "sending"}>{state.status === "sending" ? "Enviando..." : "Enviar mensagem"}</button>
-        {state.message ? <p className={`contactFormStatus ${state.status}`} role="status">{state.message}</p> : null}
+        {state.message ? <p className={`contactFormStatus ${state.status}`} role={state.status === "error" ? "alert" : "status"}>{state.message}</p> : null}
       </div>
     </form>
   );

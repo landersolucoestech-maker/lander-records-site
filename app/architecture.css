@@ -98,7 +98,8 @@
 .articleContent p { margin: 0 0 26px; font-size: 18px; line-height: 1.9; color: #333; }
 .shareRail { position: sticky; top: 120px; align-self: start; border-left: 1px solid #ddd; padding-left: 20px; }
 .shareRail span { display: block; margin-bottom: 18px; color: var(--red); font-size: 10px; font-weight: 900; text-transform: uppercase; }
-.shareRail div { margin: 12px 0; font-size: 13px; font-weight: 800; }
+.shareRail a,
+.shareRail button { display: block; margin: 12px 0; border: 0; padding: 0; background: transparent; color: inherit; font: inherit; font-size: 13px; font-weight: 800; text-align: left; cursor: pointer; }
 .compactNewsGrid { grid-template-columns: repeat(2,minmax(0,1fr)); }
 .compactCta h2 { font-size: clamp(42px,5.6vw,72px); max-width: 900px; }
 @media (max-width: 1100px) { .serviceLinkGrid { grid-template-columns: repeat(2,minmax(0,1fr)); } .homeNewsGrid, .newsGrid { grid-template-columns: repeat(2,minmax(0,1fr)); } .artistGrid { grid-template-columns: repeat(2,minmax(0,1fr)); } }

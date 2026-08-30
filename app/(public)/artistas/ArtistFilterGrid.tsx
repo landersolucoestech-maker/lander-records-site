@@ -23,7 +23,7 @@ export function ArtistFilterGrid({ artists, categories, showFilters = true, show
 
   return (
     <>
-      {showFilters ? <div className="filterRow" role="tablist" aria-label="Filtrar artistas por categoria">
+      {showFilters ? <div className="filterRow" role="group" aria-label="Filtrar artistas por categoria">
         <button type="button" className={active === "all" ? "active" : ""} aria-pressed={active === "all"} onClick={() => setActive("all")}>Todos</button>
         {categories.map((category) => (
           <button

@@ -23,7 +23,7 @@ export function NewsFilterGrid({ posts, categories, showFilters = true, showList
 
   return (
     <>
-      {showFilters ? <div className="filterRow" role="tablist" aria-label="Filtrar notícias por categoria">
+      {showFilters ? <div className="filterRow" role="group" aria-label="Filtrar notícias por categoria">
         <button type="button" className={active === "all" ? "active" : ""} aria-pressed={active === "all"} onClick={() => setActive("all")}>Todos</button>
         {categories.map((category) => (
           <button key={category.id} type="button" className={active === category.slug ? "active" : ""} aria-pressed={active === category.slug} onClick={() => setActive(category.slug)}>

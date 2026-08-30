@@ -131,7 +131,7 @@ export default async function Home() {
           </section>
         ) : null}
 
-        {releasesSection ? (
+        {releasesSection && spotifyReleases.length > 0 ? (
           <section className="homeBlock">
             <div className="homeBlockHeader">
               <h2 className="homeEditorialTitle">{editorialTitle(releasesSection.title)}</h2>

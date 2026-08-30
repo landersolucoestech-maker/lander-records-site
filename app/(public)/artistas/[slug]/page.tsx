@@ -4,23 +4,9 @@ import Link from "next/link";
 import { Footer, Header } from "@/app/components/SiteChrome";
 import { getPublishedArtistBySlug, getSlugRedirect } from "@/modules/artists";
 import { absoluteUrl, buildMetadata } from "@/lib/seo";
+import { trustedEmbedUrl, trustedExternalUrl } from "@/lib/media-embed";
 
 export const dynamic = "force-dynamic";
-
-function embedUrl(type: string, url: string) {
-  const normalizedType = type.toLowerCase();
-  if (normalizedType === "youtube") {
-    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&?/]+)/);
-    return match ? `https://www.youtube.com/embed/${match[1]}` : url;
-  }
-  if (normalizedType === "spotify") {
-    const iframeSrc = url.match(/src=["']([^"']+)["']/i)?.[1];
-    const source = iframeSrc || url;
-    const match = source.match(/open\.spotify\.com\/(?:embed\/)?(artist|album|track|playlist|show|episode)\/([A-Za-z0-9]+)/i);
-    return match ? `https://open.spotify.com/embed/${match[1].toLowerCase()}/${match[2]}` : "";
-  }
-  return url;
-}
 
 const metricLabels: Record<string, string> = {
   instagram: "Instagram",
@@ -90,18 +76,19 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
             <div className="embedGrid" id="midia">
               {artist.embeds.map((embed) => {
                 const type = embed.type.toLowerCase();
-                const resolvedEmbedUrl = embedUrl(embed.type, embed.url);
+                const resolvedEmbedUrl = trustedEmbedUrl(embed.type, embed.url);
+                const externalUrl = type === "youtube" || type === "spotify" ? "" : trustedExternalUrl(embed.url);
                 return (
                   <div className="artistEmbed" key={embed.id}>
                     <span>{embed.type.toUpperCase()}</span>
                     <strong>{embed.title}</strong>
-                    {type === "youtube" ? (
-                      <iframe src={resolvedEmbedUrl} title={embed.title || `Vídeo de ${artist.name}`} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+                    {type === "youtube" && resolvedEmbedUrl ? (
+                      <iframe src={resolvedEmbedUrl} title={embed.title || `Vídeo de ${artist.name}`} loading="lazy" referrerPolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
                     ) : type === "spotify" && resolvedEmbedUrl ? (
                       <iframe src={resolvedEmbedUrl} title={embed.title || `Spotify de ${artist.name}`} loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" />
-                    ) : (
-                      <a className="button buttonOutline" href={embed.url} target="_blank" rel="noreferrer">Abrir {embed.type} ↗</a>
-                    )}
+                    ) : externalUrl ? (
+                      <a className="button buttonOutline" href={externalUrl} target="_blank" rel="noreferrer">Abrir {embed.type} ↗</a>
+                    ) : <em>Mídia indisponível</em>}
                   </div>
                 );
               })}

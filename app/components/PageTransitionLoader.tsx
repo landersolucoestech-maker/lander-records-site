@@ -4,15 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
-const MIN_VISIBLE_MS = 760;
-const INITIAL_VISIBLE_MS = 980;
+const MIN_VISIBLE_MS = 360;
+const INITIAL_VISIBLE_MS = 520;
+const NAVIGATION_FAILSAFE_MS = 8000;
 
 export function PageTransitionLoader() {
   const pathname = usePathname();
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
   const [progress, setProgress] = useState(18);
   const startedAtRef = useRef<number>(0);
   const firstRunRef = useRef(true);
+  const failSafeTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     const handleClick = (event: MouseEvent) => {
@@ -31,10 +33,18 @@ export function PageTransitionLoader() {
       setProgress(14);
       setVisible(true);
       requestAnimationFrame(() => setProgress(72));
+      if (failSafeTimerRef.current) window.clearTimeout(failSafeTimerRef.current);
+      failSafeTimerRef.current = window.setTimeout(() => {
+        setProgress(100);
+        setVisible(false);
+      }, NAVIGATION_FAILSAFE_MS);
     };
 
     document.addEventListener("click", handleClick, true);
-    return () => document.removeEventListener("click", handleClick, true);
+    return () => {
+      document.removeEventListener("click", handleClick, true);
+      if (failSafeTimerRef.current) window.clearTimeout(failSafeTimerRef.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -48,7 +58,7 @@ export function PageTransitionLoader() {
       const progressTimer = window.setTimeout(() => setProgress(78), 90);
       const finishTimer = window.setTimeout(() => {
         setProgress(100);
-        window.setTimeout(() => setVisible(false), 220);
+        setVisible(false);
       }, INITIAL_VISIBLE_MS);
       return () => {
         window.clearTimeout(progressTimer);
@@ -63,7 +73,11 @@ export function PageTransitionLoader() {
     const progressTimer = window.setTimeout(() => setProgress(94), Math.min(220, remaining / 2));
     const finishTimer = window.setTimeout(() => {
       setProgress(100);
-      window.setTimeout(() => setVisible(false), 220);
+      setVisible(false);
+      if (failSafeTimerRef.current) {
+        window.clearTimeout(failSafeTimerRef.current);
+        failSafeTimerRef.current = null;
+      }
     }, remaining);
 
     return () => {

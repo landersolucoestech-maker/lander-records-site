@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import { Footer, Header } from "@/app/components/SiteChrome";
 import { getPublishedPostBySlug, getPublishedPosts, getSlugRedirect, getPublicPostPresentation } from "@/modules/posts";
 import { absoluteUrl, buildMetadata } from "@/lib/seo";
+import { CopyArticleLink } from "@/app/components/CopyArticleLink";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +67,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
           <aside className="shareRail">
             <span>Compartilhe</span>
             {Object.entries(presentation.links).map(([platform, url]) => <a key={platform} href={url} target="_blank" rel="noreferrer">{socialLabels[platform] || platform}</a>)}
-            <a href={publicationUrl}>Link</a>
+            <CopyArticleLink href={publicationUrl} />
           </aside>
         </div>
       </article>

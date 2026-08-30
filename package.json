@@ -15,6 +15,7 @@
     "test:spotify": "node --test tests/spotify-security.test.cjs",
     "test:database": "node --test tests/database/*.test.mjs",
     "test:unit": "node --test tests/unit/*.test.mjs",
+    "test:browser": "playwright test",
     "test": "npm run test:auth && npm run test:spotify && npm run test:database && npm run test:unit",
     "db:migrate": "node scripts/migrate.mjs",
     "db:seed": "node scripts/seed.mjs",
@@ -35,6 +36,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@playwright/test": "1.61.1",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.3",
     "@types/react-dom": "^19.0.2",

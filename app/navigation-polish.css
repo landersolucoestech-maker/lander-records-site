@@ -142,3 +142,10 @@
   .mobileNav summary { padding: 0 11px; }
   .headerActions { gap: 8px; }
 }
+
+@media (max-width: 360px) {
+  .siteHeader { grid-template-columns: minmax(0,1fr) auto; }
+  .siteHeader .brand { min-width: 0; }
+  .siteHeader .brand img { max-width: 140px !important; }
+  .headerCta { display: none; }
+}
