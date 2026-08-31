@@ -1,4 +1,4 @@
-type IconName = "activity" | "artists" | "audit" | "calendar" | "chevron" | "dashboard" | "external" | "home" | "integration" | "media" | "menu" | "navigation" | "pages" | "posts" | "settings" | "tags" | "users" | "x";
+type IconName = "activity" | "artists" | "audit" | "calendar" | "chevron" | "dashboard" | "external" | "home" | "integration" | "media" | "menu" | "navigation" | "pages" | "posts" | "search" | "settings" | "tags" | "users" | "x";
 
 const paths: Record<IconName, React.ReactNode> = {
   activity: <><path d="M4 12h3l2-6 4 12 2-6h5" /></>,
@@ -15,6 +15,7 @@ const paths: Record<IconName, React.ReactNode> = {
   navigation: <><path d="M4 6h16M4 12h16M4 18h16" /><circle cx="7" cy="6" r="1" fill="currentColor" /><circle cx="12" cy="12" r="1" fill="currentColor" /><circle cx="9" cy="18" r="1" fill="currentColor" /></>,
   pages: <><path d="M6 3h9l4 4v14H6z" /><path d="M15 3v5h5M9 13h6M9 17h6" /></>,
   posts: <><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 8h8M8 12h8M8 16h5" /></>,
+  search: <><circle cx="11" cy="11" r="7" /><path d="m16 16 5 5" /></>,
   settings: <><circle cx="12" cy="12" r="3" /><path d="M19 13.5v-3l-2-.7-.7-1.7.9-1.9-2.1-2.1-1.9.9-1.7-.7L10.5 2h-3l-.7 2-1.7.7-1.9-.9-2.1 2.1.9 1.9-.7 1.7-2 .7v3l2 .7.7 1.7-.9 1.9 2.1 2.1 1.9-.9 1.7.7.7 2h3l.7-2 1.7-.7 1.9.9 2.1-2.1-.9-1.9.7-1.7z" transform="scale(.8) translate(3 3)" /></>,
   tags: <><path d="M20 13 11 4H4v7l9 9z" /><circle cx="7.5" cy="7.5" r="1" /></>,
   users: <><circle cx="9" cy="8" r="3" /><path d="M3 20c.7-4 2.7-6 6-6s5.3 2 6 6M16 5c2 .3 3 1.3 3 3s-1 2.7-3 3M17 14c2.3.6 3.6 2.6 4 6" /></>,

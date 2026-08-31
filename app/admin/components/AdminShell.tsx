@@ -27,7 +27,7 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
   const [open, setOpen] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
-  const topbarTitle = pathname.includes("/home") ? "Home / Visão geral" : pathname.includes("artists") ? "Artistas" : pathname.includes("posts") ? "Notícias" : pathname.includes("media") ? "Mídia" : pathname.includes("navigation") ? "Navegação" : pathname.includes("settings") || pathname.includes("integrations") ? "Configurações" : pathname.includes("users") ? "Usuários" : pathname.includes("audit") ? "Atividade" : pathname.includes("categories") ? "Categorias" : pathname.includes("tags") ? "Tags" : pathname.includes("releases") ? "Lançamentos" : pathname.includes("pages") ? "Páginas" : "Dashboard";
+  const topbarTitle = pathname.includes("/home") ? "Home / Visão geral" : pathname.includes("artists") ? "Artistas / Visão geral" : pathname.includes("posts") ? "Notícias" : pathname.includes("media") ? "Mídia" : pathname.includes("navigation") ? "Navegação" : pathname.includes("settings") || pathname.includes("integrations") ? "Configurações" : pathname.includes("users") ? "Usuários" : pathname.includes("audit") ? "Atividade" : pathname.includes("categories") ? "Categorias" : pathname.includes("tags") ? "Tags" : pathname.includes("releases") ? "Lançamentos" : pathname.includes("pages") ? "Páginas" : "Dashboard";
   const mapHref = (href: string) => preview ? (href === "/admin" ? "/cms-preview/dashboard" : href.includes("lander-records") ? "/cms-preview/integrations" : `/cms-preview/${href.split("/").filter(Boolean).at(-1) || "dashboard"}`) : href;
 
   useEffect(() => {

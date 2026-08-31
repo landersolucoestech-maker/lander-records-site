@@ -16,6 +16,9 @@ test("real admin remains fail-closed while the local preview grants no session",
   const adminHome = await request.get("/admin/home/", { maxRedirects: 0 });
   expect(adminHome.status()).toBe(307);
   expect(adminHome.headers().location).toBe("/admin/login?next=%2Fadmin%2Fhome%2F");
+  const adminArtists = await request.get("/admin/artists/", { maxRedirects: 0 });
+  expect(adminArtists.status()).toBe(307);
+  expect(adminArtists.headers().location).toBe("/admin/login?next=%2Fadmin%2Fartists%2F");
 
   await page.goto("/cms-preview/", { waitUntil: "networkidle" });
   await expect(page.locator('[data-preview-only="true"]')).toBeVisible();
@@ -41,7 +44,7 @@ test("preview simulates UI states without network mutations", async ({ page }) =
   page.on("request", (request) => {
     if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method())) mutations.push(`${request.method()} ${request.url()}`);
   });
-  await page.goto("/cms-preview/artists", { waitUntil: "networkidle" });
+  await page.goto("/cms-preview/posts", { waitUntil: "networkidle" });
   const state = page.getByLabel("Estado visual");
   await state.selectOption("empty");
   await expect(page.getByText("Nenhum item neste estado de demonstração.")).toBeVisible();
@@ -76,6 +79,41 @@ for (const width of [1440, 1280, 768, 430, 375]) {
     await expect(page.getByTestId("content-integrations")).toContainText("Soundcharts");
     await expect(page.getByTestId("recent-activity")).toBeVisible();
     await expect(page.getByTestId("useful-links")).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+    expect(failures).toEqual([]);
+  });
+}
+
+test("Artists preview exposes truthful editorial controls without mutations", async ({ page }) => {
+  const mutations: string[] = [];
+  page.on("request", (request) => { if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method())) mutations.push(`${request.method()} ${request.url()}`); });
+  await page.goto("/cms-preview/artists", { waitUntil: "networkidle" });
+  await expect(page.getByTestId("admin-topbar")).toContainText("Artistas / Visão geral");
+  await expect(page.getByTestId("admin-sidebar").getByRole("link", { name: "Artistas", exact: true })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByTestId("artists-metric-card")).toHaveCount(4);
+  await expect(page.getByRole("table", { name: "Artistas cadastrados" })).toBeVisible();
+  for (const heading of ["Artista", "Gênero", "Status", "Destaque", "Atualizado em", "Ações"]) await expect(page.getByRole("columnheader", { name: heading, exact: true })).toBeVisible();
+  await expect(page.getByTestId("artist-row")).toHaveCount(4);
+  await expect(page.getByRole("button", { name: "Novo artista" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: /Editar Artista Aurora/ })).toBeDisabled();
+  await expect(page.getByText(/Importar CSV|Configurar módulo|Mais filtros/i)).toHaveCount(0);
+  await page.getByRole("searchbox", { name: "Buscar artistas" }).fill("horizonte");
+  await expect(page.getByTestId("artist-row")).toHaveCount(1);
+  await expect(page.getByTestId("artist-row")).toContainText("Coletivo Horizonte");
+  await page.getByRole("searchbox", { name: "Buscar artistas" }).fill("não existe");
+  await expect(page.getByTestId("artists-empty")).toContainText("Nenhum artista encontrado");
+  await page.getByRole("button", { name: "Limpar filtros" }).click();
+  await expect(page.getByTestId("artist-row")).toHaveCount(4);
+  expect(mutations).toEqual([]);
+});
+
+for (const width of [1440, 1280, 768, 430, 375]) {
+  test(`Artists manager remains responsive at ${width}px`, async ({ page }) => {
+    const failures = runtimeFailures(page);
+    await page.setViewportSize({ width, height: 1000 });
+    await page.goto("/cms-preview/artists", { waitUntil: "networkidle" });
+    await expect(page.getByTestId("artist-manager")).toBeVisible();
+    await expect(page.getByTestId("artist-row")).toHaveCount(4);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
     expect(failures).toEqual([]);
   });

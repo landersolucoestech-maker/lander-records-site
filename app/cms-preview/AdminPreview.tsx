@@ -5,6 +5,7 @@ import { useState } from "react";
 import { AdminShell } from "../admin/components/AdminShell";
 import { DashboardView } from "../admin/components/DashboardView";
 import { createPreviewHomeSections, HomeManagerView } from "../admin/components/HomeManagerView";
+import ArtistManager, { type ArtistSummary } from "../admin/(protected)/artists/ArtistManager";
 
 type PreviewState = "filled" | "empty" | "loading" | "error";
 
@@ -37,6 +38,13 @@ const rows: Record<string, Array<[string, string, string]>> = {
   users: [["Equipe editorial", "Ativo", "Editor"], ["Administrador local", "Ativo", "Admin"], ["Leitura", "Ativo", "Viewer"]],
   audit: [["Conteúdo atualizado", "Sucesso", "page_section"], ["Artista publicado", "Sucesso", "artist"], ["Login administrativo", "Sucesso", "admin_user"]],
 };
+
+const previewArtists: ArtistSummary[] = [
+  { id: "preview-1", name: "Artista Aurora", slug: "artista-aurora", status: "published", cardImage: "", genres: ["Eletrônica"], homePosition: 1, isPubliclyVisible: true, updatedAt: "Não consultado" },
+  { id: "preview-2", name: "Coletivo Horizonte", slug: "coletivo-horizonte", status: "published", cardImage: "", genres: ["Hip Hop", "Rap"], homePosition: 2, isPubliclyVisible: true, updatedAt: "Não consultado" },
+  { id: "preview-3", name: "Projeto Norte", slug: "projeto-norte", status: "draft", cardImage: "", genres: ["Pop"], isPubliclyVisible: false, updatedAt: "Não consultado" },
+  { id: "preview-4", name: "Trio Atlântico", slug: "trio-atlantico", status: "inactive", cardImage: "", genres: ["MPB"], isPubliclyVisible: false, updatedAt: "Não consultado" },
+];
 
 function badgeClass(status: string) {
   if (/publicado|ativa|ativo|sucesso|novo/i.test(status)) return "live";
@@ -72,7 +80,7 @@ export function AdminPreview({ section }: { section: string }) {
   const title = modules.find(([key]) => key === validSection)?.[1] || "Dashboard";
 
   return <div className="adminPreviewShell" data-preview-only="true"><AdminShell email="preview local" footerAction={<Link href="/admin/login">Abrir login real protegido</Link>} name="Administrador" preview role="owner">
-    {validSection === "dashboard" ? <DashboardView data={{ artistDrafts: null, postDrafts: null, recentActivity: [] }} name="Administrador" preview role="owner" /> : validSection === "home" ? <HomeManagerView preview sections={createPreviewHomeSections()} /> : <div className="adminPage">
+    {validSection === "dashboard" ? <DashboardView data={{ artistDrafts: null, postDrafts: null, recentActivity: [] }} name="Administrador" preview role="owner" /> : validSection === "home" ? <HomeManagerView preview sections={createPreviewHomeSections()} /> : validSection === "artists" ? <ArtistManager artists={previewArtists} preview /> : <div className="adminPage">
       <header className="adminPageHeader"><div><p className="adminEyebrow">CMS FRONTEND PREVIEW</p><h1>{title}</h1><p>Protótipo visual isolado. Dados de demonstração e ações sem persistência.</p></div><div className="adminActions"><label className="adminPreviewState">Estado visual<select value={state} onChange={(event) => setState(event.target.value as PreviewState)}><option value="filled">Preenchido</option><option value="empty">Vazio</option><option value="loading">Loading</option><option value="error">Erro</option></select></label></div></header>
       <div className="adminAlert">BACKEND_ENVIRONMENT_DEFERRED · nenhuma chamada de API ou banco é feita por esta interface.</div><StateBody section={validSection} state={state} />
     </div>}

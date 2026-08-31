@@ -55,3 +55,11 @@ test("Home manager authorizes before loading any administrative data", async () 
     assert.ok(contents.indexOf(read) > authorization, `${read} must run only after authorization`);
   }
 });
+
+test("Artists manager authorizes before opening the administrative read model", async () => {
+  const contents = await source("app/admin/(protected)/artists/page.tsx");
+  const authorization = contents.indexOf("await requireAdmin()");
+  const database = contents.indexOf("getDb()");
+  assert.ok(authorization >= 0, "Artists manager must revalidate the session on the server");
+  assert.ok(database > authorization, "Artists manager must authorize before database access");
+});
