@@ -1,5 +1,5 @@
 import "../admin/admin.css";
-import "./preview.css";
+import "../admin/dashboard.css";
 import { notFound } from "next/navigation";
 
 export default function AdminPreviewLayout({ children }: { children: React.ReactNode }) {

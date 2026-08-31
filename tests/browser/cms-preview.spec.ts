@@ -55,6 +55,48 @@ test("preview simulates UI states without network mutations", async ({ page }) =
 test("preview remains usable at mobile width", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 900 });
   await page.goto("/cms-preview/", { waitUntil: "networkidle" });
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Olá, Administrador!" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+});
+
+for (const width of [1440, 1280, 768, 430, 375]) {
+  test(`approved dashboard shell remains responsive at ${width}px`, async ({ page }) => {
+    const failures = runtimeFailures(page);
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/cms-preview/dashboard", { waitUntil: "networkidle" });
+    await expect(page.getByTestId("admin-shell")).toBeVisible();
+    await expect(page.getByTestId("admin-topbar")).toContainText("Dashboard");
+    await expect(page.getByTestId("dashboard-quick-actions").getByRole("link")).toHaveCount(5);
+    await expect(page.getByTestId("editorial-pending")).toBeVisible();
+    await expect(page.getByTestId("home-status")).toBeVisible();
+    await expect(page.getByTestId("content-integrations")).toContainText("Spotify");
+    await expect(page.getByTestId("content-integrations")).toContainText("Soundcharts");
+    await expect(page.getByTestId("recent-activity")).toBeVisible();
+    await expect(page.getByTestId("useful-links")).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+    expect(failures).toEqual([]);
+  });
+}
+
+test("mobile dashboard drawer exposes accessible state and closes with Escape", async ({ page }) => {
+  await page.setViewportSize({ width: 430, height: 900 });
+  await page.goto("/cms-preview/dashboard", { waitUntil: "networkidle" });
+  const toggle = page.getByRole("button", { name: "Abrir menu" });
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await page.keyboard.press("Tab");
+  expect(await page.evaluate(() => document.activeElement?.closest("#admin-sidebar") !== null)).toBe(false);
+  await toggle.click();
+  await expect(page.getByRole("button", { name: "Fechar menu", exact: true })).toHaveAttribute("aria-expanded", "true");
+  await expect(page.getByTestId("admin-sidebar")).toBeInViewport();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "Abrir menu" })).toBeFocused();
+});
+
+test("dashboard uses honest deferred states and valid editorial routes", async ({ page }) => {
+  await page.goto("/cms-preview/dashboard", { waitUntil: "networkidle" });
+  await expect(page.getByText("Dados não consultados no preview")).toHaveCount(2);
+  await expect(page.getByText("Status não consultado")).toHaveCount(2);
+  await expect(page.getByText(/CPU|faturamento|receita|servidor/i)).toHaveCount(0);
+  const hrefs = await page.getByTestId("dashboard-quick-actions").getByRole("link").evaluateAll((links) => links.map((link) => link.getAttribute("href")));
+  expect(hrefs.every((href) => href?.startsWith("/cms-preview/"))).toBe(true);
 });

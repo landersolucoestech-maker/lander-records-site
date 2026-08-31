@@ -18,7 +18,7 @@ test("CMS preview is guarded twice and has no backend imports", () => {
 test("CMS preview exposes only inert controls and isolated routes", () => {
   assert.doesNotMatch(component, /<form|formAction=|action=/);
   assert.match(component, /href="\/admin\/login"/);
-  assert.equal((component.match(/\/admin\//g) || []).length, 1, "only the explicit real-login link may target /admin");
+  assert.equal((component.match(/href="\/admin\//g) || []).length, 1, "only the explicit real-login link may target /admin");
   assert.match(component, /data-preview-only="true"/);
   assert.match(component, /BACKEND_ENVIRONMENT_DEFERRED/);
   assert.match(component, /disabled>Editar visual/);
