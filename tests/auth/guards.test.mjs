@@ -85,3 +85,25 @@ test("Pages routes authorize before opening administrative read models", async (
     assert.ok(database > authorization, `${relativePath} must authorize before database access`);
   }
 });
+
+test("Navigation manager authorizes before opening its administrative read model", async () => {
+  const contents = await source("app/admin/(protected)/navigation/page.tsx");
+  const authorization = contents.indexOf("await requireAdmin()");
+  const database = contents.indexOf("getDb()");
+  assert.ok(authorization >= 0, "Navigation manager must explicitly authorize");
+  assert.ok(database > authorization, "Navigation manager must authorize before database access");
+});
+
+test("Navigation mutations preserve editor/admin RBAC and validate before writes", async () => {
+  const contents = await source("app/admin/actions.ts");
+  const upsert = contents.match(/export async function upsertNavigationItem[\s\S]*?(?=\nexport async function deleteNavigationItem)/)?.[0] || "";
+  const removal = contents.match(/export async function deleteNavigationItem[\s\S]*?(?=\nexport async function updateSiteSettings)/)?.[0] || "";
+  assert.match(upsert, /requireAdmin\("editor"\)/);
+  assert.match(removal, /requireAdmin\("admin"\)/);
+  assert.ok(upsert.indexOf("navigationDestinationError") < upsert.indexOf("tx.update"));
+  assert.ok(upsert.indexOf("navigationHierarchyError") < upsert.indexOf("tx.update"));
+  assert.ok(upsert.indexOf("pg_advisory_xact_lock") < upsert.indexOf("tx.update"));
+  assert.ok(removal.indexOf("pg_advisory_xact_lock") < removal.indexOf("tx.delete"));
+  assert.ok(removal.indexOf("navigationDeletionError") < removal.indexOf("tx.delete"));
+  assert.doesNotMatch(removal, /confirmCascade/);
+});

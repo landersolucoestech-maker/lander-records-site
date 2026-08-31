@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, ne } from "drizzle-orm";
+import { and, eq, ne, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import sharp from "sharp";
@@ -41,6 +41,14 @@ import {
   tags,
 } from "../../lib/db/schema";
 import { slugify } from "../../lib/slug";
+import {
+  isNavigationLinkType,
+  isNavigationMenuKey,
+  navigationDeletionError,
+  navigationDestinationError,
+  navigationHierarchyError,
+  normalizeNavigationNewTab,
+} from "./navigation-contract";
 
 function text(formData: FormData, name: string) {
   return String(formData.get(name) || "").trim();
@@ -570,36 +578,84 @@ export async function deletePageSectionItem(formData: FormData) {
 export async function upsertNavigationItem(formData: FormData) {
   const session = await requireAdmin("editor");
   const id = text(formData, "id");
+  const menuKey = text(formData, "menuKey");
+  const parentValue = text(formData, "parentId");
+  const parentId = uuidOrNull(parentValue);
+  const label = text(formData, "label");
+  const url = text(formData, "url");
+  const linkType = text(formData, "linkType");
+  const positionValue = text(formData, "position");
+  const position = Number(positionValue);
+  const fail = (code: string): never => redirect(`/admin/navigation?error=${encodeURIComponent(code)}`);
+  if (id && !uuidOrNull(id)) fail("invalid_item");
+  if (!isNavigationMenuKey(menuKey)) fail("invalid_menu");
+  if (!isNavigationLinkType(linkType)) fail("invalid_type");
+  if (!label || label.length > 160) fail("invalid_label");
+  if (!positionValue || !Number.isInteger(position) || position < 0 || position > 9999) fail("invalid_position");
+  if (parentValue && !parentId) fail("invalid_hierarchy");
+  const destinationError = navigationDestinationError(linkType as "internal" | "external", url);
+  if (destinationError) fail(destinationError);
   const values = {
-    menuKey: text(formData, "menuKey") || "primary",
-    parentId: uuidOrNull(text(formData, "parentId")),
-    label: text(formData, "label"),
-    url: text(formData, "url"),
-    linkType: text(formData, "linkType") || "internal",
-    position: integer(formData, "position"),
+    menuKey,
+    parentId,
+    label,
+    url,
+    linkType,
+    position,
     enabled: checked(formData, "enabled"),
-    newTab: checked(formData, "newTab"),
+    newTab: normalizeNavigationNewTab(linkType as "internal" | "external", checked(formData, "newTab")),
     updatedAt: new Date(),
   };
   const db = getDb();
-  if (id) {
-    await db.update(navigationItems).set(values).where(eq(navigationItems.id, id));
-    await audit(session.user.id, "navigation.updated", "navigation_item", id, values);
-  } else {
-    const rows = await db.insert(navigationItems).values(values).returning({ id: navigationItems.id });
-    await audit(session.user.id, "navigation.created", "navigation_item", rows[0].id, values);
-  }
+  const result = await db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(1735289201)`);
+    const current = id ? (await tx.select().from(navigationItems).where(eq(navigationItems.id, id)).limit(1))[0] : null;
+    if (id && !current) return { error: "invalid_item" } as const;
+    const child = id ? (await tx.select({ id: navigationItems.id }).from(navigationItems).where(eq(navigationItems.parentId, id)).limit(1))[0] : null;
+    const parent = parentId ? (await tx.select().from(navigationItems).where(eq(navigationItems.id, parentId)).limit(1))[0] : null;
+    const hierarchyError = navigationHierarchyError({
+      currentMenuKey: current?.menuKey,
+      hasChildren: Boolean(child),
+      itemId: id,
+      menuKey,
+      parent: parent || null,
+      parentId,
+    });
+    if (hierarchyError) return { error: hierarchyError } as const;
+    if (id) {
+      await tx.update(navigationItems).set(values).where(eq(navigationItems.id, id));
+      return { id, operation: "updated" } as const;
+    }
+    const rows = await tx.insert(navigationItems).values(values).returning({ id: navigationItems.id });
+    return { id: rows[0].id, operation: "created" } as const;
+  });
+  if ("error" in result && result.error) fail(result.error);
+  await audit(session.user.id, `navigation.${result.operation}`, "navigation_item", result.id, values);
   revalidatePublic();
   revalidatePath("/admin/navigation");
+  redirect("/admin/navigation?saved=1");
 }
 
 export async function deleteNavigationItem(formData: FormData) {
   const session = await requireAdmin("admin");
   const id = text(formData, "id");
-  await getDb().delete(navigationItems).where(eq(navigationItems.id, id));
-  await audit(session.user.id, "navigation.deleted", "navigation_item", id);
+  if (!uuidOrNull(id)) redirect("/admin/navigation?error=invalid_item");
+  const db = getDb();
+  const result = await db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(1735289201)`);
+    const item = (await tx.select({ id: navigationItems.id, label: navigationItems.label }).from(navigationItems).where(eq(navigationItems.id, id)).limit(1))[0];
+    if (!item) return { error: "invalid_item" } as const;
+    const child = (await tx.select({ id: navigationItems.id }).from(navigationItems).where(eq(navigationItems.parentId, id)).limit(1))[0];
+    const deletionError = navigationDeletionError(Boolean(child));
+    if (deletionError) return { error: deletionError } as const;
+    await tx.delete(navigationItems).where(eq(navigationItems.id, id));
+    return { item } as const;
+  });
+  if ("error" in result) redirect(`/admin/navigation?error=${result.error}`);
+  await audit(session.user.id, "navigation.deleted", "navigation_item", id, { label: result.item.label });
   revalidatePublic();
   revalidatePath("/admin/navigation");
+  redirect("/admin/navigation?saved=deleted");
 }
 
 export async function updateSiteSettings(formData: FormData) {

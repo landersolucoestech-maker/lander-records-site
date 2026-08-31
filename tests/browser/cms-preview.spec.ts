@@ -25,6 +25,9 @@ test("real admin remains fail-closed while the local preview grants no session",
   const adminPages = await request.get("/admin/pages/", { maxRedirects: 0 });
   expect(adminPages.status()).toBe(307);
   expect(adminPages.headers().location).toBe("/admin/login?next=%2Fadmin%2Fpages%2F");
+  const adminNavigation = await request.get("/admin/navigation/", { maxRedirects: 0 });
+  expect(adminNavigation.status()).toBe(307);
+  expect(adminNavigation.headers().location).toBe("/admin/login?next=%2Fadmin%2Fnavigation%2F");
 
   await page.goto("/cms-preview/", { waitUntil: "networkidle" });
   await expect(page.locator('[data-preview-only="true"]')).toBeVisible();
@@ -110,6 +113,46 @@ test("Pages preview distinguishes CMS records from real public routes", async ({
   await expect(page.getByTestId("pages-row")).toHaveCount(6);
   expect(mutations).toEqual([]);
 });
+
+test("Navigation preview exposes a truthful hierarchy without mutations", async ({ page }) => {
+  const mutations: string[] = [];
+  page.on("request", (request) => { if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method())) mutations.push(`${request.method()} ${request.url()}`); });
+  await page.goto("/cms-preview/navigation", { waitUntil: "networkidle" });
+  await expect(page.getByTestId("admin-topbar")).toContainText("Navegação / Visão geral");
+  await expect(page.getByTestId("admin-sidebar").getByRole("link", { name: "Navegação", exact: true })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByTestId("navigation-metric-card")).toHaveCount(4);
+  await expect(page.getByRole("table", { name: "Itens de navegação cadastrados" })).toBeVisible();
+  await expect(page.getByTestId("navigation-row")).toHaveCount(6);
+  await expect(page.getByText("Subitem de Artistas")).toBeVisible();
+  await expect(page.getByText("Header, menu mobile e Footer exibem atualmente somente itens principais.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Novo item de menu" })).toBeDisabled();
+  await expect(page.getByText(/Mais filtros|Arraste|Publicado|Rascunho|Arquivado/i)).toHaveCount(0);
+  await page.getByRole("searchbox", { name: "Buscar itens de navegação" }).fill("portal parceiro");
+  await expect(page.getByTestId("navigation-row")).toHaveCount(1);
+  await expect(page.getByTestId("navigation-row")).toContainText("Externo");
+  await page.getByLabel("Hierarquia").selectOption("child");
+  await expect(page.getByTestId("navigation-empty")).toContainText("Nenhum item encontrado");
+  await page.getByRole("button", { name: "Limpar filtros" }).click();
+  await expect(page.getByTestId("navigation-row")).toHaveCount(6);
+  expect(mutations).toEqual([]);
+});
+
+for (const width of [1440, 1280, 768, 430, 375]) {
+  test(`Navigation manager remains responsive at ${width}px`, async ({ page }) => {
+    const failures = runtimeFailures(page);
+    await page.setViewportSize({ width, height: 1000 });
+    await page.goto("/cms-preview/navigation", { waitUntil: "networkidle" });
+    await expect(page.getByTestId("navigation-manager")).toBeVisible();
+    const cards = await page.getByTestId("navigation-metric-card").evaluateAll((items) => items.map((item) => Math.round(item.getBoundingClientRect().left)));
+    expect(new Set(cards).size).toBe(width <= 520 ? 1 : width <= 800 ? 2 : 4);
+    if (width <= 800) await expect(page.getByRole("columnheader", { name: "Item do menu", exact: true })).toBeHidden();
+    else await expect(page.getByRole("columnheader", { name: "Item do menu", exact: true })).toBeVisible();
+    const actionSize = await page.getByTestId("navigation-row").first().getByRole("button", { name: /Editar .* indisponível/ }).evaluate((button) => ({ height: button.getBoundingClientRect().height, width: button.getBoundingClientRect().width }));
+    expect(actionSize).toEqual({ height: 44, width: 44 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+    expect(failures).toEqual([]);
+  });
+}
 
 for (const width of [1440, 1280, 768, 430, 375]) {
   test(`Pages manager remains responsive at ${width}px`, async ({ page }) => {
