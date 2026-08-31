@@ -13,7 +13,7 @@ const rank = { viewer: 0, editor: 1, admin: 2, owner: 3 } as const;
 const groups: NavGroup[] = [
   { label: "Visão geral", items: [{ label: "Dashboard", href: "/admin", icon: "dashboard" }] },
   { label: "Conteúdo", items: [{ label: "Home", href: "/admin/home", icon: "home" }, { label: "Artistas", href: "/admin/artists", icon: "artists" }, { label: "Notícias", href: "/admin/posts", icon: "posts" }, { label: "Páginas", href: "/admin/pages", icon: "pages" }, { label: "Mídia", href: "/admin/media", icon: "media" }, { label: "Mensagens", icon: "posts" }] },
-  { label: "Estrutura do site", items: [{ label: "Navegação", href: "/admin/navigation", icon: "navigation" }, { label: "Cabeçalho", icon: "pages" }, { label: "Rodapé", icon: "pages" }] },
+  { label: "Estrutura do site", items: [{ label: "Navegação", href: "/admin/navigation", icon: "navigation" }, { label: "Cabeçalho", href: "/admin/header", icon: "pages" }, { label: "Rodapé", icon: "pages" }] },
   { label: "Organização", items: [{ label: "Categorias", href: "/admin/categories", icon: "pages" }, { label: "Tags", href: "/admin/tags", icon: "tags" }] },
   { label: "Configurações", items: [{ label: "Configurações do Site", href: "/admin/settings", icon: "settings" }, { label: "Integrações", href: "/admin/settings/lander-records", icon: "integration" }] },
   { label: "Administração", items: [{ label: "Usuários", href: "/admin/users", icon: "users", minimumRole: "owner" }, { label: "Atividade", href: "/admin/audit", icon: "audit", minimumRole: "admin" }] },
@@ -27,7 +27,7 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
   const [open, setOpen] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
-  const topbarTitle = pathname.includes("/home") ? "Home / Visão geral" : pathname.includes("artists") ? "Artistas / Visão geral" : pathname.includes("posts") ? "Notícias / Visão geral" : pathname.includes("media") ? "Mídia" : pathname.includes("navigation") ? "Navegação / Visão geral" : pathname.includes("settings") || pathname.includes("integrations") ? "Configurações" : pathname.includes("users") ? "Usuários" : pathname.includes("audit") ? "Atividade" : pathname.includes("categories") ? "Categorias" : pathname.includes("tags") ? "Tags" : pathname.includes("releases") ? "Lançamentos" : pathname.includes("pages") ? "Páginas / Visão geral" : "Dashboard";
+  const topbarTitle = pathname.includes("/home") ? "Home / Visão geral" : pathname.includes("artists") ? "Artistas / Visão geral" : pathname.includes("posts") ? "Notícias / Visão geral" : pathname.includes("media") ? "Mídia" : pathname.includes("navigation") ? "Navegação / Visão geral" : pathname.includes("header") ? "Cabeçalho / Visão geral" : pathname.includes("settings") || pathname.includes("integrations") ? "Configurações" : pathname.includes("users") ? "Usuários" : pathname.includes("audit") ? "Atividade" : pathname.includes("categories") ? "Categorias" : pathname.includes("tags") ? "Tags" : pathname.includes("releases") ? "Lançamentos" : pathname.includes("pages") ? "Páginas / Visão geral" : "Dashboard";
   const mapHref = (href: string) => preview ? (href === "/admin" ? "/cms-preview/dashboard" : href.includes("lander-records") ? "/cms-preview/integrations" : `/cms-preview/${href.split("/").filter(Boolean).at(-1) || "dashboard"}`) : href;
 
   useEffect(() => {

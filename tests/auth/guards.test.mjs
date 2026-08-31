@@ -94,6 +94,14 @@ test("Navigation manager authorizes before opening its administrative read model
   assert.ok(database > authorization, "Navigation manager must authorize before database access");
 });
 
+test("Header manager authorizes before loading the public chrome read model", async () => {
+  const contents = await source("app/admin/(protected)/header/page.tsx");
+  const authorization = contents.indexOf("await requireAdmin()");
+  const chromeRead = contents.indexOf("await getSiteChrome()");
+  assert.ok(authorization >= 0, "Header manager must explicitly authorize");
+  assert.ok(chromeRead > authorization, "Header manager must authorize before reading Header sources");
+});
+
 test("Navigation mutations preserve editor/admin RBAC and validate before writes", async () => {
   const contents = await source("app/admin/actions.ts");
   const upsert = contents.match(/export async function upsertNavigationItem[\s\S]*?(?=\nexport async function deleteNavigationItem)/)?.[0] || "";

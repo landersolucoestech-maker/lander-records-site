@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const modules = ["dashboard", "home", "artists", "posts", "pages", "media", "releases", "categories", "tags", "navigation", "settings", "integrations", "users", "audit"];
+const modules = ["dashboard", "home", "artists", "posts", "pages", "media", "releases", "categories", "tags", "navigation", "header", "settings", "integrations", "users", "audit"];
 
 function runtimeFailures(page: Page) {
   const failures: string[] = [];
@@ -28,6 +28,9 @@ test("real admin remains fail-closed while the local preview grants no session",
   const adminNavigation = await request.get("/admin/navigation/", { maxRedirects: 0 });
   expect(adminNavigation.status()).toBe(307);
   expect(adminNavigation.headers().location).toBe("/admin/login?next=%2Fadmin%2Fnavigation%2F");
+  const adminHeader = await request.get("/admin/header/", { maxRedirects: 0 });
+  expect(adminHeader.status()).toBe(307);
+  expect(adminHeader.headers().location).toBe("/admin/login?next=%2Fadmin%2Fheader%2F");
 
   await page.goto("/cms-preview/", { waitUntil: "networkidle" });
   await expect(page.locator('[data-preview-only="true"]')).toBeVisible();
@@ -88,6 +91,57 @@ for (const width of [1440, 1280, 768, 430, 375]) {
     await expect(page.getByTestId("content-integrations")).toContainText("Soundcharts");
     await expect(page.getByTestId("recent-activity")).toBeVisible();
     await expect(page.getByTestId("useful-links")).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+    expect(failures).toEqual([]);
+  });
+}
+
+test("Header preview exposes only truthful sources and responsive controls", async ({ page }) => {
+  const mutations: string[] = [];
+  page.on("request", (request) => { if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method())) mutations.push(`${request.method()} ${request.url()}`); });
+  await page.goto("/cms-preview/header", { waitUntil: "networkidle" });
+  await expect(page.getByTestId("admin-topbar")).toContainText("Cabeçalho / Visão geral");
+  await expect(page.getByTestId("admin-sidebar").getByRole("link", { name: "Cabeçalho", exact: true })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByTestId("header-metric-card")).toHaveCount(5);
+  await expect(page.getByText("PUBLIC HEADER LOGO CONSUMPTION — FRONTEND DEFERRED")).toBeVisible();
+  await expect(page.getByText("HEADER CTA CONFIGURATION — BACKEND DEFERRED")).toBeVisible();
+  await expect(page.getByRole("button", { name: /Salvar alterações|Alterar logo|Remover/ })).toHaveCount(0);
+  await expect(page.getByText(/Tamanho da logo|Estilo do botão|Sticky:|Avançado/)).toHaveCount(0);
+  await expect(page.getByTestId("header-external-indicator")).toHaveCount(1);
+  await expect(page.getByText("Início", { exact: true })).not.toContainText("↗");
+  await expect(page.getByText("Portal parceiro", { exact: false })).toContainText("↗");
+  const canvas = page.getByTestId("header-preview-canvas");
+  const desktopWidth = await canvas.evaluate((element) => Math.round(element.getBoundingClientRect().width));
+  await page.getByRole("button", { name: "Tablet" }).click();
+  await expect(canvas).toHaveAttribute("data-viewport", "tablet");
+  const tabletWidth = await canvas.evaluate((element) => Math.round(element.getBoundingClientRect().width));
+  await page.getByRole("button", { name: "Mobile" }).click();
+  await expect(canvas).toHaveAttribute("data-viewport", "mobile");
+  const mobileWidth = await canvas.evaluate((element) => Math.round(element.getBoundingClientRect().width));
+  expect(desktopWidth).toBeGreaterThan(tabletWidth);
+  expect(tabletWidth).toBeGreaterThan(mobileWidth);
+  await expect(page.getByRole("link", { name: /Gerenciar Navegação/ })).toHaveAttribute("href", "/cms-preview/navigation/");
+  await expect(page.getByRole("link", { name: /Abrir site público/ })).toHaveAttribute("href", "/");
+  expect(mutations).toEqual([]);
+});
+
+for (const width of [1440, 1280, 768, 430, 375]) {
+  test(`Header manager remains responsive at ${width}px`, async ({ page }) => {
+    const failures = runtimeFailures(page);
+    await page.setViewportSize({ width, height: 1000 });
+    await page.goto("/cms-preview/header", { waitUntil: "networkidle" });
+    await expect(page.getByTestId("header-manager")).toBeVisible();
+    const cards = await page.getByTestId("header-metric-card").evaluateAll((items) => items.map((item) => Math.round(item.getBoundingClientRect().left)));
+    expect(new Set(cards).size).toBe(width <= 520 ? 1 : width <= 850 ? 2 : width <= 1120 ? 3 : 5);
+    const controlSize = await page.getByRole("button", { name: "Desktop" }).evaluate((button) => ({ height: Math.round(button.getBoundingClientRect().height), width: Math.round(button.getBoundingClientRect().width) }));
+    expect(controlSize).toEqual({ height: 44, width: 44 });
+    const settingsLink = page.getByRole("link", { name: /Abrir configurações globais/ });
+    await expect(settingsLink).toBeVisible();
+    expect(await settingsLink.evaluate((link) => {
+      const linkBox = link.getBoundingClientRect();
+      const sectionBox = link.closest("article")?.getBoundingClientRect();
+      return Boolean(sectionBox && linkBox.top >= sectionBox.top && linkBox.bottom <= sectionBox.bottom);
+    })).toBe(true);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
     expect(failures).toEqual([]);
   });

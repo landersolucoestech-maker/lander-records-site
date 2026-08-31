@@ -9,6 +9,7 @@ import ArtistManager, { type ArtistSummary } from "../admin/(protected)/artists/
 import PostManager, { type PostSummary } from "../admin/(protected)/posts/PostManager";
 import PageManager, { type PageSummary } from "../admin/(protected)/pages/PageManager";
 import NavigationManager, { type NavigationSummary } from "../admin/(protected)/navigation/NavigationManager";
+import { HeaderManagerView, type HeaderManagerData } from "../admin/(protected)/header/HeaderManagerView";
 
 type PreviewState = "filled" | "empty" | "loading" | "error";
 
@@ -23,6 +24,7 @@ const modules = [
   ["categories", "Categorias"],
   ["tags", "Tags"],
   ["navigation", "Menus"],
+  ["header", "Cabeçalho"],
   ["settings", "Configurações do site"],
   ["integrations", "Integrações"],
   ["users", "Usuários & Roles"],
@@ -63,13 +65,22 @@ const previewPages: PageSummary[] = [
 ];
 
 const previewNavigation: NavigationSummary[] = [
-  { id: "nav-preview-home", menuKey: "primary", parentId: null, parentLabel: null, label: "Início", url: "/", linkType: "internal", position: 1, enabled: true, newTab: false, depth: 0, childCount: 0, issue: null, safeDestination: true },
+  { id: "nav-preview-home", menuKey: "primary", parentId: null, parentLabel: null, label: "Início", url: "/", linkType: "internal", position: 1, enabled: true, newTab: true, depth: 0, childCount: 0, issue: null, safeDestination: true },
   { id: "nav-preview-artists", menuKey: "primary", parentId: null, parentLabel: null, label: "Artistas", url: "/artistas", linkType: "internal", position: 2, enabled: true, newTab: false, depth: 0, childCount: 1, issue: null, safeDestination: true },
   { id: "nav-preview-artists-child", menuKey: "primary", parentId: "nav-preview-artists", parentLabel: "Artistas", label: "Todos os artistas", url: "/artistas", linkType: "internal", position: 1, enabled: true, newTab: false, depth: 1, childCount: 0, issue: null, safeDestination: true },
   { id: "nav-preview-news", menuKey: "primary", parentId: null, parentLabel: null, label: "Notícias", url: "/noticias", linkType: "internal", position: 3, enabled: false, newTab: false, depth: 0, childCount: 0, issue: null, safeDestination: true },
-  { id: "nav-preview-partner", menuKey: "footer", parentId: null, parentLabel: null, label: "Portal parceiro", url: "https://example.com/lander", linkType: "external", position: 1, enabled: true, newTab: true, depth: 0, childCount: 0, issue: null, safeDestination: true },
+  { id: "nav-preview-partner", menuKey: "primary", parentId: null, parentLabel: null, label: "Portal parceiro", url: "https://example.com/lander", linkType: "external", position: 4, enabled: true, newTab: true, depth: 0, childCount: 0, issue: null, safeDestination: true },
   { id: "nav-preview-contact", menuKey: "footer", parentId: null, parentLabel: null, label: "Contato", url: "/contato", linkType: "internal", position: 2, enabled: true, newTab: false, depth: 0, childCount: 0, issue: null, safeDestination: true },
 ];
+
+const previewHeader: HeaderManagerData = {
+  brandName: "Lander Records",
+  ctaLabel: "Quero Contratar",
+  ctaUrl: "/contato",
+  globalLogoUrl: "",
+  primaryItems: previewNavigation.filter((item) => item.menuKey === "primary" && !item.parentId && item.enabled).map(({ id, label, newTab, url }) => ({ id, label, newTab, url })),
+  publicLogoSrc: "/lander-records-brand.svg",
+};
 
 function badgeClass(status: string) {
   if (/publicado|ativa|ativo|sucesso|novo/i.test(status)) return "live";
@@ -105,7 +116,7 @@ export function AdminPreview({ section }: { section: string }) {
   const title = modules.find(([key]) => key === validSection)?.[1] || "Dashboard";
 
   return <div className="adminPreviewShell" data-preview-only="true"><AdminShell email="preview local" footerAction={<Link href="/admin/login">Abrir login real protegido</Link>} name="Administrador" preview role="owner">
-    {validSection === "dashboard" ? <DashboardView data={{ artistDrafts: null, postDrafts: null, recentActivity: [] }} name="Administrador" preview role="owner" /> : validSection === "home" ? <HomeManagerView preview sections={createPreviewHomeSections()} /> : validSection === "artists" ? <ArtistManager artists={previewArtists} preview /> : validSection === "posts" ? <PostManager posts={previewPosts} preview /> : validSection === "pages" ? <PageManager pages={previewPages} preview /> : validSection === "navigation" ? <NavigationManager items={previewNavigation} preview /> : <div className="adminPage">
+    {validSection === "dashboard" ? <DashboardView data={{ artistDrafts: null, postDrafts: null, recentActivity: [] }} name="Administrador" preview role="owner" /> : validSection === "home" ? <HomeManagerView preview sections={createPreviewHomeSections()} /> : validSection === "artists" ? <ArtistManager artists={previewArtists} preview /> : validSection === "posts" ? <PostManager posts={previewPosts} preview /> : validSection === "pages" ? <PageManager pages={previewPages} preview /> : validSection === "navigation" ? <NavigationManager items={previewNavigation} preview /> : validSection === "header" ? <HeaderManagerView data={previewHeader} preview /> : <div className="adminPage">
       <header className="adminPageHeader"><div><p className="adminEyebrow">CMS FRONTEND PREVIEW</p><h1>{title}</h1><p>Protótipo visual isolado. Dados de demonstração e ações sem persistência.</p></div><div className="adminActions"><label className="adminPreviewState">Estado visual<select value={state} onChange={(event) => setState(event.target.value as PreviewState)}><option value="filled">Preenchido</option><option value="empty">Vazio</option><option value="loading">Loading</option><option value="error">Erro</option></select></label></div></header>
       <div className="adminAlert">BACKEND_ENVIRONMENT_DEFERRED · nenhuma chamada de API ou banco é feita por esta interface.</div><StateBody section={validSection} state={state} />
     </div>}
