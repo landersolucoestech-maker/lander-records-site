@@ -17,7 +17,7 @@ const quickActions: Array<[string, string, string, IconName]> = [
   ["Novo artista", "Adicionar artista", "/admin/artists/new", "artists"],
   ["Nova página", "Criar página", "/admin/pages/new", "pages"],
   ["Enviar mídia", "Upload de arquivos", "/admin/media", "media"],
-  ["Editar Home", "Gerenciar seções", "/admin/pages", "home"],
+  ["Editar Home", "Gerenciar seções", "/admin/home", "home"],
 ];
 
 const homeSections: Array<[string, string, "edit" | "auto"]> = [
@@ -26,6 +26,7 @@ const homeSections: Array<[string, string, "edit" | "auto"]> = [
 
 function route(href: string, preview: boolean) {
   if (!preview) return href;
+  if (href.includes("home")) return "/cms-preview/home";
   if (href.includes("artists")) return "/cms-preview/artists";
   if (href.includes("posts")) return "/cms-preview/posts";
   if (href.includes("media")) return "/cms-preview/media";
@@ -61,7 +62,7 @@ export function DashboardView({ data, name, preview = false, role = "viewer" }: 
         <div className="adminPendingItem isUnavailable"><AdminIcon name="media" /><strong>—</strong><span><b>Mídias sem texto alternativo</b><small>Indicador ainda não disponível</small></span></div>
       </div></section>
 
-      <section className="adminDashboardPanel" data-testid="home-status"><PanelHeader action="Editar Home" href="/admin/pages" preview={preview}>Status do conteúdo da Home</PanelHeader><div className="adminHomeList">{homeSections.map(([title, detail, kind]) => <Link href={route("/admin/pages", preview)} key={title}><span className="adminHomeIcon"><AdminIcon name={kind === "auto" ? "integration" : "home"} size={16} /></span><span><b>{title}</b><small>{detail}</small></span><span className={`adminStatusBadge ${kind}`}>{kind === "auto" ? "Automático" : "Editável"}</span><AdminIcon name="chevron" size={14} /></Link>)}</div></section>
+      <section className="adminDashboardPanel" data-testid="home-status"><PanelHeader action="Editar Home" href="/admin/home" preview={preview}>Status do conteúdo da Home</PanelHeader><div className="adminHomeList">{homeSections.map(([title, detail, kind]) => <Link href={route("/admin/home", preview)} key={title}><span className="adminHomeIcon"><AdminIcon name={kind === "auto" ? "integration" : "home"} size={16} /></span><span><b>{title}</b><small>{detail}</small></span><span className={`adminStatusBadge ${kind}`}>{kind === "auto" ? "Automático" : "Editável"}</span><AdminIcon name="chevron" size={14} /></Link>)}</div></section>
 
       <section className="adminDashboardPanel" data-testid="content-integrations"><PanelHeader action="Ver todas" href="/admin/settings/lander-records" preview={preview}>Integrações de conteúdo</PanelHeader><div className="adminIntegrationList">
         <Link href={route("/admin/settings/lander-records", preview)}><span className="adminIntegrationMark spotify">S</span><span><b>Spotify</b><small>Últimos lançamentos</small><em>Status não consultado</em></span><span className="adminStatusBadge neutral">Não consultado</span></Link>

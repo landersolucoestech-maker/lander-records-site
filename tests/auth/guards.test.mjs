@@ -45,3 +45,13 @@ test("Spotify callback requires an editor authorization decision", async () => {
   assert.match(contents, /const session = await requireAdmin\("editor"\);/);
   assert.doesNotMatch(contents, /getAdminSession/);
 });
+
+test("Home manager authorizes before loading any administrative data", async () => {
+  const contents = await source("app/admin/(protected)/home/page.tsx");
+  const authorization = contents.indexOf("await requireAdmin()");
+  const reads = ["getPageContent(\"home\")", "getPublishedArtists(true)", "getPublishedPosts(true)", "getCachedSpotifyReleases()", "getLanderRecordsSocialMetrics()"];
+  assert.ok(authorization >= 0, "Home manager must revalidate the session on the server");
+  for (const read of reads) {
+    assert.ok(contents.indexOf(read) > authorization, `${read} must run only after authorization`);
+  }
+});

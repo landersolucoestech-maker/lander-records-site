@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const modules = ["dashboard", "artists", "posts", "pages", "media", "releases", "categories", "tags", "navigation", "settings", "integrations", "users", "audit"];
+const modules = ["dashboard", "home", "artists", "posts", "pages", "media", "releases", "categories", "tags", "navigation", "settings", "integrations", "users", "audit"];
 
 function runtimeFailures(page: Page) {
   const failures: string[] = [];
@@ -13,6 +13,9 @@ test("real admin remains fail-closed while the local preview grants no session",
   const admin = await request.get("/admin/", { maxRedirects: 0 });
   expect(admin.status()).toBe(307);
   expect(admin.headers().location).toBe("/admin/login?next=%2Fadmin%2F");
+  const adminHome = await request.get("/admin/home/", { maxRedirects: 0 });
+  expect(adminHome.status()).toBe(307);
+  expect(adminHome.headers().location).toBe("/admin/login?next=%2Fadmin%2Fhome%2F");
 
   await page.goto("/cms-preview/", { waitUntil: "networkidle" });
   await expect(page.locator('[data-preview-only="true"]')).toBeVisible();
@@ -100,3 +103,32 @@ test("dashboard uses honest deferred states and valid editorial routes", async (
   const hrefs = await page.getByTestId("dashboard-quick-actions").getByRole("link").evaluateAll((links) => links.map((link) => link.getAttribute("href")));
   expect(hrefs.every((href) => href?.startsWith("/cms-preview/"))).toBe(true);
 });
+
+test("Home manager mirrors the implemented public composition without unsupported controls", async ({ page }) => {
+  const mutations: string[] = [];
+  page.on("request", (request) => {
+    if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method())) mutations.push(`${request.method()} ${request.url()}`);
+  });
+  await page.goto("/cms-preview/home", { waitUntil: "networkidle" });
+  await expect(page.getByTestId("admin-topbar")).toContainText("Home / Visão geral");
+  await expect(page.getByTestId("admin-sidebar").getByRole("link", { name: "Home", exact: true })).toHaveAttribute("aria-current", "page");
+  const cards = page.getByTestId("home-section-card");
+  await expect(cards).toHaveCount(8);
+  expect(await cards.evaluateAll((items) => items.map((item) => item.getAttribute("data-section-key")))).toEqual(["hero", "intro", "social", "shortcuts", "artists", "releases", "advertising", "news"]);
+  await expect(page.getByText(/Publicar alterações|Adicionar nova seção futura/i)).toHaveCount(0);
+  await expect(page.locator("[draggable='true']")).toHaveCount(0);
+  expect(mutations).toEqual([]);
+  expect((await page.context().cookies()).some((cookie) => cookie.name === "lander_admin_session")).toBe(false);
+});
+
+for (const width of [1440, 1280, 768, 430, 375]) {
+  test(`Home manager remains responsive at ${width}px`, async ({ page }) => {
+    const failures = runtimeFailures(page);
+    await page.setViewportSize({ width, height: 1000 });
+    await page.goto("/cms-preview/home", { waitUntil: "networkidle" });
+    await expect(page.getByTestId("home-manager")).toBeVisible();
+    await expect(page.getByTestId("home-section-card")).toHaveCount(8);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+    expect(failures).toEqual([]);
+  });
+}

@@ -4,11 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 import { AdminShell } from "../admin/components/AdminShell";
 import { DashboardView } from "../admin/components/DashboardView";
+import { createPreviewHomeSections, HomeManagerView } from "../admin/components/HomeManagerView";
 
 type PreviewState = "filled" | "empty" | "loading" | "error";
 
 const modules = [
   ["dashboard", "Dashboard"],
+  ["home", "Home"],
   ["artists", "Artistas"],
   ["posts", "Notícias / Posts"],
   ["pages", "Páginas & Seções"],
@@ -70,7 +72,7 @@ export function AdminPreview({ section }: { section: string }) {
   const title = modules.find(([key]) => key === validSection)?.[1] || "Dashboard";
 
   return <div className="adminPreviewShell" data-preview-only="true"><AdminShell email="preview local" footerAction={<Link href="/admin/login">Abrir login real protegido</Link>} name="Administrador" preview role="owner">
-    {validSection === "dashboard" ? <DashboardView data={{ artistDrafts: null, postDrafts: null, recentActivity: [] }} name="Administrador" preview role="owner" /> : <div className="adminPage">
+    {validSection === "dashboard" ? <DashboardView data={{ artistDrafts: null, postDrafts: null, recentActivity: [] }} name="Administrador" preview role="owner" /> : validSection === "home" ? <HomeManagerView preview sections={createPreviewHomeSections()} /> : <div className="adminPage">
       <header className="adminPageHeader"><div><p className="adminEyebrow">CMS FRONTEND PREVIEW</p><h1>{title}</h1><p>Protótipo visual isolado. Dados de demonstração e ações sem persistência.</p></div><div className="adminActions"><label className="adminPreviewState">Estado visual<select value={state} onChange={(event) => setState(event.target.value as PreviewState)}><option value="filled">Preenchido</option><option value="empty">Vazio</option><option value="loading">Loading</option><option value="error">Erro</option></select></label></div></header>
       <div className="adminAlert">BACKEND_ENVIRONMENT_DEFERRED · nenhuma chamada de API ou banco é feita por esta interface.</div><StateBody section={validSection} state={state} />
     </div>}
