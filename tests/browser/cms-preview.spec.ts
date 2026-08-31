@@ -22,6 +22,9 @@ test("real admin remains fail-closed while the local preview grants no session",
   const adminPosts = await request.get("/admin/posts/", { maxRedirects: 0 });
   expect(adminPosts.status()).toBe(307);
   expect(adminPosts.headers().location).toBe("/admin/login?next=%2Fadmin%2Fposts%2F");
+  const adminPages = await request.get("/admin/pages/", { maxRedirects: 0 });
+  expect(adminPages.status()).toBe(307);
+  expect(adminPages.headers().location).toBe("/admin/login?next=%2Fadmin%2Fpages%2F");
 
   await page.goto("/cms-preview/", { waitUntil: "networkidle" });
   await expect(page.locator('[data-preview-only="true"]')).toBeVisible();
@@ -82,6 +85,44 @@ for (const width of [1440, 1280, 768, 430, 375]) {
     await expect(page.getByTestId("content-integrations")).toContainText("Soundcharts");
     await expect(page.getByTestId("recent-activity")).toBeVisible();
     await expect(page.getByTestId("useful-links")).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+    expect(failures).toEqual([]);
+  });
+}
+
+test("Pages preview distinguishes CMS records from real public routes", async ({ page }) => {
+  const mutations: string[] = [];
+  page.on("request", (request) => { if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method())) mutations.push(`${request.method()} ${request.url()}`); });
+  await page.goto("/cms-preview/pages", { waitUntil: "networkidle" });
+  await expect(page.getByTestId("admin-topbar")).toContainText("Páginas / Visão geral");
+  await expect(page.getByTestId("admin-sidebar").getByRole("link", { name: "Páginas", exact: true })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByTestId("pages-metric-card")).toHaveCount(4);
+  await expect(page.getByRole("table", { name: "Páginas administráveis" })).toBeVisible();
+  await expect(page.getByTestId("pages-row")).toHaveCount(6);
+  await expect(page.getByText("Sem rota pública disponível")).toHaveCount(1);
+  await expect(page.getByText(/Publicad[ao]|Rascunho|Arquivad[ao]|Mais filtros|Nova página/)).toHaveCount(0);
+  await page.getByRole("searchbox", { name: "Buscar páginas" }).fill("sobre");
+  await expect(page.getByTestId("pages-row")).toHaveCount(1);
+  await expect(page.getByTestId("pages-row")).toContainText("Sobre a Lander Records");
+  await page.getByRole("searchbox", { name: "Buscar páginas" }).fill("não existe");
+  await expect(page.getByTestId("pages-empty")).toContainText("Nenhuma página encontrada");
+  await page.getByRole("button", { name: "Limpar filtros" }).click();
+  await expect(page.getByTestId("pages-row")).toHaveCount(6);
+  expect(mutations).toEqual([]);
+});
+
+for (const width of [1440, 1280, 768, 430, 375]) {
+  test(`Pages manager remains responsive at ${width}px`, async ({ page }) => {
+    const failures = runtimeFailures(page);
+    await page.setViewportSize({ width, height: 1000 });
+    await page.goto("/cms-preview/pages", { waitUntil: "networkidle" });
+    await expect(page.getByTestId("pages-manager")).toBeVisible();
+    const cards = await page.getByTestId("pages-metric-card").evaluateAll((items) => items.map((item) => Math.round(item.getBoundingClientRect().left)));
+    expect(new Set(cards).size).toBe(width <= 520 ? 1 : width <= 800 ? 2 : 4);
+    if (width <= 800) await expect(page.getByRole("columnheader", { name: "Página", exact: true })).toBeHidden();
+    else await expect(page.getByRole("columnheader", { name: "Página", exact: true })).toBeVisible();
+    const actionSize = await page.getByTestId("pages-row").first().getByRole("button", { name: /Editar conteúdo/ }).evaluate((button) => ({ height: button.getBoundingClientRect().height, width: button.getBoundingClientRect().width }));
+    expect(actionSize).toEqual({ height: 44, width: 44 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
     expect(failures).toEqual([]);
   });

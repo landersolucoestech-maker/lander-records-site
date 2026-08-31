@@ -71,3 +71,17 @@ test("News manager authorizes before opening the administrative read model", asy
   assert.ok(authorization >= 0, "News manager must revalidate the session on the server");
   assert.ok(database > authorization, "News manager must authorize before database access");
 });
+
+test("Pages routes authorize before opening administrative read models", async () => {
+  for (const [relativePath, guard] of [
+    ["app/admin/(protected)/pages/page.tsx", "await requireAdmin()"],
+    ["app/admin/(protected)/pages/[id]/page.tsx", 'await requireAdmin("editor")'],
+    ["app/admin/(protected)/pages/[id]/view/page.tsx", "await requireAdmin()"],
+  ]) {
+    const contents = await source(relativePath);
+    const authorization = contents.indexOf(guard);
+    const database = contents.indexOf("getDb()");
+    assert.ok(authorization >= 0, `${relativePath} must explicitly authorize`);
+    assert.ok(database > authorization, `${relativePath} must authorize before database access`);
+  }
+});

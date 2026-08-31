@@ -7,6 +7,7 @@ import { DashboardView } from "../admin/components/DashboardView";
 import { createPreviewHomeSections, HomeManagerView } from "../admin/components/HomeManagerView";
 import ArtistManager, { type ArtistSummary } from "../admin/(protected)/artists/ArtistManager";
 import PostManager, { type PostSummary } from "../admin/(protected)/posts/PostManager";
+import PageManager, { type PageSummary } from "../admin/(protected)/pages/PageManager";
 
 type PreviewState = "filled" | "empty" | "loading" | "error";
 
@@ -29,7 +30,6 @@ const modules = [
 
 const rows: Record<string, Array<[string, string, string]>> = {
   artists: [["DJ Stay", "Publicado", "Eletrônica"], ["Lander", "Rascunho", "Produtor"], ["Aurora", "Inativo", "Pop"]],
-  pages: [["Home", "Ativa", "8 seções"], ["Sobre nós", "Ativa", "5 seções"], ["Contato", "Ativa", "3 seções"]],
   media: [["artist-card.webp", "Ativo", "1200 × 1200"], ["news-cover.webp", "Ativo", "1600 × 900"], ["hero-banner.webp", "Arquivado", "1920 × 800"]],
   releases: [["Noite Inteira", "Ativo", "Single"], ["Horizonte", "Rascunho", "EP"], ["Ao Vivo", "Ativo", "Álbum"]],
   categories: [["Eletrônica", "Ativa", "Artistas"], ["Notícias", "Ativa", "Posts"], ["Agenda", "Ativa", "Posts"]],
@@ -51,6 +51,15 @@ const previewPosts: PostSummary[] = [
   { id: "news-preview-2", title: "Bastidores do estúdio", slug: "bastidores-do-estudio", excerpt: "Exemplo isolado de uma notícia em elaboração.", status: "draft", category: "Editorial", authorName: "Equipe editorial", publishedAt: "", coverImage: "", featuredOnHome: false, tags: ["Bastidores"], isPubliclyVisible: false, updatedAt: "Não consultado" },
   { id: "news-preview-3", title: "Agenda cultural da semana", slug: "agenda-cultural", excerpt: "Exemplo de conteúdo publicado fora do destaque da Home.", status: "published", category: "Agenda", authorName: "Redação", publishedAt: "Não consultado", coverImage: "", featuredOnHome: false, tags: ["Eventos"], isPubliclyVisible: true, updatedAt: "Não consultado" },
   { id: "news-preview-4", title: "Comunicado anterior", slug: "comunicado-anterior", excerpt: "Registro arquivado representado somente no preview visual.", status: "archived", category: "Comunicados", authorName: "Redação", publishedAt: "", coverImage: "", featuredOnHome: false, tags: [], isPubliclyVisible: false, updatedAt: "Não consultado" },
+];
+
+const previewPages: PageSummary[] = [
+  { id: "page-preview-home", key: "home", title: "Home", configuredRoute: "/", publicRoute: "/", classification: "Estrutural", scope: "Composição gerenciada no módulo Home", routeWarning: false, enabled: true, seoConfigured: true, sectionCount: 7, enabledSectionCount: 7, updatedAt: "Não consultado" },
+  { id: "page-preview-about", key: "about", title: "Sobre a Lander Records", configuredRoute: "/sobre-nos", publicRoute: "/sobre-nos", classification: "Institucional", scope: "Conteúdo estruturado por seções", routeWarning: false, enabled: true, seoConfigured: false, sectionCount: 6, enabledSectionCount: 6, updatedAt: "Não consultado" },
+  { id: "page-preview-artists", key: "artists", title: "Artistas", configuredRoute: "/artistas", publicRoute: "/artistas", classification: "Módulo de domínio", scope: "Apresentação; catálogo no módulo Artistas", routeWarning: false, enabled: true, seoConfigured: true, sectionCount: 3, enabledSectionCount: 3, updatedAt: "Não consultado" },
+  { id: "page-preview-news", key: "news", title: "Portal de Notícias", configuredRoute: "/noticias", publicRoute: "/noticias", classification: "Módulo de domínio", scope: "Apresentação; publicações no módulo Notícias", routeWarning: false, enabled: true, seoConfigured: true, sectionCount: 3, enabledSectionCount: 3, updatedAt: "Não consultado" },
+  { id: "page-preview-contact", key: "contact", title: "Contato", configuredRoute: "/contato", publicRoute: "/contato", classification: "Funcional", scope: "Conteúdo editorial; formulário separado", routeWarning: false, enabled: false, seoConfigured: false, sectionCount: 2, enabledSectionCount: 1, updatedAt: "Não consultado" },
+  { id: "page-preview-future", key: "future", title: "Estrutura editorial futura com título longo", configuredRoute: "/estrutura-futura", publicRoute: null, classification: "Estrutura administrativa", scope: "Sem renderer público registrado", routeWarning: true, enabled: true, seoConfigured: true, sectionCount: 1, enabledSectionCount: 1, updatedAt: "Não consultado" },
 ];
 
 function badgeClass(status: string) {
@@ -87,7 +96,7 @@ export function AdminPreview({ section }: { section: string }) {
   const title = modules.find(([key]) => key === validSection)?.[1] || "Dashboard";
 
   return <div className="adminPreviewShell" data-preview-only="true"><AdminShell email="preview local" footerAction={<Link href="/admin/login">Abrir login real protegido</Link>} name="Administrador" preview role="owner">
-    {validSection === "dashboard" ? <DashboardView data={{ artistDrafts: null, postDrafts: null, recentActivity: [] }} name="Administrador" preview role="owner" /> : validSection === "home" ? <HomeManagerView preview sections={createPreviewHomeSections()} /> : validSection === "artists" ? <ArtistManager artists={previewArtists} preview /> : validSection === "posts" ? <PostManager posts={previewPosts} preview /> : <div className="adminPage">
+    {validSection === "dashboard" ? <DashboardView data={{ artistDrafts: null, postDrafts: null, recentActivity: [] }} name="Administrador" preview role="owner" /> : validSection === "home" ? <HomeManagerView preview sections={createPreviewHomeSections()} /> : validSection === "artists" ? <ArtistManager artists={previewArtists} preview /> : validSection === "posts" ? <PostManager posts={previewPosts} preview /> : validSection === "pages" ? <PageManager pages={previewPages} preview /> : <div className="adminPage">
       <header className="adminPageHeader"><div><p className="adminEyebrow">CMS FRONTEND PREVIEW</p><h1>{title}</h1><p>Protótipo visual isolado. Dados de demonstração e ações sem persistência.</p></div><div className="adminActions"><label className="adminPreviewState">Estado visual<select value={state} onChange={(event) => setState(event.target.value as PreviewState)}><option value="filled">Preenchido</option><option value="empty">Vazio</option><option value="loading">Loading</option><option value="error">Erro</option></select></label></div></header>
       <div className="adminAlert">BACKEND_ENVIRONMENT_DEFERRED · nenhuma chamada de API ou banco é feita por esta interface.</div><StateBody section={validSection} state={state} />
     </div>}
