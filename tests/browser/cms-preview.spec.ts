@@ -19,6 +19,9 @@ test("real admin remains fail-closed while the local preview grants no session",
   const adminArtists = await request.get("/admin/artists/", { maxRedirects: 0 });
   expect(adminArtists.status()).toBe(307);
   expect(adminArtists.headers().location).toBe("/admin/login?next=%2Fadmin%2Fartists%2F");
+  const adminPosts = await request.get("/admin/posts/", { maxRedirects: 0 });
+  expect(adminPosts.status()).toBe(307);
+  expect(adminPosts.headers().location).toBe("/admin/login?next=%2Fadmin%2Fposts%2F");
 
   await page.goto("/cms-preview/", { waitUntil: "networkidle" });
   await expect(page.locator('[data-preview-only="true"]')).toBeVisible();
@@ -44,7 +47,7 @@ test("preview simulates UI states without network mutations", async ({ page }) =
   page.on("request", (request) => {
     if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method())) mutations.push(`${request.method()} ${request.url()}`);
   });
-  await page.goto("/cms-preview/posts", { waitUntil: "networkidle" });
+  await page.goto("/cms-preview/media", { waitUntil: "networkidle" });
   const state = page.getByLabel("Estado visual");
   await state.selectOption("empty");
   await expect(page.getByText("Nenhum item neste estado de demonstração.")).toBeVisible();
@@ -79,6 +82,51 @@ for (const width of [1440, 1280, 768, 430, 375]) {
     await expect(page.getByTestId("content-integrations")).toContainText("Soundcharts");
     await expect(page.getByTestId("recent-activity")).toBeVisible();
     await expect(page.getByTestId("useful-links")).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+    expect(failures).toEqual([]);
+  });
+}
+
+test("News preview exposes a truthful editorial workspace without mutations", async ({ page }) => {
+  const mutations: string[] = [];
+  page.on("request", (request) => { if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method())) mutations.push(`${request.method()} ${request.url()}`); });
+  await page.goto("/cms-preview/posts", { waitUntil: "networkidle" });
+  await expect(page.getByTestId("admin-topbar")).toContainText("Notícias / Visão geral");
+  await expect(page.getByTestId("admin-sidebar").getByRole("link", { name: "Notícias", exact: true })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByTestId("news-metric-card")).toHaveCount(4);
+  await expect(page.getByRole("table", { name: "Notícias cadastradas" })).toBeVisible();
+  await expect(page.getByTestId("news-row")).toHaveCount(4);
+  await expect(page.getByRole("button", { name: "Nova notícia" })).toBeDisabled();
+  await expect(page.getByText(/Mais filtros|Agendad[ao]|Importar|Analytics/i)).toHaveCount(0);
+  await page.getByRole("searchbox", { name: "Buscar notícias" }).fill("bastidores");
+  await expect(page.getByTestId("news-row")).toHaveCount(1);
+  await expect(page.getByTestId("news-row")).toContainText("Bastidores do estúdio");
+  await page.getByRole("searchbox", { name: "Buscar notícias" }).fill("não existe");
+  await expect(page.getByTestId("news-empty")).toContainText("Nenhuma notícia encontrada");
+  await page.getByTestId("news-empty").getByRole("button", { name: "Limpar filtros" }).click();
+  await expect(page.getByTestId("news-row")).toHaveCount(4);
+  expect(mutations).toEqual([]);
+});
+
+for (const width of [1440, 1280, 768, 430, 375]) {
+  test(`News manager remains responsive at ${width}px`, async ({ page }) => {
+    const failures = runtimeFailures(page);
+    await page.setViewportSize({ width, height: 1000 });
+    await page.goto("/cms-preview/posts", { waitUntil: "networkidle" });
+    await expect(page.getByTestId("news-manager")).toBeVisible();
+    await expect(page.getByTestId("news-row")).toHaveCount(4);
+    const cards = await page.getByTestId("news-metric-card").evaluateAll((items) => items.map((item) => ({ left: item.getBoundingClientRect().left, top: item.getBoundingClientRect().top })));
+    const metricColumns = new Set(cards.map(({ left }) => Math.round(left))).size;
+    expect(metricColumns).toBe(width <= 520 ? 1 : width <= 800 ? 2 : 4);
+    if (width <= 800) await expect(page.getByRole("columnheader", { name: "Notícia", exact: true })).toBeHidden();
+    else await expect(page.getByRole("columnheader", { name: "Notícia", exact: true })).toBeVisible();
+    const actionSize = await page.getByTestId("news-row").first().getByRole("button", { name: /Editar/ }).evaluate((button) => ({ height: button.getBoundingClientRect().height, width: button.getBoundingClientRect().width }));
+    expect(actionSize).toEqual({ height: 44, width: 44 });
+    if (width <= 520) {
+      const managerWidth = await page.getByTestId("news-manager").evaluate((item) => item.getBoundingClientRect().width);
+      const ctaWidth = await page.getByRole("button", { name: "Nova notícia" }).evaluate((item) => item.getBoundingClientRect().width);
+      expect(Math.abs(managerWidth - ctaWidth)).toBeLessThanOrEqual(1);
+    }
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
     expect(failures).toEqual([]);
   });

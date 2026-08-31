@@ -63,3 +63,11 @@ test("Artists manager authorizes before opening the administrative read model", 
   assert.ok(authorization >= 0, "Artists manager must revalidate the session on the server");
   assert.ok(database > authorization, "Artists manager must authorize before database access");
 });
+
+test("News manager authorizes before opening the administrative read model", async () => {
+  const contents = await source("app/admin/(protected)/posts/page.tsx");
+  const authorization = contents.indexOf("await requireAdmin()");
+  const database = contents.indexOf("getDb()");
+  assert.ok(authorization >= 0, "News manager must revalidate the session on the server");
+  assert.ok(database > authorization, "News manager must authorize before database access");
+});
