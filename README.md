@@ -1,21 +1,21 @@
 # Lander Records Site + CMS
 
-Public website and operational backoffice for Lander Records.
+Website público e backoffice operacional da Lander Records, mantidos no mesmo projeto e na mesma fonte de dados.
 
-## Architecture
-
-This branch replaces the former GitHub Pages static-export content model with a dynamic Next.js application backed by PostgreSQL. Public content is read from the same source edited by `/admin`.
+## Stack
 
 - Next.js App Router
+- React + TypeScript
 - PostgreSQL
 - Drizzle ORM
-- Local persistent media storage under `public/uploads`
-- Server-side admin sessions and RBAC
-- Structured page sections instead of arbitrary page-builder JSON
-- Durable contact submission + integration outbox
-- Dynamic SEO, sitemap and structured data
+- Supabase Storage para mídia persistente
+- Sessões administrativas server-side e RBAC
+- CMS estruturado para páginas, notícias, artistas, navegação e configurações
+- SEO dinâmico, sitemap e dados estruturados
+- Integrações externas com processamento e histórico persistentes
+- Engineering OS em `.codex/` para governança, evidências, verificação e segurança operacional
 
-## Local / CI database
+## Desenvolvimento local
 
 ```bash
 cp .env.example .env.local
@@ -25,12 +25,26 @@ npm run admin:bootstrap
 npm run dev
 ```
 
-No default admin password exists in the repository.
+Não existe senha administrativa padrão armazenada no repositório.
 
-## Deployment
+## Validação
 
-The old GitHub Pages deployment is intentionally not modified by this feature branch. Production cutover requires a Node/Next-compatible runtime plus PostgreSQL and object storage. See `docs/CMS_ARCHITECTURE.md` and `docs/DEPLOYMENT.md`.
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npm run smoke
+```
 
-## Important
+O CI executa migrações, testes de integração, typecheck, build e smoke do runtime antes de publicar o status de validação do commit.
 
-Supabase is not part of this architecture or migration.
+## Arquitetura e operação
+
+A aplicação pública e o `/admin` compartilham o mesmo domínio de conteúdo. Uploads de mídia utilizam o provider de storage configurado no servidor; credenciais privilegiadas não pertencem ao bundle do navegador.
+
+Documentação operacional e arquitetural está em `docs/` e `infra/`.
+
+## Política de origem
+
+Este repositório é mantido como código próprio da Lander Records. Branding, badges, links, scripts, dependências, comentários ou metadados de geradores/starter platforms não fazem parte da identidade do projeto e devem ser rejeitados na revisão e no CI.
