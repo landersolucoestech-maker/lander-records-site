@@ -28,11 +28,10 @@ try {
         has_table_privilege(${probeRole}, 'public.pages', 'UPDATE') AS can_update,
         has_table_privilege(${probeRole}, 'public.pages', 'DELETE') AS can_delete
     `;
-    assert.deepEqual(
-      existingTablePrivilege[0],
-      { can_select: false, can_insert: false, can_update: false, can_delete: false },
-      "PUBLIC must not provide an alternate access path to CMS tables",
-    );
+    assert.equal(existingTablePrivilege[0].can_select, false, "PUBLIC must not SELECT CMS tables");
+    assert.equal(existingTablePrivilege[0].can_insert, false, "PUBLIC must not INSERT CMS tables");
+    assert.equal(existingTablePrivilege[0].can_update, false, "PUBLIC must not UPDATE CMS tables");
+    assert.equal(existingTablePrivilege[0].can_delete, false, "PUBLIC must not DELETE CMS tables");
 
     await sql.unsafe(`CREATE TABLE public.${probeTable} (id bigint PRIMARY KEY)`);
     const futureTablePrivilege = await sql`
@@ -40,11 +39,8 @@ try {
         has_table_privilege(${probeRole}, ${`public.${probeTable}`}, 'SELECT') AS can_select,
         has_table_privilege(${probeRole}, ${`public.${probeTable}`}, 'INSERT') AS can_insert
     `;
-    assert.deepEqual(
-      futureTablePrivilege[0],
-      { can_select: false, can_insert: false },
-      "future tables must not acquire PUBLIC privileges through default ACLs",
-    );
+    assert.equal(futureTablePrivilege[0].can_select, false, "future tables must not grant PUBLIC SELECT");
+    assert.equal(futureTablePrivilege[0].can_insert, false, "future tables must not grant PUBLIC INSERT");
 
     await sql.unsafe(`CREATE SEQUENCE public.${probeSequence}`);
     const futureSequencePrivilege = await sql`
@@ -53,11 +49,9 @@ try {
         has_sequence_privilege(${probeRole}, ${`public.${probeSequence}`}, 'SELECT') AS can_select,
         has_sequence_privilege(${probeRole}, ${`public.${probeSequence}`}, 'UPDATE') AS can_update
     `;
-    assert.deepEqual(
-      futureSequencePrivilege[0],
-      { can_use: false, can_select: false, can_update: false },
-      "future sequences must not acquire PUBLIC privileges through default ACLs",
-    );
+    assert.equal(futureSequencePrivilege[0].can_use, false, "future sequences must not grant PUBLIC USAGE");
+    assert.equal(futureSequencePrivilege[0].can_select, false, "future sequences must not grant PUBLIC SELECT");
+    assert.equal(futureSequencePrivilege[0].can_update, false, "future sequences must not grant PUBLIC UPDATE");
 
     console.log("Authorization DB checks passed: anonymous role cannot create or access CMS persistence through PUBLIC privileges.");
     throw rollback;
