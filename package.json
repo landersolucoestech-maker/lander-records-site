@@ -22,7 +22,7 @@
     "test": "npm run test:auth && npm run test:spotify && npm run test:database && npm run test:unit",
     "db:migrate": "node scripts/migrate.mjs",
     "db:seed": "node scripts/seed.mjs",
-    "test:integration": "node tests/integration/cms.mjs && node tests/integration/integrations-db.mjs",
+    "test:integration": "node tests/integration/cms.mjs && node tests/integration/integrations-db.mjs && node tests/integration/authorization-db.mjs",
     "admin:bootstrap": "node scripts/bootstrap-admin.mjs"
   },
   "dependencies": {
@@ -32,7 +32,7 @@
     "next": "16.3.3",
     "postgres": "^3.4.7",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react-dom": "^19.0.2",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
     "sharp": "0.35.4",
