@@ -1,0 +1,22 @@
+{
+  "id": "authorization",
+  "default": "deny",
+  "invariants": [
+    "authentication never implies authorization",
+    "unknown or malformed roles and capabilities fail closed",
+    "privileged mutations require an authoritative server-side guard before side effects",
+    "mandatory password-change state cannot access ordinary privileged operations",
+    "database PUBLIC privileges must not provide an alternate CMS write path",
+    "production runtime database credentials must be least-privilege and must not be superuser credentials",
+    "authorization changes require independent security review and relevant database review",
+    "authorization evidence must be executable in CI and tied to the changed boundary"
+  ],
+  "requiredReviewers": [
+    "security-reviewer"
+  ],
+  "conditionalReviewers": {
+    "databaseBoundaryChanged": [
+      "database-reviewer"
+    ]
+  }
+}
