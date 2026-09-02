@@ -1,69 +1,69 @@
 # Deployment / Cutover
 
-## Required runtime
+## Runtime obrigatório
 
-GitHub Pages is not a valid production runtime for this branch because the application now requires server execution.
+Este projeto exige execução server-side e não suporta produção como export estático.
 
-Required capabilities:
+Capacidades obrigatórias:
 
-- Node-compatible Next.js runtime;
-- PostgreSQL connection (`DATABASE_URL`);
+- runtime compatível com Next.js e Node.js 24;
+- PostgreSQL acessível por `DATABASE_URL`;
 - HTTPS;
-- Supabase Storage bucket `media` and server-only service-role credentials;
-- environment secrets;
-- ability to run the migration once before serving traffic.
+- armazenamento persistente de mídia via Supabase Storage;
+- secret store server-side;
+- capacidade de executar a migração aprovada antes do tráfego público.
 
-## Recommended target
+## Arquitetura de dados
 
-An IONOS Node.js runtime with PostgreSQL is the intended production fit. Media storage currently uses Supabase when enabled; it is not the application database.
+O PostgreSQL é o banco transacional e a fonte de dados do CMS. O acesso é feito por Drizzle ORM e `postgres-js`.
 
-The manual deployment workflow is `.github/workflows/deploy-ionos.yml`, but it is deliberately blocked by `PRODUCTION_DEPLOY_ENABLED` while the real host is unknown. Follow `PRODUCTION_INFRASTRUCTURE.md`, `ENVIRONMENT_CONTRACT.md`, `DEPLOYMENT_RUNBOOK.md` and `ROLLBACK_RUNBOOK.md` before enabling it.
+O Supabase não é o banco da aplicação neste projeto. Ele é utilizado como provider de object storage para mídia. `SUPABASE_SERVICE_ROLE_KEY` é credencial exclusivamente server-side e nunca pode ser exposta ao bundle do navegador.
 
-## Required environment variables
+## Alvo de produção
 
-See `.env.example`.
+O repositório é provider-neutral. O alvo pode ser VPS, cloud, container ou plataforma gerenciada, desde que cumpra o contrato de runtime e os controles de segurança descritos em:
 
-Mandatory before public traffic:
+- `PRODUCTION_INFRASTRUCTURE.md`;
+- `ENVIRONMENT_CONTRACT.md`;
+- `DEPLOYMENT_RUNBOOK.md`;
+- `ROLLBACK_RUNBOOK.md`.
 
-- `DATABASE_URL`
-- `NEXT_PUBLIC_SITE_URL`
-- `CONTACT_IP_HASH_SALT`
+Nenhum workflow deste repositório publica automaticamente em produção. A ativação de um pipeline de deploy exige inventário do ambiente real, política de aprovação, rollback validado e implementação atômica revisada.
 
-Mandatory before admin media upload:
+## Variáveis obrigatórias
 
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `SUPABASE_STORAGE_BUCKET=media`
+Consulte `.env.example` e `ENVIRONMENT_CONTRACT.md`.
 
-Optional until the Lander SaaS endpoint exists:
+Antes de tráfego público:
 
-- `LANDER_SAAS_WEBHOOK_URL`
-- `LANDER_SAAS_WEBHOOK_SECRET`
+- `DATABASE_URL`;
+- `NEXT_PUBLIC_SITE_URL`;
+- `CONTACT_IP_HASH_SALT`.
 
-## Cutover sequence
+Antes de uploads administrativos:
 
-1. provision dynamic Next.js project;
-2. provision PostgreSQL;
-3. set runtime variables;
-4. complete the separately approved database gate in `docs/runbooks/DB_0010_RELEASE.md`; never run a bare remote migration;
-5. in a separate one-time authorized operation, create the first owner with temporary bootstrap variables and remove them afterward;
-6. create or validate the Supabase Storage bucket `media`;
-7. deploy this branch to a preview;
-8. validate public routes and `/admin`;
-9. validate artist/category/post CRUD and publication;
-10. validate one real media upload;
-11. validate one real contact submission;
-12. attach production domain;
-13. only then replace the legacy GitHub Pages deployment.
+- `SUPABASE_URL`;
+- `SUPABASE_SERVICE_ROLE_KEY`;
+- `SUPABASE_STORAGE_BUCKET=media`.
 
-The old GitHub Pages site should remain untouched until step 12 succeeds.
+Variáveis de integrações externas permanecem opcionais até os respectivos serviços serem habilitados.
 
-## SaaS webhook cutover
+## Sequência de cutover
 
-Do not set webhook variables to a dummy URL. Once the SaaS endpoint exists:
+1. provisionar um runtime dinâmico compatível com Next.js;
+2. provisionar ou conectar o PostgreSQL de produção;
+3. configurar variáveis e secrets server-side;
+4. concluir o gate de banco em `docs/runbooks/DB_0010_RELEASE.md` quando a release exigir migração;
+5. criar o primeiro owner em operação única e autorizada, removendo as variáveis de bootstrap após o uso;
+6. criar ou validar o bucket Supabase Storage `media`;
+7. publicar o SHA aprovado em ambiente de preview/candidate;
+8. validar rotas públicas, `/api/health` e fail-closed do `/admin`;
+9. validar CRUD e publicação no CMS;
+10. validar upload real de mídia;
+11. validar submissão real de contato;
+12. validar domínio e TLS;
+13. promover a release somente após todos os gates.
 
-1. configure its URL and shared secret;
-2. send one contact;
-3. verify HMAC and idempotency on the SaaS side;
-4. confirm the outbox event changes to `delivered`;
-5. retry any prior `disabled`/`failed` events from the admin contact module.
+## SaaS webhook
+
+Não configure URL fictícia. Quando o endpoint SaaS existir, configure URL e segredo reais, envie uma submissão controlada, valide HMAC/idempotência e confirme a transição do evento de outbox para `delivered`.
