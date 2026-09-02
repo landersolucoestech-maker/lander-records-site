@@ -1,3 +1,5 @@
-# IONOS infrastructure
+# Infrastructure examples
 
-The examples in this directory cover the long-running Next.js process, reverse proxy and PostgreSQL backup. They are not evidence of the real server. Review `docs/PRODUCTION_INFRASTRUCTURE.md`, `docs/DEPLOYMENT_RUNBOOK.md`, `docs/ENVIRONMENT_CONTRACT.md` and `docs/ROLLBACK_RUNBOOK.md` before adapting or installing anything.
+Os exemplos deste diretório cobrem processo Next.js de longa duração, reverse proxy, configuração de ambiente e backup PostgreSQL. Eles são templates de referência e não comprovam a topologia do ambiente real.
+
+Revise `docs/PRODUCTION_INFRASTRUCTURE.md`, `docs/DEPLOYMENT.md`, `docs/DEPLOYMENT_RUNBOOK.md`, `docs/ENVIRONMENT_CONTRACT.md` e `docs/ROLLBACK_RUNBOOK.md` antes de adaptar ou instalar qualquer exemplo.
