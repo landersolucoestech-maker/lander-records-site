@@ -48,6 +48,8 @@ jobs:
         run: npm ci
       - name: Apply CMS migrations
         run: npm run db:migrate
+      - name: Security and hardening tests
+        run: npm test
       - name: Integration checks
         run: npm run test:integration
       - name: Typecheck
@@ -97,4 +99,4 @@ jobs:
             -H "Authorization: Bearer $GH_TOKEN" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
-            -d "{\"state\":\"$STATE\",\"target_url\":\"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\",\"description\":\"migrations + integration + typecheck + build + smoke\",\"context\":\"cms-foundation-ci\"}"
+            -d "{\"state\":\"$STATE\",\"target_url\":\"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\",\"description\":\"migrations + security + integration + typecheck + build + smoke\",\"context\":\"cms-foundation-ci\"}"
