@@ -24,6 +24,17 @@ test("corrective migration changes defaults without rewriting data", async () =>
   assert.match(sql, /INSERT INTO artist_metric_history[\s\S]*FROM artist_metrics/i);
 });
 
+test("authorization boundary migration removes implicit PUBLIC database capabilities", async () => {
+  const sql = await read("migrations/0011_authorization_boundary_hardening.sql");
+  assert.match(sql, /REVOKE CREATE ON SCHEMA public FROM PUBLIC/i);
+  assert.match(sql, /REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM PUBLIC/i);
+  assert.match(sql, /REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM PUBLIC/i);
+  assert.match(sql, /ALTER DEFAULT PRIVILEGES IN SCHEMA public[\s\S]*REVOKE ALL PRIVILEGES ON TABLES FROM PUBLIC/i);
+  assert.match(sql, /ALTER DEFAULT PRIVILEGES IN SCHEMA public[\s\S]*REVOKE ALL PRIVILEGES ON SEQUENCES FROM PUBLIC/i);
+  assert.doesNotMatch(sql, /^\s*(?:DELETE\s+FROM|TRUNCATE|DROP\s+(?:TABLE|COLUMN)|UPDATE\s+|INSERT\s+INTO)\b/im);
+  assert.doesNotMatch(sql, /\bCREATE\s+(?:USER|ROLE)\b/i);
+});
+
 test("Drizzle and final migration agree on storage provider default", async () => {
   const [schema, migration] = await Promise.all([
     read("lib/db/schema.ts"),
