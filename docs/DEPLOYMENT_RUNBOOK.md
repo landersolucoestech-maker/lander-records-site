@@ -1,41 +1,43 @@
-# IONOS deployment runbook
+# Production deployment runbook
 
-This is a preparation runbook. Every command that changes production remains blocked until a separately approved deployment change.
+Este é um runbook de preparação. Qualquer operação que altere produção permanece bloqueada até existir uma mudança separadamente aprovada.
 
-## Readiness stop conditions
+## Stop conditions
 
-Stop if the IONOS product/host inventory is incomplete; GitHub `Production` lacks approval protection; host fingerprint is unverified; a secret is missing; the target SHA is not approved; CI is not green; PITR evidence is absent/stale; backup or restore rehearsal fails; schema audit differs; TLS/domain are unresolved; or rollback cannot be demonstrated.
+Interrompa se o inventário do ambiente estiver incompleto; a política de aprovação estiver ausente; secrets obrigatórios faltarem; o SHA não estiver aprovado; CI não estiver verde; evidência de PITR estiver ausente ou vencida; backup/restore rehearsal falhar; auditoria de schema divergir; TLS/domínio não estiverem resolvidos; ou rollback não puder ser demonstrado.
 
-## Provisioning design
+## Provisionamento de referência
 
-For a confirmed Linux server, create dedicated user `landerrecords`, directories `releases`, `shared`, `shared/release-evidence`, logs and restricted backups. Install Node 24 LTS, PostgreSQL client matching the provider, systemd and the already-selected reverse proxy. Never run the app as root or use mode `777`.
+Em host Linux convencional, use usuário dedicado de serviço, releases imutáveis, secret file protegido, porta de aplicação em loopback e reverse proxy já selecionado. Nunca execute a aplicação como root nem use permissões amplas como `777`.
 
-The systemd unit runs `/var/www/lander-records/current/server.js` with `HOSTNAME=127.0.0.1`, `PORT=3000`, the protected environment file, restart-on-failure and hardening compatible with required writable paths. Nginx terminates HTTPS, redirects HTTP once, preserves `Host`, `X-Forwarded-For` and `X-Forwarded-Proto`, and proxies only to loopback. Validate any existing Apache/Caddy configuration before installing another proxy.
+Em runtime gerenciado ou containerizado, adapte o mecanismo preservando as mesmas propriedades de segurança e reversibilidade.
 
-## Atomic application sequence
+## Sequência atômica da aplicação
 
-1. Approve an exact full SHA already validated by CI and allowed by production policy.
-2. Build from `npm ci` using Node 24; package `.next/standalone`, `.next/static`, `public` and release metadata.
-3. Transfer into a new immutable `releases/<sha>` directory; verify artifact checksum and ownership.
-4. Run the application candidate on a temporary loopback port with production configuration but no public switch; health check it.
-5. Complete the independent database gate below only when the approved release needs migrations.
-6. Atomically switch `current` symlink, restart only `lander-records.service`, wait/retry `/api/health`, and run `npm run smoke` against the public HTTPS origin.
-7. On application-only failure, switch `current` back to the recorded previous release and restart. Never use `git pull` or mutate the active release.
+1. Aprovar um SHA completo já validado pelo CI.
+2. Construir artefato reproduzível com Node.js 24, `npm ci` e `npm run build`.
+3. Registrar checksum, SHA, horário e identidade do candidate.
+4. Publicar o candidate sem trocar imediatamente o tráfego ativo.
+5. Executar health check do candidate.
+6. Concluir o gate independente de banco somente quando a release exigir migration.
+7. Promover o candidate por mecanismo atômico/reversível da plataforma.
+8. Aguardar health check e executar `npm run smoke` contra a origem HTTPS pública.
+9. Se a aplicação falhar, restaurar a release anterior sem executar down migration destrutiva.
 
-The current workflow contains no SSH, migration, restart or deployment command. It remains fail-closed behind `PRODUCTION_DEPLOY_ENABLED` and deliberately fails if enabled. Replace that blocking job only after server inventory and an atomic transfer implementation are verified on that server. Before any host-side build, verify `node --version` is major 24 and `npm --version` is recorded.
+Nunca use `git pull` como mecanismo de produção nem altere artefatos da release ativa in-place.
 
 ## Database gate
 
-Follow `docs/runbooks/DB_0010_RELEASE.md`: fresh provider PITR evidence bound to the exact target and ticket, signed precheck, exact custom-format dump, checksum/HMAC manifest, restore into an empty local `*_restore` database, audit, migration rehearsal, explicit production-write authorization, apply, post-audit. Migration `0010` remains blocked. Never perform a destructive down migration or overwrite production during restore rehearsal.
+Siga `docs/runbooks/DB_0010_RELEASE.md`: evidência atual de PITR vinculada ao alvo, precheck, backup verificável, restore rehearsal em banco separado, auditoria, rehearsal de migration, autorização explícita de escrita em produção, aplicação e post-audit. Nunca sobrescreva produção durante restore rehearsal.
 
-## Post-switch checks
+## Post-promotion checks
 
-- `/`, `/artistas/`, `/noticias/`, `/contato/`, `/api/health` return healthy responses;
-- `/admin/` as visitor returns 307, 401 or 403 without following redirects;
-- no secret, SQL or token appears in response/log excerpts;
-- Nginx access/error log and `journalctl -u lander-records` show no new fatal errors;
-- record SHA, release path, previous SHA, artifact checksum, migration/evidence IDs and operator approval.
+- `/`, `/artistas/`, `/noticias/`, `/contato/` e `/api/health/` respondem corretamente;
+- `/admin/` para visitante falha fechado com redirect/autorização apropriada;
+- nenhum secret, SQL sensível ou token aparece em resposta/logs;
+- logs não apresentam novos erros fatais;
+- registrar SHA promovido, release anterior, checksum, migrations/evidências e aprovação.
 
-## Observability
+## Observabilidade
 
-Application: systemd journal. Proxy: its access/error logs with retention. Deploy/migration/backup: protected timestamped evidence directory. Monitor `/api/health` from inside and outside the host, alert on sustained non-200/503, restart loops, disk pressure, certificate expiry and backup/rehearsal failures. Logs must redact URLs containing credentials, authorization headers, cookies and integration tokens.
+Monitorar health endpoint, erros do processo, restart loops, pressão de recursos, expiração de certificados, falhas de backup e restore rehearsal. Logs devem redigir authorization headers, cookies, URLs com credenciais e tokens de integração.
