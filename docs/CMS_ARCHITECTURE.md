@@ -2,7 +2,7 @@
 
 ## 1. Why the static architecture had to change
 
-The original application was configured with `output: "export"` and deployed to GitHub Pages. That model can host HTML/CSS/JS but cannot safely provide server-side administrative sessions, CRUD endpoints, database transactions, file upload processing, contact persistence, audit logs or webhook delivery.
+The original application used a static-export deployment model. That model cannot safely provide server-side administrative sessions, CRUD endpoints, database transactions, file upload processing, contact persistence, audit logs or webhook delivery.
 
 The CMS foundation therefore turns the repository into a dynamic Next.js application. The existing public visual classes are retained, while data moves out of React/JSON constants and into PostgreSQL.
 
