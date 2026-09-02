@@ -5,13 +5,15 @@ import test from "node:test";
 const read = (path) => readFileSync(path, "utf8");
 
 test("production deployment remains manual and fail-closed during readiness", () => {
-  const workflow = read(".github/workflows/deploy-ionos.yml");
-  assert.match(workflow, /workflow_dispatch:/);
-  assert.match(workflow, /PRODUCTION_DEPLOY_ENABLED == 'true'/);
-  assert.match(workflow, /environment: Production/);
-  assert.match(workflow, /Refuse deployment until the real server is inventoried/);
-  assert.doesNotMatch(workflow, /ssh-action|db-0010-release\.mjs apply|systemctl restart/);
-  assert.doesNotMatch(workflow, /StrictHostKeyChecking=no/);
+  const infrastructure = read("docs/PRODUCTION_INFRASTRUCTURE.md");
+  const deployment = read("docs/DEPLOYMENT.md");
+  const runbook = read("docs/DEPLOYMENT_RUNBOOK.md");
+
+  assert.match(infrastructure, /NOT READY — deployment blocked/);
+  assert.match(infrastructure, /dev` não deve publicar automaticamente em produção/);
+  assert.match(deployment, /Nenhum workflow deste repositório publica automaticamente em produção/);
+  assert.match(runbook, /Qualquer operação que altere produção permanece bloqueada/);
+  assert.doesNotMatch(runbook, /git pull/);
 });
 
 test("CI and runtime use the reproducible Node and npm contract", () => {
@@ -25,7 +27,7 @@ test("CI and runtime use the reproducible Node and npm contract", () => {
   assert.equal(packageJson.engines.node, ">=24 <25");
 });
 
-test("readiness documentation keeps deployment and migration unauthorized", () => {
+test("readiness documentation keeps deployment and migration independently controlled", () => {
   for (const path of [
     "docs/PRODUCTION_INFRASTRUCTURE.md",
     "docs/ENVIRONMENT_CONTRACT.md",
@@ -34,12 +36,13 @@ test("readiness documentation keeps deployment and migration unauthorized", () =
   ]) {
     assert.ok(read(path).length > 500, `${path} must be substantive`);
   }
-  assert.match(read("docs/PRODUCTION_INFRASTRUCTURE.md"), /NOT READY — deployment blocked/);
-  assert.match(read("docs/DEPLOYMENT_RUNBOOK.md"), /Migration `0010` remains blocked/);
+  assert.match(read("docs/DEPLOYMENT_RUNBOOK.md"), /gate independente de banco/);
+  assert.match(read("docs/DEPLOYMENT.md"), /PostgreSQL é o banco transacional/);
+  assert.match(read("docs/DEPLOYMENT.md"), /Supabase não é o banco da aplicação/);
 });
 
 test("production smoke validates health payload and visitor admin protection", () => {
-  const smoke = read("scripts/deploy/ionos-smoke.mjs");
+  const smoke = read("scripts/deploy/runtime-smoke.mjs");
   assert.match(smoke, /health\?\.database !== "ok"/);
   assert.match(smoke, /redirect: "manual"/);
   assert.match(smoke, /\[307, 401, 403\]/);
