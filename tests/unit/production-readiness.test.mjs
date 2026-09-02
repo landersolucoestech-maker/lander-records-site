@@ -13,7 +13,7 @@ test("production deployment remains manual and fail-closed during readiness", ()
   assert.match(infrastructure, /dev` não deve publicar automaticamente em produção/);
   assert.match(deployment, /Nenhum workflow deste repositório publica automaticamente em produção/);
   assert.match(runbook, /Qualquer operação que altere produção permanece bloqueada/);
-  assert.doesNotMatch(runbook, /git pull/);
+  assert.match(runbook, /Nunca use `git pull` como mecanismo de produção/);
 });
 
 test("CI and runtime use the reproducible Node and npm contract", () => {
