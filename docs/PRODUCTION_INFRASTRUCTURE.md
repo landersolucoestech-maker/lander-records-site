@@ -1,68 +1,68 @@
 # Production infrastructure readiness
 
-Status: **NOT READY — deployment blocked**. This document records repository evidence as of commit `a6145b0`; it does not authorize deployment, DNS changes, production access, restart, backup or migration.
+Status: **NOT READY — deployment blocked**. Este documento descreve os requisitos mínimos do repositório; ele não autoriza deploy, DNS, acesso de produção, restart, backup ou migração.
 
-## What is known
+## O que é conhecido
 
-- The application is Next.js 16.3.3 with `output: "standalone"`, PostgreSQL and optional Supabase Storage/integrations.
-- GitHub has environments named `Production` and `github-pages`. `Production` currently has no protection rules or branch policy. No repository Actions secrets or variables are configured.
-- GitHub Pages is externally configured as legacy Pages from `dev` `/`, HTTPS enforced, without a custom domain. No current workflow owns it.
-- Repository examples assume a conventional Linux host, Nginx, systemd and a loopback Node listener. They are templates, not proof of the IONOS product or server state.
-- The real IONOS product, OS, architecture, hostname/IP, SSH port/user, sudo policy, firewall, installed services, proxy, domain and database/PITR state are **unknown**.
+- A aplicação usa Next.js 16 com `output: "standalone"` e Node.js 24.
+- PostgreSQL é o banco transacional do CMS.
+- Supabase Storage é o provider de mídia; não substitui o PostgreSQL da aplicação.
+- O repositório contém exemplos de Linux, Nginx e systemd como templates operacionais, não como dependência obrigatória.
+- O ambiente real de produção, suas políticas de acesso, rede, backup, PITR, TLS, observabilidade e rollback precisam ser inventariados antes de qualquer deploy.
 
-## Target architecture (conditional on a Linux VPS/cloud/dedicated server)
+## Arquitetura de referência
+
+Para um host Linux convencional:
 
 ```text
-Internet :80/:443 -> Nginx -> 127.0.0.1:3000 -> systemd -> standalone Next.js
-                                   |
-                                   +-> PostgreSQL over TLS/private network
+Internet :80/:443 -> reverse proxy -> 127.0.0.1:3000 -> Next.js standalone
+                                                |
+                                                +-> PostgreSQL
+                                                +-> Supabase Storage
 ```
 
-Canonical proposal:
+Referência segura:
 
-- service user: `landerrecords` (no interactive root runtime);
-- root: `/var/www/lander-records`;
-- immutable releases: `/var/www/lander-records/releases/<full-sha>`;
-- active symlink: `/var/www/lander-records/current`;
-- shared secrets: `/var/www/lander-records/shared/.env.production`, owner-readable only (`0600`);
-- release evidence: `/var/www/lander-records/shared/release-evidence`;
-- backups: `/var/backups/lander-records`, restricted and copied to an independently protected destination;
-- internal application port: `3000`, bound to `127.0.0.1` only;
-- process manager: systemd; reverse proxy: Nginx; TLS: existing IONOS certificate or Let's Encrypt with automatic renewal, selected only after inspecting the host.
+- usuário de serviço dedicado, sem execução como root;
+- releases imutáveis por SHA;
+- ponteiro/symlink atômico para a release ativa quando o host suportar esse modelo;
+- secrets em arquivo `0600` ou secret store equivalente;
+- porta interna restrita a loopback/rede privada;
+- TLS terminado pelo proxy ou plataforma gerenciada;
+- evidências de release e rollback preservadas fora da release ativa.
 
-Do not install this design on shared hosting or a managed runtime without adapting it to the actual IONOS product.
+Plataformas gerenciadas, containers e outros runtimes podem usar mecanismo diferente, desde que preservem as mesmas propriedades: isolamento de secrets, promoção atômica/reversível, health check, logs, rollback e controle explícito de migrations.
 
-## Access matrix
+## Matriz de readiness
 
-| Resource | Current evidence | Required | Safe configuration |
-|---|---|---:|---|
-| IONOS host/product | Unknown | Yes | Owner identifies product; read-only inventory over SSH first |
-| SSH host/port/user | Not configured in GitHub | Yes | Dedicated deploy user/key; non-default port as variable |
-| SSH host fingerprint | Not configured | Yes | Verify out-of-band; store SHA256 fingerprint as Environment secret |
-| sudo | Unknown | Conditional | Narrow sudoers command for the one systemd unit; never unrestricted |
-| GitHub `Production` | Exists, unprotected | Yes | Required reviewer, deployment branch/tag policy, no admin bypass where practical |
-| Repository secrets | None | Yes | Put production values in `Production` Environment, not repository-wide |
-| Node runtime | Repo pins major 24 | Yes | Install Node 24 LTS; verify exact patch before first release |
-| Reverse proxy/TLS | Unknown | Yes | Inspect existing server before choosing/installing Nginx/certificate |
-| Domain/DNS | Unknown; Pages has no CNAME | Yes | Inventory A/AAAA/CNAME/TTL; change only during approved cutover |
-| PostgreSQL/PITR | Unknown | Yes | Provider evidence, TLS, least privilege, retention and restore window |
+| Recurso | Obrigatório | Critério seguro |
+|---|---:|---|
+| Runtime de produção | Sim | Node.js 24 + suporte completo a Next.js server-side |
+| Política de deploy | Sim | SHA exato, aprovação explícita e CI verde |
+| Secrets | Sim | Secret store server-side, sem exposição client-side |
+| PostgreSQL | Sim | TLS/rede privada, least privilege, backup e restore testados |
+| Supabase Storage | Para mídia | Bucket e service role somente no servidor |
+| Domínio/TLS | Sim | Origem canônica HTTPS validada antes da promoção |
+| Observabilidade | Sim | Health, logs, falhas de processo, disco e certificados |
+| Rollback | Sim | Release anterior identificada e restauração demonstrável |
 
-## Network and host baseline
+## Baseline de inventário
 
-Future inventory must record `uname -a`, `/etc/os-release`, `hostnamectl`, architecture, public/private addresses, listening sockets, firewall rules, disk/RAM, Node/npm/PostgreSQL client versions, Docker, Nginx/Apache/Caddy, systemd units and application directories. Read-only commands only until the owner approves configuration.
+Antes do primeiro deploy, registrar runtime, sistema operacional/plataforma, arquitetura, rede, portas expostas, proxy, processo da aplicação, diretórios/volumes persistentes, política de secrets, banco, backup/PITR, TLS, DNS, logs e mecanismo de rollback.
 
-Expected public ports are 80/443 and a restricted SSH port. Port 3000 must not be publicly reachable. Database ingress must be restricted to the application/rehearsal source and require TLS where remote.
+Em hosts próprios, a porta da aplicação não deve ficar pública quando houver reverse proxy. O banco remoto deve exigir TLS ou roteamento privado e restringir origem.
 
-## GitHub configuration still required
+## GitHub e automação
 
-Create these in the **Production Environment**, not in source:
+A branch `dev` não deve publicar automaticamente em produção. Qualquer workflow futuro de produção precisa:
 
-- secrets: `IONOS_HOST`, `IONOS_USER`, `IONOS_SSH_KEY`, `IONOS_HOST_FINGERPRINT`;
-- variable: `IONOS_SSH_PORT`;
-- fail-closed variable: keep `PRODUCTION_DEPLOY_ENABLED` absent/false during readiness. The current workflow intentionally fails even if it is set; replace that blocking job with the reviewed host-specific atomic implementation only in a separately authorized round.
+- operar sobre SHA exato já validado pelo CI;
+- usar Environment protegido com reviewers quando disponível;
+- não imprimir secrets;
+- separar deploy de autorização de migration;
+- executar health check e smoke pós-promoção;
+- falhar fechado quando inventário, approval ou rollback estiverem ausentes.
 
-The runtime/database secrets stay on the host in protected files; they do not need to traverse the SSH action. Add required reviewers and restrict deployments to an explicitly approved production ref. `dev` must not deploy automatically.
+## DNS e HTTPS
 
-## DNS, HTTPS and Pages
-
-No DNS change is authorized. Before cutover, capture current authoritative DNS, A/AAAA/CNAME records, TTL and target IP; validate TLS on a temporary hostname; then schedule an approved low-TTL cutover and retain rollback records. Disable legacy GitHub Pages through repository Settings only if the owner confirms it is unused. It is not official production.
+Nenhuma alteração de DNS é implícita por este repositório. Antes do cutover, capturar registros atuais, TTL e origem ativa, validar TLS no candidate e manter um caminho de rollback documentado.
