@@ -8,7 +8,7 @@ import {fileURLToPath} from 'node:url';
 const projectRoot=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const explicitExternal=[
  'AGENTS.md','.gitignore','.gitattributes','eslint.config.mjs','package.json','.nvmrc',
- '.github/workflows/cms-ci.yml','.github/workflows/deploy-ionos.yml',
+ '.github/workflows/cms-ci.yml','.github/workflows/dev-preview.yml',
  'docs/DEPLOYMENT.md','tests/unit/production-readiness.test.mjs'
 ];
 const generatedAuditArtifacts=new Set(['CODEX_ENGINEERING_OS_INVENTORY.json','CODEX_ENGINEERING_OS_AUDIT_REPORT.md']);

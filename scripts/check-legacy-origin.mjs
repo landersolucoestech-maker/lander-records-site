@@ -3,6 +3,11 @@ import path from "node:path";
 
 const root = process.cwd();
 const ignoredDirectories = new Set([".git", ".next", "node_modules", "coverage", "playwright-report", "test-results"]);
+const ignoredFiles = new Set([
+  "CODEX_ENGINEERING_OS_AUDIT_REPORT.md",
+  "CODEX_ENGINEERING_OS_INVENTORY.json",
+  "package-lock.json",
+]);
 const textExtensions = new Set([
   ".cjs", ".css", ".html", ".js", ".json", ".jsx", ".md", ".mjs", ".sql", ".svg", ".ts", ".tsx", ".txt", ".yml", ".yaml",
 ]);
@@ -12,6 +17,7 @@ const generatorName = ["lova", "ble"].join("");
 const retiredHostBrand = ["io", "nos"].join("");
 const retiredStaticPlatform = ["github", " pages"].join("");
 const retiredStaticScript = ["prepare-github", "-pages-static"].join("");
+const retiredManagedPlatform = ["ver", "cel"].join("");
 
 const bannedTokens = [
   generatorName,
@@ -20,6 +26,7 @@ const bannedTokens = [
   retiredHostBrand,
   retiredStaticPlatform,
   retiredStaticScript,
+  retiredManagedPlatform,
 ];
 
 const violations = [];
@@ -45,6 +52,8 @@ async function walk(directory) {
       continue;
     }
 
+    if (ignoredFiles.has(relativePath)) continue;
+
     const extension = path.extname(entry.name).toLowerCase();
     if (!textExtensions.has(extension) && !exactTextFiles.has(entry.name)) continue;
 
@@ -54,6 +63,13 @@ async function walk(directory) {
 }
 
 await walk(root);
+
+const packageJson = JSON.parse(await readFile(path.join(root, "package.json"), "utf8"));
+for (const section of ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"]) {
+  for (const dependencyName of Object.keys(packageJson[section] || {})) {
+    inspect(dependencyName, "package.json", `direct-${section}`);
+  }
+}
 
 if (violations.length > 0) {
   console.error("Legacy origin/platform residue detected:");
