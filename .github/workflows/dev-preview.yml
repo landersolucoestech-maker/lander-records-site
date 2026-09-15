@@ -49,6 +49,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Initialize Engineering OS mission
+        run: node .codex/runtime/mission.mjs init --title "GitHub Actions dev preview"
+
       - name: Engineering OS preflight
         run: node .codex/runtime/preflight.mjs
 
