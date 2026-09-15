@@ -76,12 +76,15 @@ jobs:
         env:
           NODE_ENV: production
         run: |
-          npm run start -- -p 3000 > /tmp/lander-preview.log 2>&1 &
+          cp -R public .next/standalone/public
+          mkdir -p .next/standalone/.next
+          cp -R .next/static .next/standalone/.next/static
+          PORT=3000 HOSTNAME=127.0.0.1 node .next/standalone/server.js > /tmp/lander-preview.log 2>&1 &
           APP_PID=$!
           echo "APP_PID=$APP_PID" >> "$GITHUB_ENV"
           READY=0
           for attempt in $(seq 1 30); do
-            if curl --fail --silent --show-error http://127.0.0.1:3000/cms-preview/dashboard/ > /tmp/dashboard-preview.html; then
+            if curl --fail --silent --show-error http://127.0.0.1:3000/cms-preview/dashboard > /tmp/dashboard-preview.html; then
               READY=1
               break
             fi
@@ -126,12 +129,12 @@ jobs:
           printf '%s\n' "$PREVIEW_URL" > preview-url.txt
 
           curl --fail --silent --show-error --retry 20 --retry-delay 2 \
-            "$PREVIEW_URL/cms-preview/dashboard/" > /dev/null
+            "$PREVIEW_URL/cms-preview/dashboard" > /dev/null
 
           {
             echo "### Dev Preview"
             echo ""
-            echo "- Dashboard: $PREVIEW_URL/cms-preview/dashboard/"
+            echo "- Dashboard: $PREVIEW_URL/cms-preview/dashboard"
             echo "- Site público: $PREVIEW_URL/"
             echo "- Ambiente descartável: PostgreSQL temporário, sem secrets de produção."
             echo "- O endereço expira quando este job termina ou é substituído por um novo push em dev."
@@ -146,7 +149,7 @@ jobs:
 
       - name: Keep preview online
         run: |
-          echo "Preview: $PREVIEW_URL/cms-preview/dashboard/"
+          echo "Preview: $PREVIEW_URL/cms-preview/dashboard"
           for minute in $(seq 1 75); do
             if ! kill -0 "$APP_PID" 2>/dev/null; then
               cat /tmp/lander-preview.log
