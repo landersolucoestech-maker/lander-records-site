@@ -1,0 +1,165 @@
+name: Dev Preview
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lander-records-dev-preview
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    name: preview
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: lander_records_preview
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d lander_records_preview"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/lander_records_preview
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+      CONTACT_IP_HASH_SALT: preview-contact-ip-salt-not-for-production
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Engineering OS preflight
+        run: node .codex/runtime/preflight.mjs
+
+      - name: Reject retired platform residue
+        run: node scripts/check-legacy-origin.mjs
+
+      - name: Apply disposable preview migrations
+        run: npm run db:migrate
+
+      - name: Dashboard regression tests
+        run: node --test tests/unit/admin-dashboard-refactor.test.mjs tests/unit/admin-navigation.test.mjs tests/unit/production-readiness.test.mjs
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build preview
+        env:
+          NODE_ENV: production
+        run: npm run build
+
+      - name: Launch preview runtime
+        env:
+          NODE_ENV: production
+        run: |
+          npm run start -- -p 3000 > /tmp/lander-preview.log 2>&1 &
+          APP_PID=$!
+          echo "APP_PID=$APP_PID" >> "$GITHUB_ENV"
+          READY=0
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/cms-preview/dashboard/ > /tmp/dashboard-preview.html; then
+              READY=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$READY" != "1" ]; then
+            cat /tmp/lander-preview.log
+            exit 1
+          fi
+
+      - name: Open temporary preview tunnel
+        id: tunnel
+        run: |
+          curl --fail --silent --show-error --location \
+            https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 \
+            --output /tmp/cloudflared
+          chmod +x /tmp/cloudflared
+          /tmp/cloudflared tunnel --url http://127.0.0.1:3000 --no-autoupdate > /tmp/cloudflared.log 2>&1 &
+          TUNNEL_PID=$!
+          echo "TUNNEL_PID=$TUNNEL_PID" >> "$GITHUB_ENV"
+
+          PREVIEW_URL=""
+          for attempt in $(seq 1 45); do
+            PREVIEW_URL=$(grep -oE 'https://[-a-z0-9]+\.trycloudflare\.com' /tmp/cloudflared.log | head -n 1 || true)
+            if [ -n "$PREVIEW_URL" ]; then
+              break
+            fi
+            if ! kill -0 "$TUNNEL_PID" 2>/dev/null; then
+              cat /tmp/cloudflared.log
+              exit 1
+            fi
+            sleep 1
+          done
+
+          if [ -z "$PREVIEW_URL" ]; then
+            cat /tmp/cloudflared.log
+            exit 1
+          fi
+
+          echo "PREVIEW_URL=$PREVIEW_URL" >> "$GITHUB_ENV"
+          echo "url=$PREVIEW_URL" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$PREVIEW_URL" > preview-url.txt
+
+          curl --fail --silent --show-error --retry 20 --retry-delay 2 \
+            "$PREVIEW_URL/cms-preview/dashboard/" > /dev/null
+
+          {
+            echo "### Dev Preview"
+            echo ""
+            echo "- Dashboard: $PREVIEW_URL/cms-preview/dashboard/"
+            echo "- Site público: $PREVIEW_URL/"
+            echo "- Ambiente descartável: PostgreSQL temporário, sem secrets de produção."
+            echo "- O endereço expira quando este job termina ou é substituído por um novo push em dev."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish preview URL artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-preview-url
+          path: preview-url.txt
+          retention-days: 1
+
+      - name: Keep preview online
+        run: |
+          echo "Preview: $PREVIEW_URL/cms-preview/dashboard/"
+          for minute in $(seq 1 75); do
+            if ! kill -0 "$APP_PID" 2>/dev/null; then
+              cat /tmp/lander-preview.log
+              exit 1
+            fi
+            if ! kill -0 "$TUNNEL_PID" 2>/dev/null; then
+              cat /tmp/cloudflared.log
+              exit 1
+            fi
+            sleep 60
+          done
+
+      - name: Preview logs
+        if: always()
+        run: |
+          echo "--- application ---"
+          tail -n 120 /tmp/lander-preview.log 2>/dev/null || true
+          echo "--- tunnel ---"
+          tail -n 120 /tmp/cloudflared.log 2>/dev/null || true

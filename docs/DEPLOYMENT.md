@@ -30,6 +30,22 @@ O repositório é provider-neutral. O alvo pode ser VPS, cloud, container ou pla
 
 Nenhum workflow deste repositório publica automaticamente em produção. A ativação de um pipeline de deploy exige inventário do ambiente real, política de aprovação, rollback validado e implementação atômica revisada.
 
+## Preview de desenvolvimento via GitHub Actions
+
+A branch `dev` possui um preview temporário em `.github/workflows/dev-preview.yml` para revisão visual do trabalho em andamento sem promover produção.
+
+O workflow:
+
+- cria um PostgreSQL descartável dentro do runner;
+- executa preflight do Engineering OS, gate de origem, migrações, regressões focadas, typecheck e build;
+- inicia o runtime Next.js de produção dentro do runner;
+- expõe temporariamente o runtime por um túnel HTTPS sem carregar secrets de produção;
+- publica no resumo do job a URL de `/cms-preview/dashboard/` e um artefato `dev-preview-url`;
+- cancela o preview anterior quando um novo push chega em `dev`;
+- expira automaticamente quando o job termina.
+
+Esse preview é ambiente descartável de demonstração. Ele não é produção, não autoriza migração de banco real, não utiliza credenciais administrativas reais e não substitui o cutover formal descrito abaixo.
+
 ## Variáveis obrigatórias
 
 Consulte `.env.example` e `ENVIRONMENT_CONTRACT.md`.
