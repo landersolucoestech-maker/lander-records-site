@@ -7,11 +7,15 @@ import https from 'node:https';
 import crypto from 'node:crypto';
 import {spawn, execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
-import {root, cdir, readJson, writeJson} from './lib/core.mjs';
+import {root, cdir, readJson} from './lib/core.mjs';
+import {authoritativeStatePath, atomicWrite, withLock} from './lib/store.mjs';
 
 const projectRoot = root();
 const codexDir = cdir(projectRoot);
-const stateDir = path.join(codexDir, 'state');
+// Keep mutable guardian state beside the authoritative per-worktree runtime
+// state. Some synced workspaces do not support the fsync/atomic-replace
+// semantics used by the runtime inside `.codex/state`.
+const stateDir = path.join(path.dirname(authoritativeStatePath(projectRoot)), 'localhost-guardian');
 const stateFile = path.join(stateDir, 'localhost-guardian-state.json');
 const configFile = path.join(codexDir, 'localhost-guardian.json');
 const logFile = path.join(stateDir, 'localhost-guardian.log');
@@ -42,7 +46,7 @@ function pidAlive(pid){
   try{ process.kill(pid,0); return true; }catch{ return false; }
 }
 function readPid(file){ try{return Number(fs.readFileSync(file,'utf8').trim())||null}catch{return null} }
-function saveState(patch){ const s=readJson(stateFile,{schemaVersion:1}); writeJson(stateFile,{...s,...patch,updatedAt:now()}); }
+function saveState(patch){ const s=readJson(stateFile,{schemaVersion:1}); withLock(stateFile,()=>atomicWrite(stateFile,{...s,...patch,updatedAt:now()},{backup:false})); }
 function parsePortFromText(s){
   if(!s) return null;
   const pats=[/--port(?:=|\s+)(\d{2,5})/i,/\bPORT=(\d{2,5})\b/i,/:(\d{2,5})(?:\b|\/)/];
@@ -98,9 +102,11 @@ function config(){
     url:user.url || (port?`${protocol}://${host}:${port}${healthPath}`:null),
     probe:user.probe||'http',
     intervalMs:Math.max(500,Number(user.intervalMs||2000)),
+    probeTimeoutMs:Math.max(1000,Number(user.probeTimeoutMs||10000)),
     startupTimeoutMs:Math.max(1000,Number(user.startupTimeoutMs||60000)),
     restartBackoffMs:Math.max(250,Number(user.restartBackoffMs||1000)),
     restartBackoffMaxMs:Math.max(1000,Number(user.restartBackoffMaxMs||15000)),
+    maxRecoveryAttempts:Math.max(1,Number(user.maxRecoveryAttempts||5)),
     stableResetMs:Math.max(1000,Number(user.stableResetMs||30000)),
     detectedReason:detected.reason
   };
@@ -120,7 +126,7 @@ async function httpProbe(cfg){
   if(!cfg.url) return {ok:false,detail:'url-unresolved'};
   return await new Promise(resolve=>{
     const mod=cfg.url.startsWith('https:')?https:http;
-    const req=mod.get(cfg.url,{timeout:1800},res=>{res.resume();resolve({ok:res.statusCode>=200&&res.statusCode<300,detail:`http-${res.statusCode}`});});
+    const req=mod.get(cfg.url,{timeout:cfg.probeTimeoutMs},res=>{res.resume();resolve({ok:res.statusCode>=200&&res.statusCode<300,detail:`http-${res.statusCode}`});});
     req.once('timeout',()=>{req.destroy();resolve({ok:false,detail:'http-timeout'});});
     req.once('error',e=>resolve({ok:false,detail:e.code||e.message}));
   });
@@ -149,9 +155,13 @@ function spawnServer(cfg){
 async function serveOwnedServer(){
   const cfg=config(),token=argValue('--ownership-token'),hash=argValue('--command-hash');
   if(!token||!/^[a-f0-9]{48}$/.test(token)||hash!==commandHash(cfg)) throw new Error('invalid guardian child ownership credentials');
+  const outputFile=path.join(stateDir,'localhost-devserver.log');
+  if(fs.existsSync(outputFile)&&fs.statSync(outputFile).size>5*1024*1024)fs.renameSync(outputFile,outputFile+'.previous');
+  const output=fs.openSync(outputFile,'a',0o600);
   const child=process.platform==='win32'
-    ? spawn(cfg.command,{cwd:cfg.cwd,shell:true,detached:false,stdio:['ignore','ignore','ignore'],env:{...process.env}})
-    : spawn('/bin/sh',['-lc',`exec ${cfg.command}`],{cwd:cfg.cwd,detached:false,stdio:['ignore','ignore','ignore'],env:{...process.env}});
+    ? spawn(cfg.command,{cwd:cfg.cwd,shell:true,detached:false,stdio:['ignore',output,output],env:{...process.env}})
+    : spawn('/bin/sh',['-lc',`exec ${cfg.command}`],{cwd:cfg.cwd,detached:false,stdio:['ignore',output,output],env:{...process.env}});
+  fs.closeSync(output);
   const forward=signal=>{try{if(process.platform==='win32')killPid(child.pid);else child.kill(signal)}catch{}};
   process.on('SIGTERM',()=>forward('SIGTERM'));
   process.on('SIGINT',()=>forward('SIGINT'));
@@ -193,7 +203,7 @@ async function acquireRecoveryLock(cfg){
     try{fs.mkdirSync(lockDir);fs.writeFileSync(path.join(lockDir,'owner.json'),JSON.stringify({pid:process.pid,at:now()}));return true}catch(e){
       if(e.code!=='EEXIST') throw e;
       try{const age=Date.now()-fs.statSync(lockDir).mtimeMs;if(age>cfg.startupTimeoutMs*2)fs.rmSync(lockDir,{recursive:true,force:true})}catch{}
-      const p=await probe(cfg);if(p.ok)return false;await sleep(150);
+      const p=await probe(cfg);if(p.ok&&!p.degraded)return false;await sleep(150);
     }
   }
   throw new Error('localhost recovery lock timeout');
@@ -219,12 +229,12 @@ function guardianOwnsLegacyWatcher(pid){
 }
 async function ensureHealthy(cfg=config(), opts={}){
   const first=await probe(cfg);
-  if(first.ok){saveState({status:first.degraded?'DEGRADED':'HEALTHY',lastHealthyAt:now(),port:cfg.port,url:cfg.url,degraded:!!first.degraded});return {ok:true,action:'already-healthy',probe:first};}
+  if(first.ok&&!first.degraded){saveState({status:'HEALTHY',lastHealthyAt:now(),port:cfg.port,url:cfg.url,degraded:false});return {ok:true,action:'already-healthy',probe:first};}
   if(!cfg.command){saveState({status:'FAILED',lastFailureAt:now(),failure:'unhealthy-and-no-recovery-command'});return {ok:false,action:'no-recovery-command',probe:first};}
   const locked=await acquireRecoveryLock(cfg);
-  if(!locked){const p=await probe(cfg);return {ok:p.ok,action:'recovered-by-peer',probe:p};}
+  if(!locked){const p=await probe(cfg);return {ok:p.ok&&!p.degraded,action:'recovered-by-peer',probe:p};}
   try{
-    const again=await probe(cfg);if(again.ok)return {ok:true,action:'recovered-before-spawn',probe:again};
+    const again=await probe(cfg);if(again.ok&&!again.degraded)return {ok:true,action:'recovered-before-spawn',probe:again};
     const childPid=readPid(childPidFile);
     if(childPidAliveButUnhealthy(childPid) && guardianOwnsChild(childPid,cfg)){
       log('unhealthy-existing-owned-child',{pid:childPid,detail:again.detail});
@@ -235,7 +245,7 @@ async function ensureHealthy(cfg=config(), opts={}){
     }
     spawnServer(cfg);
     const deadline=Date.now()+cfg.startupTimeoutMs;let last=again;
-    while(Date.now()<deadline){ await sleep(500); last=await probe(cfg); if(last.ok){saveState({status:last.degraded?'DEGRADED':'HEALTHY',lastHealthyAt:now(),port:cfg.port,url:cfg.url,degraded:!!last.degraded});log('server-healthy',{detail:last.detail,degraded:!!last.degraded});return {ok:true,action:'started',probe:last};} }
+    while(Date.now()<deadline){ await sleep(500); last=await probe(cfg); if(last.ok&&!last.degraded){saveState({status:'HEALTHY',lastHealthyAt:now(),port:cfg.port,url:cfg.url,degraded:false});log('server-healthy',{detail:last.detail,degraded:false});return {ok:true,action:'started',probe:last};} }
     saveState({status:'FAILED',lastFailureAt:now(),failure:last.detail});return {ok:false,action:'start-timeout',probe:last};
   } finally {releaseRecoveryLock();}
 }
@@ -252,13 +262,18 @@ async function watch(){
   log('watcher-started',{pid:process.pid,port:cfg.port,reason:cfg.detectedReason});
   while(true){
     const p=await probe(cfg);
-    if(p.ok){
+    if(p.ok&&!p.degraded){
       if(!stableSince) stableSince=Date.now();
       if(Date.now()-stableSince>=cfg.stableResetMs) failures=0;
       saveState({status:p.degraded?'DEGRADED':'HEALTHY',lastHealthyAt:now(),watcherPid:process.pid,port:cfg.port,url:cfg.url,degraded:!!p.degraded});
       await sleep(cfg.intervalMs); continue;
     }
     stableSince=0; failures++;
+    if(failures>cfg.maxRecoveryAttempts){
+      saveState({status:'FAILED',lastFailureAt:now(),failure:'recovery-circuit-open',restartCount:failures-1});
+      log('recovery-circuit-open',{attempts:failures-1});
+      return;
+    }
     saveState({status:'RECOVERING',lastFailureAt:now(),failure:p.detail,restartCount:failures});
     log('health-lost',{detail:p.detail,restartCount:failures});
     const backoff=Math.min(cfg.restartBackoffMaxMs,cfg.restartBackoffMs*Math.pow(2,Math.min(failures-1,6)));
@@ -283,8 +298,11 @@ function startDaemon(){
 }
 async function stop(){
   const watcher=readPid(watcherPidFile), child=readPid(childPidFile);
+  if(watcher&&pidAlive(watcher)&&!guardianOwnsWatcher(watcher))return {ok:false,action:'unverified-existing-watcher',pid:watcher};
+  if(child&&pidAlive(child)&&!guardianOwnsChild(child,config()))return {ok:false,action:'unverified-existing-child',pid:child};
   if(guardianOwnsWatcher(watcher)) killPid(watcher); else if(watcher&&pidAlive(watcher)) log('refused-to-stop-unverified-watcher',{pid:watcher});
   if(guardianOwnsChild(child,config())) killPid(child); else if(child&&pidAlive(child)) log('refused-to-stop-unverified-child',{pid:child});
+  if(pidAlive(watcher)||pidAlive(child))return {ok:false,action:'process-still-running'};
   for(const f of [watcherPidFile,childPidFile]) try{fs.unlinkSync(f)}catch{}
   saveState({status:'STOPPED',watcherPid:null,childPid:null});
   return {ok:true,action:'stopped'};

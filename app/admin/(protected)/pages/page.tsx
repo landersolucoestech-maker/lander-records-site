@@ -44,5 +44,5 @@ export default async function PagesAdminPage({ searchParams }: { searchParams: P
       updatedAt: new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(page.updatedAt),
     };
   });
-  return <PageManager canEdit={session.user.role !== "viewer"} initialFilters={filters} metrics={metrics} pages={summary} />;
+  return <PageManager canEdit={session.source === "session" && session.user.role !== "viewer"} initialFilters={filters} metrics={metrics} pages={summary} />;
 }

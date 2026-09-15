@@ -19,15 +19,14 @@ if(distribution)for(const rel of ['README.md','ARCHITECTURE.md','SECURITY-MODEL.
 const os=readJson(path.join(c,'engineering-os.json'),{});
 if(os.version!=='2.0.0-HARDENED') errors.push(`unexpected-version:${os.version}`);
 const reg=readJson(path.join(c,'agents','registry.json'),{}),agents=reg.agents||[],names=new Set();
-if(agents.length<47) errors.push(`agent-registry-too-small:${agents.length}`);
+if(reg.classification!=='ROLE_PROFILE'||reg.countsTowardIndependentReview!==false)errors.push('agent-registry-trust-classification-invalid');
 for(const a of agents){if(names.has(a.name))errors.push(`duplicate-agent:${a.name}`);names.add(a.name);if(!['read','write'].includes(a.mode))errors.push(`invalid-agent-mode:${a.name}`);req(a.path)}
 if(!names.has('runtime-continuity-controller')) errors.push('runtime-continuity-controller-unregistered');
 const skillFiles=walk(path.join(c,'skills')).filter(x=>path.basename(x)==='SKILL.md');
 const ruleFiles=walk(path.join(c,'rules')).filter(x=>x.endsWith('.md'));
 const policyFiles=walk(path.join(c,'policies')).filter(x=>x.endsWith('.json'));
-if(skillFiles.length<23)errors.push(`skill-registry-too-small:${skillFiles.length}`);
-if(ruleFiles.length<18)errors.push(`rule-registry-too-small:${ruleFiles.length}`);
-if(policyFiles.length<8)errors.push(`policy-registry-too-small:${policyFiles.length}`);
+if(!readJson(path.join(c,'skills','registry.json'),null))errors.push('skill-activation-registry-missing');
+if(!readJson(path.join(c,'governance-classification.json'),null))errors.push('governance-classification-missing');
 for(const p of walk(c).filter(x=>x.endsWith('.json'))){try{JSON.parse(fs.readFileSync(p,'utf8'))}catch(e){errors.push(`invalid-json:${path.relative(r,p)}:${e.message}`)}}
 for(const p of walk(c).filter(x=>x.endsWith('.md'))){const t=fs.readFileSync(p,'utf8');if(p.includes(`${path.sep}agents${path.sep}`)&&!/^\uFEFF?---\r?\n/.test(t))errors.push(`agent-frontmatter-missing:${path.relative(r,p)}`);if(/MUSIC OS 360|\.claude\/|CLAUDE\.md|Anthropic-specific/i.test(t))errors.push(`reference-leak:${path.relative(r,p)}`)}
 for(const p of walk(c).filter(x=>x.endsWith('.mjs'))){const z=spawnSync(process.execPath,['--check',p],{encoding:'utf8'});if(z.status!==0)errors.push(`invalid-js:${path.relative(r,p)}:${(z.stderr||z.stdout).trim()}`)}

@@ -1,14 +1,18 @@
 #!/usr/bin/env node
-import {execFileSync} from 'node:child_process';
+import crypto from 'node:crypto';
 import path from 'node:path';
-import {root,cdir,readJson,workspaceFingerprint,writeJson} from './lib/core.mjs';
-const r=root(),c=cdir(r);const checks=[];
-const run=(name,args,required=true)=>{try{const raw=execFileSync(process.execPath,args,{cwd:r,encoding:'utf8'});checks.push({name,ok:true,result:JSON.parse(raw)});return true}catch(e){checks.push({name,ok:false,detail:e.stdout?.toString()||e.message});return !required}};
-run('doctor',[path.join(c,'runtime','doctor.mjs')]);
-const guardianCfg=readJson(path.join(c,'localhost-guardian.json'),{});
-if(guardianCfg.required!==false){
-  try{const raw=execFileSync(process.execPath,[path.join(c,'runtime','localhost-guardian.mjs'),'daemon','--quiet'],{cwd:r,encoding:'utf8'});const result=JSON.parse(raw);const degraded=!!result.health?.probe?.degraded;checks.push({name:'localhost-guardian',ok:result.ok!==false&&!degraded,result,detail:degraded?'degraded-health':''});}
-  catch(e){checks.push({name:'localhost-guardian',ok:false,detail:e.stdout?.toString()||e.message});}
-}
-const fp=workspaceFingerprint(r);writeJson(path.join(c,'state','preflight.json'),{schemaVersion:1,at:new Date().toISOString(),workspaceFingerprint:fp.fingerprint,checks});
-const bad=checks.filter(x=>!x.ok);console.log(JSON.stringify({status:bad.length?'FAIL':'PASS',workspaceFingerprint:fp.fingerprint,checks},null,2));process.exit(bad.length?2:0);
+import {spawnSync} from 'node:child_process';
+import {StateStore,root,cdir,workspaceFingerprint,failClosed,validateContract} from './lib/core.mjs';
+import {issueRuntimeExecution} from './lib/execution.mjs';
+const hash=value=>crypto.createHash('sha256').update(value).digest('hex');
+const r=root(),store=new StateStore(r);
+try{
+ const result=store.transaction(state=>{
+  const execution=issueRuntimeExecution(r,state,{roleId:'verification-controller',capabilities:['preflight:execute']});
+  const commands=[{name:'doctor',argv:[path.join(cdir(r),'runtime','doctor.mjs')]},{name:'validate',argv:[path.join(cdir(r),'runtime','validate-pack.mjs')]}];
+  const checks=commands.map(item=>{const child=spawnSync(process.execPath,item.argv,{cwd:r,encoding:'utf8',shell:false});const output=`${child.stdout||''}\n${child.stderr||''}`;return {name:item.name,ok:child.status===0,exitCode:Number.isInteger(child.status)?child.status:1,outputHash:hash(output)}});
+  const unsigned={schemaVersion:2,identity:structuredClone(state.identity),executionId:execution.executionId,timestamp:new Date().toISOString(),workspaceFingerprint:workspaceFingerprint(r).fingerprint,checks};
+  state.preflight={...unsigned,checksum:hash(JSON.stringify(unsigned))};validateContract(r,'preflight-record',state.preflight);
+ });
+ const record=result.state.preflight,bad=record.checks.filter(x=>!x.ok);console.log(JSON.stringify({status:bad.length?'FAIL':'PASS',...record},null,2));process.exit(bad.length?2:0);
+}catch(error){failClosed(error)}

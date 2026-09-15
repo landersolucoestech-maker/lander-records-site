@@ -26,5 +26,5 @@ export default async function AdminArtistsPage({ searchParams }: { searchParams:
     const homePlacement = isPubliclyVisible ? placementRows.find((row) => row.artistId === artist.id && row.key === "home_artists") : undefined;
     return { id: artist.id, name: artist.name, slug: artist.slug, status, cardImage: cardImage || "", genres: genreRows.filter((row) => row.artistId === artist.id).map((row) => row.name), homePosition: homePlacement?.position, isPubliclyVisible, updatedAt: new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(artist.updatedAt) };
   });
-  return <ArtistManager artists={summary} canEdit={session.user.role !== "viewer"} deleted={filters.deleted === "1"} initialFilters={{ genre: filters.genre, q: filters.q, status: filters.status }} />;
+  return <ArtistManager artists={summary} canEdit={session.source === "session" && session.user.role !== "viewer"} deleted={filters.deleted === "1"} initialFilters={{ genre: filters.genre, q: filters.q, status: filters.status }} />;
 }

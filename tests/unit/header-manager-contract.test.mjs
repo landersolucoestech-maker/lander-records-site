@@ -5,7 +5,7 @@ import test from "node:test";
 const source = (path) => fs.readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 const publicHeader = source("app/components/SiteChrome.tsx");
 const mobileHeader = source("app/components/MobileNavigation.tsx");
-const content = source("lib/content.ts");
+const content = source("modules/settings/repository.ts");
 const manager = source("app/admin/(protected)/header/HeaderManagerView.tsx");
 const preview = source("app/admin/(protected)/header/HeaderPreview.tsx");
 const page = source("app/admin/(protected)/header/page.tsx");

@@ -3,7 +3,7 @@
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { audit, requireAdmin } from "../../lib/auth";
+import { audit, requirePersistentAdmin } from "../../lib/auth";
 import { getDb } from "../../lib/db";
 import { landerRecordsIntegrationSettings, spotifyReleaseCache } from "../../lib/db/integration-schema";
 import { normalizeExternalUrl, spotifyPlaylistIdFromUrl } from "../../lib/integrations/identity";
@@ -14,7 +14,7 @@ function text(formData: FormData, name: string) {
 }
 
 export async function saveLanderRecordsIntegrationSettings(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const instagramUrl = normalizeExternalUrl(text(formData, "instagramUrl"));
   const youtubeUrl = normalizeExternalUrl(text(formData, "youtubeUrl"));
   const spotifyPlaylistUrl = normalizeExternalUrl(text(formData, "spotifyPlaylistUrl"));
@@ -71,7 +71,7 @@ export async function saveLanderRecordsIntegrationSettings(formData: FormData) {
 }
 
 export async function syncLanderRecordsIntegrationsAction() {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const result = await syncAllIntegrations(true);
   await audit(session.user.id, "integration.sync.requested", "integration_settings", "lander_records", {
     spotifyStatus: result.spotify.status,

@@ -1,29 +1,22 @@
 #!/usr/bin/env node
-import path from 'node:path';
-import {execFileSync} from 'node:child_process';
-import {loadState,workspaceFingerprint,root,cdir,readJson} from './lib/core.mjs';
-const r=root(),c=cdir(r),s=loadState(),fp=workspaceFingerprint().fingerprint,block=[];
-const registry=readJson(path.join(c,'agents','registry.json'),{}).agents||[];
-const roleByName=new Map(registry.map(x=>[x.name,x]));
-if(!['COMPLETING','ACTIVE','VERIFYING','REVIEWING'].includes(s.mission?.status)) block.push('mission-not-active');
-for(const req of s.requirements||[]){const ids=(s.criteria||[]).filter(x=>x.requirementId===req.id);if(ids.length===0)block.push(`requirement-without-criteria:${req.id}`)}
-for(const criterion of (s.criteria||[]).filter(x=>x.mandatory!==false)){
-  const fresh=(s.evidence||[]).filter(e=>e.criterionId===criterion.id&&(!e.invalidatesOnChange||e.workspaceFingerprint===fp)).sort((a,b)=>String(a.timestamp).localeCompare(String(b.timestamp)));
-  const latest=fresh.at(-1);
-  if(!latest) block.push(`criterion-without-fresh-evidence:${criterion.id}`);
-  else if(latest.result!=='PASS') block.push(`criterion-latest-not-pass:${criterion.id}:${latest.result}`);
-}
-for(const f of s.findings||[]) if(f.status==='OPEN'&&['HIGH','CRITICAL','BLOCKER'].includes(f.severity)) block.push(`unresolved-finding:${f.id}`);
-for(const e of s.sideEffects||[]) if(['STARTED','FAILED','PARTIAL'].includes(e.status)) block.push(`unreconciled-side-effect:${e.id}`);
-const impact=s.impact?.level||'L0',n=Number(impact[1]);
-const reviewByProducer=new Map();for(const rv of (s.reviews||[]).filter(x=>x.workspaceFingerprint===fp).sort((a,b)=>String(a.timestamp).localeCompare(String(b.timestamp))))reviewByProducer.set(rv.producer,rv);const reviewers=new Set([...reviewByProducer.entries()].filter(([name,rv])=>rv.result==='PASS'&&roleByName.get(name)?.mode==='read').map(([name])=>name));
-if(n>=3&&reviewers.size<1)block.push('independent-review-record-missing');
-if(n>=4&&!reviewers.has('architecture-reviewer'))block.push('architecture-review-record-missing');
-if(n>=5){for(const required of ['security-reviewer','adversarial-reviewer','git-auditor'])if(!reviewers.has(required))block.push(`required-L5-review-missing:${required}`)}
-const preflight=readJson(path.join(c,'state','preflight.json'),null);
-if(n>=1){if(!preflight)block.push('preflight-missing');else if(preflight.checks?.some(x=>!x.ok))block.push('preflight-had-failures')}
+import crypto from 'node:crypto';
+import {StateStore,root,workspaceFingerprint,failClosed} from './lib/core.mjs';
+import {executionById,isIndependentTrustedReviewer} from './lib/execution.mjs';
+const hash=value=>crypto.createHash('sha256').update(value).digest('hex');
 try{
-  const raw=execFileSync(process.execPath,[path.join(c,'runtime','localhost-guardian.mjs'),'status','--quiet'],{cwd:r,encoding:'utf8'});const health=JSON.parse(raw);
-  if(health.ok===false)block.push(`localhost-unhealthy:${health.detail||'unknown'}`);if(health.degraded)block.push(`localhost-degraded:${health.detail||'unknown'}`);
-}catch{const cfg=readJson(path.join(c,'localhost-guardian.json'),{});if(cfg.required!==false)block.push('localhost-guardian-check-failed')}
-const result={verdict:block.length?'BLOCKED':'PASS',workspaceFingerprint:fp,impact,independentReviewers:[...reviewers],blockers:[...new Set(block)]};console.log(JSON.stringify(result,null,2));process.exit(block.length?2:0);
+ const r=root(),s=new StateStore(r).read(),fp=workspaceFingerprint(r).fingerprint,block=[];
+ if(!s.mission?.id||!['IMPLEMENTATION_COMPLETE','VERIFICATION_PENDING','CERTIFICATION_BLOCKED'].includes(s.mission.status))block.push('mission-not-ready-for-certification');
+ if(!s.requirements.length)block.push('requirements-empty');if(!s.criteria.length)block.push('criteria-empty');
+ for(const req of s.requirements)if(!s.criteria.some(c=>c.requirementId===req.id))block.push(`requirement-without-criteria:${req.id}`);
+ for(const criterion of s.criteria.filter(c=>c.mandatory)){
+  const valid=s.evidence.filter(e=>e.criterionId===criterion.id&&e.result==='PASS'&&e.exitCode===0&&e.workspaceFingerprint===fp&&criterion.evidenceKinds?.includes(e.kind)).filter(e=>{const execution=executionById(s,e.executionId);return execution&&execution.principalId===e.principalId&&e.command&&e.argv.length&&e.finishedAt>=e.startedAt});
+  if(!valid.length)block.push(`criterion-without-current-executed-evidence:${criterion.id}`);
+ }
+ const p=s.preflight;if(!p)block.push('preflight-missing');else{const {checksum,...unsigned}=p;if(hash(JSON.stringify(unsigned))!==checksum)block.push('preflight-checksum-invalid');if(p.workspaceFingerprint!==fp)block.push('preflight-stale');if(p.checks.some(c=>!c.ok||c.exitCode!==0))block.push('preflight-failed');if(p.identity.repository.id!==s.identity.repository.id||p.identity.worktree.id!==s.identity.worktree.id)block.push('preflight-identity-mismatch')}
+ for(const f of s.findings)if(!['CLOSED','WAIVED'].includes(f.status)&&['HIGH','CRITICAL','BLOCKER'].includes(f.severity))block.push(`unresolved-finding:${f.id}:${f.status}`);
+ for(const e of s.sideEffects)if(!['SUCCEEDED','RECONCILED','BLOCKED'].includes(e.status))block.push(`unreconciled-side-effect:${e.id}`);
+ if(s.mission.scope==='repository'){if(!s.coverage)block.push('repository-coverage-missing');else if(s.coverage.status!=='VERIFIED'||s.coverage.workspaceFingerprint!==fp||s.coverage.uncovered?.length)block.push('repository-coverage-not-current-and-verified')}
+ if(s.mission.workflowId){if(!s.workflow)block.push('workflow-ledger-missing');else if(s.workflow.status!=='COMPLETED'||s.workflow.stages?.some(x=>x.required&&x.status!=='COMPLETED'))block.push('workflow-incomplete')}
+ const impact=Number((s.impact?.level||'L0').slice(1));if(impact>=3){const implementations=s.executions.filter(x=>x.capabilities.some(c=>/write|implement|fix/.test(c)));const trusted=s.reviews.filter(rv=>rv.result==='PASS'&&rv.workspaceFingerprint===fp).filter(rv=>isIndependentTrustedReviewer(executionById(s,rv.executionId),implementations));if(!trusted.length)block.push('independent-review-unsupported-or-missing')}
+ const out={verdict:block.length?'BLOCKED':'CERTIFIED',workspaceFingerprint:fp,impact:s.impact?.level||'L0',blockers:[...new Set(block)]};console.log(JSON.stringify(out,null,2));process.exit(block.length?2:0);
+}catch(error){failClosed(error)}

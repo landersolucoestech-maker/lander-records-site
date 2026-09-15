@@ -4,7 +4,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import sharp from "sharp";
-import { audit, requireAdmin } from "../../lib/auth";
+import { audit, requirePersistentAdmin } from "../../lib/auth";
 import { getDb } from "../../lib/db";
 import { uploadMedia as uploadStoredMedia } from "@/lib/storage";
 import {
@@ -90,7 +90,7 @@ async function prepareArtistImage(formData: FormData, fieldName: string, slug: s
 }
 
 export async function saveArtistAction(_: ArtistActionState, formData: FormData): Promise<ArtistActionState> {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = uuidOrNull(text(formData, "id"));
   const name = text(formData, "name");
   const slug = slugify(text(formData, "slug") || name);
@@ -243,7 +243,7 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
 }
 
 export async function deleteArtistAction(formData: FormData) {
-  const session = await requireAdmin("admin");
+  const session = await requirePersistentAdmin("admin");
   const id = uuidOrNull(text(formData, "id"));
   if (!id) throw new Error("Artista inválido.");
   const db = getDb();

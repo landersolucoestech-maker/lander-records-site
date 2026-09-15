@@ -1,0 +1,2505 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-01T07:51:24.760Z",
+  "repository": {
+    "root": "C:/Users/deyvi/OneDrive/Documents/lander-records-site-portal",
+    "branch": "dev",
+    "head": "bcf6e7d46121fb2282b38cbf44073ee0857593b0",
+    "origin": "https://github.com/landersolucoestech-maker/lander-records-site.git"
+  },
+  "eligibility": {
+    "included": [
+      "AGENTS.md",
+      ".codex/**",
+      "explicit external control/config/CI files",
+      "repository files referencing Engineering OS"
+    ],
+    "ignored": [
+      ".git",
+      "node_modules",
+      ".next",
+      "dist",
+      "build",
+      "coverage",
+      "test-results",
+      "playwright-report",
+      ".local"
+    ]
+  },
+  "summary": {
+    "files": 160,
+    "bytes": 175852,
+    "orphans": 70,
+    "inventoryHash": "cda2ba302b5e9a867f9eceeefaac80220ca67972cd61e0bfaa25e6f8bec0dc42"
+  },
+  "files": [
+    {
+      "path": ".codex/agents/core/autonomous-planner.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 819,
+      "lines": 18,
+      "sha256": "74213eec13e2d29b2ee6d5a66a361711ea71438463682b371f2bdbcf2d58dd94",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/core/completion-controller.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 805,
+      "lines": 18,
+      "sha256": "4ca71abad2d933851b0347fc5608a0225c9c7216a6df0264a8079498e2dbf462",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/core/evidence-controller.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 757,
+      "lines": 18,
+      "sha256": "b5152163770221210d0497af49ec2922ff58ee0caf72149cae1d4517a676f62f",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/core/implementation-lead.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 616,
+      "lines": 15,
+      "sha256": "a65b98faa556632ca267227e29c00cf5f9b34c202aa2311e25148566fb5269ba",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/core/mission-controller.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 960,
+      "lines": 18,
+      "sha256": "b403d7f6d646fe753c2e316edc9cd1d553dbbce7387f0324201a627029bf9626",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/core/repo-intelligence.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 797,
+      "lines": 18,
+      "sha256": "bf27e1fbd011e75a4f34bb31e195e8a423432a96dbfc8e82918c3d84a0deec18",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/core/risk-controller.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 805,
+      "lines": 18,
+      "sha256": "0638ea2d5467f7c587b4b669a814f02c1882fe2cc480c6f8f934e03dca3c4074",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/core/runtime-continuity-controller.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 756,
+      "lines": 19,
+      "sha256": "5ed4e802d89dec5e688644f7a81c1e6ee933bb278d76b04af1d8f2a7294cf11d",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json",
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/core/verification-controller.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 793,
+      "lines": 18,
+      "sha256": "dd6a3311eff4954893c112e42605491bc3bd7e7dd70d9af8f62fe3a2abec06b6",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/registry.json",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 8262,
+      "lines": 289,
+      "sha256": "89d8f983cc2f93522021c359772ac62ce7489dff8690fddda7c5a33e42542e16",
+      "references": [
+        ".codex/agents/core/autonomous-planner.md",
+        ".codex/agents/core/completion-controller.md",
+        ".codex/agents/core/evidence-controller.md",
+        ".codex/agents/core/implementation-lead.md",
+        ".codex/agents/core/mission-controller.md",
+        ".codex/agents/core/repo-intelligence.md",
+        ".codex/agents/core/risk-controller.md",
+        ".codex/agents/core/runtime-continuity-controller.md",
+        ".codex/agents/core/verification-controller.md",
+        ".codex/agents/specialists/accessibility-reviewer.md",
+        ".codex/agents/specialists/adversarial-reviewer.md",
+        ".codex/agents/specialists/ai-llm-systems-reviewer.md",
+        ".codex/agents/specialists/api-contract-reviewer.md",
+        ".codex/agents/specialists/architecture-reviewer.md",
+        ".codex/agents/specialists/backend-engineer.md",
+        ".codex/agents/specialists/backend-reviewer.md",
+        ".codex/agents/specialists/cloud-infrastructure-reviewer.md",
+        ".codex/agents/specialists/compliance-privacy-reviewer.md",
+        ".codex/agents/specialists/cost-efficiency-reviewer.md",
+        ".codex/agents/specialists/data-engineering-reviewer.md",
+        ".codex/agents/specialists/database-engineer.md",
+        ".codex/agents/specialists/database-reviewer.md",
+        ".codex/agents/specialists/dependency-reviewer.md",
+        ".codex/agents/specialists/devops-ci-reviewer.md",
+        ".codex/agents/specialists/distributed-systems-reviewer.md",
+        ".codex/agents/specialists/documentation-reviewer.md",
+        ".codex/agents/specialists/frontend-engineer.md",
+        ".codex/agents/specialists/frontend-reviewer.md",
+        ".codex/agents/specialists/git-auditor.md",
+        ".codex/agents/specialists/incident-investigator.md",
+        ".codex/agents/specialists/integration-reviewer.md",
+        ".codex/agents/specialists/mobile-reviewer.md",
+        ".codex/agents/specialists/payments-reviewer.md",
+        ".codex/agents/specialists/performance-reviewer.md",
+        ".codex/agents/specialists/production-validator.md",
+        ".codex/agents/specialists/qa-engineer.md",
+        ".codex/agents/specialists/recovery-engineer.md",
+        ".codex/agents/specialists/regression-reviewer.md",
+        ".codex/agents/specialists/reliability-observability-reviewer.md",
+        ".codex/agents/specialists/repo-investigator.md",
+        ".codex/agents/specialists/requirements-reviewer.md",
+        ".codex/agents/specialists/root-cause-investigator.md",
+        ".codex/agents/specialists/security-reviewer.md",
+        ".codex/agents/specialists/supply-chain-reviewer.md",
+        ".codex/agents/specialists/technology-selection-reviewer.md",
+        ".codex/agents/specialists/test-strategy-engineer.md",
+        ".codex/agents/specialists/ui-ux-reviewer.md"
+      ],
+      "referencedBy": [
+        ".codex/runtime/doctor.mjs",
+        ".codex/runtime/validate-pack.mjs",
+        ".codex/state/preflight.json",
+        "AGENTS.md"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/accessibility-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 753,
+      "lines": 18,
+      "sha256": "f08dcdcf03a6ca5928ce15aa8bad943ca225b1d6d2f53fc7138d5a24899a9a63",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/adversarial-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 759,
+      "lines": 18,
+      "sha256": "2f04680405ef1ca2cf3dae4a421c1c7d737f1d9f40ca60d66e5beddfa9bc2858",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/ai-llm-systems-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 769,
+      "lines": 18,
+      "sha256": "023b48b85087e094d428ad643d72f79317eb698f237a57cc41f719808b16f38b",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/api-contract-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 739,
+      "lines": 18,
+      "sha256": "e04a81716f7e3cc4cced1fdfa7771282112f5ed578996c9dc127e031abfdabf6",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/architecture-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 741,
+      "lines": 18,
+      "sha256": "f374e04f4f326d2367ab7fa178b42a57e3316b7da6a2e3c208003d8e64cdb560",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/backend-engineer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 576,
+      "lines": 15,
+      "sha256": "50217ea263fe40e186cd7999e1ba3cf9571a042317d3431769bbc0070dff2ae7",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/backend-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 707,
+      "lines": 18,
+      "sha256": "c3c9a2815007717267e1e389114226e212778d5872396ebed590bf1ce8d406be",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/cloud-infrastructure-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 763,
+      "lines": 18,
+      "sha256": "236fcb4d09d96aa9327d896a810d78ceee51fbcfb0e4626a585e036a6c5c344c",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/compliance-privacy-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 793,
+      "lines": 18,
+      "sha256": "c4c77d70e8c677075c43677d0166c452efce6477a896172e56ca03b6271129d9",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/cost-efficiency-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 745,
+      "lines": 18,
+      "sha256": "c0deedf350bf5fe66eb2176ebc4b9b3303fb86659ddee95f33c23cf79bd47b3d",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/data-engineering-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 765,
+      "lines": 18,
+      "sha256": "bca71929b0ab16e4a2ed63bafc415e05e77409c9df42028d45ff70771d6834a0",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/database-engineer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 596,
+      "lines": 15,
+      "sha256": "65095c2ce5c32e1315bf4a45f9b93e3b2dd7eebeac8cd46e80f681ffa41f4c85",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/database-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 747,
+      "lines": 18,
+      "sha256": "bbd22a30511643668262bee1000e4b6c19e2e3b60f1f8f627a348f5fa29e5411",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/dependency-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 741,
+      "lines": 18,
+      "sha256": "7c148e0a590c3c70953b80728be0b7ba856956ef1e7243de66138235706869f4",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/devops-ci-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 733,
+      "lines": 18,
+      "sha256": "98011dce957a5da46aa0659743ffda3ebaebb764f59b92d0c9ce796da0bf0ff8",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/distributed-systems-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 785,
+      "lines": 18,
+      "sha256": "d0cb956a7536c9698b1c161fc9ddb13706e33a8ec3f4d709c28e635d3dd9aeaa",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/documentation-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 741,
+      "lines": 18,
+      "sha256": "54caa6439d71b7c1bcca4c77f90cf09bd1cfbe5c14d856526a22bc3fb999aebe",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/frontend-engineer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 580,
+      "lines": 15,
+      "sha256": "3026c3f0051c88f4b75b3a93d6cde982938ee56a0b147167b9fbf972d7c51bd1",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/frontend-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 741,
+      "lines": 18,
+      "sha256": "352b9117846e29a173186fdcdde58eb1cb3abeb84d42a4c375e7fab506580e7e",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/git-auditor.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 733,
+      "lines": 18,
+      "sha256": "8340e270266a39f72b0557115afb9b7650bf0b71ff2bd4a613fe07a8d0466730",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/incident-investigator.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 755,
+      "lines": 18,
+      "sha256": "0abd587636d2f5a424e6ef28d44c17e2dbf1cd74d6b9178046e99ffb66da1a01",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/integration-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 737,
+      "lines": 18,
+      "sha256": "5ba1e7911fb6ad8db15b5cec9d0b8ea4b2c1aaf9d57a5afc73001477123e37f9",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/mobile-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 777,
+      "lines": 18,
+      "sha256": "6a6da2b0f305fbc31c66434fc9f4109c6f7c9ad0c1ee9d31283d77497efc5624",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/payments-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 777,
+      "lines": 18,
+      "sha256": "b5c6c536fbaeb34af885c26eb5695c67a1b4becfb3cdbae1e5da5f7d209e75b3",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/performance-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 773,
+      "lines": 18,
+      "sha256": "e088799126f9c048e3b77e1ab103d48432c3f60c17124177379229fd53a51732",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/production-validator.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 757,
+      "lines": 18,
+      "sha256": "e238d5873ea105ed939340269888bdd25b9cac6270e1bc0f83241a011bc7a6d1",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/qa-engineer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 727,
+      "lines": 18,
+      "sha256": "aa6a1fb48f86139a41fa6e22a7c326b49e195c2a0784c6ce0b55068e351d3b7a",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/recovery-engineer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 602,
+      "lines": 15,
+      "sha256": "5c17602d8aae2e01f735053bf8f50d8cb2c0f3a6ac1d9e599580f207c89c2c21",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/regression-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 737,
+      "lines": 18,
+      "sha256": "7bac6d12e93efb28fb3a23d5d6ab99d84341bffd16e49e115dcbf84455d68308",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/reliability-observability-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 779,
+      "lines": 18,
+      "sha256": "dd6d9ce6f5892986fe456fb1723ef221f44059462f1cf2bacd9e20b4ae3e5d0a",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/repo-investigator.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 739,
+      "lines": 18,
+      "sha256": "1456bc87112b9ce4074ef2de1981a9f4963774c9c4da88652cc129ac794971bb",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/requirements-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 765,
+      "lines": 18,
+      "sha256": "7269d7461d0028cacf4ecedcc0013d3318cf6307e5a89f715e1998ee766f267e",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/root-cause-investigator.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 733,
+      "lines": 18,
+      "sha256": "524bbdb8d73cf0a995c3088f618108f6a68062d1abf220a54a554d19589e2fb4",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/security-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 727,
+      "lines": 18,
+      "sha256": "f37afb26a2b2a711112ae1ba1fa1c12796486c646c9d2980db8bd37c3d954250",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/supply-chain-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 757,
+      "lines": 18,
+      "sha256": "c8f83c78cc6b01f5f176cda983a4910623e675c2166ef34cb86fe051a980a29d",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/technology-selection-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 781,
+      "lines": 18,
+      "sha256": "9bac0a48ebcab8342e3b6601cd74bbe9509a54bcabd0159a67fa1a64c265dcf8",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/test-strategy-engineer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 723,
+      "lines": 18,
+      "sha256": "6fd8281d553ebf540f1ea2d621237d27977eb6299cc8c0c8f596537b2c497914",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/agents/specialists/ui-ux-reviewer.md",
+      "type": "agent-definition",
+      "role": "configuration",
+      "bytes": 705,
+      "lines": 18,
+      "sha256": "4b30925f5ed3e70a0712bcac51bf54f688df80c101a32909edf45044fb819c2e",
+      "references": [],
+      "referencedBy": [
+        ".codex/agents/registry.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/contracts/acceptance-criterion.schema.json",
+      "type": "contract",
+      "role": "schema",
+      "bytes": 399,
+      "lines": 25,
+      "sha256": "cb1229b7d576b93e44c8afe646961bdedbd69f8e0511416e148d3ab1240c8e8b",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/contracts/evidence-record.schema.json",
+      "type": "contract",
+      "role": "schema",
+      "bytes": 883,
+      "lines": 55,
+      "sha256": "e378db5bdb55ab3ebe77d84b1b39a76c252d983afd691db0d3e96a16ce6d0248",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/contracts/execution-graph.schema.json",
+      "type": "contract",
+      "role": "schema",
+      "bytes": 927,
+      "lines": 48,
+      "sha256": "f3c27ee1ed58cd0e256eccacf961d03fa15da44d249854d69a34c277f4cbd362",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/contracts/finding-record.schema.json",
+      "type": "contract",
+      "role": "schema",
+      "bytes": 625,
+      "lines": 40,
+      "sha256": "712d94ad3eb3b31746f1bf773e20d4464b5e8d1bf0a6a867990b28b0be903d77",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/contracts/impact-assessment.schema.json",
+      "type": "contract",
+      "role": "schema",
+      "bytes": 693,
+      "lines": 46,
+      "sha256": "01cb2bffed1806becaa1c11caa2a4a39e3c91b219076d7413a71c1d06f2254ad",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/contracts/localhost-guardian-state.schema.json",
+      "type": "contract",
+      "role": "schema",
+      "bytes": 641,
+      "lines": 17,
+      "sha256": "380239a51bf3424a949507cbaf209630a18641d670b78923ec608557bf3fd9d8",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/contracts/project-profile.schema.json",
+      "type": "contract",
+      "role": "schema",
+      "bytes": 993,
+      "lines": 21,
+      "sha256": "93435b3a3793091fb9f45c62a427f4826484be585197615eae8b0f5ee0b2cf8d",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/contracts/requirement-record.schema.json",
+      "type": "contract",
+      "role": "schema",
+      "bytes": 371,
+      "lines": 24,
+      "sha256": "04f9c66f2306a7e894b5ee6795eaa70aeaf4649f509220b96cbe0ca54476320e",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/contracts/review-record.schema.json",
+      "type": "contract",
+      "role": "schema",
+      "bytes": 458,
+      "lines": 15,
+      "sha256": "9d2c2dc24f002d9941455bb4b463319ab9ce96e6d12eb6a31d16125a03778ccf",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/contracts/run-state.schema.json",
+      "type": "contract",
+      "role": "schema",
+      "bytes": 794,
+      "lines": 48,
+      "sha256": "8d5f39d6a72cbed4e39d1fa4f0de0ae84a345c229062e3545f2f276d1fa0fd97",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/contracts/side-effect-record.schema.json",
+      "type": "contract",
+      "role": "schema",
+      "bytes": 600,
+      "lines": 39,
+      "sha256": "3db2d9aa3b1284d59b785aa26b05cdb273417ae57f3c2b063b8dec5c98ac44c5",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/docs-index.md",
+      "type": "documentation",
+      "role": "reference",
+      "bytes": 1524,
+      "lines": 25,
+      "sha256": "f9111ed1e3ebf8adb3488c3473027c106f5e604833f5220395e7c70c99b29f34",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/engineering-os.json",
+      "type": "manifest",
+      "role": "claimed-authority",
+      "bytes": 1559,
+      "lines": 47,
+      "sha256": "88403fde3d18c70a279f5bed0fae87052d7f474dd43b01590fd9a4e7f02bd8cb",
+      "references": [
+        ".codex/runtime/localhost-guardian.mjs"
+      ],
+      "referencedBy": [
+        ".codex/runtime/audit-inventory.mjs",
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": true,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/localhost-guardian.json",
+      "type": "configuration",
+      "role": "reference",
+      "bytes": 375,
+      "lines": 18,
+      "sha256": "97cc8bf806323764c5c5476df9a84401f909fd2dcb1529e3e59d0785879ea882",
+      "references": [],
+      "referencedBy": [
+        ".codex/rules/localhost-continuity.md",
+        ".codex/runtime/localhost-guardian.mjs",
+        ".codex/runtime/self-test.mjs",
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/policies/authority.json",
+      "type": "policy",
+      "role": "configuration",
+      "bytes": 554,
+      "lines": 27,
+      "sha256": "f2955c7c1c029e73e7ff426dc34ac440c54e0d9fef3b943f0319965d017af2ec",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/policies/destructive-operations.json",
+      "type": "policy",
+      "role": "configuration",
+      "bytes": 244,
+      "lines": 13,
+      "sha256": "125d975af41db7d36b0385ecdebbebbeb2faace2f7d94e8242001ef7d532bc63",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/policies/evidence.json",
+      "type": "policy",
+      "role": "configuration",
+      "bytes": 217,
+      "lines": 10,
+      "sha256": "4eb8b9a0786a7dc11491b564db51b703a2d9ad146662836a00053a5d99ce8c30",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/policies/localhost-continuity.json",
+      "type": "policy",
+      "role": "configuration",
+      "bytes": 801,
+      "lines": 15,
+      "sha256": "2c54b9c6d3e69c4092cae875a4974c74120c972b50f6691099cb67d778adc984",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/doctor.mjs",
+        ".codex/runtime/validate-pack.mjs",
+        ".codex/state/preflight.json"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/policies/production.json",
+      "type": "policy",
+      "role": "configuration",
+      "bytes": 190,
+      "lines": 10,
+      "sha256": "b9d6f46876b43295d1b999a3321cbb76d0e933b3c64d6ac66f1fc73a22ddcc35",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/policies/scope.json",
+      "type": "policy",
+      "role": "configuration",
+      "bytes": 143,
+      "lines": 9,
+      "sha256": "5ba73523b82ee4720a74e02db1583ff8dc0ccaaaf9855c86bd9b55582bbde601",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/policies/supply-chain.json",
+      "type": "policy",
+      "role": "configuration",
+      "bytes": 170,
+      "lines": 9,
+      "sha256": "74eb25c6a1c5fbfa0c51310f1badb9ba1ace097f417c132b2d7b10e57f6e28d5",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/policies/trust-boundaries.json",
+      "type": "policy",
+      "role": "configuration",
+      "bytes": 262,
+      "lines": 12,
+      "sha256": "752f08d1225f0db503400dc1bd5d73cfee3f6375b3fbeb66cdbbf2ec45925a7f",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/project-profile.example.json",
+      "type": "configuration",
+      "role": "reference",
+      "bytes": 163,
+      "lines": 9,
+      "sha256": "d843073f42ce9a220c4ce3ccc66f8e93a595816dd1505446aa1d744c15c3cb5d",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/project-profile.json",
+      "type": "configuration",
+      "role": "reference",
+      "bytes": 1038,
+      "lines": 43,
+      "sha256": "6d5b705c336d1176f56fa35353b7838bdeb139a4a45c9fa23af4906313484d42",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/lib/core.mjs",
+        ".gitignore"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/rules/00-execution-protocol.md",
+      "type": "rule",
+      "role": "documentation",
+      "bytes": 686,
+      "lines": 8,
+      "sha256": "23da981312db6f87cc19b9755811e7ba7dd26d7c3a770f4566c3a7e0a6846a12",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/rules/agent-orchestration.md",
+      "type": "rule",
+      "role": "documentation",
+      "bytes": 413,
+      "lines": 4,
+      "sha256": "ddc405530a1cc4da853fb15f353f75aed077e011b00c5a8b6e51cdef319df55a",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/rules/architecture.md",
+      "type": "rule",
+      "role": "documentation",
+      "bytes": 287,
+      "lines": 4,
+      "sha256": "d8adc5e882b272aa66d396f547f48c191ac61e1de974d4f63b0665221e02dd86",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/rules/backend.md",
+      "type": "rule",
+      "role": "documentation",
+      "bytes": 196,
+      "lines": 4,
+      "sha256": "434efe35ea777fdbabe1f1396dce04c5c56df0f69dab4fef807470b9cb109eef",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/rules/continuous-improvement.md",
+      "type": "rule",
+      "role": "documentation",
+      "bytes": 241,
+      "lines": 4,
+      "sha256": "fe8e2dd0c885e40680b9a980fb097619cba1ed71c3760d610c4d1b295797d2af",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/rules/control-plane.md",
+      "type": "rule",
+      "role": "documentation",
+      "bytes": 531,
+      "lines": 6,
+      "sha256": "96f7c9eec3a1c2f9bdb49d44f3436a38df3aee18e36985969b6f473a8fbcfb0e",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/rules/database.md",
+      "type": "rule",
+      "role": "documentation",
+      "bytes": 291,
+      "lines": 4,
+      "sha256": "1024011c99149bc213a592ee784f6112aa823b87f4d577b52c2fcf1692a0b5a5",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/rules/evidence-governance.md",
+      "type": "rule",
+      "role": "documentation",
+      "bytes": 300,
+      "lines": 4,
+      "sha256": "85e7fbf6fed3216d6a7fea8f03d77c9b1d240d13dcd7f1d100f61445572d8f01",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/rules/frontend.md",
+      "type": "rule",
+      "role": "documentation",
+      "bytes": 220,
+      "lines": 4,
+      "sha256": "c7b40fd30f7bd72f846de13fc64997b7eaed21a540d477aeb06d18a0b79e2d08",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/rules/git-safety.md",
+      "type": "rule",
+      "role": "documentation",
+      "bytes": 295,
+      "lines": 4,
+      "sha256": "3478a6fc20d4369ae4d772aa6da8d5f72c24606e0ae76e315222a69268bcb4df",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/rules/incident-recovery.md",
+      "type": "rule",
+      "role": "documentation",
+      "bytes": 234,
+      "lines": 4,
+      "sha256": "cc02a1c211363a1dd12164836017cbb5a8d23faa7f1e4cf28400813e2f9c6ec0",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/rules/integrations.md",
+      "type": "rule",
+      "role": "documentation",
+      "bytes": 242,
+      "lines": 4,
+      "sha256": "1cecf622b4b5a5b678af02d22d25bfdc5bc3b9cf9858331adbe612318d77eee0",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/rules/localhost-continuity.md",
+      "type": "rule",
+      "role": "documentation",
+      "bytes": 1178,
+      "lines": 16,
+      "sha256": "67144d491b7dd6b40f67736765d44c52acb240e78edf21541d6ec54a153bb381",
+      "references": [
+        ".codex/localhost-guardian.json",
+        ".codex/runtime/preflight.mjs"
+      ],
+      "referencedBy": [
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/rules/requirements-traceability.md",
+      "type": "rule",
+      "role": "documentation",
+      "bytes": 298,
+      "lines": 4,
+      "sha256": "0fe06c7760d82c32369e1d1713efacd5589ed8516437d84653f2f88d505fa93c",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/rules/scope-control.md",
+      "type": "rule",
+      "role": "documentation",
+      "bytes": 259,
+      "lines": 4,
+      "sha256": "229c14e4c3185501aeb7ba89b640643eb4caf9df872f3d330494e3bc95f52232",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/rules/security.md",
+      "type": "rule",
+      "role": "documentation",
+      "bytes": 362,
+      "lines": 4,
+      "sha256": "587f168ccf63448bb9a0e9288b9417896e867e554b406aca4a752f711d78f0ff",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/rules/supply-chain.md",
+      "type": "rule",
+      "role": "documentation",
+      "bytes": 216,
+      "lines": 4,
+      "sha256": "63346b49b79ea187420d7ce19e3458753373251845209ea6dd31484f2f2b6100",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/rules/testing.md",
+      "type": "rule",
+      "role": "documentation",
+      "bytes": 352,
+      "lines": 4,
+      "sha256": "f88fa14fe112428ad89ce8f112f774f1f878cfda1b697dd33c2f8e45e4cbe4e0",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/runtime/aceo.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 961,
+      "lines": 5,
+      "sha256": "72cf845c2b618db4513dc3e6ab5cc49073dc0535b009f3235210493d1e69b303",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/audit-inventory.mjs",
+        ".codex/runtime/validate-pack.mjs",
+        ".codex/skills/control-plane/SKILL.md"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/runtime/audit-inventory.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 5191,
+      "lines": 60,
+      "sha256": "f5731f61bdcdb66d08784063c3f53abb1193239366910739c6a01b97ffcb5fcd",
+      "references": [
+        ".codex/engineering-os.json",
+        ".codex/runtime/aceo.mjs",
+        ".gitattributes",
+        ".github/workflows/cms-ci.yml",
+        ".github/workflows/deploy-ionos.yml",
+        ".gitignore",
+        ".nvmrc",
+        "AGENTS.md",
+        "docs/DEPLOYMENT.md",
+        "eslint.config.mjs",
+        "package.json",
+        "tests/unit/production-readiness.test.mjs"
+      ],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/runtime/checkpoint.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 532,
+      "lines": 4,
+      "sha256": "de4bab9f6d0773e7552df7fb2a0bd177a1fb722c488e8e6d614c42d9a209c077",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/runtime/completion-gate.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 3156,
+      "lines": 30,
+      "sha256": "3ad73d815497d2e90b0cb8f698bc1efdb4c4f476f9d2742a2a7cf0fce2437b5a",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/self-test.mjs",
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/runtime/context-packet.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 929,
+      "lines": 4,
+      "sha256": "bbd62e5485325978a1fec2c2dc17f3f125888e31b8d47d9142018566049adf1b",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/runtime/discover.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 3701,
+      "lines": 30,
+      "sha256": "0033a34f3177b4bfec2bef084481d2f322e62802fa769538c15b1878a0860bac",
+      "references": [
+        "package.json"
+      ],
+      "referencedBy": [
+        ".codex/runtime/self-test.mjs",
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/runtime/doctor.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 979,
+      "lines": 12,
+      "sha256": "68fee69703afd484c11234fb211a0d7253844967a7a4a13710e8af12ced90fc8",
+      "references": [
+        ".codex/agents/registry.json",
+        ".codex/policies/localhost-continuity.json",
+        ".codex/runtime/localhost-guardian.mjs",
+        ".codex/runtime/preflight.mjs",
+        "AGENTS.md"
+      ],
+      "referencedBy": [
+        ".codex/runtime/self-test.mjs",
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/runtime/evidence.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 1359,
+      "lines": 12,
+      "sha256": "0f11199a3761bc10aec91a367dadf5c645907860e01b576b83606e67b41cb23d",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/self-test.mjs",
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/runtime/execution-graph.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 1989,
+      "lines": 9,
+      "sha256": "bd57651566b3ff02374703e937d7ab2e4914c8e8ae1ac4bfb1e478a0fe127571",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/self-test.mjs",
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/runtime/finding.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 1083,
+      "lines": 8,
+      "sha256": "485a57b32325f26987d639c72a055900b58239c7e39789bc0abdf54f12855b1a",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/runtime/fingerprint.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 134,
+      "lines": 3,
+      "sha256": "ece60ad6b0d8faddbf13e7cb72109d691aa71a1a34dd91497441ae0a60cdcfb3",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/self-test.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/runtime/impact.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 1836,
+      "lines": 8,
+      "sha256": "0844847332acfa946bd8abbf9786b7b69dc33b2ff21a760165d243e7f7e7f4ba",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/self-test.mjs",
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/runtime/lib/core.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 2841,
+      "lines": 22,
+      "sha256": "26de85e5dae32ea332b917fed6129f819e477ff9a78fb5dbe4d92cbb3bf3cb20",
+      "references": [
+        ".codex/project-profile.json"
+      ],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/runtime/localhost-guardian.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 18009,
+      "lines": 305,
+      "sha256": "14ddaeec483acc6fac59c7c810c0106e752d8a163fe45adbebe989ce995424ab",
+      "references": [
+        ".codex/localhost-guardian.json",
+        "package.json"
+      ],
+      "referencedBy": [
+        ".codex/engineering-os.json",
+        ".codex/runtime/doctor.mjs",
+        ".codex/runtime/self-test.mjs",
+        ".codex/runtime/validate-pack.mjs",
+        ".codex/skills/localhost-guardian/SKILL.md",
+        ".codex/state/preflight.json",
+        "AGENTS.md"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/runtime/mission.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 1719,
+      "lines": 13,
+      "sha256": "35c22146b8c0d760540767bec6c9928556934c73b07ff4c05233d085eed379d0",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/self-test.mjs",
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/runtime/ownership.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 1406,
+      "lines": 9,
+      "sha256": "d2eb5e9afe65905034c0616977c2b0acbc0bba72c2062840ff9bc73c222646ee",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/self-test.mjs",
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/runtime/policy-gate.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 765,
+      "lines": 5,
+      "sha256": "ddd47561b37e15e4e9ac1989ea4243edd29722bc5bf1f89ff26f4a49dda9ab47",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/self-test.mjs",
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/runtime/preflight.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 1456,
+      "lines": 15,
+      "sha256": "04afe737c609a07d3b45ffeffc907383d484d42b46f2a04aa4e1071bd5f1b081",
+      "references": [],
+      "referencedBy": [
+        ".codex/rules/localhost-continuity.md",
+        ".codex/runtime/doctor.mjs",
+        ".codex/runtime/self-test.mjs",
+        ".codex/runtime/validate-pack.mjs",
+        ".codex/state/preflight.json",
+        "AGENTS.md"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/runtime/review.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 1028,
+      "lines": 5,
+      "sha256": "97094b23bc4beae70e043e8a00f4d423a9a2c03b7e34142b604634abcb451f28",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/self-test.mjs",
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/runtime/safe-exec.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 1194,
+      "lines": 16,
+      "sha256": "419a0b43c6b706368f632725f315f9114b86b6500e73e7aca786c481f6a93267",
+      "references": [
+        ".codex/runtime/safe-exec.mjs"
+      ],
+      "referencedBy": [
+        ".codex/runtime/safe-exec.mjs",
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/runtime/self-test.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 17215,
+      "lines": 41,
+      "sha256": "0c0319955eb6c578b7acafca89f88a8e34d044e2ed823191ed29bf37f117292d",
+      "references": [
+        ".codex/localhost-guardian.json",
+        ".codex/runtime/completion-gate.mjs",
+        ".codex/runtime/discover.mjs",
+        ".codex/runtime/doctor.mjs",
+        ".codex/runtime/evidence.mjs",
+        ".codex/runtime/execution-graph.mjs",
+        ".codex/runtime/fingerprint.mjs",
+        ".codex/runtime/impact.mjs",
+        ".codex/runtime/localhost-guardian.mjs",
+        ".codex/runtime/mission.mjs",
+        ".codex/runtime/ownership.mjs",
+        ".codex/runtime/policy-gate.mjs",
+        ".codex/runtime/preflight.mjs",
+        ".codex/runtime/review.mjs",
+        ".codex/runtime/validate-pack.mjs",
+        ".codex/state/localhost-guardian-state.json",
+        ".codex/state/localhost-guardian.pid",
+        ".codex/state/run-state.json",
+        "AGENTS.md",
+        "package.json"
+      ],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/runtime/side-effect.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 1094,
+      "lines": 9,
+      "sha256": "038ab375e5ad099e64fadaa4a3661f9e9a4319ae906a8f29ed6eec41ca2acebc",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/runtime/validate-pack.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 4213,
+      "lines": 41,
+      "sha256": "82a1f9a35d9deaf0fb4dcfa0c85b45b78f1602da96de371cb462baa60ef5d897",
+      "references": [
+        ".codex/agents/core/runtime-continuity-controller.md",
+        ".codex/agents/registry.json",
+        ".codex/contracts/review-record.schema.json",
+        ".codex/docs-index.md",
+        ".codex/engineering-os.json",
+        ".codex/localhost-guardian.json",
+        ".codex/policies/localhost-continuity.json",
+        ".codex/rules/localhost-continuity.md",
+        ".codex/runtime/aceo.mjs",
+        ".codex/runtime/checkpoint.mjs",
+        ".codex/runtime/completion-gate.mjs",
+        ".codex/runtime/context-packet.mjs",
+        ".codex/runtime/discover.mjs",
+        ".codex/runtime/doctor.mjs",
+        ".codex/runtime/evidence.mjs",
+        ".codex/runtime/execution-graph.mjs",
+        ".codex/runtime/finding.mjs",
+        ".codex/runtime/impact.mjs",
+        ".codex/runtime/localhost-guardian.mjs",
+        ".codex/runtime/mission.mjs",
+        ".codex/runtime/ownership.mjs",
+        ".codex/runtime/policy-gate.mjs",
+        ".codex/runtime/preflight.mjs",
+        ".codex/runtime/review.mjs",
+        ".codex/runtime/safe-exec.mjs",
+        ".codex/runtime/side-effect.mjs",
+        ".codex/skills/control-plane/SKILL.md",
+        ".codex/skills/localhost-guardian/SKILL.md",
+        "AGENTS.md"
+      ],
+      "referencedBy": [
+        ".codex/runtime/self-test.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/runtime/verify-integrity.mjs",
+      "type": "runtime",
+      "role": "executable-tooling",
+      "bytes": 721,
+      "lines": 6,
+      "sha256": "6a0efc9cc1fcd3732feedef1415d9b2f1f51de5be4326fe0659b228fae86fa25",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/adversarial/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 318,
+      "lines": 11,
+      "sha256": "c6af778102ae5316d9c9ad47ff356ffffc68b3d3e68801f28eeee57d289fc0dd",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/api-design/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 324,
+      "lines": 11,
+      "sha256": "10a01159e2ccd3533bc6c1c7ae75a583828d336a80c9938c38da57de8bd55d9a",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/checkpoint/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 320,
+      "lines": 11,
+      "sha256": "dda4b6e9f62b26b2903214455f28b5a236c8358e682c5aeb9f7ad7d1273dbd80",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/continuous-improvement/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 376,
+      "lines": 11,
+      "sha256": "4b85c0440dd3f784081c86bab5ca6895e067990f5a114a09c1dfb20067d1d769",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/control-plane/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 849,
+      "lines": 21,
+      "sha256": "05deda677dab2dec69f76f2b856d3397c40cf464485d5419bd1b351f07982637",
+      "references": [
+        ".codex/runtime/aceo.mjs"
+      ],
+      "referencedBy": [
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/skills/discover/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 320,
+      "lines": 11,
+      "sha256": "8613d82eb8d9d7596ddd61569bc153c4898668bc08eaba55f0fb2f304881aa7c",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/execute/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 324,
+      "lines": 11,
+      "sha256": "0f5e44ff1af9e1a8c3e1f11ffe7dd5ab5abfa9a6f23a2c45e8a899cff22f211c",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/gate/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 290,
+      "lines": 11,
+      "sha256": "06ad8aba785a23089dcd6af3f65e82e7ded900aa7eca4689edb67645ca31af5a",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/impact/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 322,
+      "lines": 11,
+      "sha256": "08a3350fa0d0248e9e0e7cc02eb3aeb3220b3e19d101cc2e6deda4d137bca3c6",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/incident/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 308,
+      "lines": 11,
+      "sha256": "be0fadf4f1c35d255dd958c18c483cc22f0e5c1fdc9e3c7127ec9fa86bff32d2",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/intake/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 334,
+      "lines": 11,
+      "sha256": "cf36c96785e9c544d691c38c8e671d28e0fc10b46d51fe033801db1b93dd3b26",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/localhost-guardian/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 832,
+      "lines": 19,
+      "sha256": "3ff5d767771fa8733a1d6f20f2a61cf42a1523ccabaf806dc014e7e33a572203",
+      "references": [
+        ".codex/runtime/localhost-guardian.mjs"
+      ],
+      "referencedBy": [
+        ".codex/runtime/validate-pack.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".codex/skills/plan/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 344,
+      "lines": 11,
+      "sha256": "479da1be64be3795e4b6e13315d9e5461ebe3109b8cbfe199185dc0f93185a30",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/pr-writer/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 334,
+      "lines": 11,
+      "sha256": "4577e83fb469881c76316e732aea05c40a7ca1f3d1fdaf509b6f3341b56e50f4",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/recall/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 334,
+      "lines": 11,
+      "sha256": "01a3300ddf728b8a870bf995858ad802d049d7d807762c97bfb66888dd7a0553",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/recover/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 342,
+      "lines": 11,
+      "sha256": "356f01b03601971b7803b1591f0beeed49ed06aa22b43865cf51293dcb461abb",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/refactor-guide/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 326,
+      "lines": 11,
+      "sha256": "e51c2cdd7183bbc3752bb5076bd2101281d471379033c0f9e0c5b3bc45d7ccfb",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/release/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 336,
+      "lines": 11,
+      "sha256": "c417c4d235b415dfbfe9d34a7f3dfbbcba2bcd439cf19471110535f7fa3a5ab7",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/remember/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 320,
+      "lines": 11,
+      "sha256": "b4af847d6bf77cd645885dd902442e99cbdef4e93dceaddbbc1d500a8a8df754",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/review/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 286,
+      "lines": 11,
+      "sha256": "67599f965e90b105e1ded530b65ce532a751f0aca3d52687688a2456b95e3dcc",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/test-generator/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 326,
+      "lines": 11,
+      "sha256": "96216dbeaf2f592d4c8433b045e7a40a696d567286f76f5f1b9303ddd67a33e2",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/threat-model/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 330,
+      "lines": 11,
+      "sha256": "f485bb23d53b8238f56918fc55f9358fe91cc5c97d95879a620d7ad10a0cf375",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/skills/verify/SKILL.md",
+      "type": "skill",
+      "role": "instructions",
+      "bytes": 302,
+      "lines": 11,
+      "sha256": "09f35a531b36e6ca82421ae408331e44065d8714573b4c7bb8e925b6a6bc527a",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/state/localhost-guardian-state.json",
+      "type": "state",
+      "role": "generated",
+      "bytes": 436,
+      "lines": 14,
+      "sha256": "4d824b1d9303fe8f6377607adc16e6b4e89a92f90e35c3f9be6159ecd9618efc",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/self-test.mjs"
+      ],
+      "authority": false,
+      "generated": true,
+      "orphan": false
+    },
+    {
+      "path": ".codex/state/localhost-guardian.log",
+      "type": "state",
+      "role": "generated",
+      "bytes": 4815,
+      "lines": 47,
+      "sha256": "1188f535278b9e22092884725f9d41c45a365528d6f9178d59b6c7d338f7a230",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": true,
+      "orphan": true
+    },
+    {
+      "path": ".codex/state/localhost-guardian.pid",
+      "type": "state",
+      "role": "generated",
+      "bytes": 5,
+      "lines": 1,
+      "sha256": "e83e51dea46cf08cdf465c10c39c77daeb6388f440261b06b526f21d8211da20",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/self-test.mjs"
+      ],
+      "authority": false,
+      "generated": true,
+      "orphan": false
+    },
+    {
+      "path": ".codex/state/ownership.json",
+      "type": "state",
+      "role": "generated",
+      "bytes": 257,
+      "lines": 15,
+      "sha256": "333526be18586e9df8202bc508cc0bdaf61ca3603fcd2b0928204ac2b99ab32f",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": true,
+      "orphan": true
+    },
+    {
+      "path": ".codex/state/preflight.json",
+      "type": "state",
+      "role": "generated",
+      "bytes": 2459,
+      "lines": 98,
+      "sha256": "a20bbedbf28f8d2d0685560de5e1463bf6f6c00b548ee415dca5e7e765794e86",
+      "references": [
+        ".codex/agents/registry.json",
+        ".codex/policies/localhost-continuity.json",
+        ".codex/runtime/localhost-guardian.mjs",
+        ".codex/runtime/preflight.mjs",
+        "AGENTS.md"
+      ],
+      "referencedBy": [],
+      "authority": false,
+      "generated": true,
+      "orphan": true
+    },
+    {
+      "path": ".codex/state/run-state.example.json",
+      "type": "state",
+      "role": "generated",
+      "bytes": 573,
+      "lines": 34,
+      "sha256": "90ffff0b44fde83384de8a8cb728025e92e244e257f20edacce4f45bf5014706",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": true,
+      "orphan": true
+    },
+    {
+      "path": ".codex/state/run-state.json",
+      "type": "state",
+      "role": "generated",
+      "bytes": 5299,
+      "lines": 153,
+      "sha256": "9eb948e7a57df84ec0af9deb67385497c42f961cd915fd348e88bf7cbb3fc750",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/self-test.mjs"
+      ],
+      "authority": false,
+      "generated": true,
+      "orphan": false
+    },
+    {
+      "path": ".codex/workflows/brownfield-change.json",
+      "type": "workflow",
+      "role": "configuration",
+      "bytes": 249,
+      "lines": 16,
+      "sha256": "65ab6232aa7848b36d5d8ac8847407461cfb9575ff8bdd9a7dea9bb082c3c625",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/workflows/greenfield.json",
+      "type": "workflow",
+      "role": "configuration",
+      "bytes": 217,
+      "lines": 15,
+      "sha256": "2f92d0befe51f8bb42c97af68c6dade699a3c16957e339807b446259efdca169",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/workflows/incident.json",
+      "type": "workflow",
+      "role": "configuration",
+      "bytes": 207,
+      "lines": 14,
+      "sha256": "8473c222d711d2d58d01e72329647ac47cccf7cb4d1307e0b319a2f0b4ec9d55",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/workflows/migration.json",
+      "type": "workflow",
+      "role": "configuration",
+      "bytes": 276,
+      "lines": 16,
+      "sha256": "81f3af897de0ef165f4d79763b2518aa7fd5a6b556b4316e0dc75d34723eebc5",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/workflows/recovery.json",
+      "type": "workflow",
+      "role": "configuration",
+      "bytes": 175,
+      "lines": 12,
+      "sha256": "3a4b0b70e35d5a4eb2766e3ffb48a569a0f7cb15c9674ae3232a66ad67cc9818",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".codex/workflows/release.json",
+      "type": "workflow",
+      "role": "configuration",
+      "bytes": 213,
+      "lines": 12,
+      "sha256": "bcacd06dcbda9058d0bd0b5bcde9426a87531fec8a29a10d8e6849f2dd9de676",
+      "references": [],
+      "referencedBy": [],
+      "authority": false,
+      "generated": false,
+      "orphan": true
+    },
+    {
+      "path": ".gitattributes",
+      "type": "configuration",
+      "role": "reference",
+      "bytes": 595,
+      "lines": 35,
+      "sha256": "18a1b95b189ab3965a45d9fdcb99f8333d4914c18e7fe76fd995915b1e1b6048",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/audit-inventory.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".github/workflows/cms-ci.yml",
+      "type": "ci-workflow",
+      "role": "executable-tooling",
+      "bytes": 3345,
+      "lines": 99,
+      "sha256": "8cb0e8ac417b010a930452b225e5e88b305a5f078c6a4271b61571b73d3aa127",
+      "references": [
+        ".nvmrc"
+      ],
+      "referencedBy": [
+        ".codex/runtime/audit-inventory.mjs",
+        "tests/unit/production-readiness.test.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".github/workflows/deploy-ionos.yml",
+      "type": "ci-workflow",
+      "role": "executable-tooling",
+      "bytes": 1523,
+      "lines": 55,
+      "sha256": "07c858c528457311a7fac3816874371be8c70477cae4df03b2173d8a2cff2487",
+      "references": [
+        ".nvmrc"
+      ],
+      "referencedBy": [
+        ".codex/runtime/audit-inventory.mjs",
+        "docs/DEPLOYMENT.md",
+        "tests/unit/production-readiness.test.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".gitignore",
+      "type": "configuration",
+      "role": "reference",
+      "bytes": 319,
+      "lines": 23,
+      "sha256": "dc255afb24b8cdc94b5d7b5c186468bb103bbc3ce53e0ef7b70476960b48c746",
+      "references": [
+        ".codex/project-profile.json"
+      ],
+      "referencedBy": [
+        ".codex/runtime/audit-inventory.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": ".nvmrc",
+      "type": "configuration",
+      "role": "reference",
+      "bytes": 3,
+      "lines": 2,
+      "sha256": "68ca3fba3b7e864770cb61aeb306d4bd4354b68ab4dd38450860c5d823e42a53",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/audit-inventory.mjs",
+        ".github/workflows/cms-ci.yml",
+        ".github/workflows/deploy-ionos.yml",
+        "tests/unit/production-readiness.test.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": "AGENTS.md",
+      "type": "instructions",
+      "role": "authority",
+      "bytes": 1876,
+      "lines": 38,
+      "sha256": "5c75bfc54ef524750241f65335fa77fd814eb1d8e8e6c075e31b8e01f2255de8",
+      "references": [
+        ".codex/agents/registry.json",
+        ".codex/runtime/localhost-guardian.mjs",
+        ".codex/runtime/preflight.mjs"
+      ],
+      "referencedBy": [
+        ".codex/runtime/audit-inventory.mjs",
+        ".codex/runtime/doctor.mjs",
+        ".codex/runtime/self-test.mjs",
+        ".codex/runtime/validate-pack.mjs",
+        ".codex/state/preflight.json"
+      ],
+      "authority": true,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": "docs/DEPLOYMENT.md",
+      "type": "documentation",
+      "role": "reference",
+      "bytes": 2449,
+      "lines": 70,
+      "sha256": "83903af442e3a5a936ad7ee5ad873d771bb79448464c51cfdaa4ecd1899936a3",
+      "references": [
+        ".github/workflows/deploy-ionos.yml"
+      ],
+      "referencedBy": [
+        ".codex/runtime/audit-inventory.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": "eslint.config.mjs",
+      "type": "configuration",
+      "role": "reference",
+      "bytes": 434,
+      "lines": 17,
+      "sha256": "f5fb9e76c491ec8f82f041bf24afae34cf548b23eefba2b699860da790653c53",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/audit-inventory.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": "package.json",
+      "type": "configuration",
+      "role": "reference",
+      "bytes": 1675,
+      "lines": 51,
+      "sha256": "3235c98578db266fab3bf495918f7109101459de6dc74d26bac6cac2ca969a59",
+      "references": [],
+      "referencedBy": [
+        ".codex/runtime/audit-inventory.mjs",
+        ".codex/runtime/discover.mjs",
+        ".codex/runtime/localhost-guardian.mjs",
+        ".codex/runtime/self-test.mjs",
+        "tests/unit/production-readiness.test.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    },
+    {
+      "path": "tests/unit/production-readiness.test.mjs",
+      "type": "configuration",
+      "role": "reference",
+      "bytes": 1991,
+      "lines": 47,
+      "sha256": "5ee48c59a6e9e3e47d88a9d7edf392e53e6f9f5710a4b9823536400a9822693c",
+      "references": [
+        ".github/workflows/cms-ci.yml",
+        ".github/workflows/deploy-ionos.yml",
+        ".nvmrc",
+        "package.json"
+      ],
+      "referencedBy": [
+        ".codex/runtime/audit-inventory.mjs"
+      ],
+      "authority": false,
+      "generated": false,
+      "orphan": false
+    }
+  ]
+}

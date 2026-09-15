@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const modules = ["dashboard", "home", "artists", "posts", "pages", "media", "releases", "categories", "tags", "navigation", "header", "settings", "integrations", "users", "audit"];
+const expectDevelopmentAuthBypass = process.env.PLAYWRIGHT_EXPECT_DEV_AUTH_BYPASS === "true";
 
 function runtimeFailures(page: Page) {
   const failures: string[] = [];
@@ -9,28 +10,26 @@ function runtimeFailures(page: Page) {
   return failures;
 }
 
-test("real admin remains fail-closed while the local preview grants no session", async ({ page, request }) => {
-  const admin = await request.get("/admin/", { maxRedirects: 0 });
-  expect(admin.status()).toBe(307);
-  expect(admin.headers().location).toBe("/admin/login?next=%2Fadmin%2F");
-  const adminHome = await request.get("/admin/home/", { maxRedirects: 0 });
-  expect(adminHome.status()).toBe(307);
-  expect(adminHome.headers().location).toBe("/admin/login?next=%2Fadmin%2Fhome%2F");
-  const adminArtists = await request.get("/admin/artists/", { maxRedirects: 0 });
-  expect(adminArtists.status()).toBe(307);
-  expect(adminArtists.headers().location).toBe("/admin/login?next=%2Fadmin%2Fartists%2F");
-  const adminPosts = await request.get("/admin/posts/", { maxRedirects: 0 });
-  expect(adminPosts.status()).toBe(307);
-  expect(adminPosts.headers().location).toBe("/admin/login?next=%2Fadmin%2Fposts%2F");
-  const adminPages = await request.get("/admin/pages/", { maxRedirects: 0 });
-  expect(adminPages.status()).toBe(307);
-  expect(adminPages.headers().location).toBe("/admin/login?next=%2Fadmin%2Fpages%2F");
-  const adminNavigation = await request.get("/admin/navigation/", { maxRedirects: 0 });
-  expect(adminNavigation.status()).toBe(307);
-  expect(adminNavigation.headers().location).toBe("/admin/login?next=%2Fadmin%2Fnavigation%2F");
-  const adminHeader = await request.get("/admin/header/", { maxRedirects: 0 });
-  expect(adminHeader.status()).toBe(307);
-  expect(adminHeader.headers().location).toBe("/admin/login?next=%2Fadmin%2Fheader%2F");
+test("local admin honors its explicit auth mode while the preview grants no session", async ({ page, request }) => {
+  const authStatus = await request.get("/api/admin/status/", { maxRedirects: 0 });
+  expect(authStatus.status()).toBe(expectDevelopmentAuthBypass ? 200 : 401);
+
+  if (expectDevelopmentAuthBypass) {
+    expect(await authStatus.json()).toMatchObject({
+      ok: true,
+      principal: "development-auth-bypass",
+      role: "owner",
+    });
+    const admin = await request.get("/admin/", { maxRedirects: 0 });
+    expect(admin.status()).toBe(200);
+  } else {
+    expect(authStatus.status()).toBe(401);
+    for (const pathname of ["/admin/", "/admin/home/", "/admin/artists/", "/admin/posts/", "/admin/pages/", "/admin/navigation/", "/admin/header/"]) {
+      const admin = await request.get(pathname, { maxRedirects: 0 });
+      expect(admin.status(), pathname).toBe(307);
+      expect(admin.headers().location, pathname).toBe(`/admin/login?next=${encodeURIComponent(pathname)}`);
+    }
+  }
 
   await page.goto("/cms-preview/", { waitUntil: "networkidle" });
   await expect(page.locator('[data-preview-only="true"]')).toBeVisible();

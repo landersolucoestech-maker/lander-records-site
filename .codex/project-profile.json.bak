@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-14T19:33:44.046Z",
+  "root": "C:\\Users\\Usuario\\Documents\\Lander Records Site",
+  "repository": "landersolucoestech-maker/lander-records-site",
+  "branch": "dev",
+  "remote": "https://github.com/landersolucoestech-maker/lander-records-site.git",
+  "fileCount": 408,
+  "languages": [
+    "javascript",
+    "typescript",
+    "typescript-react"
+  ],
+  "packageManagers": [
+    "npm"
+  ],
+  "commands": {
+    "dev": "npm run dev",
+    "start": "npm run start",
+    "lint": "npm run lint",
+    "typecheck": "npm run typecheck",
+    "test": "npm run test",
+    "build": "npm run build"
+  },
+  "riskSurfaces": [
+    "authentication",
+    "authorization",
+    "database",
+    "ai-llm",
+    "public-api"
+  ],
+  "localRuntime": {
+    "detected": true,
+    "framework": "next",
+    "command": "npm run dev",
+    "port": 8082,
+    "guardianRequired": true
+  },
+  "notes": [
+    "heuristic discovery; repository documentation and executable configuration remain authoritative"
+  ]
+}

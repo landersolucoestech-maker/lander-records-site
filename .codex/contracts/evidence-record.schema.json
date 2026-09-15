@@ -1,54 +1,16 @@
 {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lander-records.invalid/codex/contracts/evidence-record.schema.json",
   "type": "object",
-  "required": [
-    "id",
-    "criterionId",
-    "kind",
-    "result",
-    "producer",
-    "timestamp"
-  ],
+  "additionalProperties": false,
+  "required": ["id", "criterionId", "kind", "result", "executionId", "principalId", "command", "argv", "cwd", "startedAt", "finishedAt", "exitCode", "stdoutHash", "stderrHash", "stdoutBytes", "stderrBytes", "workspaceFingerprint", "inputHashes"],
   "properties": {
-    "id": {
-      "type": "string"
-    },
-    "criterionId": {
-      "type": "string"
-    },
-    "kind": {
-      "type": "string"
-    },
-    "result": {
-      "enum": [
-        "PASS",
-        "FAIL",
-        "BLOCKED"
-      ]
-    },
-    "producer": {
-      "type": "string"
-    },
-    "command": {
-      "type": "string"
-    },
-    "exitCode": {
-      "type": [
-        "integer",
-        "null"
-      ]
-    },
-    "workspaceFingerprint": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "invalidatesOnChange": {
-      "type": "boolean"
-    },
-    "timestamp": {
-      "type": "string"
-    }
-  },
-  "$schema": "https://json-schema.org/draft/2020-12/schema"
+    "id": {"type": "string", "minLength": 1}, "criterionId": {"type": "string", "minLength": 1}, "kind": {"type": "string", "minLength": 1},
+    "result": {"enum": ["PASS", "FAIL", "BLOCKED", "NOT_APPLICABLE"]}, "executionId": {"type": "string"}, "principalId": {"type": "string"},
+    "command": {"type": "string", "minLength": 1}, "argv": {"type": "array", "items": {"type": "string"}}, "cwd": {"type": "string", "minLength": 1},
+    "startedAt": {"type": "string", "format": "date-time"}, "finishedAt": {"type": "string", "format": "date-time"}, "exitCode": {"type": ["integer", "null"]},
+    "stdoutHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "stderrHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "stdoutBytes": {"type": "integer", "minimum": 0}, "stderrBytes": {"type": "integer", "minimum": 0}, "workspaceFingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "inputHashes": {"type": "object", "additionalProperties": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}, "blockedCode": {"type": ["string", "null"]}
+  }
 }

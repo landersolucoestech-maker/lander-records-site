@@ -20,6 +20,35 @@ const viewports = [
   { width: 1440, height: 1000 },
 ] as const;
 
+const revealSelector = [
+  "main > section:not(:first-of-type)",
+  "main .homeV2 > section:not(:first-of-type)",
+  "main section > article",
+  "main section > aside",
+  "main section [class*='Card']",
+  "main section [class*='card']",
+  "main .homeShortcutCircle",
+  "main .homeBlockHeader",
+  "main .filterRow",
+  "main .groupCompaniesNav button",
+  "main .groupCompaniesPanel",
+  "main .serviceGroup",
+  "main .serviceWarningPanel",
+  "main .serviceExtraPanel",
+  "main .articleHeader",
+  "main .articleBody",
+  "main .embedPlaceholder",
+  "main .socialMetric",
+  "main .artistPlatformLinks a",
+].join(",");
+
+async function revealState(page: Page) {
+  return page.evaluate((selector) => ({
+    animations: document.getAnimations().filter((animation) => animation.id === "lazy-reveal").length,
+    targets: document.querySelectorAll(selector).length,
+  }), revealSelector);
+}
+
 function collectRuntimeFailures(page: Page) {
   const failures: string[] = [];
   page.on("console", (message) => {
@@ -70,22 +99,23 @@ for (const viewport of viewports) {
 }
 
 test("public detail routes and mobile navigation remain reachable", async ({ page }) => {
+  test.slow();
   const failures = collectRuntimeFailures(page);
   await page.setViewportSize({ width: 375, height: 900 });
 
-  await page.goto("/artistas/", { waitUntil: "networkidle" });
+  await page.goto("/artistas/", { waitUntil: "domcontentloaded" });
   const artistHref = await page.locator("a.artistTile").first().getAttribute("href");
   expect(artistHref).toBeTruthy();
-  await page.goto(artistHref!, { waitUntil: "networkidle" });
+  await page.goto(artistHref!, { waitUntil: "domcontentloaded" });
   await expect(page.locator(".artistProfileBody h2")).toBeVisible();
 
-  await page.goto("/noticias/", { waitUntil: "networkidle" });
+  await page.goto("/noticias/", { waitUntil: "domcontentloaded" });
   const newsHref = await page.locator("a.newsCard").first().getAttribute("href");
   expect(newsHref).toBeTruthy();
-  await page.goto(newsHref!, { waitUntil: "networkidle" });
+  await page.goto(newsHref!, { waitUntil: "domcontentloaded" });
   await expect(page.locator("main h1")).toBeVisible();
 
-  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   const menuButton = page.locator(".mobileNav summary");
   if (await menuButton.isVisible()) {
     await menuButton.click();
@@ -181,19 +211,33 @@ test("server-rendered loader fails open when JavaScript is disabled", async ({ b
 test("reduced motion keeps reveal content immediately visible", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/", { waitUntil: "networkidle" });
-  await expect(page.locator(".lazyReveal:not(.lazyRevealVisible)")).toHaveCount(0);
+  expect(await page.evaluate(() => document.getAnimations().filter((animation) => animation.id === "lazy-reveal").length)).toBe(0);
+  await expect(page.locator(".homeShortcutCircle").first()).toBeVisible();
+});
+
+test("enabling reduced motion cancels an active reveal immediately", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+  await expect.poll(async () => (await revealState(page)).animations).toBeGreaterThan(0);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect.poll(async () => (await revealState(page)).animations).toBe(0);
   await expect(page.locator(".homeShortcutCircle").first()).toBeVisible();
 });
 
 test("reveal never hides content already inside the initial viewport", async ({ page }) => {
+  const failures = collectRuntimeFailures(page);
   await page.goto("/", { waitUntil: "networkidle" });
-  const hiddenInViewport = await page.locator(".lazyReveal:not(.lazyRevealVisible)").evaluateAll((elements) =>
+  await expect.poll(async () => {
+    const state = await revealState(page);
+    return state.animations === state.targets && state.animations > 0;
+  }).toBe(true);
+  const hiddenInViewport = await page.locator("main > section:not(:first-of-type), main section > article, main section > aside").evaluateAll((elements) =>
     elements.filter((element) => {
       const rect = element.getBoundingClientRect();
-      return rect.top < window.innerHeight && rect.bottom > 0;
+      return rect.top < window.innerHeight && rect.bottom > 0 && Number.parseFloat(getComputedStyle(element).opacity) < 0.99;
     }).length,
   );
   expect(hiddenInViewport).toBe(0);
+  expect(failures).toEqual([]);
 });
 
 test("article sharing copies the canonical link without navigating", async ({ page }) => {
@@ -224,6 +268,7 @@ test("rendered artist embeds never use an untrusted iframe origin", async ({ pag
 test("home content progressively reveals while scrolling", async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/", { waitUntil: "networkidle" });
+  await expect.poll(async () => (await revealState(page)).animations).toBeGreaterThan(0);
   const documentHeight = await page.evaluate(() => document.documentElement.scrollHeight);
 
   for (let y = 0; y < documentHeight; y += 700) {
@@ -231,20 +276,49 @@ test("home content progressively reveals while scrolling", async ({ page }, test
     await page.waitForTimeout(120);
   }
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-  await page.waitForTimeout(900);
+  await page.waitForTimeout(1200);
 
-  const unrevealed = await page.locator(".lazyReveal:not(.lazyRevealVisible)").count();
+  const unrevealed = await page.evaluate(() =>
+    document.getAnimations().filter((animation) => animation.id === "lazy-reveal" && animation.playState !== "finished").length,
+  );
   expect(unrevealed).toBe(0);
   await page.screenshot({ path: testInfo.outputPath("home-1440-scrolled.png"), fullPage: true });
 });
 
 test("reveal remains healthy across navigation, back and forward", async ({ page }) => {
+  const failures = collectRuntimeFailures(page);
   await page.setViewportSize({ width: 375, height: 900 });
   await page.goto("/", { waitUntil: "networkidle" });
-  await page.goto("/sobre-nos/", { waitUntil: "networkidle" });
+  await expect.poll(async () => (await revealState(page)).animations).toBeGreaterThan(0);
+  await page.locator(".mobileNav summary").click();
+  await page.locator('.mobileNav a[href="/sobre-nos/"]').click();
+  await page.waitForURL(/\/sobre-nos\/$/);
+  await expect.poll(async () => {
+    const state = await revealState(page);
+    return state.animations === state.targets && state.animations > 0;
+  }).toBe(true);
   await page.goBack({ waitUntil: "networkidle" });
+  await page.waitForURL(/\/$/);
+  await expect.poll(async () => {
+    const state = await revealState(page);
+    return state.animations === state.targets && state.animations > 0;
+  }).toBe(true);
   await page.goForward({ waitUntil: "networkidle" });
+  await page.waitForURL(/\/sobre-nos\/$/);
+  await expect.poll(async () => {
+    const state = await revealState(page);
+    return state.animations === state.targets && state.animations > 0;
+  }).toBe(true);
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-  await page.waitForTimeout(900);
-  await expect(page.locator(".lazyReveal:not(.lazyRevealVisible)")).toHaveCount(0);
+  await page.waitForTimeout(1200);
+  const hiddenInViewport = await page.evaluate(() => document.getAnimations().flatMap((animation) => {
+    if (animation.id !== "lazy-reveal" || animation.playState === "finished") return [];
+    const target = (animation.effect as KeyframeEffect | null)?.target;
+    if (!(target instanceof Element)) return [];
+    const rect = target.getBoundingClientRect();
+    if (rect.top >= window.innerHeight || rect.bottom <= 0) return [];
+    return [{ className: target.className, tagName: target.tagName, top: rect.top, bottom: rect.bottom }];
+  }));
+  expect(hiddenInViewport).toEqual([]);
+  expect(failures).toEqual([]);
 });

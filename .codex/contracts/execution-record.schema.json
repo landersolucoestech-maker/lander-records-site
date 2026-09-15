@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lander-records.invalid/codex/contracts/execution-record.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["executionId", "principalId", "principalClass", "roleId", "missionId", "issuedAt", "repositoryId", "worktreeId", "capabilities", "ownershipScope", "parentExecutionId", "provenanceHash"],
+  "properties": {
+    "executionId": {"type": "string"}, "principalId": {"type": "string"},
+    "principalClass": {"enum": ["local-runtime", "ci-runtime", "host-agent", "human"]},
+    "roleId": {"type": "string"}, "missionId": {"type": "string"}, "issuedAt": {"type": "string", "format": "date-time"},
+    "repositoryId": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "worktreeId": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "capabilities": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}, "ownershipScope": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "parentExecutionId": {"type": ["string", "null"]}, "provenanceHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

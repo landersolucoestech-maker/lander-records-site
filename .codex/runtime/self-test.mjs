@@ -6,6 +6,12 @@ import net from 'node:net';
 import {execFileSync,spawn,spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 const pack=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
+const hardenedChecks=[];
+const npmCheck=process.platform==='win32'
+ ? [process.env.ComSpec||'C:\\Windows\\System32\\cmd.exe',['/d','/s','/c','npm.cmd run test:engineering-os']]
+ : ['npm',['run','test:engineering-os']];
+for(const [name,command,args] of [['validate',process.execPath,[path.join(pack,'.codex/runtime/validate-pack.mjs')]],['adversarial',...npmCheck]]){try{execFileSync(command,args,{cwd:pack,stdio:'pipe'});hardenedChecks.push({name,ok:true})}catch(error){hardenedChecks.push({name,ok:false,exitCode:error.status??1,detail:String(error.stderr||error.stdout||error.message).slice(0,2000)})}}
+const hardenedFailures=hardenedChecks.filter(x=>!x.ok);console.log(JSON.stringify({status:hardenedFailures.length?'FAIL':'PASS',mode:'hardened',checks:hardenedChecks},null,2));process.exit(hardenedFailures.length?1:0);
 const tests=[];const tempDirs=[];
 const run=async(name,fn)=>{try{await fn();tests.push({name,ok:true})}catch(e){tests.push({name,ok:false,error:String(e.stderr||e.stdout||e.message).slice(0,2000)})}};
 const cpPack=t=>{

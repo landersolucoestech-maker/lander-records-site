@@ -46,6 +46,11 @@ jobs:
         run: node scripts/check-legacy-origin.mjs
       - name: Install dependencies
         run: npm ci
+      - name: Engineering OS contracts and adversarial regressions
+        run: |
+          node .codex/runtime/validate-pack.mjs
+          npm run test:engineering-os
+          node .codex/runtime/verify-integrity.mjs
       - name: Agentic Engineering OS self-test
         run: node .codex/runtime/self-test.mjs
       - name: Apply CMS migrations

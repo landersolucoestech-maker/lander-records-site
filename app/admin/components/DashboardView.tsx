@@ -38,8 +38,8 @@ function PanelHeader({ action, children, href, preview }: { action?: string; chi
   return <div className="adminPanelHeader"><h2>{children}</h2>{action && href ? <Link className="adminTextButton" href={route(href, preview)}>{action}</Link> : null}</div>;
 }
 
-export function DashboardView({ data, name, preview = false, role = "viewer" }: { data: DashboardData; name: string; preview?: boolean; role?: "viewer" | "editor" | "admin" | "owner" }) {
-  const canEdit = role !== "viewer";
+export function DashboardView({ data, name, preview = false, readOnly = false, role = "viewer" }: { data: DashboardData; name: string; preview?: boolean; readOnly?: boolean; role?: "viewer" | "editor" | "admin" | "owner" }) {
+  const canEdit = !readOnly && role !== "viewer";
   const today = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long", timeZone: "America/Sao_Paulo" }).format(new Date());
   const pending = [
     [data.postDrafts, "Notícias em rascunho", "Aguardando publicação", "/admin/posts", "posts" as IconName],

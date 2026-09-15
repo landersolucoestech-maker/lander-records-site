@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "authoritativeState": ".local/engineering-os-state/run-state.json",
+  "legacyState": ".codex/state/run-state.json",
+  "reason": "OneDrive reparse-point semantics reject atomic replace in .codex/state; authoritative transactional state is isolated per worktree in ignored runtime storage."
+}

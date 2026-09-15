@@ -46,6 +46,46 @@ test("Spotify callback requires an editor authorization decision", async () => {
   assert.doesNotMatch(contents, /getAdminSession/);
 });
 
+test("Spotify OAuth rejects a development-only principal without a persistent user", async () => {
+  for (const relativePath of [
+    "app/api/integrations/spotify/connect/route.ts",
+    "app/api/integrations/spotify/callback/route.ts",
+  ]) {
+    const contents = await source(relativePath);
+    const syntheticGuard = contents.indexOf('session.source === "development-auth-bypass"');
+    const oauthSideEffect = Math.min(
+      ...["createSpotifyAuthorizationUrl(", "completeSpotifyAuthorization("]
+        .map((needle) => contents.indexOf(needle))
+        .filter((index) => index >= 0),
+    );
+    assert.ok(syntheticGuard >= 0, `${relativePath} must reject an in-memory principal`);
+    assert.ok(syntheticGuard < oauthSideEffect, `${relativePath} must reject before OAuth state side effects`);
+  }
+});
+
+test("every privileged admin mutation requires a persistent administrator session", async () => {
+  for (const relativePath of [
+    "app/admin/actions.ts",
+    "app/admin/artist-actions.ts",
+    "app/admin/post-actions.ts",
+    "app/admin/page-actions.ts",
+    "app/admin/integration-actions.ts",
+  ]) {
+    const contents = await source(relativePath);
+    assert.match(contents, /requirePersistentAdmin/);
+    assert.doesNotMatch(contents, /\brequireAdmin\b/);
+    assert.ok(contents.match(/await requirePersistentAdmin\(/g)?.length, `${relativePath} must guard privileged operations`);
+  }
+});
+
+test("admin status uses API authorization semantics instead of page redirects", async () => {
+  const contents = await source("app/api/admin/status/route.ts");
+  assert.match(contents, /getAdminAuthorization/);
+  assert.match(contents, /status: 401/);
+  assert.match(contents, /status: 403/);
+  assert.doesNotMatch(contents, /requireAdmin|redirect\(/);
+});
+
 test("Home manager authorizes before loading any administrative data", async () => {
   const contents = await source("app/admin/(protected)/home/page.tsx");
   const authorization = contents.indexOf("await requireAdmin()");
@@ -106,8 +146,8 @@ test("Navigation mutations preserve editor/admin RBAC and validate before writes
   const contents = await source("app/admin/actions.ts");
   const upsert = contents.match(/export async function upsertNavigationItem[\s\S]*?(?=\nexport async function deleteNavigationItem)/)?.[0] || "";
   const removal = contents.match(/export async function deleteNavigationItem[\s\S]*?(?=\nexport async function updateSiteSettings)/)?.[0] || "";
-  assert.match(upsert, /requireAdmin\("editor"\)/);
-  assert.match(removal, /requireAdmin\("admin"\)/);
+  assert.match(upsert, /requirePersistentAdmin\("editor"\)/);
+  assert.match(removal, /requirePersistentAdmin\("admin"\)/);
   assert.ok(upsert.indexOf("navigationDestinationError") < upsert.indexOf("tx.update"));
   assert.ok(upsert.indexOf("navigationHierarchyError") < upsert.indexOf("tx.update"));
   assert.ok(upsert.indexOf("pg_advisory_xact_lock") < upsert.indexOf("tx.update"));

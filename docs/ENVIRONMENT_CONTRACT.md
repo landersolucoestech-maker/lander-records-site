@@ -10,6 +10,7 @@ Valores reais nunca devem ser commitados nem impressos em logs públicos. Secret
 | `DATABASE_URL` | secret, server-only | runtime | Required; PostgreSQL URL, TLS/private routing required for remote DB |
 | `NEXT_PUBLIC_SITE_URL` | public | build + runtime | Required canonical HTTPS origin; intentionally browser-visible |
 | `CONTACT_IP_HASH_SALT` | secret, server-only | runtime | Required for contact abuse/privacy hashing; long independent random value |
+| `DEV_AUTH_BYPASS` | non-secret, server-only | development runtime | Optional; literal `true` bypasses CMS login only for loopback requests in `NODE_ENV=development`; ignored in production |
 | `SUPABASE_URL` | server-only endpoint | runtime | Required for Supabase media storage |
 | `SUPABASE_SERVICE_ROLE_KEY` | secret, server-only | runtime | Required for media operations; never `NEXT_PUBLIC_*` |
 | `SUPABASE_STORAGE_BUCKET` | server-only config | runtime | Optional; defaults to `media` |
@@ -26,11 +27,13 @@ Valores reais nunca devem ser commitados nem impressos em logs públicos. Secret
 
 One-time bootstrap variables (`ADMIN_BOOTSTRAP_EMAIL`, `ADMIN_BOOTSTRAP_PASSWORD`, `ADMIN_BOOTSTRAP_NAME`) must be injected only for the explicitly approved bootstrap command and removed afterward. They are not normal service environment.
 
+`DEV_AUTH_BYPASS` never replaces bootstrap credentials, sessions, RBAC or integration authentication. The bypass principal exists only in memory, has no password or database user, and provides read-only CMS access: privileged writes and OAuth state require a persistent administrator identity. The repository-native development command binds to `127.0.0.1`; the Host check is defense in depth and is not a substitute for that network bind. Production remains fail-closed even if the flag is accidentally set to `true`.
+
 ## Release-only variables
 
 `RELEASE_EVIDENCE_HMAC_KEY`, `PITR_EVIDENCE`, `PGSERVICE`, `PGSERVICEFILE`, `RESTORE_PGHOST`, `RESTORE_PGPORT`, `RESTORE_PGDATABASE`, `RESTORE_PGUSER`, `RESTORE_PGPASSWORD`, `BACKUP_DIR`, `DEPLOY_COMMIT`, `CHANGE_TICKET` and transient manifest paths are release tooling inputs. Store them in protected release configuration, separate restore credentials from production credentials, and never expose them to the browser. `MIGRATION_RELEASE_GUARD` is set only by the verified release wrapper; operators must not set it manually.
 
-`SITE_URL` is a smoke-tool input. `TEST_DATABASE_URL`, `PLAYWRIGHT_BASE_URL` and `PLAYWRIGHT_ERROR_BASE_URL` are test-only and forbidden in production runtime.
+`SITE_URL` is a smoke-tool input. `TEST_DATABASE_URL`, `PLAYWRIGHT_BASE_URL`, `PLAYWRIGHT_ERROR_BASE_URL` and `PLAYWRIGHT_EXPECT_DEV_AUTH_BYPASS` are test-only and forbidden in production runtime. Set `PLAYWRIGHT_EXPECT_DEV_AUTH_BYPASS=true` only when the target server intentionally has `DEV_AUTH_BYPASS=true`; when omitted or set to any other value, browser tests require fail-closed `401/307` behavior.
 
 ## Deployment credentials
 

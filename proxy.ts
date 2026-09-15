@@ -1,21 +1,23 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server.js";
+import {
+  classifyAdminAuthBoundary,
+  shouldBypassAdminAuthentication,
+} from "./lib/auth/development-bypass.ts";
 
 const SESSION_COOKIE = "lander_admin_session";
 
 export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const isAdminApi = pathname.startsWith("/api/admin");
-  const isProtectedAdmin =
-    pathname.startsWith("/admin") &&
-    !pathname.startsWith("/admin/login") &&
-    !pathname.startsWith("/admin/change-password");
+  const boundary = classifyAdminAuthBoundary(pathname);
 
-  if (!isAdminApi && !isProtectedAdmin) return NextResponse.next();
+  if (!boundary) return NextResponse.next();
+  const requestHost = request.headers.get("host") || request.nextUrl.host;
+  if (shouldBypassAdminAuthentication(pathname, process.env, requestHost)) return NextResponse.next();
 
   const hasSessionCookie = Boolean(request.cookies.get(SESSION_COOKIE)?.value);
   if (hasSessionCookie) return NextResponse.next();
 
-  if (isAdminApi) {
+  if (boundary === "api") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

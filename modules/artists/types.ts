@@ -1,2 +1,23 @@
-export type { PublicArtist } from "@/lib/content";
+export type PublicArtist = {
+  id: string;
+  name: string;
+  slug: string;
+  eyebrow: string;
+  shortBio: string;
+  biography: string;
+  cardImage: string;
+  heroImage: string;
+  ogImage: string;
+  seoTitle: string;
+  seoDescription: string;
+  canonicalUrl: string;
+  roles: string[];
+  genres: string[];
+  metrics: Record<string, number>;
+  profile: { isActive: boolean; pageLink: string; hireTitle: string; hireText: string; hireButtonLabel: string };
+  publicationDestinations: string[];
+  categories: Array<{ id: string; name: string; slug: string; isPrimary: boolean }>;
+  links: Array<{ id: string; kind: string; platform: string; label: string; url: string }>;
+  embeds: Array<{ id: string; type: string; title: string; url: string; featured: boolean }>;
+};
 export type ArtistStatus = "draft" | "published" | "inactive";

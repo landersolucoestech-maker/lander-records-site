@@ -1,0 +1,13 @@
+{"schemaVersion":1,"hostLoader":"UNSUPPORTED_BY_HOST","countingRule":"Only an issued execution trace with loadedSkillIds may count a skill as executed","skills":[
+ {"id":"control-plane","classification":"PROCEDURAL","activation":["mission","governance"],"path":".codex/skills/control-plane/SKILL.md"},
+ {"id":"localhost-guardian","classification":"PROCEDURAL","activation":["runtime","browser"],"path":".codex/skills/localhost-guardian/SKILL.md"},
+ {"id":"adversarial","classification":"ADVISORY","activation":["security","verification"],"path":".codex/skills/adversarial/SKILL.md"},
+ {"id":"verify","classification":"ADVISORY","activation":["verification"],"path":".codex/skills/verify/SKILL.md"},
+ {"id":"review","classification":"ADVISORY","activation":["review"],"path":".codex/skills/review/SKILL.md"},
+ {"id":"execute","classification":"ADVISORY","activation":["implementation"],"path":".codex/skills/execute/SKILL.md"},
+ {"id":"impact","classification":"ADVISORY","activation":["risk"],"path":".codex/skills/impact/SKILL.md"},
+ {"id":"discover","classification":"ADVISORY","activation":["discovery"],"path":".codex/skills/discover/SKILL.md"},
+ {"id":"intake","classification":"ADVISORY","activation":["requirements"],"path":".codex/skills/intake/SKILL.md"},
+ {"id":"plan","classification":"ADVISORY","activation":["planning"],"path":".codex/skills/plan/SKILL.md"},
+ {"id":"gate","classification":"ADVISORY","activation":["completion"],"path":".codex/skills/gate/SKILL.md"}
+]}

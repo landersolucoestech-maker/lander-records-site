@@ -1,6 +1,9 @@
 {
   "schemaVersion": 1,
-  "selectionRule": "activate smallest sufficient set based on impact+risk+signals+ownership; reviewers read-only; writers disjoint",
+  "classification": "ROLE_PROFILE",
+  "hostExecutionAdapter": "UNSUPPORTED_BY_HOST",
+  "countsTowardIndependentReview": false,
+  "selectionRule": "Profiles are advisory until a host-issued execution principal binds a role; file presence never proves execution or review",
   "agents": [
     {
       "name": "mission-controller",

@@ -1,47 +1,66 @@
 {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lander-records.invalid/codex/contracts/run-state.schema.json",
+  "title": "Engineering OS authoritative run state",
   "type": "object",
-  "required": [
-    "schemaVersion",
-    "mission",
-    "impact",
-    "requirements",
-    "criteria",
-    "evidence",
-    "reviews",
-    "findings",
-    "sideEffects"
-  ],
+  "additionalProperties": false,
+  "required": ["schemaVersion", "revision", "identity", "createdAt", "updatedAt", "checksum", "mission", "impact", "requirements", "criteria", "executions", "authorityGrants", "evidence", "reviews", "findings", "sideEffects", "coverage", "workflow", "executionGraph", "preflight"],
   "properties": {
-    "schemaVersion": {
-      "type": "integer"
-    },
-    "mission": {
-      "type": "object"
-    },
-    "impact": {
-      "type": [
-        "object",
-        "null"
-      ]
-    },
-    "requirements": {
-      "type": "array"
-    },
-    "criteria": {
-      "type": "array"
-    },
-    "evidence": {
-      "type": "array"
-    },
-    "findings": {
-      "type": "array"
-    },
-    "sideEffects": {
-      "type": "array"
-    },
-    "reviews": {
-      "type": "array"
-    }
+    "schemaVersion": {"const": 3},
+    "revision": {"type": "integer", "minimum": 0},
+    "identity": {"$ref": "#/$defs/identity"},
+    "createdAt": {"type": "string", "format": "date-time"},
+    "updatedAt": {"type": "string", "format": "date-time"},
+    "checksum": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "mission": {"$ref": "#/$defs/mission"},
+    "impact": {"anyOf": [{"$ref": "#/$defs/impact"}, {"type": "null"}]},
+    "requirements": {"type": "array", "items": {"$ref": "#/$defs/requirement"}},
+    "criteria": {"type": "array", "items": {"$ref": "#/$defs/criterion"}},
+    "executions": {"type": "array", "items": {"$ref": "#/$defs/execution"}},
+    "authorityGrants": {"type": "array", "items": {"$ref": "#/$defs/grant"}},
+    "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+    "reviews": {"type": "array", "items": {"$ref": "#/$defs/review"}},
+    "findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}},
+    "sideEffects": {"type": "array", "items": {"$ref": "#/$defs/sideEffect"}},
+    "coverage": {"type": ["object", "null"]},
+    "workflow": {"type": ["object", "null"]},
+    "executionGraph": {"type": ["object", "null"]},
+    "preflight": {"type": ["object", "null"]}
   },
-  "$schema": "https://json-schema.org/draft/2020-12/schema"
+  "$defs": {
+    "identity": {
+      "type": "object", "additionalProperties": false,
+      "required": ["repository", "gitCommonDir", "worktree", "branch", "head", "branchPolicy"],
+      "properties": {
+        "repository": {"$ref": "#/$defs/pathIdentityWithOrigin"},
+        "gitCommonDir": {"$ref": "#/$defs/pathIdentity"},
+        "worktree": {"type": "object", "additionalProperties": false, "required": ["id", "root", "gitDir"], "properties": {"id": {"$ref": "#/$defs/hash"}, "root": {"type": "string", "minLength": 1}, "gitDir": {"type": "string", "minLength": 1}}},
+        "branch": {"type": "string", "minLength": 1},
+        "head": {"type": "string", "minLength": 1},
+        "branchPolicy": {"enum": ["exact", "repository"]}
+      }
+    },
+    "pathIdentity": {"type": "object", "additionalProperties": false, "required": ["id", "path"], "properties": {"id": {"$ref": "#/$defs/hash"}, "path": {"type": "string", "minLength": 1}}},
+    "pathIdentityWithOrigin": {"type": "object", "additionalProperties": false, "required": ["id", "root", "origin"], "properties": {"id": {"$ref": "#/$defs/hash"}, "root": {"type": "string", "minLength": 1}, "origin": {"type": ["string", "null"]}}},
+    "hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "mission": {
+      "type": "object", "additionalProperties": false, "required": ["status"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1}, "title": {"type": "string", "minLength": 1},
+        "status": {"enum": ["IDLE", "ACTIVE", "IMPLEMENTATION_COMPLETE", "VERIFICATION_PENDING", "CERTIFICATION_BLOCKED", "CERTIFIED"]},
+        "scope": {"enum": ["bounded", "repository"]}, "workflowId": {"type": ["string", "null"]},
+        "startedAt": {"type": "string", "format": "date-time"}, "updatedAt": {"type": "string", "format": "date-time"},
+        "workspaceFingerprintAtStart": {"$ref": "#/$defs/hash"}, "rootExecutionId": {"type": ["string", "null"]}
+      }
+    },
+    "impact": {"type": "object", "additionalProperties": false, "required": ["level", "risk", "authorityRequired", "signals", "assessedAt"], "properties": {"level": {"enum": ["L0", "L1", "L2", "L3", "L4", "L5"]}, "risk": {"enum": ["low", "moderate", "high", "critical"]}, "authorityRequired": {"enum": ["A0", "A1", "A2", "A3", "A4", "A5"]}, "signals": {"type": "array", "items": {"type": "string"}}, "changedFiles": {"type": "array", "items": {"type": "string"}}, "assessedAt": {"type": "string", "format": "date-time"}}},
+    "requirement": {"type": "object", "additionalProperties": false, "required": ["id", "text", "criteria"], "properties": {"id": {"type": "string", "minLength": 1}, "text": {"type": "string", "minLength": 1}, "criteria": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}}},
+    "criterion": {"type": "object", "additionalProperties": false, "required": ["id", "requirementId", "text", "mandatory"], "properties": {"id": {"type": "string", "minLength": 1}, "requirementId": {"type": "string", "minLength": 1}, "text": {"type": "string", "minLength": 1}, "mandatory": {"type": "boolean"}, "evidenceKinds": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}}},
+    "execution": {"type": "object", "additionalProperties": false, "required": ["executionId", "principalId", "principalClass", "roleId", "missionId", "issuedAt", "repositoryId", "worktreeId", "capabilities", "ownershipScope", "parentExecutionId", "provenanceHash"], "properties": {"executionId": {"type": "string"}, "principalId": {"type": "string"}, "principalClass": {"enum": ["local-runtime", "ci-runtime", "host-agent", "human"]}, "roleId": {"type": "string"}, "missionId": {"type": "string"}, "issuedAt": {"type": "string", "format": "date-time"}, "repositoryId": {"$ref": "#/$defs/hash"}, "worktreeId": {"$ref": "#/$defs/hash"}, "capabilities": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}, "ownershipScope": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}, "parentExecutionId": {"type": ["string", "null"]}, "provenanceHash": {"$ref": "#/$defs/hash"}}},
+    "grant": {"type": "object", "additionalProperties": false, "required": ["grantId", "grantingPrincipal", "granteePrincipal", "action", "scope", "repositoryId", "expiresAt", "nonce", "signature", "consumedAt"], "properties": {"grantId": {"type": "string"}, "grantingPrincipal": {"type": "string"}, "granteePrincipal": {"type": "string"}, "action": {"type": "string"}, "scope": {"type": "array", "items": {"type": "string"}}, "repositoryId": {"$ref": "#/$defs/hash"}, "expiresAt": {"type": "string", "format": "date-time"}, "nonce": {"type": "string"}, "signature": {"type": "string"}, "consumedAt": {"type": ["string", "null"], "format": "date-time"}}},
+    "evidence": {"type": "object", "additionalProperties": false, "required": ["id", "criterionId", "kind", "result", "executionId", "principalId", "command", "argv", "cwd", "startedAt", "finishedAt", "exitCode", "stdoutHash", "stderrHash", "stdoutBytes", "stderrBytes", "workspaceFingerprint", "inputHashes"], "properties": {"id": {"type": "string"}, "criterionId": {"type": "string"}, "kind": {"type": "string"}, "result": {"enum": ["PASS", "FAIL", "BLOCKED", "NOT_APPLICABLE"]}, "executionId": {"type": "string"}, "principalId": {"type": "string"}, "command": {"type": "string"}, "argv": {"type": "array", "items": {"type": "string"}}, "cwd": {"type": "string"}, "startedAt": {"type": "string", "format": "date-time"}, "finishedAt": {"type": "string", "format": "date-time"}, "exitCode": {"type": ["integer", "null"]}, "stdoutHash": {"$ref": "#/$defs/hash"}, "stderrHash": {"$ref": "#/$defs/hash"}, "stdoutBytes": {"type": "integer", "minimum": 0}, "stderrBytes": {"type": "integer", "minimum": 0}, "workspaceFingerprint": {"$ref": "#/$defs/hash"}, "inputHashes": {"type": "object", "additionalProperties": {"$ref": "#/$defs/hash"}}, "blockedCode": {"type": ["string", "null"]}}},
+    "review": {"type": "object", "additionalProperties": false, "required": ["id", "executionId", "principalId", "principalClass", "roleId", "result", "scope", "evidenceIds", "workspaceFingerprint", "timestamp"], "properties": {"id": {"type": "string"}, "executionId": {"type": "string"}, "principalId": {"type": "string"}, "principalClass": {"enum": ["local-runtime", "ci-runtime", "host-agent", "human"]}, "roleId": {"type": "string"}, "result": {"enum": ["PASS", "FAIL", "BLOCKED"]}, "scope": {"type": "string"}, "evidenceIds": {"type": "array", "items": {"type": "string"}}, "workspaceFingerprint": {"$ref": "#/$defs/hash"}, "timestamp": {"type": "string", "format": "date-time"}}},
+    "finding": {"type": "object", "additionalProperties": false, "required": ["id", "severity", "status", "summary", "reporterExecutionId", "createdAt", "updatedAt", "history"], "properties": {"id": {"type": "string"}, "severity": {"enum": ["INFO", "LOW", "MEDIUM", "HIGH", "CRITICAL", "BLOCKER"]}, "status": {"enum": ["OPEN", "FIX_IN_PROGRESS", "FIXED_PENDING_VERIFICATION", "VERIFIED", "CLOSED", "WAIVED_PENDING_APPROVAL", "WAIVED", "BLOCKED"]}, "summary": {"type": "string", "minLength": 1}, "reporterExecutionId": {"type": "string"}, "fixExecutionId": {"type": ["string", "null"]}, "verifierExecutionId": {"type": ["string", "null"]}, "resolutionReference": {"type": ["string", "null"]}, "fixFingerprint": {"anyOf": [{"$ref": "#/$defs/hash"}, {"type": "null"}]}, "verificationEvidenceIds": {"type": "array", "items": {"type": "string"}}, "createdAt": {"type": "string", "format": "date-time"}, "updatedAt": {"type": "string", "format": "date-time"}, "history": {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false, "required": ["from", "to", "executionId", "at"], "properties": {"from": {"type": ["string", "null"]}, "to": {"type": "string"}, "executionId": {"type": "string"}, "at": {"type": "string", "format": "date-time"}, "reason": {"type": ["string", "null"]}}}}}},
+    "sideEffect": {"type": "object", "additionalProperties": false, "required": ["id", "kind", "status", "executionId", "authorityGrantId", "startedAt"], "properties": {"id": {"type": "string"}, "kind": {"type": "string"}, "status": {"enum": ["PLANNED", "STARTED", "SUCCEEDED", "FAILED", "PARTIAL", "RECONCILED", "BLOCKED"]}, "executionId": {"type": "string"}, "authorityGrantId": {"type": ["string", "null"]}, "startedAt": {"type": "string", "format": "date-time"}, "updatedAt": {"type": ["string", "null"], "format": "date-time"}, "detail": {"type": ["string", "null"]}}}
+  }
 }

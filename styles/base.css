@@ -1,0 +1,5 @@
+/* Cross-application reset only. Public and Admin own their visual tokens. */
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #fff; color: #101010; }
+a { color: inherit; text-decoration: none; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }

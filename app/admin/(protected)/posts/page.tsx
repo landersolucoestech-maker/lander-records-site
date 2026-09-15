@@ -54,5 +54,5 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
     tags: tagRows.filter((row) => row.postId === post.id).map((row) => row.name), isPubliclyVisible: post.isPubliclyVisible,
     updatedAt: new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(post.updatedAt),
   }));
-  return <PostManager availableCategories={categoryRows.map(({ name }) => name)} availableTags={Array.from(new Set(tagRows.map(({ name }) => name)))} canEdit={session.user.role !== "viewer"} deleted={filters.deleted === "1"} initialFilters={{ category: filters.category, q: filters.q, status: filters.status, tag: filters.tag }} metrics={metrics} posts={summary} />;
+  return <PostManager availableCategories={categoryRows.map(({ name }) => name)} availableTags={Array.from(new Set(tagRows.map(({ name }) => name)))} canEdit={session.source === "session" && session.user.role !== "viewer"} deleted={filters.deleted === "1"} initialFilters={{ category: filters.category, q: filters.q, status: filters.status, tag: filters.tag }} metrics={metrics} posts={summary} />;
 }

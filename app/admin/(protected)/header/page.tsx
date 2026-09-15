@@ -16,5 +16,5 @@ export default async function HeaderPage() {
     globalLogoUrl: chrome.logoUrl,
     primaryItems,
     publicLogoSrc: "/lander-records-brand.svg",
-  }} viewer={session.user.role === "viewer"} />;
+  }} viewer={session.source !== "session" || session.user.role === "viewer"} />;
 }

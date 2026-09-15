@@ -1,1 +1,1 @@
-export { getDb } from "@/lib/db";
+export { getSiteChrome, getSlugRedirect } from "./repository";

@@ -1,15 +1,12 @@
-{
-  "id": "brownfield-change",
-  "steps": [
-    "discover",
-    "impact",
-    "requirements",
-    "plan",
-    "implement",
-    "verify",
-    "independent-review",
-    "adversarial-if-L3+",
-    "git-audit",
-    "completion-gate"
-  ]
-}
+{"schemaVersion":1,"classification":"ENFORCED","id":"brownfield-change","trigger":"explicit mission binding","failurePropagation":"block-downstream","stages":[
+ {"id":"discover","required":true,"dependsOn":[],"role":"repo-intelligence","skills":["discover"]},
+ {"id":"impact","required":true,"dependsOn":["discover"],"role":"risk-controller","skills":["impact"]},
+ {"id":"requirements","required":true,"dependsOn":["impact"],"role":"requirements-reviewer","skills":["intake"]},
+ {"id":"plan","required":true,"dependsOn":["requirements"],"role":"autonomous-planner","skills":["plan"]},
+ {"id":"implement","required":true,"dependsOn":["plan"],"role":"implementation-lead","skills":["execute"]},
+ {"id":"verify","required":true,"dependsOn":["implement"],"role":"verification-controller","skills":["verify"]},
+ {"id":"independent-review","required":true,"dependsOn":["verify"],"role":"architecture-reviewer","skills":["review"]},
+ {"id":"adversarial","required":true,"dependsOn":["verify"],"role":"adversarial-reviewer","skills":["adversarial"]},
+ {"id":"git-audit","required":true,"dependsOn":["independent-review","adversarial"],"role":"git-auditor","skills":["verify"]},
+ {"id":"completion-gate","required":true,"dependsOn":["git-audit"],"role":"completion-controller","skills":["gate"]}
+]}

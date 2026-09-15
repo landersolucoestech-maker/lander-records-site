@@ -3,7 +3,7 @@
 import { and, asc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { audit, requireAdmin } from "../../lib/auth";
+import { audit, requirePersistentAdmin } from "../../lib/auth";
 import { getDb } from "../../lib/db";
 import { pageSectionBindings, sectionDefinitions } from "../../lib/db/page-management-schema";
 import { pageSections, pages } from "../../lib/db/schema";
@@ -29,7 +29,7 @@ function revalidatePagePaths(slugs: string[]) {
 }
 
 export async function createPageAction(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const title = text(formData, "title");
   const rawRoute = text(formData, "slug").replace(/^\/+|\/+$/g, "");
   const key = slugify(text(formData, "key") || title);
@@ -49,7 +49,7 @@ export async function createPageAction(formData: FormData) {
 }
 
 export async function deletePageAction(formData: FormData) {
-  const session = await requireAdmin("admin");
+  const session = await requirePersistentAdmin("admin");
   const id = uuid(text(formData, "id"));
   if (!id) throw new Error("Página inválida.");
   const db = getDb();
@@ -62,7 +62,7 @@ export async function deletePageAction(formData: FormData) {
 }
 
 export async function attachSectionAction(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const pageId = uuid(text(formData, "pageId"));
   const definitionId = uuid(text(formData, "definitionId"));
   if (!pageId || !definitionId) throw new Error("Página e seção são obrigatórias.");
@@ -90,7 +90,7 @@ export async function attachSectionAction(formData: FormData) {
 }
 
 export async function detachSectionAction(formData: FormData) {
-  const session = await requireAdmin("admin");
+  const session = await requirePersistentAdmin("admin");
   const pageId = uuid(text(formData, "pageId"));
   const sectionId = uuid(text(formData, "sectionId"));
   if (!pageId || !sectionId) throw new Error("Seção inválida.");

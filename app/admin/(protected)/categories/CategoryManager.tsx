@@ -10,9 +10,9 @@ export default function CategoryManager({ artistCategories, postCategories }: { 
   const [tab, setTab] = useState<"artists" | "news">("artists");
   return (
     <>
-      <div className="adminActions" role="tablist" aria-label="Tipos de categoria">
-        <button className={`adminButton ${tab === "artists" ? "primary" : ""}`} type="button" role="tab" aria-selected={tab === "artists"} onClick={() => setTab("artists")}>Artistas</button>
-        <button className={`adminButton ${tab === "news" ? "primary" : ""}`} type="button" role="tab" aria-selected={tab === "news"} onClick={() => setTab("news")}>Notícias</button>
+      <div className="adminActions" role="group" aria-label="Tipos de categoria">
+        <button className={`adminButton ${tab === "artists" ? "primary" : ""}`} type="button" aria-pressed={tab === "artists"} onClick={() => setTab("artists")}>Artistas</button>
+        <button className={`adminButton ${tab === "news" ? "primary" : ""}`} type="button" aria-pressed={tab === "news"} onClick={() => setTab("news")}>Notícias</button>
       </div>
 
       {tab === "artists" ? (

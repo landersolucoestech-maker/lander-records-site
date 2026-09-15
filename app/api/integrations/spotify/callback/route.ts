@@ -11,6 +11,7 @@ function adminRedirect(status: "connected" | "error") {
 
 export async function GET(request: NextRequest) {
   const session = await requireAdmin("editor");
+  if (session.source === "development-auth-bypass") return adminRedirect("error");
   const code = request.nextUrl.searchParams.get("code") || "";
   const state = request.nextUrl.searchParams.get("state") || "";
   const providerError = request.nextUrl.searchParams.get("error");

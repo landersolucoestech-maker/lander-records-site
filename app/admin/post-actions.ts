@@ -4,7 +4,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import sharp from "sharp";
-import { audit, requireAdmin } from "../../lib/auth";
+import { audit, requirePersistentAdmin } from "../../lib/auth";
 import { getDb } from "../../lib/db";
 import { uploadMedia as uploadStoredMedia } from "@/lib/storage";
 import { postLinks, postProfiles } from "../../lib/db/news-management-schema";
@@ -71,7 +71,7 @@ function revalidatePostContent(slugs: string[]) {
 }
 
 export async function savePostAction(_: PostActionState, formData: FormData): Promise<PostActionState> {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = uuidOrNull(text(formData, "id"));
   const title = text(formData, "title");
   const slug = slugify(text(formData, "slug") || title);
@@ -213,7 +213,7 @@ export async function savePostAction(_: PostActionState, formData: FormData): Pr
 }
 
 export async function deletePostAction(formData: FormData) {
-  const session = await requireAdmin("admin");
+  const session = await requirePersistentAdmin("admin");
   const id = uuidOrNull(text(formData, "id"));
   if (!id) throw new Error("Notícia inválida.");
   const db = getDb();

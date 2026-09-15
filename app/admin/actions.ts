@@ -9,7 +9,7 @@ import {
   destroyAdminSession,
   getAdminSession,
   hashPassword,
-  requireAdmin,
+  requirePersistentAdmin,
   verifyPassword,
 } from "../../lib/auth";
 import { dispatchOutboxEvent } from "../../lib/contact";
@@ -106,7 +106,7 @@ export async function changeOwnPassword(formData: FormData) {
 }
 
 export async function createArtist(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const name = text(formData, "name");
   const slug = slugify(text(formData, "slug") || name);
   if (!name || !slug) throw new Error("Nome e slug são obrigatórios.");
@@ -127,7 +127,7 @@ export async function createArtist(formData: FormData) {
 }
 
 export async function updateArtist(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = text(formData, "id");
   const name = text(formData, "name");
   const slug = slugify(text(formData, "slug") || name);
@@ -186,7 +186,7 @@ export async function updateArtist(formData: FormData) {
 }
 
 export async function setArtistPublication(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = text(formData, "id");
   const publish = text(formData, "action") === "publish";
   const db = getDb();
@@ -202,7 +202,7 @@ export async function setArtistPublication(formData: FormData) {
 }
 
 export async function archiveArtist(formData: FormData) {
-  const session = await requireAdmin("admin");
+  const session = await requirePersistentAdmin("admin");
   const id = text(formData, "id");
   await getDb().update(artists).set({
     isPublished: false,
@@ -216,7 +216,7 @@ export async function archiveArtist(formData: FormData) {
 }
 
 export async function upsertArtistCategory(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = text(formData, "id");
   const name = text(formData, "name");
   const slug = slugify(text(formData, "slug") || name);
@@ -244,7 +244,7 @@ export async function upsertArtistCategory(formData: FormData) {
 }
 
 export async function deleteArtistCategory(formData: FormData) {
-  const session = await requireAdmin("admin");
+  const session = await requirePersistentAdmin("admin");
   const id = text(formData, "id");
   const db = getDb();
   const relations = await db.select({ artistId: artistCategoryRelations.artistId }).from(artistCategoryRelations).where(eq(artistCategoryRelations.categoryId, id)).limit(1);
@@ -256,7 +256,7 @@ export async function deleteArtistCategory(formData: FormData) {
 }
 
 export async function addArtistLink(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const artistId = text(formData, "artistId");
   const rows = await getDb().insert(artistLinks).values({
     artistId,
@@ -273,7 +273,7 @@ export async function addArtistLink(formData: FormData) {
 }
 
 export async function deleteArtistLink(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = text(formData, "id");
   const artistId = text(formData, "artistId");
   await getDb().delete(artistLinks).where(eq(artistLinks.id, id));
@@ -283,7 +283,7 @@ export async function deleteArtistLink(formData: FormData) {
 }
 
 export async function addArtistEmbed(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const artistId = text(formData, "artistId");
   const rows = await getDb().insert(artistEmbeds).values({
     artistId,
@@ -300,7 +300,7 @@ export async function addArtistEmbed(formData: FormData) {
 }
 
 export async function deleteArtistEmbed(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = text(formData, "id");
   const artistId = text(formData, "artistId");
   await getDb().delete(artistEmbeds).where(eq(artistEmbeds.id, id));
@@ -310,7 +310,7 @@ export async function deleteArtistEmbed(formData: FormData) {
 }
 
 export async function createPost(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const title = text(formData, "title");
   const slug = slugify(text(formData, "slug") || title);
   const rows = await getDb().insert(posts).values({
@@ -326,7 +326,7 @@ export async function createPost(formData: FormData) {
 }
 
 export async function updatePost(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = text(formData, "id");
   const title = text(formData, "title");
   const slug = slugify(text(formData, "slug") || title);
@@ -381,7 +381,7 @@ export async function updatePost(formData: FormData) {
 }
 
 export async function setPostPublication(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = text(formData, "id");
   const action = text(formData, "action");
   const db = getDb();
@@ -399,7 +399,7 @@ export async function setPostPublication(formData: FormData) {
 }
 
 export async function upsertPostCategory(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = text(formData, "id");
   const name = text(formData, "name");
   const values = {
@@ -423,7 +423,7 @@ export async function upsertPostCategory(formData: FormData) {
 }
 
 export async function deletePostCategory(formData: FormData) {
-  const session = await requireAdmin("admin");
+  const session = await requirePersistentAdmin("admin");
   const id = text(formData, "id");
   const db = getDb();
   const usage = await db.select({ id: posts.id }).from(posts).where(eq(posts.categoryId, id)).limit(1);
@@ -435,7 +435,7 @@ export async function deletePostCategory(formData: FormData) {
 }
 
 export async function upsertTag(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = text(formData, "id");
   const name = text(formData, "name");
   const values = { name, slug: slugify(text(formData, "slug") || name), updatedAt: new Date() };
@@ -447,7 +447,7 @@ export async function upsertTag(formData: FormData) {
 }
 
 export async function deleteTag(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = text(formData, "id");
   const db = getDb();
   await db.delete(postTags).where(eq(postTags.tagId, id));
@@ -457,7 +457,7 @@ export async function deleteTag(formData: FormData) {
 }
 
 export async function upsertRelease(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = text(formData, "id");
   const title = text(formData, "title");
   const values = {
@@ -488,7 +488,7 @@ export async function upsertRelease(formData: FormData) {
 }
 
 export async function updatePage(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = text(formData, "id");
   await getDb().update(pages).set({
     title: text(formData, "title"),
@@ -506,7 +506,7 @@ export async function updatePage(formData: FormData) {
 }
 
 export async function updatePageSection(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = text(formData, "id");
   const pageId = text(formData, "pageId");
   await getDb().update(pageSections).set({
@@ -524,7 +524,7 @@ export async function updatePageSection(formData: FormData) {
 }
 
 export async function addPageSectionItem(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const sectionId = text(formData, "sectionId");
   const pageId = text(formData, "pageId");
   const rows = await getDb().insert(pageSectionItems).values({
@@ -545,7 +545,7 @@ export async function addPageSectionItem(formData: FormData) {
 }
 
 export async function updatePageSectionItem(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = text(formData, "id");
   const pageId = text(formData, "pageId");
   await getDb().update(pageSectionItems).set({
@@ -566,7 +566,7 @@ export async function updatePageSectionItem(formData: FormData) {
 }
 
 export async function deletePageSectionItem(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = text(formData, "id");
   const pageId = text(formData, "pageId");
   await getDb().delete(pageSectionItems).where(eq(pageSectionItems.id, id));
@@ -576,7 +576,7 @@ export async function deletePageSectionItem(formData: FormData) {
 }
 
 export async function upsertNavigationItem(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = text(formData, "id");
   const menuKey = text(formData, "menuKey");
   const parentValue = text(formData, "parentId");
@@ -637,7 +637,7 @@ export async function upsertNavigationItem(formData: FormData) {
 }
 
 export async function deleteNavigationItem(formData: FormData) {
-  const session = await requireAdmin("admin");
+  const session = await requirePersistentAdmin("admin");
   const id = text(formData, "id");
   if (!uuidOrNull(id)) redirect("/admin/navigation?error=invalid_item");
   const db = getDb();
@@ -659,7 +659,7 @@ export async function deleteNavigationItem(formData: FormData) {
 }
 
 export async function updateSiteSettings(formData: FormData) {
-  const session = await requireAdmin("admin");
+  const session = await requirePersistentAdmin("admin");
   await getDb().update(siteSettings).set({
     brandName: text(formData, "brandName"),
     tagline: text(formData, "tagline"),
@@ -680,7 +680,7 @@ export async function updateSiteSettings(formData: FormData) {
 }
 
 export async function upsertSocialLink(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = text(formData, "id");
   const values = {
     platform: text(formData, "platform"),
@@ -699,7 +699,7 @@ export async function upsertSocialLink(formData: FormData) {
 }
 
 export async function upsertContactTopic(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = text(formData, "id");
   const name = text(formData, "name");
   const values = {
@@ -719,7 +719,7 @@ export async function upsertContactTopic(formData: FormData) {
 }
 
 export async function updateContactStatus(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const id = text(formData, "id");
   const status = text(formData, "status") as "new" | "processing" | "exported" | "spam" | "archived";
   await getDb().update(contactSubmissions).set({ status }).where(eq(contactSubmissions.id, id));
@@ -728,7 +728,7 @@ export async function updateContactStatus(formData: FormData) {
 }
 
 export async function retryContactDelivery(formData: FormData) {
-  const session = await requireAdmin("admin");
+  const session = await requirePersistentAdmin("admin");
   const outboxId = text(formData, "outboxId");
   await getDb().update(integrationOutbox).set({ status: "pending", updatedAt: new Date() }).where(eq(integrationOutbox.id, outboxId));
   const result = await dispatchOutboxEvent(outboxId);
@@ -737,7 +737,7 @@ export async function retryContactDelivery(formData: FormData) {
 }
 
 export async function uploadMedia(formData: FormData) {
-  const session = await requireAdmin("editor");
+  const session = await requirePersistentAdmin("editor");
   const file = formData.get("file");
   const altText = text(formData, "altText");
   if (!(file instanceof File) || file.size === 0) throw new Error("Selecione um arquivo.");
@@ -774,7 +774,7 @@ export async function uploadMedia(formData: FormData) {
 }
 
 export async function archiveMedia(formData: FormData) {
-  const session = await requireAdmin("admin");
+  const session = await requirePersistentAdmin("admin");
   const id = text(formData, "id");
   await getDb().update(mediaAssets).set({ status: "archived", updatedBy: session.user.id, updatedAt: new Date() }).where(eq(mediaAssets.id, id));
   await audit(session.user.id, "media.archived", "media_asset", id);
@@ -782,7 +782,7 @@ export async function archiveMedia(formData: FormData) {
 }
 
 export async function createAdminUser(formData: FormData) {
-  const session = await requireAdmin("owner");
+  const session = await requirePersistentAdmin("owner");
   const email = text(formData, "email").toLowerCase();
   const name = text(formData, "name");
   const role = text(formData, "role") as "owner" | "admin" | "editor" | "viewer";
@@ -802,7 +802,7 @@ export async function createAdminUser(formData: FormData) {
 }
 
 export async function updateAdminUser(formData: FormData) {
-  const session = await requireAdmin("owner");
+  const session = await requirePersistentAdmin("owner");
   const id = text(formData, "id");
   if (id === session.user.id && !checked(formData, "isActive")) throw new Error("O usuário atual não pode desativar a própria conta.");
   const role = text(formData, "role") as "owner" | "admin" | "editor" | "viewer";
@@ -818,7 +818,7 @@ export async function updateAdminUser(formData: FormData) {
 }
 
 export async function resetAdminPassword(formData: FormData) {
-  const session = await requireAdmin("owner");
+  const session = await requirePersistentAdmin("owner");
   const id = text(formData, "id");
   const temporaryPassword = text(formData, "temporaryPassword");
   const passwordHash = await hashPassword(temporaryPassword);

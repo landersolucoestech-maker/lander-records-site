@@ -45,5 +45,5 @@ export default async function AdminHomePage() {
     { key: "news", title: newsSection?.title || "Últimas Notícias", description: "Notícias internas selecionadas para destaque na Home.", classification: "configurable", badge: "Automático / Configurável", detail: `Fonte: Lander Records · ${posts.length} notícias em destaque`, updatedAt: dateLabel(newsSection?.updatedAt), actionHref: "/admin/posts", actionLabel: "Configurar", imageUrls: posts.map((post) => post.coverImage).filter(Boolean) },
   ];
 
-  return <HomeManagerView canEdit={session.user.role !== "viewer"} sections={sections} />;
+  return <HomeManagerView canEdit={session.source === "session" && session.user.role !== "viewer"} sections={sections} />;
 }

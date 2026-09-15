@@ -6,6 +6,11 @@ import { redirect } from "next/navigation";
 import { getDb } from "../db";
 import { adminSessions, adminUsers, auditLogs } from "../db/schema";
 import { evaluateAdminAuthorization, isValidSessionRecord, type AdminRole } from "./policy";
+import {
+  isPersistentAdminSession,
+  selectAdminSessionForRequest,
+  type DevelopmentAdminSession,
+} from "./development-bypass";
 
 export const SESSION_COOKIE = "lander_admin_session";
 const SESSION_DAYS = 7;
@@ -13,6 +18,7 @@ const SESSION_DAYS = 7;
 export type { AdminRole } from "./policy";
 
 export type AdminSession = {
+  source: "session";
   user: {
     id: string;
     email: string;
@@ -21,6 +27,13 @@ export type AdminSession = {
     mustChangePassword: boolean;
   };
   sessionId: string;
+};
+
+export type AuthorizedAdminSession = AdminSession | DevelopmentAdminSession;
+
+export type AdminAuthorization = {
+  session: AuthorizedAdminSession | null;
+  decision: ReturnType<typeof evaluateAdminAuthorization>;
 };
 
 function hashToken(token: string) {
@@ -59,6 +72,7 @@ export async function getAdminSession(): Promise<AdminSession | null> {
   if (!isValidSessionRecord(row)) return null;
 
   return {
+    source: "session",
     sessionId: row.sessionId,
     user: {
       id: row.userId,
@@ -70,14 +84,26 @@ export async function getAdminSession(): Promise<AdminSession | null> {
   };
 }
 
-export async function requireAdmin(minimumRole: AdminRole = "viewer") {
-  const session = await getAdminSession();
+export async function getAdminAuthorization(minimumRole: AdminRole = "viewer"): Promise<AdminAuthorization> {
+  const requestHeaders = await headers();
+  const session = selectAdminSessionForRequest(await getAdminSession(), process.env, requestHeaders.get("host"));
   const decision = evaluateAdminAuthorization(session, minimumRole);
+  return { session, decision };
+}
+
+export async function requireAdmin(minimumRole: AdminRole = "viewer"): Promise<AuthorizedAdminSession> {
+  const { session, decision } = await getAdminAuthorization(minimumRole);
   if (decision === "unauthenticated") redirect("/admin/login");
   if (decision === "password-change-required") redirect("/admin/change-password");
   if (decision === "forbidden") redirect("/admin?error=forbidden");
   // Defensive narrowing: `authorized` is impossible without a session.
   if (!session) redirect("/admin/login");
+  return session;
+}
+
+export async function requirePersistentAdmin(minimumRole: AdminRole = "viewer"): Promise<AdminSession> {
+  const session = await requireAdmin(minimumRole);
+  if (!isPersistentAdminSession(session)) redirect("/admin?error=development-read-only");
   return session;
 }
 

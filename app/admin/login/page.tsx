@@ -23,7 +23,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
         <p className="adminEyebrow">PAINEL ADMINISTRATIVO</p>
         <h1>Acesso restrito</h1>
         <p>Gerencie o conteúdo público da Lander Records.</p>
-        {message ? <div className="adminAlert error">{message}</div> : null}
+        {message ? <div className="adminAlert error" role="alert">{message}</div> : null}
         <form action={loginAction} className="adminForm">
           <label>E-mail<input name="email" type="email" autoComplete="username" required /></label>
           <label>Senha<input name="password" type="password" autoComplete="current-password" required /></label>

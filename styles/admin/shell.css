@@ -1,0 +1,56 @@
+/* Lander Editorial: a single owner for workspace tokens and navigation. */
+.adminShell { --admin-bg: #f5f4f1; --admin-panel: #fff; --admin-border: #dfdfd9; --admin-text: #20201e; --admin-muted: #65655f; --admin-accent: #c52b27; --admin-red: var(--admin-accent); --admin-focus: #2863bc; --admin-success: #24623a; --admin-warning: #75520c; --admin-danger: #a42624; display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100dvh; background: var(--admin-bg); color: var(--admin-text); font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 1.5; }
+.adminWorkspace { display: flex; flex-direction: column; min-width: 0; }
+.adminSidebar { position: sticky; top: 0; z-index: 52; display: flex; flex-direction: column; gap: 24px; width: 248px; height: 100dvh; padding: 24px 16px 16px; overflow-y: auto; background: #151515; color: #f6f6f1; }
+.adminBrandBlock { position: relative; display: grid; justify-items: start; gap: 12px; padding: 0 12px 8px; }
+.adminBrandBlock > span { color: #bcbcb5; font-size: 12px; letter-spacing: .06em; }
+.adminBrandLogo { display: block; width: 130px; height: 60px; padding: 5px; border-radius: 4px; background: #fff; object-fit: contain; }
+.adminSidebar nav { display: grid; gap: 24px; }
+.adminNavGroup { display: grid; gap: 4px; }
+.adminNavLabel { padding: 0 12px 7px; color: #a3a39b; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.adminSidebar nav a { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 10px 12px; border-radius: 6px; color: #d6d6d0; font-size: 14px; text-decoration: none; }
+.adminSidebar nav a:hover { background: #252523; color: #fff; }
+.adminSidebar nav a[aria-current="page"] { background: #34302b; color: #fff; font-weight: 700; box-shadow: inset 3px 0 var(--admin-accent); }
+.adminSidebar nav a[aria-current="page"] .adminIcon { color: #f58f87; }
+.adminSidebar :is(a, button):focus-visible { outline-color: #8eb9ff; }
+.adminIcon { display: block; flex: none; }
+.adminSidebarFooter { display: grid; gap: 16px; margin-top: auto; padding: 20px 12px 0; border-top: 1px solid #363632; font-size: 13px; }
+.adminSidebarFooter a, .adminSidebarFooter button { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0; border: 0; background: transparent; color: #e1e1d9; font: inherit; cursor: pointer; }
+.adminUserSummary, .adminTopbarUser { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.adminUserSummary > span:last-child, .adminTopbarUser > span:last-child { display: grid; gap: 3px; min-width: 0; }
+.adminUserSummary strong, .adminTopbarUser strong { font-size: 13px; overflow-wrap: anywhere; }
+.adminUserSummary small { color: #bcbcb5; font-size: 12px; }
+.adminTopbarUser small { color: var(--admin-muted); font-size: 12px; }
+.adminAvatar { display: grid; flex: none; width: 36px; height: 36px; place-items: center; border-radius: 50%; background: #ecebe5; color: #282824; font-size: 12px; font-weight: 700; }
+.adminTopbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 64px; padding: 12px 32px; border-bottom: 1px solid var(--admin-border); background: var(--admin-panel); }
+.adminTopbarLocation, .adminTopbarActions { display: flex; align-items: center; gap: 20px; min-width: 0; }
+.adminBreadcrumb ol { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.adminBreadcrumb li { display: flex; align-items: center; gap: 8px; color: var(--admin-muted); font-size: 13px; }
+.adminBreadcrumb li + li::before { content: "/"; color: #99998f; }
+.adminBreadcrumb [aria-current="page"] { color: var(--admin-text); font-weight: 700; }
+.adminBreadcrumb a:hover { text-decoration: underline; }
+.adminMenuButton, .adminDrawerClose { display: none; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: inherit; cursor: pointer; }
+.adminPublicLink { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1px solid var(--admin-border); border-radius: 6px; font-size: 13px; font-weight: 700; }
+.adminReadOnlyNotice { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 12px 32px; border-bottom: 1px solid #ead5aa; background: #fff5de; color: #61481c; font-size: 13px; }
+.adminReadOnlyNotice a { margin-left: auto; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.adminPreviewBadge { padding: 10px 12px; border: 1px solid #70634c; border-radius: 6px; color: #efd8a4; font-size: 12px; }
+.adminSkipLink { position: fixed; z-index: 80; top: 8px; left: 260px; transform: translateY(-180%); padding: 12px 16px; border-radius: 6px; background: #20201e; color: #fff; }
+.adminSkipLink:focus { transform: translateY(0); }
+.adminMain { flex: 1; min-width: 0; padding: 36px 32px 48px; overflow: visible; }
+.adminSidebarBackdrop { display: none; }
+@media (max-width: 1100px) { .adminTopbarUser { display: none; } .adminMain { padding: 28px 24px 40px; } }
+@media (max-width: 900px) {
+  .adminShell { grid-template-columns: minmax(0, 1fr); }
+  .adminSidebar { position: fixed; inset: 0 auto 0 0; width: min(300px, 88vw); visibility: hidden; transform: translateX(-105%); transition: transform .18s ease, visibility 0s linear .18s; }
+  .sidebarOpen .adminSidebar { visibility: visible; transform: translateX(0); transition-delay: 0s; }
+  .adminSidebarBackdrop { position: fixed; z-index: 51; inset: 0; display: block; border: 0; background: #0007; opacity: 0; pointer-events: none; }
+  .sidebarOpen .adminSidebarBackdrop { opacity: 1; pointer-events: auto; }
+  .adminMenuButton, .adminDrawerClose { display: inline-flex; }
+  .adminDrawerClose { position: absolute; top: -8px; right: -4px; color: #fff; }
+  .adminTopbar { padding: 10px 16px; }
+  .adminTopbarLocation { gap: 8px; }
+  .adminReadOnlyNotice { padding: 12px 20px; }
+  .adminSkipLink { left: 16px; }
+}
+@media (max-width: 560px) { .adminMain { padding: 24px 16px 32px; } .adminPublicLink { padding: 0 10px; } .adminPublicLink > span { display: none; } .adminTopbarActions { gap: 8px; } .adminBreadcrumb li { font-size: 12px; } .adminReadOnlyNotice { padding: 12px 16px; } }
+@media (prefers-reduced-motion: reduce) { .adminSidebar { transition: none; } }
