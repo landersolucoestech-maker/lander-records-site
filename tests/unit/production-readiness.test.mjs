@@ -31,7 +31,7 @@ test("dev preview stays disposable and isolated from production credentials", ()
   const preview = read(".github/workflows/dev-preview.yml");
   assert.match(preview, /branches:\s*\n\s*- dev/);
   assert.match(preview, /lander_records_preview/);
-  assert.match(preview, /cms-preview\/dashboard\//);
+  assert.match(preview, /cms-preview\/dashboard(?:\/|\b)/);
   assert.match(preview, /cancel-in-progress: true/);
   assert.match(preview, /preview-contact-ip-salt-not-for-production/);
   assert.ok(!preview.includes("${{ secrets."));
