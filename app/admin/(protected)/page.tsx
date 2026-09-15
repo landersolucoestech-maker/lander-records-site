@@ -1,42 +1,67 @@
-import { and, desc, eq, isNull, sql } from "drizzle-orm";
+import { desc, isNull } from "drizzle-orm";
 import { getDb } from "../../../lib/db";
-import { artistProfiles } from "../../../lib/db/artist-management-schema";
-import { artists, auditLogs, pages, posts } from "../../../lib/db/schema";
+import { auditLogs, posts } from "../../../lib/db/schema";
 import { requireAdmin } from "../../../lib/auth";
 import { DashboardView } from "../components/DashboardView";
 
 export const dynamic = "force-dynamic";
 type AuditItem = { id: string; action: string; entityType: string; createdAt: Date };
-function countValue(rows: Array<{ count: number }>) { return rows[0]?.count ?? 0; }
+type PublicationItem = { id: string; title: string; status: "draft" | "published" | "archived"; updatedAt: Date };
+
 function activityLabel(action: string) {
-  const labels: Record<string, string> = { "artist.created": "Artista adicionado", "artist.updated": "Artista atualizado", "artist.published": "Artista publicado", "artist.unpublished": "Publicação de artista alterada", "artist.deleted": "Artista excluído", "post.created": "Notícia criada", "post.updated": "Notícia atualizada", "post.published": "Notícia publicada", "post.draft": "Notícia movida para rascunho", "post.archived": "Notícia arquivada", "page_section.updated": "Conteúdo de seção atualizado", "page_section_item.updated": "Conteúdo interno de seção atualizado", "media.created": "Mídia adicionada", "media.updated": "Mídia atualizada", "auth.login": "Acesso administrativo", "auth.logout": "Sessão administrativa encerrada" };
+  const labels: Record<string, string> = {
+    "artist.created": "Novo artista cadastrado",
+    "artist.updated": "Artista atualizado",
+    "artist.published": "Artista publicado",
+    "artist.unpublished": "Publicação de artista alterada",
+    "artist.deleted": "Artista excluído",
+    "post.created": "Nova notícia criada",
+    "post.updated": "Notícia atualizada",
+    "post.published": "Nova notícia publicada",
+    "post.draft": "Notícia movida para rascunho",
+    "post.archived": "Notícia arquivada",
+    "page_section.updated": "Conteúdo de seção atualizado",
+    "page_section_item.updated": "Conteúdo interno de seção atualizado",
+    "media.created": "Mídia enviada",
+    "media.updated": "Mídia atualizada",
+    "auth.login": "Acesso administrativo",
+    "auth.logout": "Sessão administrativa encerrada",
+  };
   return labels[action] || action;
 }
 
 export default async function AdminDashboardPage() {
   const session = await requireAdmin();
-  let artistTotal = 0, artistPublished = 0, postPublished = 0, artistDrafts = 0, postDrafts = 0, activePages = 0;
   let recentAudits: AuditItem[] = [];
+  let recentPosts: PublicationItem[] = [];
   let databaseAvailable = Boolean(process.env.DATABASE_URL);
+
   if (databaseAvailable) {
     try {
       const db = getDb();
-      const [artistTotalRows, , , artistPublishedRows, publishedPostRows, draftArtistRows, draftPostRows, activePageRows, auditRows] = await Promise.all([
-        db.select({ count: sql<number>`count(*)::int` }).from(artists).where(isNull(artists.archivedAt)),
-        db.select({ count: sql<number>`count(*)::int` }).from(artistProfiles).where(eq(artistProfiles.isActive, true)),
-        db.select({ count: sql<number>`count(*)::int` }).from(artistProfiles).where(eq(artistProfiles.isActive, false)),
-        db.select({ count: sql<number>`count(*)::int` }).from(artists).where(and(eq(artists.isPublished, true), isNull(artists.archivedAt))),
-        db.select({ count: sql<number>`count(*)::int` }).from(posts).where(and(eq(posts.status, "published"), isNull(posts.archivedAt))),
-        db.select({ count: sql<number>`count(*)::int` }).from(artists).where(and(eq(artists.isPublished, false), isNull(artists.archivedAt))),
-        db.select({ count: sql<number>`count(*)::int` }).from(posts).where(and(eq(posts.status, "draft"), isNull(posts.archivedAt))),
-        db.select({ count: sql<number>`count(*)::int` }).from(pages).where(eq(pages.enabled, true)),
-        db.select().from(auditLogs).orderBy(desc(auditLogs.createdAt)).limit(12),
+      const [auditRows, postRows] = await Promise.all([
+        db.select({ id: auditLogs.id, action: auditLogs.action, entityType: auditLogs.entityType, createdAt: auditLogs.createdAt }).from(auditLogs).orderBy(desc(auditLogs.createdAt)).limit(8),
+        db.select({ id: posts.id, title: posts.title, status: posts.status, updatedAt: posts.updatedAt }).from(posts).where(isNull(posts.archivedAt)).orderBy(desc(posts.updatedAt)).limit(5),
       ]);
-      artistTotal = countValue(artistTotalRows); artistPublished = countValue(artistPublishedRows); postPublished = countValue(publishedPostRows); artistDrafts = countValue(draftArtistRows); postDrafts = countValue(draftPostRows); activePages = countValue(activePageRows); recentAudits = auditRows;
+      recentAudits = auditRows;
+      recentPosts = postRows;
     } catch (error) {
-      console.error("CMS dashboard database unavailable; rendering without indicators.", error);
+      console.error("CMS dashboard database unavailable; rendering without database-backed summaries.", error);
       databaseAvailable = false;
     }
   }
-  return <DashboardView data={{ activePages: databaseAvailable ? activePages : null, artistDrafts: databaseAvailable ? artistDrafts : null, artistPublished: databaseAvailable ? artistPublished : null, artistTotal: databaseAvailable ? artistTotal : null, postDrafts: databaseAvailable ? postDrafts : null, postPublished: databaseAvailable ? postPublished : null, recentActivity: recentAudits.map((item) => ({ id: item.id, label: activityLabel(item.action), meta: `${item.entityType} · ${new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(item.createdAt)}` })) }} name={session.user.name} readOnly={session.source !== "session"} role={session.user.role} />;
+
+  const dateTime = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" });
+  const dateOnly = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "America/Sao_Paulo" });
+
+  return <DashboardView
+    data={{
+      analytics: null,
+      recentActivity: databaseAvailable ? recentAudits.map((item) => ({ id: item.id, label: activityLabel(item.action), meta: `${item.entityType} · ${dateTime.format(item.createdAt)}` })) : [],
+      recentPublications: databaseAvailable ? recentPosts.map((item) => ({ id: item.id, title: item.title, type: "Notícia", status: item.status, updatedAt: dateOnly.format(item.updatedAt) })) : [],
+    }}
+    name={session.user.name}
+    readOnly={session.source !== "session"}
+    role={session.user.role}
+  />;
 }

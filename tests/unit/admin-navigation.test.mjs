@@ -7,7 +7,24 @@ const source = fs.readFileSync("app/admin/components/admin-navigation.ts", "utf8
 const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText;
 const { resolveAdminLocation, visibleAdminNavigation } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`);
 
-test("admin navigation selects only the most specific real route", () => {
+test("admin navigation matches the approved sidebar hierarchy for owners", () => {
+  const groups = visibleAdminNavigation("owner");
+  assert.deepEqual(groups.map((group) => group.label), ["", "Site", "Configurações"]);
+  assert.deepEqual(groups.flatMap((group) => group.items.map((item) => item.label)), [
+    "Dashboard",
+    "Conteúdos",
+    "Artistas",
+    "Media Kit",
+    "Empresa",
+    "Identidade do Site",
+    "Automações",
+    "Segurança",
+    "Integrações",
+    "Usuários",
+  ]);
+});
+
+test("admin navigation selects the most specific real route", () => {
   const location = resolveAdminLocation("/admin/settings/lander-records", "owner", false);
   assert.equal(location.activeHref, "/admin/settings/lander-records");
   assert.equal(resolveAdminLocation("/admin/artists/new", "owner", false).activeHref, "/admin/artists");
@@ -15,10 +32,10 @@ test("admin navigation selects only the most specific real route", () => {
   assert.equal(resolveAdminLocation("/admin/artists-unrelated", "owner", false).activeHref, undefined);
 });
 
-test("viewer navigation excludes owner-only users and privileged audit", () => {
+test("viewer navigation keeps privileged users hidden", () => {
   const items = visibleAdminNavigation("viewer").flatMap((group) => group.items);
   assert.ok(items.length > 0);
-  assert.ok(!items.some((item) => item.href === "/admin/users" || item.href === "/admin/audit"));
+  assert.ok(!items.some((item) => item.href === "/admin/users"));
 });
 
 test("synthetic admin loaders do not expose persistent edit permissions", () => {

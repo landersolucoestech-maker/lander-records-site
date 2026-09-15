@@ -2,77 +2,104 @@ import Link from "next/link";
 import { AdminIcon, type IconName } from "./AdminIcon";
 
 type Activity = { id: string; label: string; meta: string };
-type DashboardData = {
-  artistDrafts: number | null;
-  artistPublished?: number | null;
-  artistTotal?: number | null;
-  activePages?: number | null;
-  postPublished?: number | null;
-  postDrafts: number | null;
-  recentActivity: Activity[];
+type Publication = { id: string; title: string; type: string; status: "draft" | "published" | "archived"; updatedAt: string };
+type AnalyticsSeriesPoint = { label: string; visitors: number; views: number };
+type DashboardAnalytics = {
+  visitors: number;
+  views: number;
+  engagementRate: number;
+  conversions: number;
+  previousVisitorsChange?: number | null;
+  previousViewsChange?: number | null;
+  previousEngagementChange?: number | null;
+  previousConversionsChange?: number | null;
+  series?: AnalyticsSeriesPoint[];
+  devices?: Array<{ label: "Desktop" | "Mobile" | "Tablet"; count: number; percentage: number }>;
 };
 
-const quickActions: Array<[string, string, string, IconName]> = [
-  ["Nova notícia", "Criar publicação", "/admin/posts/new", "posts"],
-  ["Novo artista", "Adicionar artista", "/admin/artists/new", "artists"],
-  ["Nova página", "Criar página", "/admin/pages/new", "pages"],
-  ["Enviar mídia", "Upload de arquivos", "/admin/media", "media"],
-  ["Editar Home", "Gerenciar seções", "/admin/home", "home"],
-];
+type DashboardData = {
+  artistDrafts?: number | null;
+  postDrafts?: number | null;
+  recentActivity: Activity[];
+  recentPublications?: Publication[];
+  analytics?: DashboardAnalytics | null;
+};
 
-const homeSections: Array<[string, string, "edit" | "auto"]> = [
-  ["Hero", "Conteúdo principal", "edit"], ["Sobre Nós", "Página institucional", "edit"], ["Redes Sociais", "Configurações sociais", "auto"], ["Ações", "Itens configurados", "edit"], ["Artistas em destaque", "Seleção editorial", "edit"], ["Anuncie Aqui", "Banner institucional", "edit"], ["Últimos Lançamentos", "Fonte: Spotify", "auto"], ["Últimas Notícias", "Fonte editorial", "edit"],
-];
+type MetricCardProps = {
+  accent: "red" | "blue" | "green" | "orange";
+  change?: number | null;
+  icon: IconName;
+  label: string;
+  suffix?: string;
+  value?: number | null;
+};
 
-function route(href: string, preview: boolean) {
-  if (!preview) return href;
-  if (href.includes("home")) return "/cms-preview/home";
-  if (href.includes("artists")) return "/cms-preview/artists";
-  if (href.includes("posts")) return "/cms-preview/posts";
-  if (href.includes("media")) return "/cms-preview/media";
-  if (href.includes("pages")) return "/cms-preview/pages";
-  return "/cms-preview/dashboard";
+function formatInteger(value: number) {
+  return new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(value);
 }
 
-function PanelHeader({ action, children, href, preview }: { action?: string; children: React.ReactNode; href?: string; preview: boolean }) {
-  return <div className="adminPanelHeader"><h2>{children}</h2>{action && href ? <Link className="adminTextButton" href={route(href, preview)}>{action}</Link> : null}</div>;
+function MetricCard({ accent, change, icon, label, suffix = "", value }: MetricCardProps) {
+  const connected = typeof value === "number";
+  return <article className={`adminMetricCard is-${accent}`}>
+    <span className="adminMetricIcon"><AdminIcon name={icon} size={24} /></span>
+    <div className="adminMetricCopy"><span>{label}</span><strong>{connected ? `${formatInteger(value)}${suffix}` : "—"}</strong>{connected && typeof change === "number" ? <small className={change >= 0 ? "isPositive" : "isNegative"}>{change >= 0 ? "↑" : "↓"} {Math.abs(change).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% <em>vs. período anterior</em></small> : <small>Analytics não conectado</small>}</div>
+    <span className="adminMetricSpark" aria-hidden="true" />
+  </article>;
+}
+
+function PanelHeading({ children, description, action }: { children: React.ReactNode; description?: string; action?: React.ReactNode }) {
+  return <div className="adminAnalyticsPanelHeading"><div><h2>{children}</h2>{description ? <p>{description}</p> : null}</div>{action}</div>;
+}
+
+function AnalyticsEmpty({ message }: { message: string }) {
+  return <div className="adminAnalyticsEmpty"><span className="adminAnalyticsEmptyIcon"><AdminIcon name="activity" size={22} /></span><strong>Analytics não conectado</strong><p>{message}</p></div>;
+}
+
+function statusLabel(status: Publication["status"]) {
+  if (status === "published") return "Publicado";
+  if (status === "draft") return "Rascunho";
+  return "Arquivado";
 }
 
 export function DashboardView({ data, name, preview = false, readOnly = false, role = "viewer" }: { data: DashboardData; name: string; preview?: boolean; readOnly?: boolean; role?: "viewer" | "editor" | "admin" | "owner" }) {
+  const analytics = data.analytics ?? null;
   const canEdit = !readOnly && role !== "viewer";
-  const today = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long", timeZone: "America/Sao_Paulo" }).format(new Date());
-  const pending = [
-    [data.postDrafts, "Notícias em rascunho", "Aguardando publicação", "/admin/posts", "posts" as IconName],
-    [data.artistDrafts, "Artistas não publicados", "Aguardando publicação", "/admin/artists", "artists" as IconName],
-  ] as const;
+  const publications = data.recentPublications ?? [];
 
   return <div className="adminDashboard" data-testid="dashboard">
     {preview ? <div className="adminPreviewNotice">BACKEND_ENVIRONMENT_DEFERRED · estrutura visual sem leitura ou escrita no banco.</div> : null}
-    <header className="adminDashboardHeading"><div><h1>{name ? `Olá, ${name}!` : "Olá!"}</h1><p>Aqui está o resumo do que acontece no seu site.</p></div><span className="adminDate" suppressHydrationWarning><AdminIcon name="calendar" size={16} />{today}</span></header>
 
-    <section aria-labelledby="quick-actions-title" className="adminDashboardSection" data-testid="dashboard-quick-actions">
-      <h2 id="quick-actions-title">Ações rápidas</h2>
-      {canEdit ? <div className="adminQuickGrid">{quickActions.map(([title, detail, href, icon]) => <Link className="adminQuickAction" href={route(href, preview)} key={title}><AdminIcon name={icon} size={27} /><span><strong>{title}</strong><small>{detail}</small></span></Link>)}</div> : <div className="adminInlineEmpty">Seu perfil possui acesso de leitura. Ações de criação não estão disponíveis.</div>}
+    <header className="adminDashboardHeading"><div><h1>{name ? `Olá, ${name}!` : "Olá!"}</h1><p>Aqui está o desempenho do seu site em tempo real e um resumo geral.</p></div></header>
+
+    <section aria-label="Indicadores de performance digital" className="adminMetricGrid" data-testid="dashboard-metrics">
+      <MetricCard accent="red" change={analytics?.previousVisitorsChange} icon="artists" label="Visitantes" value={analytics?.visitors} />
+      <MetricCard accent="blue" change={analytics?.previousViewsChange} icon="search" label="Visualizações" value={analytics?.views} />
+      <MetricCard accent="green" change={analytics?.previousEngagementChange} icon="activity" label="Taxa de engajamento" suffix="%" value={analytics?.engagementRate} />
+      <MetricCard accent="orange" change={analytics?.previousConversionsChange} icon="pages" label="Leads / Conversões" value={analytics?.conversions} />
     </section>
 
-    <div className="adminDashboardPrimaryGrid">
-      <section className="adminDashboardPanel" data-testid="editorial-pending"><PanelHeader action="Ver todas" href="/admin/posts" preview={preview}>Pendências editoriais</PanelHeader><div className="adminPanelList">
-        {pending.map(([count, title, detail, href, icon]) => <Link className="adminPendingItem" href={route(href, preview)} key={title}><AdminIcon name={icon} /><strong>{count ?? "—"}</strong><span><b>{title}</b><small>{count === null ? "Dados não consultados no preview" : detail}</small></span><AdminIcon name="chevron" size={15} /></Link>)}
-        <div className="adminPendingItem isUnavailable"><AdminIcon name="pages" /><strong>—</strong><span><b>Páginas sem SEO completo</b><small>Indicador ainda não disponível</small></span></div>
-        <div className="adminPendingItem isUnavailable"><AdminIcon name="media" /><strong>—</strong><span><b>Mídias sem texto alternativo</b><small>Indicador ainda não disponível</small></span></div>
-      </div></section>
+    <div className="adminPerformanceGrid">
+      <section className="adminDashboardPanel adminPerformancePanel" data-testid="site-performance">
+        <PanelHeading description="Evolução de visitantes e visualizações ao longo do tempo." action={<select aria-label="Período de desempenho" className="adminPeriodSelect" defaultValue="30" disabled={!analytics}><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="90">Últimos 90 dias</option></select>}>Desempenho do site</PanelHeading>
+        {analytics?.series?.length ? <div className="adminSimpleChart" role="img" aria-label="Série temporal de visitantes e visualizações"><div className="adminChartLegend"><span><i className="visitors" />Visitantes</span><span><i className="views" />Visualizações</span></div><div className="adminChartBars">{analytics.series.map((point) => <div className="adminChartPoint" key={point.label} title={`${point.label}: ${point.visitors} visitantes, ${point.views} visualizações`}><span className="visitors" style={{ height: `${Math.max(8, Math.min(100, point.visitors))}%` }} /><span className="views" style={{ height: `${Math.max(8, Math.min(100, point.views))}%` }} /><small>{point.label}</small></div>)}</div></div> : <AnalyticsEmpty message="Conecte uma fonte elegível para acompanhar visitantes e visualizações por período." />}
+      </section>
 
-      <section className="adminDashboardPanel" data-testid="home-status"><PanelHeader action="Editar Home" href="/admin/home" preview={preview}>Status do conteúdo da Home</PanelHeader><div className="adminHomeList">{homeSections.map(([title, detail, kind]) => <Link href={route("/admin/home", preview)} key={title}><span className="adminHomeIcon"><AdminIcon name={kind === "auto" ? "integration" : "home"} size={16} /></span><span><b>{title}</b><small>{detail}</small></span><span className={`adminStatusBadge ${kind}`}>{kind === "auto" ? "Automático" : "Editável"}</span><AdminIcon name="chevron" size={14} /></Link>)}</div></section>
-
-      <section className="adminDashboardPanel" data-testid="content-integrations"><PanelHeader action="Ver todas" href="/admin/settings/lander-records" preview={preview}>Integrações de conteúdo</PanelHeader><div className="adminIntegrationList">
-        <Link href={route("/admin/settings/lander-records", preview)}><span className="adminIntegrationMark spotify">S</span><span><b>Spotify</b><small>Últimos lançamentos</small><em>Status não consultado</em></span><span className="adminStatusBadge neutral">Não consultado</span></Link>
-        <Link href={route("/admin/settings/lander-records", preview)}><span className="adminIntegrationMark soundcharts">S</span><span><b>Soundcharts</b><small>Métricas dos artistas</small><em>Status não consultado</em></span><span className="adminStatusBadge neutral">Não consultado</span></Link>
-      </div><div className="adminInfoNote"><span>i</span>Últimos lançamentos e métricas sociais são alimentados pelas integrações configuradas.</div></section>
+      <section className="adminDashboardPanel adminDevicesPanel" data-testid="device-breakdown">
+        <PanelHeading description="Distribuição de visitantes por dispositivo.">Dispositivos</PanelHeading>
+        {analytics?.devices?.length ? <div className="adminDeviceBreakdown"><div className="adminDeviceDonut" aria-label={`${formatInteger(analytics.visitors)} visitantes`} role="img"><strong>{formatInteger(analytics.visitors)}</strong><span>visitantes</span></div><div className="adminDeviceList">{analytics.devices.map((device) => <div key={device.label}><span>{device.label}</span><strong>{device.percentage.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%</strong><small>{formatInteger(device.count)}</small></div>)}</div></div> : <AnalyticsEmpty message="A distribuição entre Desktop, Mobile e Tablet aparecerá quando houver analytics real." />}
+      </section>
     </div>
 
-    <div className="adminDashboardSecondaryGrid">
-      <section className="adminDashboardPanel" data-testid="recent-activity"><PanelHeader action={role === "admin" || role === "owner" ? "Ver todas" : undefined} href="/admin/audit" preview={preview}>Atividade recente</PanelHeader>{data.recentActivity.length ? <div className="adminActivityList">{data.recentActivity.slice(0, 5).map((item) => <div key={item.id}><span className="adminActivityIcon"><AdminIcon name="activity" size={17} /></span><span><b>{item.label}</b><small>{item.meta}</small></span></div>)}</div> : <div className="adminPanelEmpty">{preview ? "Atividades reais não são carregadas no preview." : "Nenhuma atividade registrada."}</div>}</section>
-      <section className="adminDashboardPanel" data-testid="useful-links"><PanelHeader preview={preview}>Links úteis</PanelHeader><div className="adminUsefulLinks">{[["Visualizar site público", "/"], ["Ver Home", "/"], ["Ver Artistas", "/artistas/"], ["Ver Notícias", "/noticias/"], ["Ver Contato", "/contato/"]].map(([label, href]) => <Link href={href} key={label} target="_blank"><AdminIcon name="chevron" size={14} /><span>{label}</span><AdminIcon name="external" size={15} /><span className="srOnly"> (abre em nova aba)</span></Link>)}</div></section>
+    <div className="adminDashboardLowerGrid">
+      <section className="adminDashboardPanel" data-testid="recent-activity">
+        <PanelHeading description="Últimas ações realizadas no seu site." action={role === "admin" || role === "owner" ? <Link className="adminTextButton" href={preview ? "/cms-preview/audit" : "/admin/audit"}>Ver todas</Link> : undefined}>Atividades recentes</PanelHeading>
+        {data.recentActivity.length ? <div className="adminActivityList">{data.recentActivity.slice(0, 4).map((item) => <div key={item.id}><span className="adminActivityIcon"><AdminIcon name="activity" size={17} /></span><span><b>{item.label}</b><small>{item.meta}</small></span></div>)}</div> : <div className="adminPanelEmpty">{preview ? "Atividades reais não são carregadas no preview." : "Nenhuma atividade registrada."}</div>}
+      </section>
+
+      <section className="adminDashboardPanel adminPublicationsPanel" data-testid="recent-publications">
+        <PanelHeading description="Publicações mais recentes do seu site." action={canEdit ? <Link className="adminPrimaryCompact" href={preview ? "/cms-preview/posts" : "/admin/posts/new"}>+ Nova publicação</Link> : undefined}>Conteúdo &amp; Publicações</PanelHeading>
+        {publications.length ? <div className="adminPublicationsTableWrap"><table className="adminPublicationsTable"><thead><tr><th>Título</th><th>Tipo</th><th>Status</th><th>Data</th><th><span className="srOnly">Ações</span></th></tr></thead><tbody>{publications.slice(0, 5).map((item) => <tr key={item.id}><td><strong>{item.title}</strong></td><td><span className="adminTypeBadge">{item.type}</span></td><td><span className={`adminPublicationStatus is-${item.status}`}>{statusLabel(item.status)}</span></td><td>{item.updatedAt}</td><td><Link aria-label={`Abrir ${item.title}`} href={preview ? "/cms-preview/posts" : `/admin/posts/${item.id}`}><AdminIcon name="chevron" size={15} /></Link></td></tr>)}</tbody></table></div> : <div className="adminPanelEmpty">{preview ? "Publicações reais não são carregadas no preview." : "Nenhuma publicação encontrada."}</div>}
+      </section>
     </div>
   </div>;
 }

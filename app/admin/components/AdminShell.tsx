@@ -21,7 +21,8 @@ const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]
 
 export function AdminShell({ children, email, footerAction, name, preview = false, role = "viewer", sessionSource = "session" }: ShellProps) {
   const [open, setOpen] = useState(false);
-  const toggleRef = useRef<HTMLButtonElement>(null);
+  const [collapsed, setCollapsed] = useState(false);
+  const mobileToggleRef = useRef<HTMLButtonElement>(null);
   const sidebarRef = useRef<HTMLElement>(null);
   const workspaceRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
@@ -30,10 +31,19 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
   const initials = name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "LR";
 
   useEffect(() => {
+    const stored = window.localStorage.getItem("lander-admin-sidebar-collapsed");
+    if (stored === "true") setCollapsed(true);
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("lander-admin-sidebar-collapsed", String(collapsed));
+  }, [collapsed]);
+
+  useEffect(() => {
     if (!open) return;
     const sidebar = sidebarRef.current;
     const workspace = workspaceRef.current;
-    const toggle = toggleRef.current;
+    const toggle = mobileToggleRef.current;
     if (!sidebar || !workspace) return;
     const media = window.matchMedia("(max-width: 900px)");
     if (!media.matches) return;
@@ -75,38 +85,42 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
     };
   }, [open]);
 
-  return <div className={`adminShell${open ? " sidebarOpen" : ""}`} data-testid="admin-shell" data-session-source={preview ? "preview" : sessionSource}>
+  const toggleSidebar = () => {
+    if (window.matchMedia("(max-width: 900px)").matches) setOpen(false);
+    else setCollapsed((value) => !value);
+  };
+
+  return <div className={`adminShell${open ? " sidebarOpen" : ""}${collapsed ? " sidebarCollapsed" : ""}`} data-testid="admin-shell" data-session-source={preview ? "preview" : sessionSource}>
     <button aria-label="Fechar menu pela sobreposição" className="adminSidebarBackdrop" onClick={() => setOpen(false)} tabIndex={-1} type="button" />
     <aside className="adminSidebar" data-testid="admin-sidebar" id="admin-sidebar" ref={sidebarRef} tabIndex={-1}>
       <div className="adminBrandBlock">
-        <Image alt="Lander Records" className="adminBrandLogo" height={68} priority src="/lander-records-brand.svg" unoptimized width={168} />
-        <span>Portal editorial</span>
-        <button aria-label="Fechar menu" className="adminDrawerClose" onClick={() => setOpen(false)} type="button"><AdminIcon name="x" /></button>
+        <Image alt="Lander Records" className="adminBrandLogo" height={72} priority src="/lander-records-brand.svg" unoptimized width={152} />
+        <button aria-label={collapsed ? "Expandir menu" : "Colapsar menu"} className="adminSidebarCollapse" onClick={toggleSidebar} title={collapsed ? "Expandir menu" : "Colapsar menu"} type="button"><AdminIcon name="chevron" /></button>
       </div>
       {readOnly ? <div className="adminPreviewBadge">{preview ? "Preview local" : "Desenvolvimento"} · somente leitura</div> : null}
       <nav aria-label="Painel administrativo">
-        {visibleAdminNavigation(role).map((group) => <div className="adminNavGroup" key={group.label}>
-          <span className="adminNavLabel">{group.label}</span>
+        {visibleAdminNavigation(role).map((group) => <div className="adminNavGroup" key={group.label || "dashboard"}>
+          {group.label ? <span className="adminNavLabel">{group.label}</span> : null}
           {group.items.map((item) => {
             const href = preview ? item.previewHref : item.href;
-            return <Link aria-current={location.activeHref === href ? "page" : undefined} href={href} key={item.href} onClick={() => setOpen(false)}><AdminIcon name={item.icon} size={18} /><span>{item.label}</span></Link>;
+            const active = location.activeHref === href || location.activeHref?.split(/[?#]/, 1)[0] === href.split(/[?#]/, 1)[0];
+            return <Link aria-current={active ? "page" : undefined} href={href} key={`${group.label}-${item.label}`} onClick={() => setOpen(false)} title={collapsed ? item.label : undefined}><AdminIcon name={item.icon} size={19} /><span>{item.label}</span></Link>;
           })}
         </div>)}
       </nav>
       <div className="adminSidebarFooter">
         <div className="adminUserSummary"><span className="adminAvatar">{initials}</span><span><strong>{name}</strong><small>{readOnly ? "Acesso de leitura" : email || role}</small></span></div>
         {footerAction}
-        <Link href="/" rel="noopener noreferrer" target="_blank">Ver site público <AdminIcon name="external" size={15} /><span className="srOnly"> (abre em nova aba)</span></Link>
       </div>
     </aside>
     <div className="adminWorkspace" ref={workspaceRef}>
       <a className="adminSkipLink" href="#admin-main">Ir para o conteúdo</a>
       <header className="adminTopbar" data-testid="admin-topbar">
         <div className="adminTopbarLocation">
-          <button aria-controls="admin-sidebar" aria-expanded={open} aria-label={open ? "Fechar menu" : "Abrir menu"} className="adminMenuButton" onClick={() => setOpen((value) => !value)} ref={toggleRef} type="button"><AdminIcon name="menu" /></button>
+          <button aria-controls="admin-sidebar" aria-expanded={open} aria-label={open ? "Fechar menu" : "Abrir menu"} className="adminMenuButton" onClick={() => setOpen((value) => !value)} ref={mobileToggleRef} type="button"><AdminIcon name="menu" /></button>
           <nav aria-label="Breadcrumb" className="adminBreadcrumb"><ol>{location.breadcrumbs.map((crumb, index) => <li key={`${crumb.label}-${index}`}>{crumb.href ? <Link href={crumb.href}>{crumb.label}</Link> : <span aria-current="page">{crumb.label}</span>}</li>)}</ol></nav>
         </div>
-        <div className="adminTopbarActions"><Link aria-label="Ver site público (abre em nova aba)" className="adminPublicLink" href="/" rel="noopener noreferrer" target="_blank"><AdminIcon name="external" size={16} /><span>Ver site público</span></Link><span className="adminTopbarUser"><span className="adminAvatar">{initials}</span><span><strong>{name}</strong><small>{readOnly ? "Somente leitura" : role}</small></span></span></div>
+        <div className="adminTopbarActions"><Link aria-label="Ver site público (abre em nova aba)" className="adminPublicLink" href="/" rel="noopener noreferrer" target="_blank"><span>Ver site público</span><AdminIcon name="external" size={15} /></Link><span className="adminTopbarUser"><span className="adminAvatar">{initials}</span><span><strong>{name}</strong><small>{readOnly ? "Somente leitura" : role}</small></span></span></div>
       </header>
       {readOnly ? <div className="adminReadOnlyNotice" role="status"><strong>{preview ? "Preview local" : "Sessão de desenvolvimento"}</strong><span>Somente leitura. Para salvar alterações, entre com uma conta administrativa real.</span>{!preview ? <Link href="/admin/login">Entrar com uma conta</Link> : null}</div> : null}
       <main className="adminMain" id="admin-main" tabIndex={-1}>{children}</main>

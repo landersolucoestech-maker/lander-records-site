@@ -4,35 +4,32 @@ export type AdminRole = "viewer" | "editor" | "admin" | "owner";
 export type AdminNavItem = { label: string; href: string; previewHref: string; icon: IconName; minimumRole?: "admin" | "owner" };
 export type AdminNavGroup = { label: string; items: AdminNavItem[] };
 const rank: Record<AdminRole, number> = { viewer: 0, editor: 1, admin: 2, owner: 3 };
+
 export const adminNavigation: AdminNavGroup[] = [
-  { label: "Visão geral", items: [{ label: "Dashboard", href: "/admin", previewHref: "/cms-preview/dashboard", icon: "dashboard" }] },
-  { label: "Conteúdo", items: [
-    { label: "Home", href: "/admin/home", previewHref: "/cms-preview/home", icon: "home" },
+  { label: "", items: [{ label: "Dashboard", href: "/admin", previewHref: "/cms-preview/dashboard", icon: "dashboard" }] },
+  { label: "Site", items: [
+    { label: "Conteúdos", href: "/admin/posts", previewHref: "/cms-preview/posts", icon: "posts" },
     { label: "Artistas", href: "/admin/artists", previewHref: "/cms-preview/artists", icon: "artists" },
-    { label: "Notícias", href: "/admin/posts", previewHref: "/cms-preview/posts", icon: "posts" },
-    { label: "Páginas", href: "/admin/pages", previewHref: "/cms-preview/pages", icon: "pages" },
-    { label: "Mídia", href: "/admin/media", previewHref: "/cms-preview/media", icon: "media" },
+    { label: "Media Kit", href: "/admin/media", previewHref: "/cms-preview/media", icon: "media" },
   ] },
-  { label: "Estrutura", items: [
-    { label: "Navegação", href: "/admin/navigation", previewHref: "/cms-preview/navigation", icon: "navigation" },
-    { label: "Cabeçalho", href: "/admin/header", previewHref: "/cms-preview/header", icon: "pages" },
-  ] },
-  { label: "Organização", items: [
-    { label: "Categorias", href: "/admin/categories", previewHref: "/cms-preview/categories", icon: "pages" },
-    { label: "Tags", href: "/admin/tags", previewHref: "/cms-preview/tags", icon: "tags" },
-  ] },
-  { label: "Sistema", items: [
-    { label: "Configurações", href: "/admin/settings", previewHref: "/cms-preview/settings", icon: "settings" },
+  { label: "Configurações", items: [
+    { label: "Empresa", href: "/admin/settings", previewHref: "/cms-preview/settings", icon: "home" },
+    { label: "Identidade do Site", href: "/admin/settings#identity", previewHref: "/cms-preview/settings#identity", icon: "media" },
+    { label: "Automações", href: "/admin/settings#automations", previewHref: "/cms-preview/settings#automations", icon: "activity" },
+    { label: "Segurança", href: "/admin/settings#security", previewHref: "/cms-preview/settings#security", icon: "settings" },
     { label: "Integrações", href: "/admin/settings/lander-records", previewHref: "/cms-preview/integrations", icon: "integration" },
-  ] },
-  { label: "Administração", items: [
     { label: "Usuários", href: "/admin/users", previewHref: "/cms-preview/users", icon: "users", minimumRole: "owner" },
-    { label: "Atividade", href: "/admin/audit", previewHref: "/cms-preview/audit", icon: "audit", minimumRole: "admin" },
   ] },
 ];
 
 export function visibleAdminNavigation(role: AdminRole) {
-  return adminNavigation.map((group) => ({ ...group, items: group.items.filter((item) => !item.minimumRole || rank[role] >= rank[item.minimumRole]) })).filter((group) => group.items.length);
+  return adminNavigation
+    .map((group) => ({ ...group, items: group.items.filter((item) => !item.minimumRole || rank[role] >= rank[item.minimumRole]) }))
+    .filter((group) => group.items.length);
+}
+
+function pathOnly(href: string) {
+  return href.split(/[?#]/, 1)[0];
 }
 
 export function resolveAdminLocation(pathname: string, role: AdminRole, preview: boolean) {
@@ -41,14 +38,19 @@ export function resolveAdminLocation(pathname: string, role: AdminRole, preview:
   const canonical = normalized === "/cms-preview" ? root : normalized;
   const items = visibleAdminNavigation(role).flatMap((group) => group.items);
   const hrefFor = (item: AdminNavItem) => preview ? item.previewHref : item.href;
-  const active = items.filter((item) => canonical === hrefFor(item) || (hrefFor(item) !== root && canonical.startsWith(`${hrefFor(item)}/`))).sort((a, b) => hrefFor(b).length - hrefFor(a).length)[0];
-  const categoryAlias = ["artist-categories", "post-categories"].includes(canonical.split("/")[2]);
-  const selected = active || (categoryAlias ? items.find((item) => item.href === "/admin/categories") : undefined);
+  const active = items
+    .filter((item) => {
+      const href = pathOnly(hrefFor(item));
+      return canonical === href || (href !== root && canonical.startsWith(`${href}/`));
+    })
+    .sort((a, b) => pathOnly(hrefFor(b)).length - pathOnly(hrefFor(a)).length)[0];
+  const selected = active;
   const breadcrumbs: Array<{ label: string; href?: string }> = [];
   if (canonical !== root) breadcrumbs.push({ label: "Dashboard", href: root });
-  const tail = selected ? canonical.slice(hrefFor(selected).length).split("/").filter(Boolean) : [];
+  const selectedHref = selected ? pathOnly(hrefFor(selected)) : "";
+  const tail = selected ? canonical.slice(selectedHref.length).split("/").filter(Boolean) : [];
   const label = selected?.label || (canonical.split("/")[2] === "releases" ? "Lançamentos" : "Portal administrativo");
-  if (tail.length && !categoryAlias && selected) {
+  if (tail.length && selected) {
     breadcrumbs.push({ label, href: hrefFor(selected) });
     breadcrumbs.push({ label: tail[0] === "new" ? "Criar" : tail.at(-1) === "view" ? "Consultar" : "Editar" });
   } else breadcrumbs.push({ label });
