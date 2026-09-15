@@ -6,9 +6,10 @@ const dashboard = fs.readFileSync("app/admin/components/DashboardView.tsx", "utf
 const shell = fs.readFileSync("app/admin/components/AdminShell.tsx", "utf8");
 
 test("dashboard keeps the approved analytics-first sections", () => {
-  for (const heading of ["Visitantes", "Visualizações", "Taxa de engajamento", "Leads / Conversões", "Desempenho do site", "Dispositivos", "Atividades recentes", "Conteúdo & Publicações"]) {
+  for (const heading of ["Visitantes", "Visualizações", "Taxa de engajamento", "Leads / Conversões", "Desempenho do site", "Dispositivos", "Atividades recentes"]) {
     assert.match(dashboard, new RegExp(heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
+  assert.match(dashboard, /Conteúdo &(?:amp;)? Publicações/);
 });
 
 test("dashboard does not reintroduce rejected legacy sections or mock analytics", () => {
