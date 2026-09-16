@@ -9,7 +9,7 @@ export type SiteSectionContract = {
   itemFields: readonly ItemFieldName[];
   allowAddItems?: boolean;
   maxItems?: number;
-  media?: "item-image";
+  media?: "item-image" | "section-image-video";
   mediaLabel?: string;
   source: string;
   sourceHref?: string;
@@ -48,11 +48,11 @@ export const SITE_PAGE_CONTRACTS: Record<string, SitePageContract> = {
     sections: {
       hero: section(
         "Hero Section",
-        "Headline institucional, subtítulo e CTAs exibidos no topo da Home da Lander Records.",
+        "Headline institucional, subtítulo, mídia de fundo e CTAs exibidos no topo da Home da Lander Records.",
         ["title", "subtitle"],
         ["label", "url"],
         "app/(public)/page.tsx · .homeHero",
-        { allowAddItems: true },
+        { allowAddItems: true, maxItems: 2, media: "section-image-video", mediaLabel: "Imagem ou vídeo do Hero" },
       ),
       intro: section(
         "Apresentação institucional",
