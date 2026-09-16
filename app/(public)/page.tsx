@@ -73,7 +73,16 @@ export default async function Home() {
     <div className="homeV2">
 
       {hero ? (
-        <section className="homeHero">
+        <section className={`homeHero${hero.mediaUrl ? " homeHeroHasMedia" : ""}`}>
+          {hero.mediaUrl ? (
+            hero.mediaMimeType.startsWith("video/") ? (
+              <video className="homeHeroMedia" autoPlay loop muted playsInline preload="metadata" aria-hidden="true">
+                <source src={hero.mediaUrl} type={hero.mediaMimeType} />
+              </video>
+            ) : (
+              <>{/* eslint-disable-next-line @next/next/no-img-element */}<img className="homeHeroMedia" src={hero.mediaUrl} alt="" aria-hidden="true" /></>
+            )
+          ) : null}
           <div className="homeHeroBackdrop" />
           <div className="homeHeroContent">
             <h1>{hero.title}</h1>
