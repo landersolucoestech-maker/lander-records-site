@@ -1,318 +1,138 @@
 /*
  * Runtime Dashboard contract.
  *
- * Do not rely on a particular Next.js CSS-module hash shape here. The previous
- * contract matched fragments such as `_toolbar__`, which are not stable across
- * webpack/turbopack builds. These selectors match the semantic local class name
- * itself, so the contract actually reaches every protected module at runtime.
+ * This layer intentionally does not depend on the generated shape of CSS-module
+ * class names. It targets the semantic local class name so webpack and
+ * turbopack builds resolve to the same visual result.
  */
 
 .adminShell .adminMain {
-  --dashboard-bg: #f5f5f4;
-  --dashboard-surface: #fff;
-  --dashboard-border: #e1e6eb;
-  --dashboard-divider: #eef1f4;
-  --dashboard-text: #475467;
-  --dashboard-strong: #101114;
-  --dashboard-muted: #607694;
-  --dashboard-soft: #98a2b3;
-  --dashboard-red: #e30613;
-  --dashboard-radius: 10px;
-  --dashboard-control-radius: 8px;
-  --dashboard-gap: 14px;
-  width: 100%;
-  max-width: none;
-  margin: 0;
-  padding: 20px 24px 32px;
-  background: var(--dashboard-bg);
-  color: var(--dashboard-text);
-  font-family: Montserrat, Arial, sans-serif;
-  font-size: 11px;
-  line-height: 1.45;
+  --dashboard-bg:#f5f5f4;
+  --dashboard-surface:#fff;
+  --dashboard-border:#e1e6eb;
+  --dashboard-divider:#eef1f4;
+  --dashboard-text:#475467;
+  --dashboard-strong:#101114;
+  --dashboard-muted:#607694;
+  --dashboard-soft:#98a2b3;
+  --dashboard-red:#e30613;
+  --dashboard-radius:10px;
+  --dashboard-control-radius:8px;
+  --dashboard-gap:14px;
+  width:100%;
+  max-width:none;
+  margin:0;
+  padding:20px 24px 32px;
+  background:var(--dashboard-bg);
+  color:var(--dashboard-text);
+  font-family:Montserrat,Arial,sans-serif;
+  font-size:11px;
+  line-height:1.45;
 }
 
-.adminShell .adminMain > * {
-  width: 100%;
-  max-width: none;
-  min-width: 0;
-  margin-inline: 0;
+.adminShell .adminMain > *{width:100%;max-width:none;min-width:0;margin-inline:0}
+
+/* Page hierarchy copied from DashboardView. Public-preview art direction is not targeted. */
+.adminShell .adminMain h1{color:var(--dashboard-strong)!important;font-family:Montserrat,Arial,sans-serif!important;font-size:clamp(22px,1.6vw,26px)!important;font-weight:800!important;letter-spacing:-.03em!important;line-height:1.1!important}
+.adminShell .adminMain h2{color:#15191e;font-family:Montserrat,Arial,sans-serif;font-size:14px;font-weight:800;letter-spacing:-.015em}
+.adminShell .adminMain :is(p,small,label){font-family:Montserrat,Arial,sans-serif}
+
+/* Every module root gets Dashboard width and rhythm, including CSS-module roots. */
+.adminShell .adminMain > :is([data-testid$="-manager"],[data-testid="page-section-workbench"],.adminPage,.adminStack,[class*="manager" i],[class*="page" i],[class*="workspace" i]){
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  margin:0!important;
+  gap:14px!important;
 }
 
-/* Page hierarchy: same scale, weight and color as Dashboard. */
-.adminShell .adminMain h1 {
-  color: var(--dashboard-strong);
-  font-family: Montserrat, Arial, sans-serif;
-  font-size: clamp(22px, 1.6vw, 26px);
-  font-weight: 800;
-  letter-spacing: -.03em;
-  line-height: 1.1;
-}
-.adminShell .adminMain h2 {
-  color: #15191e;
-  font-family: Montserrat, Arial, sans-serif;
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: -.015em;
-}
-.adminShell .adminMain h3 {
-  color: #253246;
-  font-family: Montserrat, Arial, sans-serif;
-  font-size: 12px;
-  font-weight: 700;
-}
-.adminShell .adminMain :is(p, small, label) {
-  font-family: Montserrat, Arial, sans-serif;
-}
-
-/* Module roots use the Dashboard vertical rhythm. */
-.adminShell .adminMain > :is(
-  [data-testid$="-manager"],
-  [data-testid="page-section-workbench"],
-  .adminPage,
-  .adminStack,
-  [class*="manager" i],
-  [class*="workspace" i]
-) {
-  gap: var(--dashboard-gap) !important;
-}
-
-/* Admin surfaces. Explicit semantic names keep public-preview internals intact. */
+/* Admin surfaces. Preview/sheet classes are deliberately excluded. */
 .adminShell .adminMain :is(
-  .adminPanel,
-  .adminSectionCard,
-  .adminMetricCard,
-  .adminMediaCard,
-  .tableview-surface,
-  .table-card,
-  [class*="tableSurface" i],
-  [class*="catalogFrame" i],
-  [class*="selectionCard" i],
-  [class*="structureCard" i],
-  [class*="sourceBlock" i],
-  [class*="securityBox" i],
-  [class*="portalCard" i],
-  [class*="settingsCard" i],
-  [class*="contentCard" i],
-  [class*="detailCard" i],
-  [class*="highlightsCard" i],
-  [class*="mediaCard" i]
-) {
-  border: 1px solid var(--dashboard-border) !important;
-  border-radius: var(--dashboard-radius) !important;
-  background: var(--dashboard-surface) !important;
-  box-shadow: 0 3px 12px #10182808 !important;
-}
+  .adminPanel,.adminSectionCard,.adminMetricCard,.adminMediaCard,.tableview-surface,.table-card,
+  [class*="tableSurface" i],[class*="catalogFrame" i],[class*="selectionCard" i],[class*="structureCard" i],
+  [class*="sourceBlock" i],[class*="securityBox" i],[class*="portalCard" i],[class*="settingsCard" i],
+  [class*="contentCard" i],[class*="detailCard" i],[class*="highlightsCard" i],[class*="mediaCard" i],
+  [class*="card" i]:not([class*="preview" i]),[class*="editor" i]:not([class*="editorLayout" i]):not([class*="editorMain" i]):not([class*="editorActions" i]),
+  [class*="catalog" i],[class*="guidance" i] > article,[class*="inventoryList" i] > article,[class*="integrationList" i] > article
+){border:1px solid var(--dashboard-border)!important;border-radius:10px!important;background:#fff!important;box-shadow:0 3px 12px #10182808!important}
 
-/* Filters / toolbars: exactly the same low-chrome density used by Dashboard. */
-.adminShell .adminMain :is(.admin-toolbar, [class*="toolbar" i], [class*="filters" i]) {
-  box-sizing: border-box;
-  gap: 12px !important;
-  padding: 10px 12px !important;
-  border-color: var(--dashboard-border) !important;
-  background: var(--dashboard-surface) !important;
-  box-shadow: none !important;
+/* Card composition is the same 54px/14px system as Dashboard panels. */
+.adminShell .adminMain [class*="card" i]:not([class*="preview" i]) > header,
+.adminShell .adminMain [class*="editor" i]:not([class*="editorLayout" i]):not([class*="editorMain" i]):not([class*="editorActions" i]) > [class*="editorHeading" i]{
+  box-sizing:border-box!important;
+  min-height:54px!important;
+  padding:11px 14px!important;
+  gap:12px!important;
+  border-bottom:1px solid var(--dashboard-divider)!important;
 }
-.adminShell .adminMain :is([class*="filterField" i], [class*="field" i]) > :is(span, label):first-child {
-  color: #52637a;
-  font-size: 10px;
-  font-weight: 700;
-}
+.adminShell .adminMain [class*="card" i]:not([class*="preview" i]) > header h2{margin:0!important;color:#15191e!important;font-size:14px!important;font-weight:800!important;letter-spacing:-.015em!important}
+.adminShell .adminMain [class*="card" i]:not([class*="preview" i]) > header p{margin:2px 0 0!important;color:#6d819d!important;font-size:10px!important;line-height:1.4!important}
+.adminShell .adminMain :is([class*="cardBody" i],[class*="grid" i]:not([class*="metricGrid" i]):not([class*="sheetStats" i])){gap:12px}
+.adminShell .adminMain [class*="cardBody" i]{padding:14px!important}
+.adminShell .adminMain [class*="form" i] [class*="grid" i]:not([class*="metricGrid" i]){gap:12px!important}
+.adminShell .adminMain [class*="card" i]:not([class*="preview" i]) > [class*="grid" i]{padding:14px!important}
 
-/* Form controls. */
-.adminShell .adminMain :is(
-  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
-  select,
-  textarea
-) {
-  box-sizing: border-box;
-  border: 1px solid var(--dashboard-border) !important;
-  border-radius: var(--dashboard-control-radius) !important;
-  background: #fff !important;
-  color: #161a20 !important;
-  box-shadow: none !important;
-  font-family: Montserrat, Arial, sans-serif !important;
-  font-size: 11px !important;
-}
-.adminShell .adminMain :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select) {
-  min-height: 34px !important;
-  height: 34px !important;
-}
-.adminShell .adminMain textarea { min-height: 92px; }
-.adminShell .adminMain :is(input, select, textarea):focus {
-  outline: 0 !important;
-  border-color: #aeb7c2 !important;
-  box-shadow: 0 0 0 3px rgba(227, 6, 19, .07) !important;
-}
-.adminShell .adminMain :is(input, textarea)::placeholder { color: var(--dashboard-soft) !important; }
+/* Editors/forms keep their functional columns but use Dashboard spacing. */
+.adminShell .adminMain :is([class*="form" i],[class*="editorMain" i]){gap:14px!important}
+.adminShell .adminMain [class*="editorLayout" i]{gap:14px!important}
+.adminShell .adminMain [class*="editorTop" i]{gap:10px!important}
+.adminShell .adminMain [class*="editorActions" i]{gap:7px!important}
 
-/* Buttons that belong to module chrome, not public preview content. */
-.adminShell .adminMain :is(
-  .adminButton,
-  [class*="primaryButton" i],
-  [class*="outlineButton" i],
-  [class*="configureButton" i],
-  [class*="modalButton" i],
-  [class*="modalPrimary" i],
-  [class*="clearButton" i]
-) {
-  box-sizing: border-box;
-  min-height: 34px !important;
-  border-radius: 8px !important;
-  box-shadow: none !important;
-  font-family: Montserrat, Arial, sans-serif !important;
-  font-size: 11px !important;
-  font-weight: 800 !important;
-}
-.adminShell .adminMain :is(.adminButton.primary, [class*="primaryButton" i], [class*="modalPrimary" i]) {
-  border-color: #090b0e !important;
-  background: #090b0e !important;
-  color: #fff !important;
-}
-.adminShell .adminMain :is(.adminButton.primary, [class*="primaryButton" i], [class*="modalPrimary" i]):hover {
-  border-color: #20252b !important;
-  background: #20252b !important;
-}
+/* Filters / toolbars. */
+.adminShell .adminMain :is(.admin-toolbar,[class*="toolbar" i],[class*="filters" i]){box-sizing:border-box;gap:12px!important;padding:10px 12px!important;border-color:var(--dashboard-border)!important;background:#fff!important;box-shadow:none!important}
+.adminShell .adminMain :is([class*="filterField" i],[class*="field" i]) > :is(span,label):first-child{color:#52637a;font-size:10px;font-weight:700}
+
+/* Controls. */
+.adminShell .adminMain :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),select,textarea){box-sizing:border-box;border:1px solid var(--dashboard-border)!important;border-radius:8px!important;background:#fff!important;color:#161a20!important;box-shadow:none!important;font-family:Montserrat,Arial,sans-serif!important;font-size:11px!important}
+.adminShell .adminMain :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),select){min-height:34px!important;height:34px!important}
+.adminShell .adminMain textarea{min-height:92px}
+.adminShell .adminMain :is(input,select,textarea):focus{outline:0!important;border-color:#aeb7c2!important;box-shadow:0 0 0 3px rgba(227,6,19,.07)!important}
+.adminShell .adminMain :is(input,textarea)::placeholder{color:var(--dashboard-soft)!important}
+
+/* Buttons. Topbar remains red; in-page primary actions follow Dashboard compact black action. */
+.adminShell .adminMain :is(.adminButton,[class*="primaryButton" i],[class*="outlineButton" i],[class*="configureButton" i],[class*="modalButton" i],[class*="modalPrimary" i],[class*="clearButton" i]){box-sizing:border-box;min-height:34px!important;border-radius:8px!important;box-shadow:none!important;font-family:Montserrat,Arial,sans-serif!important;font-size:11px!important;font-weight:800!important}
+.adminShell .adminMain :is(.adminButton.primary,[class*="primaryButton" i],[class*="modalPrimary" i]){border-color:#090b0e!important;background:#090b0e!important;color:#fff!important}
+.adminShell .adminMain :is(.adminButton.primary,[class*="primaryButton" i],[class*="modalPrimary" i]):hover{border-color:#20252b!important;background:#20252b!important}
 
 /* Tabs. */
-.adminShell .adminMain :is(.adminTabs, [class*="tabs" i], [class*="viewTabs" i]) {
-  box-sizing: border-box;
-  min-height: 38px;
-  border: 0 !important;
-  border-bottom: 1px solid var(--dashboard-border) !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-.adminShell .adminMain :is(.adminTabs, [class*="tabs" i], [class*="viewTabs" i]) :is(a, button) {
-  box-shadow: none !important;
-  font-family: Montserrat, Arial, sans-serif !important;
-  font-size: 10px !important;
-}
+.adminShell .adminMain :is(.adminTabs,[class*="tabs" i],[class*="viewTabs" i]){box-sizing:border-box;min-height:38px;border:0!important;border-bottom:1px solid var(--dashboard-border)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+.adminShell .adminMain :is(.adminTabs,[class*="tabs" i],[class*="viewTabs" i]) :is(a,button){box-shadow:none!important;font-family:Montserrat,Arial,sans-serif!important;font-size:10px!important}
 
-/* Tables follow Dashboard recent-publications density. */
-.adminShell .adminMain table:not(.tableview-freeform) {
-  width: 100% !important;
-  border-collapse: collapse !important;
-  border-spacing: 0 !important;
-  font-family: Montserrat, Arial, sans-serif !important;
-  font-size: 10px !important;
-}
-.adminShell .adminMain table:not(.tableview-freeform) th {
-  height: 34px !important;
-  padding: 7px 10px !important;
-  border-bottom: 1px solid var(--dashboard-divider) !important;
-  background: #fff !important;
-  color: var(--dashboard-muted) !important;
-  font-size: 9px !important;
-  font-weight: 800 !important;
-  letter-spacing: .03em !important;
-  line-height: 1.2 !important;
-  text-transform: uppercase !important;
-  vertical-align: middle !important;
-}
-.adminShell .adminMain table:not(.tableview-freeform) td {
-  padding: 6px 10px !important;
-  border-bottom: 1px solid var(--dashboard-divider) !important;
-  background: #fff;
-  color: var(--dashboard-text) !important;
-  font-size: 10px !important;
-  line-height: 1.35 !important;
-  vertical-align: middle !important;
-}
-.adminShell .adminMain table:not(.tableview-freeform) tbody tr:last-child td { border-bottom: 0 !important; }
-.adminShell .adminMain table:not(.tableview-freeform) tbody tr:hover td { background: #fafbfc !important; }
-.adminShell .adminMain table:not(.tableview-freeform) :is(strong, b) {
-  color: #253246;
-  font-size: 10px;
-  font-weight: 700;
-}
-.adminShell .adminMain table:not(.tableview-freeform) small {
-  color: var(--dashboard-muted);
-  font-size: 9px;
-}
+/* Native tables. */
+.adminShell .adminMain table:not(.tableview-freeform){width:100%!important;border-collapse:collapse!important;border-spacing:0!important;font-family:Montserrat,Arial,sans-serif!important;font-size:10px!important}
+.adminShell .adminMain table:not(.tableview-freeform) th{height:34px!important;padding:7px 10px!important;border-bottom:1px solid var(--dashboard-divider)!important;background:#fff!important;color:var(--dashboard-muted)!important;font-size:9px!important;font-weight:800!important;letter-spacing:.03em!important;line-height:1.2!important;text-transform:uppercase!important;vertical-align:middle!important}
+.adminShell .adminMain table:not(.tableview-freeform) td{padding:6px 10px!important;border-bottom:1px solid var(--dashboard-divider)!important;background:#fff;color:var(--dashboard-text)!important;font-size:10px!important;line-height:1.35!important;vertical-align:middle!important}
+.adminShell .adminMain table:not(.tableview-freeform) tbody tr:last-child td{border-bottom:0!important}
+.adminShell .adminMain table:not(.tableview-freeform) tbody tr:hover td{background:#fafbfc!important}
+.adminShell .adminMain table:not(.tableview-freeform) :is(strong,b){color:#253246;font-size:10px;font-weight:700}
+.adminShell .adminMain table:not(.tableview-freeform) small{color:var(--dashboard-muted);font-size:9px}
 
-/* Status, taxonomy and compact metadata chips. */
-.adminShell .adminMain :is(
-  .adminBadge,
-  [class*="statusBadge" i],
-  [class*="typeBadge" i],
-  [class*="taxonomy" i] > span,
-  [class*="pill" i]
-) {
-  min-height: 20px !important;
-  padding: 3px 7px !important;
-  border-radius: 5px !important;
-  font-size: 9px !important;
-  font-weight: 700 !important;
-  line-height: 1 !important;
-}
+/* CSS-grid/list tables used by Navigation, Pages and similar managers. */
+.adminShell .adminMain [class*="tableHeader" i]{min-height:34px!important;padding:7px 12px!important;border-bottom:1px solid var(--dashboard-divider)!important;background:#fff!important;color:var(--dashboard-muted)!important;font-size:9px!important;font-weight:800!important;letter-spacing:.03em!important;text-transform:uppercase!important}
+.adminShell .adminMain [class*="sectionsHead" i]{min-height:34px!important;background:#fff!important;border-color:var(--dashboard-divider)!important;color:var(--dashboard-muted)!important;font-size:9px!important}
+
+/* Status/taxonomy metadata. */
+.adminShell .adminMain :is(.adminBadge,[class*="statusBadge" i],[class*="typeBadge" i],[class*="taxonomy" i] > span,[class*="pill" i]){min-height:20px!important;padding:3px 7px!important;border-radius:5px!important;font-size:9px!important;font-weight:700!important;line-height:1!important}
 
 /* Menus, pagination and empty states. */
-.adminShell .adminMain [class*="actionMenu" i] {
-  border: 1px solid #dfe3e8 !important;
-  border-radius: 8px !important;
-  background: #fff !important;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, .12) !important;
-}
-.adminShell .adminMain :is([class*="pagination" i], [class*="resultCount" i]) {
-  border-color: var(--dashboard-divider) !important;
-  background: #fff !important;
-  color: var(--dashboard-muted) !important;
-  font-size: 10px !important;
-}
-.adminShell .adminMain [class*="paginationControls" i] button {
-  min-width: 30px !important;
-  height: 30px !important;
-  min-height: 30px !important;
-  border: 1px solid var(--dashboard-border) !important;
-  border-radius: 6px !important;
-  background: #fff !important;
-  color: #344054 !important;
-  box-shadow: none !important;
-  font-size: 10px !important;
-}
-.adminShell .adminMain :is(.adminEmpty, [class*="empty" i]) {
-  border-color: var(--dashboard-border) !important;
-  border-radius: var(--dashboard-radius) !important;
-  background: #fff !important;
-  color: var(--dashboard-muted) !important;
-}
+.adminShell .adminMain [class*="actionMenu" i]{border:1px solid #dfe3e8!important;border-radius:8px!important;background:#fff!important;box-shadow:0 12px 30px rgba(15,23,42,.12)!important}
+.adminShell .adminMain :is([class*="pagination" i],[class*="resultCount" i]){border-color:var(--dashboard-divider)!important;background:#fff!important;color:var(--dashboard-muted)!important;font-size:10px!important}
+.adminShell .adminMain [class*="paginationControls" i] button{min-width:30px!important;height:30px!important;min-height:30px!important;border:1px solid var(--dashboard-border)!important;border-radius:6px!important;background:#fff!important;color:#344054!important;box-shadow:none!important;font-size:10px!important}
+.adminShell .adminMain :is(.adminEmpty,[class*="empty" i]:not([class*="emptyMedia" i])){border-color:var(--dashboard-border)!important;border-radius:10px!important;background:#fff!important;color:var(--dashboard-muted)!important}
 
-/* Metric groups used outside Dashboard receive the exact Dashboard card language. */
-.adminShell .adminMain [class*="metrics" i] {
-  gap: 12px !important;
-}
-.adminShell .adminMain [class*="metrics" i] > :is(article, div) {
-  border-color: var(--dashboard-border) !important;
-  border-radius: var(--dashboard-radius) !important;
-  background: #fff !important;
-  box-shadow: 0 3px 12px #10182808 !important;
-}
+/* Metric groups outside Dashboard become Dashboard KPI cards, without changing their column count. */
+.adminShell .adminMain [class*="metrics" i]{gap:12px!important}
+.adminShell .adminMain [class*="metrics" i] > article{min-height:108px!important;padding:14px 16px!important;border:1px solid var(--dashboard-border)!important;border-radius:10px!important;background:#fff!important;box-shadow:0 3px 12px #10182808!important}
+.adminShell .adminMain [class*="metrics" i] [class*="metricIcon" i]{width:44px!important;height:44px!important;border-radius:50%!important}
+.adminShell .adminMain [class*="metrics" i] strong{color:#090b0f!important;font-size:clamp(21px,1.45vw,25px)!important;font-weight:800!important;letter-spacing:-.035em!important;line-height:1.1!important}
+.adminShell .adminMain [class*="metrics" i] :is(small,p){color:#607694!important;font-size:10px!important}
 
-/* Known feature roots: remove legacy constrained canvases. */
-.adminShell .adminMain :is(
-  [data-testid="artist-manager"],
-  [data-testid="header-manager"],
-  [data-testid="page-section-workbench"],
-  [data-testid="media-manager"],
-  [data-testid="posts-manager"],
-  [data-testid="pages-manager"],
-  [data-testid="settings-manager"],
-  [data-testid="users-manager"]
-) {
-  width: 100% !important;
-  max-width: none !important;
-  margin: 0 !important;
-  gap: 14px !important;
-}
+/* Compact list cards such as integrations/inventory. */
+.adminShell .adminMain :is([class*="integrationList" i],[class*="inventoryList" i]) > article{min-height:58px!important;padding:10px 12px!important;gap:10px!important;border-radius:8px!important}
 
-@media (max-width: 1100px) {
-  .adminShell .adminMain { padding: 18px 18px 28px; }
-}
-@media (max-width: 760px) {
-  .adminShell .adminMain { padding: 15px 14px 24px; }
-  .adminShell .adminMain > :is([data-testid$="-manager"], [data-testid="page-section-workbench"], .adminPage, .adminStack, [class*="manager" i]) { gap: 12px !important; }
-}
-@media (max-width: 520px) {
-  .adminShell .adminMain { padding-inline: 11px; }
-}
+/* Known feature roots. */
+.adminShell .adminMain :is([data-testid="artist-manager"],[data-testid="header-manager"],[data-testid="page-section-workbench"],[data-testid="media-manager"],[data-testid="posts-manager"],[data-testid="pages-manager"],[data-testid="settings-manager"],[data-testid="users-manager"]){width:100%!important;max-width:none!important;margin:0!important;gap:14px!important}
+
+@media(max-width:1100px){.adminShell .adminMain{padding:18px 18px 28px}}
+@media(max-width:760px){.adminShell .adminMain{padding:15px 14px 24px}.adminShell .adminMain > :is([data-testid$="-manager"],[data-testid="page-section-workbench"],.adminPage,.adminStack,[class*="manager" i],[class*="page" i]){gap:12px!important}}
+@media(max-width:520px){.adminShell .adminMain{padding-inline:11px}}
