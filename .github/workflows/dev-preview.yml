@@ -151,7 +151,7 @@ jobs:
           echo "TUNNEL_PID=$TUNNEL_PID" >> "$GITHUB_ENV"
 
           PREVIEW_URL=""
-          for attempt in $(seq 1 45); do
+          for attempt in $(seq 1 60); do
             PREVIEW_URL=$(grep -oE 'https://[-a-z0-9]+\.trycloudflare\.com' /tmp/cloudflared.log | head -n 1 || true)
             if [ -n "$PREVIEW_URL" ]; then
               break
@@ -172,8 +172,26 @@ jobs:
           echo "url=$PREVIEW_URL" >> "$GITHUB_OUTPUT"
           printf '%s\n' "$PREVIEW_URL" > preview-url.txt
 
-          curl --fail --silent --show-error --location --max-redirs 5 --retry 20 --retry-delay 2 \
-            "$PREVIEW_URL/admin" > /dev/null
+          TUNNEL_READY=0
+          for attempt in $(seq 1 60); do
+            if ! kill -0 "$TUNNEL_PID" 2>/dev/null; then
+              cat /tmp/cloudflared.log
+              exit 1
+            fi
+            if curl --fail --silent --show-error --location --max-redirs 5 \
+              --connect-timeout 5 --max-time 15 "$PREVIEW_URL/admin" > /dev/null 2>&1; then
+              TUNNEL_READY=1
+              break
+            fi
+            echo "Waiting for quick-tunnel DNS/edge propagation ($attempt/60)..."
+            sleep 2
+          done
+
+          if [ "$TUNNEL_READY" != "1" ]; then
+            echo "Quick tunnel was created but never became publicly reachable."
+            cat /tmp/cloudflared.log
+            exit 1
+          fi
 
           {
             echo "### Dev Preview"
@@ -217,7 +235,9 @@ jobs:
           )
           failed=0
           for route in "${routes[@]}"; do
-            code=$(curl --silent --show-error --location --max-redirs 5 --retry 5 --retry-delay 1 --output /dev/null --write-out '%{http_code}' "${PREVIEW_URL}${route}" || true)
+            code=$(curl --silent --show-error --location --max-redirs 5 \
+              --retry 8 --retry-delay 1 --retry-all-errors --connect-timeout 5 --max-time 20 \
+              --output /dev/null --write-out '%{http_code}' "${PREVIEW_URL}${route}" || true)
             echo "${code} ${route}"
             if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
               failed=1
