@@ -38,6 +38,13 @@ test("admin navigation selects the most specific real route", () => {
   assert.equal(resolveAdminLocation("/admin/artists-unrelated", "owner", false).activeHref, undefined);
 });
 
+test("settings hash routes keep the matching reference tab active", () => {
+  assert.equal(resolveAdminLocation("/admin/settings", "owner", false).activeHref, "/admin/settings");
+  assert.equal(resolveAdminLocation("/admin/settings#identity", "owner", false).activeHref, "/admin/settings#identity");
+  assert.equal(resolveAdminLocation("/admin/settings#automations", "owner", false).activeHref, "/admin/settings#automations");
+  assert.equal(resolveAdminLocation("/admin/settings#security", "owner", false).activeHref, "/admin/settings#security");
+});
+
 test("viewer navigation keeps privileged users hidden", () => {
   const items = visibleAdminNavigation("viewer").flatMap((group) => group.items);
   assert.ok(items.length > 0);
