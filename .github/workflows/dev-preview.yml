@@ -85,7 +85,7 @@ jobs:
           echo "APP_PID=$APP_PID" >> "$GITHUB_ENV"
           READY=0
           for attempt in $(seq 1 30); do
-            if curl --fail --silent --show-error http://127.0.0.1:3000/admin > /tmp/admin-preview.html; then
+            if curl --fail --silent --show-error --location --max-redirs 5 http://127.0.0.1:3000/admin > /tmp/admin-preview.html; then
               READY=1
               break
             fi
@@ -126,7 +126,7 @@ jobs:
           )
           failed=0
           for route in "${routes[@]}"; do
-            code=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "http://127.0.0.1:3000${route}" || true)
+            code=$(curl --silent --show-error --location --max-redirs 5 --output /dev/null --write-out '%{http_code}' "http://127.0.0.1:3000${route}" || true)
             echo "${code} ${route}"
             if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
               failed=1
@@ -171,7 +171,7 @@ jobs:
           echo "url=$PREVIEW_URL" >> "$GITHUB_OUTPUT"
           printf '%s\n' "$PREVIEW_URL" > preview-url.txt
 
-          curl --fail --silent --show-error --retry 20 --retry-delay 2 \
+          curl --fail --silent --show-error --location --max-redirs 5 --retry 20 --retry-delay 2 \
             "$PREVIEW_URL/admin" > /dev/null
 
           {
@@ -215,7 +215,7 @@ jobs:
           )
           failed=0
           for route in "${routes[@]}"; do
-            code=$(curl --silent --show-error --retry 5 --retry-delay 1 --output /dev/null --write-out '%{http_code}' "${PREVIEW_URL}${route}" || true)
+            code=$(curl --silent --show-error --location --max-redirs 5 --retry 5 --retry-delay 1 --output /dev/null --write-out '%{http_code}' "${PREVIEW_URL}${route}" || true)
             echo "${code} ${route}"
             if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
               failed=1
