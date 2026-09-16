@@ -63,23 +63,49 @@ export default function PageManager({ canEdit = true, demoMode = false, pages, p
   const title = displayTitle(selected);
   const kind = pageKind(selected);
   const editHref = preview ? "/cms-preview/pages" : `/admin/pages/${selected.id}`;
+  const createPageHref = preview ? "/cms-preview/pages" : "/admin/pages/new";
   const canonicalPage = Boolean(contract);
   const allowDelete = canEdit && !demoMode && !preview && !canonicalPage;
 
   return <div className={styles.manager} data-testid="pages-manager">
     <section className={styles.selectionCard} aria-label="Página selecionada">
-      <div className={styles.selectedSummary}><span className={styles.eyebrow}>Página selecionada</span><strong>{title}</strong><small>{selected.enabled ? "Publicada" : "Não publicada"} · {kind}</small></div>
-      <label className={styles.pageSelector}><span>Página</span><select aria-label="Selecionar página" onChange={(event) => { setSelectedId(event.target.value); setDeleteOpen(false); }} value={selected.id}>{pages.map((page) => <option key={page.id} value={page.id}>{displayTitle(page)} · {pageKind(page)} · {page.enabled ? "publicada" : "não publicada"}</option>)}</select></label>
-      <div className={styles.pageActions}>{selected.publicRoute ? <Link className={styles.outlineButton} href={selected.publicRoute} rel="noopener noreferrer" target="_blank"><AdminIcon name="eye" size={18} /><span>Ver página pública</span></Link> : <button className={styles.outlineButton} disabled type="button"><AdminIcon name="eye" size={18} /><span>Ver página pública</span></button>}<Link className={styles.outlineButton} href={editHref}><AdminIcon name="edit" size={17} /><span>Editar</span></Link>{allowDelete ? <button className={`${styles.outlineButton} ${styles.dangerButton}`} onClick={() => setDeleteOpen(true)} type="button"><AdminIcon name="trash" size={17} /><span>Excluir</span></button> : <button aria-disabled="true" className={`${styles.outlineButton} ${styles.dangerButton}`} title={canonicalPage ? "Página estrutural do site público" : "Ação indisponível neste acesso"} type="button"><AdminIcon name="trash" size={17} /><span>Excluir</span></button>}</div>
+      <div className={styles.selectedSummary}>
+        <span className={styles.eyebrow}>Página selecionada</span>
+        <strong>{title}</strong>
+        <small>{selected.enabled ? "Publicada" : "Não publicada"} · {kind}</small>
+      </div>
+      <label className={styles.pageSelector}>
+        <span>Página</span>
+        <select aria-label="Selecionar página" onChange={(event) => { setSelectedId(event.target.value); setDeleteOpen(false); }} value={selected.id}>
+          {pages.map((page) => <option key={page.id} value={page.id}>{displayTitle(page)} · {pageKind(page)} · {page.enabled ? "publicada" : "não publicada"}</option>)}
+        </select>
+      </label>
+      <div className={styles.pageActions}>
+        <Link className={styles.primaryButton} href={createPageHref}><span aria-hidden="true">+</span><span>Criar página</span></Link>
+        {selected.publicRoute ? <Link className={styles.outlineButton} href={selected.publicRoute} rel="noopener noreferrer" target="_blank"><AdminIcon name="eye" size={17} /><span>Ver página pública</span></Link> : <button className={styles.outlineButton} disabled type="button"><AdminIcon name="eye" size={17} /><span>Ver página pública</span></button>}
+        <Link className={styles.outlineButton} href={editHref}><AdminIcon name="edit" size={16} /><span>Editar</span></Link>
+        {allowDelete ? <button className={`${styles.outlineButton} ${styles.dangerButton}`} onClick={() => setDeleteOpen(true)} type="button"><AdminIcon name="trash" size={16} /><span>Excluir</span></button> : <button aria-disabled="true" className={`${styles.outlineButton} ${styles.dangerButton}`} title={canonicalPage ? "Página estrutural do site público" : "Ação indisponível neste acesso"} type="button"><AdminIcon name="trash" size={16} /><span>Excluir</span></button>}
+      </div>
     </section>
 
     <section className={`tableview-surface ${styles.structureCard}`} aria-label="Estrutura da página">
-      <div className={styles.structureHeading}><div><span className={styles.eyebrow}>Estrutura da página</span><strong>{title}</strong><small>{sections.length} {sections.length === 1 ? "seção" : "seções"} · {kind}</small></div>{canonicalPage ? <span className={styles.structureBound}><AdminIcon name="check" size={14}/> Estrutura vinculada ao site</span> : <Link className={styles.primaryButton} href={editHref}><span aria-hidden="true">+</span> Criar seção</Link>}</div>
+      <div className={styles.structureHeading}>
+        <div>
+          <span className={styles.eyebrow}>Estrutura da página</span>
+          <strong>{title}</strong>
+          <small>{sections.length} {sections.length === 1 ? "seção" : "seções"} · {kind}</small>
+        </div>
+        <Link className={styles.primaryButton} href={editHref}><span aria-hidden="true">+</span><span>Criar seção</span></Link>
+      </div>
       {sections.length ? <div className={styles.tableWrap}><table>
         <thead><tr><th>Seção</th><th>Status</th><th className={styles.actionsColumn}>Ações</th></tr></thead>
         <tbody>{sections.map((section, index) => {
           const configureHref = preview ? editHref : `${editHref}?section=${encodeURIComponent(section.id)}`;
-          return <tr key={section.id}><td><div className={`table-primary ${styles.sectionIdentity}`}><span className={styles.position}>{String(index + 1).padStart(2, "0")}</span><span><strong>{sectionTitle(selected, section)}</strong><small>{sectionDescription(selected, section)}</small></span></div></td><td><span className={`${styles.statusBadge} ${section.enabled ? styles.active : styles.inactive}`}><i aria-hidden="true" />{section.enabled ? "Ativo" : "Inativo"}</span></td><td className={styles.actionsColumn}><div className={styles.sectionActions}><Link className={styles.configureButton} href={configureHref}><AdminIcon name="sliders" size={17} /><span>Configurar</span></Link><Link aria-label={`Mais ações para ${sectionTitle(selected, section)}`} className={styles.moreButton} href={configureHref}><AdminIcon name="more" size={18} /></Link></div></td></tr>;
+          return <tr key={section.id}>
+            <td><div className={`table-primary ${styles.sectionIdentity}`}><span className={styles.position}>{String(index + 1).padStart(2, "0")}</span><span><strong>{sectionTitle(selected, section)}</strong><small>{sectionDescription(selected, section)}</small></span></div></td>
+            <td><span className={`${styles.statusBadge} ${section.enabled ? styles.active : styles.inactive}`}><i aria-hidden="true" />{section.enabled ? "Ativo" : "Inativo"}</span></td>
+            <td className={styles.actionsColumn}><div className={styles.sectionActions}><Link className={styles.configureButton} href={configureHref}><AdminIcon name="sliders" size={16} /><span>Configurar</span></Link></div></td>
+          </tr>;
         })}</tbody>
       </table></div> : <div className={styles.noSections}>Nenhuma seção cadastrada nesta página.</div>}
     </section>
