@@ -6,8 +6,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { audit, requirePersistentAdmin } from "../../../../../lib/auth";
 import { getDb } from "../../../../../lib/db";
-import { mediaAssets, pageSections } from "../../../../../lib/db/schema";
-import { uploadMedia as uploadStoredMedia } from "@/lib/storage";
+import { mediaAssets, pageSections, pages } from "../../../../../lib/db/schema";
+import { deleteMedia as deleteStoredMedia, uploadMedia as uploadStoredMedia } from "@/lib/storage";
+import { sitePageContract, siteSectionContract } from "../site-page-contract";
 
 const MAX_HERO_MEDIA_BYTES = 50 * 1024 * 1024;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -33,32 +34,36 @@ function isHeroMediaMimeType(mimeType: string) {
 
 async function sectionForUpdate(sectionId: string, pageId: string) {
   if (!UUID_RE.test(sectionId) || !UUID_RE.test(pageId)) throw new Error("Seção inválida.");
-  const rows = await getDb()
-    .select()
-    .from(pageSections)
-    .where(and(eq(pageSections.id, sectionId), eq(pageSections.pageId, pageId)))
-    .limit(1);
-  const section = rows[0];
-  if (!section) throw new Error("Seção não encontrada.");
-  if (section.sectionKey !== "hero") throw new Error("Upload de mídia direta disponível somente para o Hero.");
-  return section;
+  const db = getDb();
+  const [page, section] = await Promise.all([
+    db.select().from(pages).where(eq(pages.id, pageId)).limit(1).then((rows) => rows[0]),
+    db.select().from(pageSections).where(and(eq(pageSections.id, sectionId), eq(pageSections.pageId, pageId))).limit(1).then((rows) => rows[0]),
+  ]);
+  if (!page || !section) throw new Error("Página ou seção não encontrada.");
+
+  const pageContract = sitePageContract(page.key);
+  const sectionContract = siteSectionContract(page.key, section.sectionKey);
+  if (!pageContract || !sectionContract || sectionContract.media !== "section-image-video") {
+    throw new Error("Esta seção não possui contrato público para mídia de fundo.");
+  }
+  return { page, pageContract, section, sectionContract };
 }
 
-function refreshHero(pageId: string) {
-  revalidatePath("/");
+function refreshSection(pageId: string, publicRoute: string) {
+  revalidatePath(publicRoute);
   revalidatePath(`/admin/pages/${pageId}`);
   revalidatePath("/admin/media");
 }
 
-function backToHero(pageId: string, sectionId: string) {
-  redirect(`/admin/pages/${pageId}/?section=${encodeURIComponent(sectionId)}`);
+function backToSection(pageId: string, sectionId: string) {
+  redirect(`/admin/pages/${pageId}?section=${encodeURIComponent(sectionId)}`);
 }
 
 export async function uploadPageSectionMedia(formData: FormData) {
   const session = await requirePersistentAdmin("editor");
   const pageId = text(formData, "pageId");
   const sectionId = text(formData, "sectionId");
-  const section = await sectionForUpdate(sectionId, pageId);
+  const context = await sectionForUpdate(sectionId, pageId);
   const upload = formData.get("file");
 
   if (!(upload instanceof File) || upload.size === 0) throw new Error("Selecione uma imagem ou vídeo para enviar.");
@@ -69,37 +74,44 @@ export async function uploadPageSectionMedia(formData: FormData) {
   const stored = await uploadStoredMedia(storageKey, new Uint8Array(await upload.arrayBuffer()), upload.type);
   const altText = text(formData, "altText");
   const db = getDb();
+  let mediaId: string;
 
-  const inserted = await db.insert(mediaAssets).values({
-    storageProvider: "supabase_storage",
-    storageKey: stored.key,
-    url: stored.url,
-    mimeType: upload.type,
-    byteSize: upload.size,
-    altText,
-    originalFilename: upload.name,
-    status: "active",
-    createdBy: session.user.id,
-    updatedBy: session.user.id,
-  }).returning({ id: mediaAssets.id });
-
-  const mediaId = inserted[0]?.id;
-  if (!mediaId) throw new Error("Não foi possível registrar a mídia enviada.");
+  try {
+    const inserted = await db.insert(mediaAssets).values({
+      storageProvider: "supabase_storage",
+      storageKey: stored.key,
+      url: stored.url,
+      mimeType: upload.type,
+      byteSize: upload.size,
+      altText,
+      originalFilename: upload.name,
+      status: "active",
+      createdBy: session.user.id,
+      updatedBy: session.user.id,
+    }).returning({ id: mediaAssets.id });
+    mediaId = inserted[0]?.id;
+    if (!mediaId) throw new Error("Não foi possível registrar a mídia enviada.");
+  } catch (error) {
+    await deleteStoredMedia(stored.key).catch(() => undefined);
+    throw error;
+  }
 
   await db.update(pageSections).set({
-    settings: { ...(section.settings || {}), mediaId },
+    settings: { ...(context.section.settings || {}), mediaId },
     updatedAt: new Date(),
-  }).where(eq(pageSections.id, sectionId));
+  }).where(and(eq(pageSections.id, context.section.id), eq(pageSections.pageId, context.page.id)));
 
-  await audit(session.user.id, "page_section.hero_media_uploaded", "page_section", sectionId, {
-    pageId,
+  await audit(session.user.id, "page_section.hero_media_uploaded", "page_section", context.section.id, {
+    pageId: context.page.id,
+    pageKey: context.page.key,
+    sectionKey: context.section.sectionKey,
     mediaId,
     mimeType: upload.type,
     filename: upload.name,
   });
 
-  refreshHero(pageId);
-  backToHero(pageId, sectionId);
+  refreshSection(context.page.id, context.pageContract.route);
+  backToSection(context.page.id, context.section.id);
 }
 
 export async function setPageSectionMedia(formData: FormData) {
@@ -107,37 +119,46 @@ export async function setPageSectionMedia(formData: FormData) {
   const pageId = text(formData, "pageId");
   const sectionId = text(formData, "sectionId");
   const mediaId = text(formData, "mediaId");
-  const section = await sectionForUpdate(sectionId, pageId);
+  const context = await sectionForUpdate(sectionId, pageId);
 
   if (!UUID_RE.test(mediaId)) throw new Error("Selecione uma mídia válida.");
   const db = getDb();
-  const mediaRows = await db.select({ id: mediaAssets.id, mimeType: mediaAssets.mimeType })
+  const media = (await db.select({ id: mediaAssets.id, mimeType: mediaAssets.mimeType })
     .from(mediaAssets)
     .where(and(eq(mediaAssets.id, mediaId), eq(mediaAssets.status, "active")))
-    .limit(1);
-  const media = mediaRows[0];
+    .limit(1))[0];
   if (!media || !isHeroMediaMimeType(media.mimeType)) throw new Error("A mídia selecionada precisa ser uma imagem ou vídeo ativo.");
 
   await db.update(pageSections).set({
-    settings: { ...(section.settings || {}), mediaId },
+    settings: { ...(context.section.settings || {}), mediaId },
     updatedAt: new Date(),
-  }).where(eq(pageSections.id, sectionId));
+  }).where(and(eq(pageSections.id, context.section.id), eq(pageSections.pageId, context.page.id)));
 
-  await audit(session.user.id, "page_section.hero_media_selected", "page_section", sectionId, { pageId, mediaId });
-  refreshHero(pageId);
-  backToHero(pageId, sectionId);
+  await audit(session.user.id, "page_section.hero_media_selected", "page_section", context.section.id, {
+    pageId: context.page.id,
+    pageKey: context.page.key,
+    sectionKey: context.section.sectionKey,
+    mediaId,
+  });
+  refreshSection(context.page.id, context.pageContract.route);
+  backToSection(context.page.id, context.section.id);
 }
 
 export async function removePageSectionMedia(formData: FormData) {
   const session = await requirePersistentAdmin("editor");
   const pageId = text(formData, "pageId");
   const sectionId = text(formData, "sectionId");
-  const section = await sectionForUpdate(sectionId, pageId);
-  const settings = { ...(section.settings || {}) };
+  const context = await sectionForUpdate(sectionId, pageId);
+  const settings = { ...(context.section.settings || {}) };
   delete settings.mediaId;
 
-  await getDb().update(pageSections).set({ settings, updatedAt: new Date() }).where(eq(pageSections.id, sectionId));
-  await audit(session.user.id, "page_section.hero_media_removed", "page_section", sectionId, { pageId });
-  refreshHero(pageId);
-  backToHero(pageId, sectionId);
+  await getDb().update(pageSections).set({ settings, updatedAt: new Date() })
+    .where(and(eq(pageSections.id, context.section.id), eq(pageSections.pageId, context.page.id)));
+  await audit(session.user.id, "page_section.hero_media_removed", "page_section", context.section.id, {
+    pageId: context.page.id,
+    pageKey: context.page.key,
+    sectionKey: context.section.sectionKey,
+  });
+  refreshSection(context.page.id, context.pageContract.route);
+  backToSection(context.page.id, context.section.id);
 }
