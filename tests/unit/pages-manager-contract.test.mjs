@@ -2,93 +2,124 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
 
-const page = fs.readFileSync(new URL("../../app/admin/(protected)/pages/page.tsx", import.meta.url), "utf8");
-const manager = fs.readFileSync(new URL("../../app/admin/(protected)/pages/PageManager.tsx", import.meta.url), "utf8");
-const styles = fs.readFileSync(new URL("../../app/admin/(protected)/pages/PagesManager.module.css", import.meta.url), "utf8");
-const shell = fs.readFileSync(new URL("../../app/admin/components/AdminShell.tsx", import.meta.url), "utf8");
-const shellStyles = fs.readFileSync(new URL("../../styles/admin/shell.css", import.meta.url), "utf8");
-const contract = fs.readFileSync(new URL("../../app/admin/(protected)/pages/page-contract.ts", import.meta.url), "utf8");
-const editor = fs.readFileSync(new URL("../../app/admin/(protected)/pages/[id]/page.tsx", import.meta.url), "utf8");
-const workbench = fs.readFileSync(new URL("../../app/admin/(protected)/pages/[id]/PageContentWorkbench.tsx", import.meta.url), "utf8");
-const workbenchStyles = fs.readFileSync(new URL("../../app/admin/(protected)/pages/[id]/PageContentWorkbench.module.css", import.meta.url), "utf8");
-const view = fs.readFileSync(new URL("../../app/admin/(protected)/pages/[id]/view/page.tsx", import.meta.url), "utf8");
+const read = (path) => fs.readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
+const page = read("app/admin/(protected)/pages/page.tsx");
+const manager = read("app/admin/(protected)/pages/PageManager.tsx");
+const styles = read("app/admin/(protected)/pages/PagesManager.module.css");
+const shell = read("app/admin/components/AdminShell.tsx");
+const shellStyles = read("styles/admin/shell.css");
+const routeContract = read("app/admin/(protected)/pages/page-contract.ts");
+const siteContract = read("app/admin/(protected)/pages/site-page-contract.ts");
+const editorPage = read("app/admin/(protected)/pages/[id]/page.tsx");
+const workbench = read("app/admin/(protected)/pages/[id]/PageContentWorkbench.tsx");
+const workbenchStyles = read("app/admin/(protected)/pages/[id]/PageContentWorkbench.module.css");
+const home = read("app/(public)/page.tsx");
+const about = read("app/(public)/sobre-nos/page.tsx");
+const artists = read("app/(public)/artistas/page.tsx");
+const news = read("app/(public)/noticias/page.tsx");
+const contact = read("app/(public)/contato/page.tsx");
+const privacy = read("app/(public)/politica-de-privacidade/page.tsx");
+const terms = read("app/(public)/termos-e-condicoes/page.tsx");
+const repository = read("modules/pages/repository.ts");
+const migration = read("migrations/0012_lander_site_cms_alignment.sql");
 
-test("Pages overview follows the approved selected-page and section-structure composition", () => {
-  for (const copy of [
-    "Página selecionada",
-    "Estrutura da página",
-    "Página inicial",
-    "Ver página pública",
-    "Editar",
-    "Excluir",
-    "Criar seção",
-    "Seção",
-    "Status",
-    "Ações",
-    "Configurar",
-  ]) assert.match(manager, new RegExp(copy, "i"));
-
-  assert.doesNotMatch(manager, /Total de páginas|SEO editorial incompleto|Buscar por título|Limpar filtros|Navegação é gerenciada separadamente/);
-  assert.match(styles, /grid-template-columns:minmax\(0,1fr\) 180px 220px/);
-  assert.match(styles, /background:#080b0e/);
-});
-
-test("Disposable development preview reproduces the ten-section approved reference without changing production data", () => {
-  const titles = ["Hero Section", "Em Destaque", "Mais Lidas", "Últimas Notícias", "Publicidade Lateral", "Em Alta", "Anuncie Aqui", "Lançamentos", "Agenda", "Newsletter"];
-  for (const title of titles) assert.match(manager, new RegExp(title));
-  assert.match(manager, /sectionCount: 10/);
-  assert.match(manager, /demoMode \|\| preview \? referencePages : pages/);
-  assert.match(page, /demoMode=\{session\.source === "development-auth-bypass"\}/);
-  assert.match(page, /sections: pageStructure/);
-  assert.match(page, /pageSections\.subtitle/);
-});
-
-test("Admin chrome follows the Portal Lander black-header and grouped-navigation pattern", () => {
-  assert.match(shell, /adminAdministrationLabel/);
-  assert.match(shell, />ADMINISTRAÇÃO</);
-  assert.match(shell, />NAVEGAÇÃO</);
-  assert.match(shell, /adminHeaderBack/);
-  assert.match(shell, /adminAccountPopover/);
-  assert.match(shell, /name="bell"/);
-  assert.match(shellStyles, /--admin-sidebar-width: 238px/);
-  assert.match(shellStyles, /--admin-header-height: 68px/);
-  assert.match(shellStyles, /background: #050505/);
-  assert.match(shellStyles, /background: #211113/);
-  assert.match(shellStyles, /background: var\(--admin-accent\)/);
-});
-
-test("Public page destinations remain deterministic and real routes are used", () => {
-  for (const mapping of ["home: { route: \"/\"", "about: { route: \"/sobre-nos\"", "artists: { route: \"/artistas\"", "news: { route: \"/noticias\"", "contact: { route: \"/contato\""]) {
-    assert.match(contract, new RegExp(mapping.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+test("Pages overview is data-driven and no longer injects Portal Lander content", () => {
+  for (const copy of ["Página selecionada", "Estrutura da página", "Ver página pública", "Editar", "Excluir", "Seção", "Status", "Ações", "Configurar"]) {
+    assert.match(manager, new RegExp(copy, "i"));
   }
-  assert.match(contract, /route: null/);
-  assert.match(manager, /selected\.publicRoute/);
-  assert.match(editor, /pageContract\(page\.key\)\.route/);
-  assert.match(view, /pageContract\(page\.key\)\.route/);
+  assert.match(manager, /sitePageContract/);
+  assert.match(manager, /siteSectionContract/);
+  assert.match(manager, /\?section=\$\{encodeURIComponent\(section\.id\)\}/);
+  assert.match(manager, /Estrutura vinculada ao site/);
+  assert.doesNotMatch(manager, /referencePages|referenceSections|demoMode \|\| preview \?/);
+  assert.doesNotMatch(manager, /Mais Lidas|Publicidade Lateral|Em Alta|Newsletter|Sobre o Portal/);
+  assert.match(page, /sections: pageStructure/);
+  assert.match(styles, /grid-template-columns:minmax\(0,1fr\) 180px 220px/);
 });
 
-test("Page editor clones the Portal Lander section workbench while preserving current persistence actions", () => {
-  assert.match(editor, /AdminContextHeaderSync/);
-  assert.match(editor, /PageContentWorkbench/);
-  assert.match(editor, /where\(inArray\(pageSectionItems\.sectionId/);
-  assert.match(workbench, /Configurar seção:/);
-  assert.match(workbench, /Imagem de Fundo/);
-  assert.match(workbench, /Destaques do Hero/);
-  assert.match(workbench, /Preview da página inteira/);
-  assert.match(workbench, /Conteúdo/);
-  assert.match(workbench, /Aparência/);
-  assert.match(workbench, /Comportamento/);
+test("Canonical page and section map comes from the Lander Records public implementation", () => {
+  assert.match(siteContract, /sectionOrder: \["hero", "intro", "shortcuts", "artists", "releases", "advertise_banner", "news"\]/);
+  assert.match(siteContract, /sectionOrder: \["hero", "history", "identity", "methodology", "companies"\]/);
+  assert.match(siteContract, /sectionOrder: \["hero", "artist_filters", "artist_list"\]/);
+  assert.match(siteContract, /sectionOrder: \["hero", "news_categories", "news_list"\]/);
+  assert.match(siteContract, /privacy:[\s\S]*route: "\/politica-de-privacidade"/);
+  assert.match(siteContract, /terms:[\s\S]*route: "\/termos-e-condicoes"/);
+  assert.doesNotMatch(siteContract, /most_read|latest_news|side_ad|trending|newsletter/);
+  assert.doesNotMatch(siteContract, /pillars:/);
+  assert.match(routeContract, /SITE_PAGE_CONTRACTS/);
+  assert.match(routeContract, /sitePageContract/);
+});
+
+test("Every Home CMS section maps to a real Lander Records consumer", () => {
+  for (const key of ["hero", "intro", "shortcuts", "artists", "releases", "advertise_banner", "news"]) {
+    assert.match(home, new RegExp(`sectionByKey\\(content, ["']${key}["']\\)`));
+  }
+  assert.match(home, /hero\.items\.map/);
+  assert.match(home, /shortcuts\.items\.map/);
+  assert.match(home, /getPublishedArtists\(true\)/);
+  assert.match(home, /getCachedSpotifyReleases/);
+  assert.match(home, /getPublishedPosts\(true\)/);
+  assert.match(home, /advertiseBanner\?\.mediaUrl/);
+  assert.match(repository, /mediaUrl:/);
+  assert.match(repository, /mediaAltText:/);
+  assert.doesNotMatch(home, /src="\/lander-records-anuncie-banner\.webp"/);
+});
+
+test("Other public pages and domain sections match the CMS contract", () => {
+  for (const key of ["hero", "history", "identity", "methodology", "companies"]) assert.match(about, new RegExp(`byKey\\(["']${key}["']\\)`));
+  assert.doesNotMatch(about, /byKey\(["']pillars["']\)/);
+  assert.match(artists, /sectionKey === "artist_filters"/);
+  assert.match(artists, /sectionKey === "artist_list"/);
+  assert.match(news, /sectionKey === "news_categories"/);
+  assert.match(news, /sectionKey === "news_list"/);
+  assert.match(contact, /getContactTopics/);
+  assert.match(contact, /getSiteChrome/);
+});
+
+test("Hero and section editor expose only Lander Records fields and preview the real public route", () => {
+  assert.match(editorPage, /siteSectionContract/);
+  assert.match(editorPage, /mediaAssets/);
+  assert.match(workbench, /data-site-source="lander-records"/);
+  assert.match(workbench, /siteSectionContract\(page\.key, selected\.sectionKey\)/);
+  assert.match(workbench, /CTAs do Hero/);
+  assert.match(workbench, /Somente itens realmente consumidos pelo frontend público/);
   assert.match(workbench, /updatePageSection/);
+  assert.match(workbench, /addPageSectionItem/);
   assert.match(workbench, /updatePageSectionItem/);
+  assert.match(workbench, /deletePageSectionItem/);
   assert.match(workbench, /<iframe/);
   assert.match(workbench, /src=\{publicRoute\}/);
+  assert.match(workbench, /Preview público real/);
   assert.match(workbench, /name="monitor"/);
   assert.match(workbench, /name="tablet"/);
   assert.match(workbench, /name="smartphone"/);
+  assert.doesNotMatch(workbench, /PortalPagePreview|LANDER RECORDS · EM DESTAQUE|EXPLORAR DESTAQUES|className=\{styles\.ticker\}/);
   assert.match(workbenchStyles, /grid-template-columns:minmax\(350px,390px\) minmax\(0,1fr\)/);
-  assert.match(workbenchStyles, /height:calc\(100dvh - 132px\)/);
   assert.match(workbenchStyles, /overflow-y:scroll/);
-  assert.match(workbenchStyles, /min-height:52px/);
-  assert.match(workbenchStyles, /border-color:#e50914/);
-  assert.doesNotMatch(editor, /adminPanel adminStack/);
+});
+
+test("Previously hardcoded public content is migrated into the CMS", () => {
+  assert.match(migration, /advertise_banner/);
+  assert.match(migration, /lander-records-anuncie-banner\.webp/);
+  assert.match(migration, /DELETE FROM page_sections[\s\S]*section_key = 'pillars'/);
+  assert.match(migration, /'privacy'/);
+  assert.match(migration, /'terms'/);
+  assert.match(migration, /'legal_body'/);
+  assert.match(migration, /1\. Quem somos/);
+  assert.match(migration, /13\. Contato/);
+  assert.match(privacy, /getPageContent\("privacy"\)/);
+  assert.match(privacy, /legalBody\.items\.map/);
+  assert.match(terms, /getPageContent\("terms"\)/);
+  assert.match(terms, /legalBody\.items\.map/);
+});
+
+test("Portal Lander remains an admin UX reference, not a content source", () => {
+  assert.match(shell, /adminAdministrationLabel/);
+  assert.match(shell, />ADMINISTRAÇÃO</);
+  assert.match(shell, /adminHeaderBack/);
+  assert.match(shellStyles, /--admin-sidebar-width: 238px/);
+  assert.match(shellStyles, /--admin-header-height: 68px/);
+  assert.match(shellStyles, /background: #050505/);
+  assert.doesNotMatch(manager, /Portal Lander/);
+  assert.doesNotMatch(workbench, /Portal Lander/);
 });
