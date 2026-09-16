@@ -9,6 +9,7 @@ const contract = read("styles/admin/dashboard-module-contract.css");
 const featureOverrides = read("styles/admin/dashboard-feature-overrides.css");
 const runtimeContract = read("styles/admin/dashboard-runtime-contract.css");
 const portalContract = read("styles/admin/portal-lander-contract.css");
+const adminShell = read("app/admin/components/AdminShell.tsx");
 const artists = read("app/admin/(protected)/artists/ArtistManager.module.css");
 const artistManager = read("app/admin/(protected)/artists/ArtistManager.tsx");
 const posts = read("app/admin/(protected)/posts/NewsManager.module.css");
@@ -99,6 +100,15 @@ test("Contents matches the approved publication-list reference rather than KPI p
   assert.match(posts, /\.pagination\{[\s\S]*min-height:60px/);
   assert.match(posts, /\.published\{background:#dcf7e7;color:#078847\}/);
   assert.match(posts, /Approved Contents reference/);
+});
+
+test("New content is modal-only and cannot navigate to a standalone create page", () => {
+  assert.match(adminShell, /action: \{ label: "Novo conteúdo", event: "admin:new-content" \}/);
+  assert.match(adminShell, /<button aria-controls="new-content-modal" aria-haspopup="dialog"/);
+  assert.match(postManager, /window\.addEventListener\("admin:new-content", openModal\)/);
+  assert.match(postManager, /interceptLegacyNewContentLink/);
+  assert.match(postManager, /href !== "\/admin\/posts\/new"/);
+  assert.equal(fs.existsSync(new URL("../../app/admin/(protected)/posts/new/page.tsx", import.meta.url)), false);
 });
 
 test("Pages keep the shared table geometry", () => {
