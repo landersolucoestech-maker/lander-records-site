@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import sharp from "sharp";
 import { audit, requirePersistentAdmin } from "../../lib/auth";
 import { getDb } from "../../lib/db";
+import { trustedEmbedUrl } from "../../lib/media-embed";
 import { deleteMedia as deleteStoredMedia, uploadMedia as uploadStoredMedia } from "@/lib/storage";
 import {
   artistGenreRelations,
@@ -24,7 +25,7 @@ import {
   mediaAssets,
   slugRedirects,
 } from "../../lib/db/schema";
-import { normalizeExternalUrl } from "../../lib/integrations/identity";
+import { normalizePlatformUrl } from "../../lib/integrations/identity";
 import { syncArtistSoundcharts } from "../../lib/integrations/sync";
 import { slugify } from "../../lib/slug";
 
@@ -115,10 +116,15 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
     normalizedLinks = socialPlatforms
       .map((platform, position) => ({ platform, url: text(formData, `link_${platform}`), position }))
       .filter((item) => item.url)
-      .map((item) => ({ ...item, url: normalizeExternalUrl(item.url) }));
+      .map((item) => ({ ...item, url: normalizePlatformUrl(item.platform, item.url) }));
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Uma URL de plataforma é inválida." };
   }
+
+  const youtubeVideo = text(formData, "youtubeVideo");
+  const spotifyEmbed = text(formData, "spotifyEmbed");
+  if (youtubeVideo && !trustedEmbedUrl("youtube", youtubeVideo)) return { ok: false, error: "URL do vídeo do YouTube inválida." };
+  if (spotifyEmbed && !trustedEmbedUrl("spotify", spotifyEmbed)) return { ok: false, error: "URL ou embed do Spotify inválido." };
 
   let cardUpload: Awaited<ReturnType<typeof prepareArtistImage>> = null;
   let heroUpload: Awaited<ReturnType<typeof prepareArtistImage>> = null;
@@ -217,8 +223,6 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
       }
 
       await tx.delete(artistEmbeds).where(and(eq(artistEmbeds.artistId, resolvedId), inArray(artistEmbeds.type, ["youtube", "spotify"])));
-      const youtubeVideo = text(formData, "youtubeVideo");
-      const spotifyEmbed = text(formData, "spotifyEmbed");
       if (youtubeVideo) await tx.insert(artistEmbeds).values({ artistId: resolvedId, type: "youtube", title: `Vídeo de ${name}`, url: youtubeVideo, position: 0, active: true, featured: true });
       if (spotifyEmbed) await tx.insert(artistEmbeds).values({ artistId: resolvedId, type: "spotify", title: `Spotify de ${name}`, url: spotifyEmbed, position: 1, active: true, featured: true });
 
