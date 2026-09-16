@@ -2,38 +2,93 @@
 
 import { useState } from "react";
 import { deleteArtistCategory, deletePostCategory, upsertArtistCategory, upsertPostCategory } from "../../actions";
+import { AdminIcon, type IconName } from "../../components/AdminIcon";
+import styles from "./CategoryManager.module.css";
 
 type ArtistCategory = { id: string; name: string; slug: string; description: string; position: number; active: boolean; showAsFilter: boolean };
 type PostCategory = { id: string; name: string; slug: string; position: number; active: boolean; showAsFilter: boolean };
+type Tab = "artists" | "news";
+
+function Metric({ accent, icon, label, value, hint }: { accent: "red" | "blue" | "green" | "orange"; icon: IconName; label: string; value: number; hint: string }) {
+  return <article className={`adminMetricCard is-${accent}`}>
+    <span className="adminMetricIcon"><AdminIcon name={icon} size={24} /></span>
+    <div className="adminMetricCopy"><span>{label}</span><strong>{new Intl.NumberFormat("pt-BR").format(value)}</strong><small>{hint}</small></div>
+    <span className={styles.metricTail} aria-hidden="true"><AdminIcon name={icon} size={18} /></span>
+  </article>;
+}
+
+function Toggle({ checked, label, name }: { checked: boolean; label: string; name: string }) {
+  return <label className={styles.toggle}><input defaultChecked={checked} name={name} type="checkbox" /><span aria-hidden="true" /><b>{label}</b></label>;
+}
 
 export default function CategoryManager({ artistCategories, postCategories }: { artistCategories: ArtistCategory[]; postCategories: PostCategory[] }) {
-  const [tab, setTab] = useState<"artists" | "news">("artists");
-  return (
-    <>
-      <div className="adminActions" role="group" aria-label="Tipos de categoria">
-        <button className={`adminButton ${tab === "artists" ? "primary" : ""}`} type="button" aria-pressed={tab === "artists"} onClick={() => setTab("artists")}>Artistas</button>
-        <button className={`adminButton ${tab === "news" ? "primary" : ""}`} type="button" aria-pressed={tab === "news"} onClick={() => setTab("news")}>Notícias</button>
+  const [tab, setTab] = useState<Tab>("artists");
+  const current = tab === "artists" ? artistCategories : postCategories;
+  const activeCount = current.filter((category) => category.active).length;
+  const filterCount = current.filter((category) => category.showAsFilter).length;
+  const tabLabel = tab === "artists" ? "Artistas" : "Notícias";
+
+  return <div className={styles.manager} data-testid="categories-manager">
+    <div className={styles.tabs} role="tablist" aria-label="Tipo de categoria">
+      <button className={tab === "artists" ? styles.activeTab : ""} onClick={() => setTab("artists")} role="tab" aria-selected={tab === "artists"} type="button"><AdminIcon name="artists" size={15} />Artistas</button>
+      <button className={tab === "news" ? styles.activeTab : ""} onClick={() => setTab("news")} role="tab" aria-selected={tab === "news"} type="button"><AdminIcon name="posts" size={15} />Notícias</button>
+    </div>
+
+    <section className="adminMetricGrid" aria-label={`Resumo das categorias de ${tabLabel.toLowerCase()}`}>
+      <Metric accent="red" icon="tags" label="Categorias" value={current.length} hint={`em ${tabLabel.toLowerCase()}`} />
+      <Metric accent="green" icon="check" label="Ativas" value={activeCount} hint="disponíveis para uso" />
+      <Metric accent="blue" icon="sliders" label="Filtros públicos" value={filterCount} hint="visíveis no site" />
+      <Metric accent="orange" icon="audit" label="Inativas" value={current.length - activeCount} hint="fora de circulação" />
+    </section>
+
+    <section className={`adminDashboardPanel ${styles.catalogPanel}`}>
+      <div className="adminAnalyticsPanelHeading">
+        <div className="adminPanelHeadingIdentity"><span className="adminPanelHeadingIcon"><AdminIcon name="tags" size={20} /></span><div><h2>Categorias de {tabLabel.toLowerCase()}</h2><p>Edite nomenclatura, ordem e visibilidade sem misturar as taxonomias.</p></div></div>
+        <div className={styles.resultBadge}><strong>{current.length}</strong><span>{current.length === 1 ? "categoria" : "categorias"}</span></div>
       </div>
 
-      {tab === "artists" ? (
-        <>
-          <section className="adminPanel adminStack">
-            <h2>Categorias de artistas</h2>
-            {artistCategories.length ? artistCategories.map((category) => <form action={upsertArtistCategory} className="adminInlineForm" key={category.id}><input type="hidden" name="id" value={category.id}/><input name="name" defaultValue={category.name} required aria-label="Nome"/><input name="slug" defaultValue={category.slug} required aria-label="Slug"/><input name="description" defaultValue={category.description} aria-label="Descrição"/><input name="position" type="number" defaultValue={category.position} aria-label="Ordem"/><label className="adminCheck"><input name="active" type="checkbox" defaultChecked={category.active}/> Ativa</label><label className="adminCheck"><input name="showAsFilter" type="checkbox" defaultChecked={category.showAsFilter}/> Filtro</label><button className="adminButton" type="submit">Salvar</button></form>) : <div className="adminEmpty">Nenhuma categoria de artista cadastrada.</div>}
-          </section>
-          <section className="adminPanel"><h2>Nova categoria de artista</h2><form action={upsertArtistCategory} className="adminForm"><div className="adminFormGrid"><label>Nome<input name="name" required/></label><label>Slug<input name="slug"/></label><label>Descrição<input name="description"/></label><label>Ordem<input name="position" type="number" defaultValue={0}/></label><label className="adminCheck"><input name="active" type="checkbox" defaultChecked/> Ativa</label><label className="adminCheck"><input name="showAsFilter" type="checkbox" defaultChecked/> Exibir no filtro público</label></div><button className="adminButton primary" type="submit">Criar categoria</button></form></section>
-          <section className="adminPanel"><h2>Exclusão segura</h2><p>Categorias associadas a artistas não podem ser excluídas até que as relações sejam removidas.</p><div className="adminActions">{artistCategories.map((category) => <form action={deleteArtistCategory} key={category.id}><input type="hidden" name="id" value={category.id}/><button className="adminButton danger" type="submit">Excluir {category.name}</button></form>)}</div></section>
-        </>
-      ) : (
-        <>
-          <section className="adminPanel adminStack">
-            <h2>Categorias de notícias</h2>
-            {postCategories.length ? postCategories.map((category) => <form action={upsertPostCategory} className="adminInlineForm" key={category.id}><input type="hidden" name="id" value={category.id}/><input name="name" defaultValue={category.name} required aria-label="Nome"/><input name="slug" defaultValue={category.slug} required aria-label="Slug"/><input name="position" type="number" defaultValue={category.position} aria-label="Ordem"/><label className="adminCheck"><input name="active" type="checkbox" defaultChecked={category.active}/> Ativa</label><label className="adminCheck"><input name="showAsFilter" type="checkbox" defaultChecked={category.showAsFilter}/> Filtro</label><span/><button className="adminButton" type="submit">Salvar</button></form>) : <div className="adminEmpty">Nenhuma categoria de notícia cadastrada.</div>}
-          </section>
-          <section className="adminPanel"><h2>Nova categoria de notícia</h2><form action={upsertPostCategory} className="adminForm"><div className="adminFormGrid"><label>Nome<input name="name" required/></label><label>Slug<input name="slug"/></label><label>Ordem<input name="position" type="number" defaultValue={0}/></label><label className="adminCheck"><input name="active" type="checkbox" defaultChecked/> Ativa</label><label className="adminCheck"><input name="showAsFilter" type="checkbox" defaultChecked/> Exibir no filtro público</label></div><button className="adminButton primary" type="submit">Criar categoria</button></form></section>
-          <section className="adminPanel"><h2>Exclusão segura</h2><p>Categorias utilizadas por notícias não podem ser excluídas até que o conteúdo seja reclassificado.</p><div className="adminActions">{postCategories.map((category) => <form action={deletePostCategory} key={category.id}><input type="hidden" name="id" value={category.id}/><button className="adminButton danger" type="submit">Excluir {category.name}</button></form>)}</div></section>
-        </>
-      )}
-    </>
-  );
+      {current.length ? <div className={styles.categoryList} role="table" aria-label={`Categorias de ${tabLabel.toLowerCase()}`}>
+        {tab === "artists" ? <div className={`${styles.tableHead} ${styles.artistGrid}`} role="row"><span>Nome</span><span>Slug</span><span>Descrição</span><span>Ordem</span><span>Ativa</span><span>Filtro</span><span>Ação</span><span /></div> : <div className={`${styles.tableHead} ${styles.newsGrid}`} role="row"><span>Nome</span><span>Slug</span><span>Ordem</span><span>Ativa</span><span>Filtro</span><span>Ação</span><span /></div>}
+
+        {tab === "artists" ? artistCategories.map((category) => <div className={styles.rowWrap} key={category.id} role="row">
+          <form action={upsertArtistCategory} className={`${styles.categoryForm} ${styles.artistGrid}`}>
+            <input type="hidden" name="id" value={category.id} />
+            <input aria-label={`Nome de ${category.name}`} name="name" defaultValue={category.name} required />
+            <input aria-label={`Slug de ${category.name}`} name="slug" defaultValue={category.slug} required />
+            <input aria-label={`Descrição de ${category.name}`} name="description" defaultValue={category.description} />
+            <input aria-label={`Ordem de ${category.name}`} name="position" type="number" defaultValue={category.position} />
+            <Toggle checked={category.active} label="Ativa" name="active" />
+            <Toggle checked={category.showAsFilter} label="Filtro" name="showAsFilter" />
+            <button className={styles.saveButton} type="submit"><AdminIcon name="check" size={14} />Salvar</button>
+            <span />
+          </form>
+          <form action={deleteArtistCategory} className={styles.deleteForm}><input type="hidden" name="id" value={category.id} /><button aria-label={`Excluir ${category.name}`} className={styles.deleteButton} type="submit"><AdminIcon name="trash" size={15} /></button></form>
+        </div>) : postCategories.map((category) => <div className={styles.rowWrap} key={category.id} role="row">
+          <form action={upsertPostCategory} className={`${styles.categoryForm} ${styles.newsGrid}`}>
+            <input type="hidden" name="id" value={category.id} />
+            <input aria-label={`Nome de ${category.name}`} name="name" defaultValue={category.name} required />
+            <input aria-label={`Slug de ${category.name}`} name="slug" defaultValue={category.slug} required />
+            <input aria-label={`Ordem de ${category.name}`} name="position" type="number" defaultValue={category.position} />
+            <Toggle checked={category.active} label="Ativa" name="active" />
+            <Toggle checked={category.showAsFilter} label="Filtro" name="showAsFilter" />
+            <button className={styles.saveButton} type="submit"><AdminIcon name="check" size={14} />Salvar</button>
+            <span />
+          </form>
+          <form action={deletePostCategory} className={styles.deleteForm}><input type="hidden" name="id" value={category.id} /><button aria-label={`Excluir ${category.name}`} className={styles.deleteButton} type="submit"><AdminIcon name="trash" size={15} /></button></form>
+        </div>)}
+      </div> : <div className={styles.empty}><span><AdminIcon name="tags" size={20} /></span><strong>Nenhuma categoria cadastrada</strong><p>Crie a primeira categoria para organizar {tabLabel.toLowerCase()}.</p></div>}
+    </section>
+
+    <section className={`adminDashboardPanel ${styles.createPanel}`}>
+      <div className="adminAnalyticsPanelHeading">
+        <div className="adminPanelHeadingIdentity"><span className="adminPanelHeadingIcon"><AdminIcon name="plus" size={20} /></span><div><h2>Nova categoria de {tab === "artists" ? "artista" : "notícia"}</h2><p>Cadastre somente os campos realmente suportados por esta taxonomia.</p></div></div>
+      </div>
+      {tab === "artists" ? <form action={upsertArtistCategory} className={styles.createForm}>
+        <label>Nome<input name="name" required /></label><label>Slug<input name="slug" /></label><label className={styles.wideField}>Descrição<input name="description" /></label><label>Ordem<input name="position" type="number" defaultValue={0} /></label><Toggle checked label="Ativa" name="active" /><Toggle checked label="Filtro público" name="showAsFilter" /><button className="adminPrimaryCompact" type="submit"><AdminIcon name="plus" size={14} />Criar categoria</button>
+      </form> : <form action={upsertPostCategory} className={styles.createForm}>
+        <label>Nome<input name="name" required /></label><label>Slug<input name="slug" /></label><label>Ordem<input name="position" type="number" defaultValue={0} /></label><Toggle checked label="Ativa" name="active" /><Toggle checked label="Filtro público" name="showAsFilter" /><button className="adminPrimaryCompact" type="submit"><AdminIcon name="plus" size={14} />Criar categoria</button>
+      </form>}
+      <div className={styles.safetyNote}><AdminIcon name="shield" size={16} /><span><strong>Exclusão segura.</strong> Categorias em uso continuam protegidas pelas regras do backend até que suas relações sejam removidas.</span></div>
+    </section>
+  </div>;
 }
