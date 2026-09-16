@@ -3,10 +3,36 @@ import { notFound } from "next/navigation";
 import { requireAdmin } from "../../../../../lib/auth";
 import { getDb } from "../../../../../lib/db";
 import { pageSectionItems, pageSections, pages } from "../../../../../lib/db/schema";
+import { AdminContextHeaderSync } from "../../../components/AdminContextHeaderSync";
 import PageContentWorkbench, { type PageEditorItem, type PageEditorSection } from "./PageContentWorkbench";
 import { pageContract } from "../page-contract";
 
 export const dynamic = "force-dynamic";
+
+const sectionNames: Record<string, string> = {
+  hero: "Hero Section",
+  featured: "Em Destaque",
+  most_read: "Mais Lidas",
+  latest_news: "Últimas Notícias",
+  side_ad: "Publicidade Lateral",
+  trending: "Em Alta",
+  advertise: "Anuncie Aqui",
+  releases: "Lançamentos",
+  agenda: "Agenda",
+  newsletter: "Newsletter",
+  intro: "Apresentação",
+  shortcuts: "Atalhos",
+  artists: "Artistas em destaque",
+  news: "Últimas notícias",
+  history: "História",
+  identity: "Identidade",
+  companies: "Empresas do grupo",
+  methodology: "Metodologia",
+  artist_filters: "Filtros de artistas",
+  artist_list: "Lista de artistas",
+  news_categories: "Categorias de notícias",
+  news_list: "Lista de notícias",
+};
 
 export default async function PageContentEditor({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ section?: string }> }) {
   await requireAdmin("editor");
@@ -49,11 +75,18 @@ export default async function PageContentEditor({ params, searchParams }: { para
     url: item.url,
   }));
 
-  return <PageContentWorkbench
-    page={{ id: page.id, key: page.key, title: page.title }}
-    publicRoute={pageContract(page.key).route}
-    sections={editorSections}
-    items={editorItems}
-    initialSectionId={query.section}
-  />;
+  const initialSection = editorSections.find((section) => section.id === query.section) || editorSections[0];
+  const initialLabel = initialSection ? sectionNames[initialSection.sectionKey] || initialSection.sectionKey.replaceAll("_", " ") : "Página";
+  const headerDescription = `Configure ${initialLabel} no painel rolável à esquerda e acompanhe a página completa no preview fixo à direita.`;
+
+  return <>
+    <AdminContextHeaderSync title={`Configurar seção: ${initialLabel}`} description={headerDescription} />
+    <PageContentWorkbench
+      page={{ id: page.id, key: page.key, title: page.title }}
+      publicRoute={pageContract(page.key).route}
+      sections={editorSections}
+      items={editorItems}
+      initialSectionId={query.section}
+    />
+  </>;
 }
