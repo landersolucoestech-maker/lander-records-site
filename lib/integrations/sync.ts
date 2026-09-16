@@ -16,6 +16,7 @@ const LANDER_ENTITY_ID = "lander_records";
 const SOUNDCHARTS_TTL_MS = 24 * 60 * 60 * 1000;
 const SPOTIFY_TTL_MS = 6 * 60 * 60 * 1000;
 const SPOTIFY_STALE_MAX_MS = 7 * 24 * 60 * 60 * 1000;
+const SPOTIFY_RETRY_COOLDOWN_MS = 5 * 60 * 1000;
 const ARTIST_PLATFORMS = ["instagram", "spotify", "youtube", "tiktok", "soundcloud"];
 
 function isFresh(date: Date | null, ttlMs: number) {
@@ -253,25 +254,26 @@ export async function syncSpotifyReleases(force = false) {
 
   try {
     const result = await fetchLatestSpotifyPlaylistReleases(settings.spotifyPlaylistId);
-    if (result.releases.length < 5) throw new Error(`A playlist retornou apenas ${result.releases.length} lançamentos distintos; são necessários pelo menos 5.`);
     const now = new Date();
     const expiresAt = new Date(now.getTime() + SPOTIFY_TTL_MS);
     await db.transaction(async (tx) => {
       await tx.delete(spotifyReleaseCache);
-      await tx.insert(spotifyReleaseCache).values(result.releases.map((release, index) => ({
-        position: index + 1,
-        playlistId: settings.spotifyPlaylistId,
-        albumId: release.albumId,
-        title: release.title,
-        artistName: release.artistName,
-        coverUrl: release.coverUrl,
-        spotifyUrl: release.spotifyUrl,
-        releaseDate: release.releaseDate,
-        releaseDatePrecision: release.releaseDatePrecision,
-        playlistAddedAt: release.playlistAddedAt,
-        fetchedAt: now,
-        expiresAt,
-      })));
+      if (result.releases.length) {
+        await tx.insert(spotifyReleaseCache).values(result.releases.map((release, index) => ({
+          position: index + 1,
+          playlistId: settings.spotifyPlaylistId,
+          albumId: release.albumId,
+          title: release.title,
+          artistName: release.artistName,
+          coverUrl: release.coverUrl,
+          spotifyUrl: release.spotifyUrl,
+          releaseDate: release.releaseDate,
+          releaseDatePrecision: release.releaseDatePrecision,
+          playlistAddedAt: release.playlistAddedAt,
+          fetchedAt: now,
+          expiresAt,
+        })));
+      }
       await tx.update(landerRecordsIntegrationSettings).set({
         spotifyPlaylistSnapshotId: result.snapshotId,
         spotifyLastSyncedAt: now,
@@ -303,7 +305,30 @@ export async function getLanderRecordsSocialMetrics() {
   return Object.fromEntries(rows.map((row) => [`${row.platform}:${row.metric}`, row.value])) as Record<string, number>;
 }
 
-export async function getCachedSpotifyReleases() {
+export async function getCachedSpotifyReleases(playlistId?: string) {
   const minimum = new Date(Date.now() - SPOTIFY_STALE_MAX_MS);
-  return getDb().select().from(spotifyReleaseCache).where(gt(spotifyReleaseCache.fetchedAt, minimum)).orderBy(asc(spotifyReleaseCache.position));
+  const where = playlistId
+    ? and(gt(spotifyReleaseCache.fetchedAt, minimum), eq(spotifyReleaseCache.playlistId, playlistId))
+    : gt(spotifyReleaseCache.fetchedAt, minimum);
+  return getDb().select().from(spotifyReleaseCache).where(where).orderBy(asc(spotifyReleaseCache.position)).limit(5);
+}
+
+export async function getHomeSpotifyReleaseFeed() {
+  const db = getDb();
+  const settings = (await db.select().from(landerRecordsIntegrationSettings).where(eq(landerRecordsIntegrationSettings.key, LANDER_ENTITY_ID)).limit(1))[0];
+  if (!settings?.spotifyPlaylistId || !settings.spotifyPlaylistUrl) return { playlistUrl: "", releases: [] };
+
+  let releases = await getCachedSpotifyReleases(settings.spotifyPlaylistId);
+  const refreshDue = !isFresh(settings.spotifyLastSyncedAt, SPOTIFY_TTL_MS);
+  const retryAllowed = !settings.spotifyLastError || settings.updatedAt.getTime() <= Date.now() - SPOTIFY_RETRY_COOLDOWN_MS;
+  if (refreshDue && retryAllowed && spotifyCredentialsConfigured() && settings.spotifyRefreshTokenEncrypted) {
+    try {
+      await syncSpotifyReleases(false);
+      releases = await getCachedSpotifyReleases(settings.spotifyPlaylistId);
+    } catch (error) {
+      console.error("[spotify-home] Falha ao atualizar automaticamente os Últimos Lançamentos.", error instanceof Error ? error.message : error);
+    }
+  }
+
+  return { playlistUrl: settings.spotifyPlaylistUrl, releases: releases.slice(0, 5) };
 }
