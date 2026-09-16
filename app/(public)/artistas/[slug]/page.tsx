@@ -43,6 +43,9 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
       : artist.eyebrow || artist.categories.map((category) => category.name).join(" · ");
   const metrics = Object.entries(artist.metrics).filter(([, value]) => value > 0);
   const bookingHref = `/contato?assunto=contratacao-de-artista&artista=${encodeURIComponent(artist.name)}`;
+  const trustedArtistLinks = artist.links
+    .map((link) => ({ ...link, trustedUrl: trustedExternalUrl(link.url) }))
+    .filter((link) => Boolean(link.trustedUrl));
 
   return (
     <>
@@ -106,11 +109,11 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
               <div className="artistPlatformLinks">{metrics.map(([platform, value]) => <div key={platform}><strong>{metricLabels[platform] || platform}</strong><i>{value.toLocaleString("pt-BR")}</i></div>)}</div>
             </div>
           ) : null}
-          {artist.links.length ? (
+          {trustedArtistLinks.length ? (
             <div className="sidebarBlock">
               <p className="eyebrow dark">REDES E PLATAFORMAS</p>
               <div className="artistPlatformLinks">
-                {artist.links.map((link) => <a key={link.id} href={link.url} target="_blank" rel="noreferrer"><strong>{link.label || link.platform}</strong><i>↗</i></a>)}
+                {trustedArtistLinks.map((link) => <a key={link.id} href={link.trustedUrl} target="_blank" rel="noreferrer"><strong>{link.label || link.platform}</strong><i>↗</i></a>)}
               </div>
             </div>
           ) : null}
@@ -136,7 +139,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
             image: artist.heroImage || artist.cardImage || undefined,
             description: artist.shortBio || artist.biography,
             genre: artist.genres,
-            sameAs: artist.links.map((link) => link.url),
+            sameAs: trustedArtistLinks.map((link) => link.trustedUrl),
           }),
         }}
       />
