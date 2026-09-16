@@ -98,6 +98,7 @@ export default function PageManager({ canEdit = true, demoMode = false, pages, p
   const editHref = preview ? "/cms-preview/pages" : `/admin/pages/${selected.id}`;
   const canonicalPage = Boolean(contract);
   const allowCreate = canEdit && !demoMode && !preview;
+  const allowStructureMutation = allowCreate && !canonicalPage;
   const allowDelete = canEdit && !demoMode && !preview && !canonicalPage;
 
   return <div className={styles.manager} data-testid="pages-manager">
@@ -116,7 +117,7 @@ export default function PageManager({ canEdit = true, demoMode = false, pages, p
         </label>
       </div>
       <div className={styles.pageActions}>
-        <button className={styles.primaryButton} onClick={openCreate} type="button"><span aria-hidden="true">+</span><span>Criar página</span></button>
+        <button className={styles.primaryButton} disabled={!allowCreate} onClick={openCreate} title={!allowCreate ? "Criação indisponível neste acesso" : undefined} type="button"><span aria-hidden="true">+</span><span>Criar página</span></button>
         {selected.publicRoute ? <Link className={styles.outlineButton} href={selected.publicRoute} rel="noopener noreferrer" target="_blank"><AdminIcon name="eye" size={15} /><span>Ver página pública</span></Link> : <button className={styles.outlineButton} disabled type="button"><AdminIcon name="eye" size={15} /><span>Ver página pública</span></button>}
         <Link className={styles.outlineButton} href={editHref}><AdminIcon name="edit" size={15} /><span>Editar</span></Link>
         {allowDelete ? <button className={`${styles.outlineButton} ${styles.dangerButton}`} onClick={() => setDeleteOpen(true)} type="button"><AdminIcon name="trash" size={15} /><span>Excluir</span></button> : <button aria-disabled="true" className={`${styles.outlineButton} ${styles.dangerButton}`} title={canonicalPage ? "Página estrutural do site público" : "Ação indisponível neste acesso"} type="button"><AdminIcon name="trash" size={15} /><span>Excluir</span></button>}
@@ -130,7 +131,7 @@ export default function PageManager({ canEdit = true, demoMode = false, pages, p
           <strong>{title}</strong>
           <small>{sections.length} {sections.length === 1 ? "seção" : "seções"} · {kind}</small>
         </div>
-        <button className={styles.primaryButton} onClick={openCreateSection} type="button"><span aria-hidden="true">+</span><span>Criar seção</span></button>
+        {allowStructureMutation ? <button className={styles.primaryButton} onClick={openCreateSection} type="button"><span aria-hidden="true">+</span><span>Criar seção</span></button> : canonicalPage ? <span className={`${styles.statusBadge} ${styles.active}`}><i aria-hidden="true" />Estrutura canônica</span> : <button className={styles.primaryButton} disabled type="button"><span aria-hidden="true">+</span><span>Criar seção</span></button>}
       </div>
       {sections.length ? <div className={styles.sectionsList} role="table" aria-label={`Estrutura de ${title}`}>
         <div className={styles.sectionsHead} role="row">
@@ -175,12 +176,12 @@ export default function PageManager({ canEdit = true, demoMode = false, pages, p
       </form>
     </AdminDialog> : null}
 
-    {createSectionOpen ? <AdminDialog
+    {createSectionOpen && allowStructureMutation ? <AdminDialog
       className={styles.createPageDialog}
       description="A seção pertence à página selecionada e será composta sobre a arquitetura global, sem criar um novo shell."
       footer={<>
         <button className={styles.modalButton} onClick={closeCreateSection} type="button">Cancelar</button>
-        <button className={styles.modalPrimary} disabled={!allowCreate || !sectionName.trim() || !sectionIdentifier.trim()} form="create-section-form" title={!allowCreate ? "Criação indisponível neste modo de visualização" : undefined} type="submit"><AdminIcon name="edit" size={14} /><span>Salvar seção</span></button>
+        <button className={styles.modalPrimary} disabled={!allowStructureMutation || !sectionName.trim() || !sectionIdentifier.trim()} form="create-section-form" title={!allowStructureMutation ? "A estrutura desta página não aceita novas seções" : undefined} type="submit"><AdminIcon name="edit" size={14} /><span>Salvar seção</span></button>
       </>}
       onClose={closeCreateSection}
       title="Criar seção"
