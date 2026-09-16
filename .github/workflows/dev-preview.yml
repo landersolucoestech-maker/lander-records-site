@@ -63,7 +63,7 @@ jobs:
         run: npm run db:migrate
 
       - name: Admin regression tests
-        run: node --test tests/unit/admin-dashboard-refactor.test.mjs tests/unit/admin-navigation.test.mjs tests/unit/pages-manager-contract.test.mjs tests/unit/production-readiness.test.mjs tests/auth/development-bypass.test.mjs
+        run: node --test tests/unit/admin-dashboard-refactor.test.mjs tests/unit/admin-dashboard-visual-contract.test.mjs tests/unit/admin-navigation.test.mjs tests/unit/artists-manager-contract.test.mjs tests/unit/pages-manager-contract.test.mjs tests/unit/production-readiness.test.mjs tests/auth/development-bypass.test.mjs
 
       - name: Typecheck
         run: npm run typecheck
