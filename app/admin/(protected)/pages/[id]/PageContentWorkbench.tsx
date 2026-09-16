@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { addPageSectionItem, deletePageSectionItem, updatePageSection, updatePageSectionItem } from "../../../actions";
 import { AdminIcon } from "../../../components/AdminIcon";
 import { siteSectionContract, type ItemFieldName, type SectionFieldName } from "../site-page-contract";
+import { removePageSectionMedia, setPageSectionMedia, uploadPageSectionMedia } from "./hero-media-actions";
 import styles from "./PageContentWorkbench.module.css";
 
 export type PageEditorSection = {
@@ -17,6 +18,7 @@ export type PageEditorSection = {
   title: string;
   subtitle: string;
   body: string;
+  mediaId: string | null;
 };
 
 export type PageEditorItem = {
@@ -91,6 +93,13 @@ function FieldControl({ field, name, value, onChange }: { field: SectionFieldNam
     : <input name={name} value={value} onChange={(event) => onChange(event.target.value)} />}</label>;
 }
 
+function SectionMediaPreview({ media }: { media: PageMediaOption }) {
+  if (media.mimeType.startsWith("video/")) {
+    return <video className={styles.heroMediaPreview} controls muted playsInline preload="metadata" src={media.url} />;
+  }
+  return <>{/* eslint-disable-next-line @next/next/no-img-element */}<img className={styles.heroMediaPreview} src={media.url} alt={media.altText || media.originalFilename} /></>;
+}
+
 export default function PageContentWorkbench({ page, publicRoute, sections, items, mediaOptions = [], initialSectionId }: Props) {
   const ordered = useMemo(() => [...sections].sort((a, b) => a.position - b.position), [sections]);
   const firstId = ordered[0]?.id || "";
@@ -116,7 +125,9 @@ export default function PageContentWorkbench({ page, publicRoute, sections, item
   const visibleSectionFields: readonly SectionFieldName[] = contract?.fields || allSectionFields;
   const visibleItemFields: readonly ItemFieldName[] = contract?.itemFields || allItemFields;
   const canAddItem = Boolean(contract?.allowAddItems && (!contract.maxItems || selectedItems.length < contract.maxItems));
-  const mediaOption = selectedItem?.mediaId ? mediaOptions.find((media) => media.id === selectedItem.mediaId) : undefined;
+  const itemMediaOption = selectedItem?.mediaId ? mediaOptions.find((media) => media.id === selectedItem.mediaId) : undefined;
+  const sectionMediaOption = selected?.mediaId ? mediaOptions.find((media) => media.id === selected.mediaId) : undefined;
+  const heroMediaOptions = useMemo(() => mediaOptions.filter((media) => media.mimeType.startsWith("image/") || media.mimeType.startsWith("video/")), [mediaOptions]);
   const hasEditableContent = visibleSectionFields.length > 0 || visibleItemFields.length > 0 || Boolean(contract?.media);
 
   useEffect(() => {
@@ -159,10 +170,48 @@ export default function PageContentWorkbench({ page, publicRoute, sections, item
         })}</select></label>
       </section>
 
+      {contract?.media === "section-image-video" ? <section className={`${styles.mediaCard} ${styles.heroMediaCard}`}>
+        <div className={styles.mediaHeading}>
+          <div><span>{title.toUpperCase()}</span><h2>{contract.mediaLabel || "Mídia do Hero"}</h2></div>
+          <span className={styles.mediaState}>{sectionMediaOption ? "Configurada" : "Sem mídia"}</span>
+        </div>
+        <p>Envie uma imagem ou vídeo para o fundo do Hero. A mídia aplicada aqui é consumida diretamente pela Home pública.</p>
+        <div className={styles.mediaPreview}>
+          {sectionMediaOption ? <><SectionMediaPreview media={sectionMediaOption}/><strong>{sectionMediaOption.originalFilename}</strong><small>{sectionMediaOption.mimeType}</small></> : <><AdminIcon name="image" size={30}/><strong>Nenhuma imagem ou vídeo aplicado</strong><small>O Hero continua usando o fundo visual padrão enquanto nenhuma mídia estiver vinculada.</small></>}
+        </div>
+
+        <form action={uploadPageSectionMedia} className={styles.mediaUploadForm}>
+          <input name="pageId" type="hidden" value={page.id}/>
+          <input name="sectionId" type="hidden" value={selected.id}/>
+          <label className={styles.fileField}>
+            <span>Enviar nova imagem ou vídeo</span>
+            <input accept="image/*,video/*" name="file" required type="file" />
+          </label>
+          <label>
+            <span>Texto alternativo da imagem <small>(opcional)</small></span>
+            <input name="altText" placeholder="Descreva a imagem do Hero" type="text" />
+          </label>
+          <small className={styles.mediaHelp}>Imagem ou vídeo · máximo de 50 MB. Vídeos são exibidos sem áudio, em loop, no fundo do Hero.</small>
+          <div className={styles.mediaButtonRow}><button className={styles.primaryButton} type="submit"><AdminIcon name="upload" size={14}/>Enviar e aplicar</button></div>
+        </form>
+
+        {heroMediaOptions.length ? <form action={setPageSectionMedia} className={styles.mediaLibraryForm}>
+          <input name="pageId" type="hidden" value={page.id}/>
+          <input name="sectionId" type="hidden" value={selected.id}/>
+          <label><span>Ou reutilizar mídia da biblioteca</span><select key={`${selected.id}-${selected.mediaId || "none"}`} defaultValue={selected.mediaId || ""} name="mediaId" required><option disabled value="">Selecionar imagem ou vídeo...</option>{heroMediaOptions.map((media) => <option key={media.id} value={media.id}>{media.originalFilename} · {media.mimeType.startsWith("video/") ? "Vídeo" : "Imagem"}</option>)}</select></label>
+          <div className={styles.mediaButtonRow}><button className={styles.uploadButton} type="submit"><AdminIcon name="media" size={14}/><span>Aplicar mídia existente</span></button></div>
+        </form> : null}
+
+        <div className={styles.mediaButtonRow}>
+          <Link className={styles.uploadButton} href="/admin/media"><AdminIcon name="media" size={14}/><span>Abrir biblioteca de mídias</span></Link>
+          {sectionMediaOption ? <form action={removePageSectionMedia}><input name="pageId" type="hidden" value={page.id}/><input name="sectionId" type="hidden" value={selected.id}/><button className={styles.removeMediaButton} type="submit">Remover do Hero</button></form> : null}
+        </div>
+      </section> : null}
+
       {contract?.media === "item-image" ? <section className={styles.mediaCard}>
-        <div className={styles.mediaHeading}><div><span>{title.toUpperCase()}</span><h2>{contract.mediaLabel || "Mídia da seção"}</h2></div><span className={styles.mediaState}>{mediaOption ? "Configurada" : "Sem mídia"}</span></div>
+        <div className={styles.mediaHeading}><div><span>{title.toUpperCase()}</span><h2>{contract.mediaLabel || "Mídia da seção"}</h2></div><span className={styles.mediaState}>{itemMediaOption ? "Configurada" : "Sem mídia"}</span></div>
         <p>Este asset possui consumidor real no frontend público da Lander Records.</p>
-        <div className={styles.mediaPreview}>{mediaOption ? <>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={mediaOption.url} alt={mediaOption.altText || mediaOption.originalFilename} style={{ display: "block", maxWidth: "100%", maxHeight: 150, objectFit: "contain" }} /><strong>{mediaOption.originalFilename}</strong></> : <><AdminIcon name="image" size={30}/><strong>Nenhuma mídia vinculada</strong><small>Selecione um asset no formulário do item abaixo.</small></>}</div>
+        <div className={styles.mediaPreview}>{itemMediaOption ? <>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={itemMediaOption.url} alt={itemMediaOption.altText || itemMediaOption.originalFilename} /><strong>{itemMediaOption.originalFilename}</strong></> : <><AdminIcon name="image" size={30}/><strong>Nenhuma mídia vinculada</strong><small>Selecione um asset no formulário do item abaixo.</small></>}</div>
         <Link className={styles.uploadButton} href="/admin/media"><AdminIcon name="upload" size={14}/><span>Gerenciar biblioteca de mídia</span></Link>
       </section> : null}
 
@@ -183,8 +232,8 @@ export default function PageContentWorkbench({ page, publicRoute, sections, item
         </section>
 
         {selectedItems.length || canAddItem ? <section className={styles.highlightsCard}>
-          <header><div><h3>{selected.sectionKey === "hero" ? "CTAs do Hero" : contract?.media ? "Mídia da seção" : "Itens da seção"}</h3><p>Somente itens realmente consumidos pelo frontend público aparecem aqui.</p></div>{canAddItem ? <button onClick={() => setAddingItem((value) => !value)} type="button">+ Novo</button> : null}</header>
-          {selectedItems.length ? <div className={styles.highlightList}>{selectedItems.map((item, index) => <button className={item.id === selectedItem?.id ? styles.selectedHighlight : ""} key={item.id} onClick={() => { setSelectedItemId(item.id); setAddingItem(false); }} type="button"><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{item.label || item.title || contract?.mediaLabel || `Item ${index + 1}`}</strong><small>Ordem {item.position} · {item.enabled ? "Ativo" : "Inativo"}</small></div><span className={styles.dragMark}>⋮⋮</span></button>)}</div> : null}
+          <header><div><h3>{selected.sectionKey === "hero" ? "CTAs do Hero" : contract?.media === "item-image" ? "Mídia da seção" : "Itens da seção"}</h3><p>Somente itens realmente consumidos pelo frontend público aparecem aqui.</p></div>{canAddItem ? <button onClick={() => setAddingItem((value) => !value)} type="button">+ Novo</button> : null}</header>
+          {selectedItems.length ? <div className={styles.highlightList}>{selectedItems.map((item, index) => <button className={item.id === selectedItem?.id ? styles.selectedHighlight : ""} key={item.id} onClick={() => { setSelectedItemId(item.id); setAddingItem(false); }} type="button"><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{item.label || item.title || (contract?.media === "item-image" ? contract.mediaLabel : "") || `Item ${index + 1}`}</strong><small>Ordem {item.position} · {item.enabled ? "Ativo" : "Inativo"}</small></div><span className={styles.dragMark}>⋮⋮</span></button>)}</div> : null}
         </section> : null}
 
         {addingItem && canAddItem ? <section className={styles.detailCard}>
@@ -197,13 +246,13 @@ export default function PageContentWorkbench({ page, publicRoute, sections, item
           </form>
         </section> : null}
 
-        {selectedItem && (visibleItemFields.length > 0 || contract?.media) ? <section className={styles.detailCard}>
-          <header className={styles.editingHeader}><span>Editando item {String(selectedItems.findIndex((item) => item.id === selectedItem.id) + 1).padStart(2, "0")} — {selectedItem.label || selectedItem.title || contract?.mediaLabel || "Item"}</span></header>
+        {selectedItem && (visibleItemFields.length > 0 || contract?.media === "item-image") ? <section className={styles.detailCard}>
+          <header className={styles.editingHeader}><span>Editando item {String(selectedItems.findIndex((item) => item.id === selectedItem.id) + 1).padStart(2, "0")} — {selectedItem.label || selectedItem.title || (contract?.media === "item-image" ? contract.mediaLabel : "") || "Item"}</span></header>
           <form action={updatePageSectionItem} className={styles.form}>
             <input type="hidden" name="id" value={selectedItem.id}/><input type="hidden" name="pageId" value={page.id}/><input type="hidden" name="itemKey" value={selectedItem.itemKey}/>{hiddenItemFields(selectedItem, visibleItemFields)}
             <div className={styles.fields}>
               {visibleItemFields.map((field) => <FieldControl field={field} key={field} name={field} value={selectedItem[field]} onChange={(value) => patchItem(selectedItem.id, field, value)} />)}
-              {contract?.media ? <label><span>{contract.mediaLabel || "Mídia"}</span><select name="mediaId" value={selectedItem.mediaId || ""} onChange={(event) => patchItemMeta(selectedItem.id, { mediaId: event.target.value || null })}><option value="">Sem mídia</option>{mediaOptions.map((media) => <option key={media.id} value={media.id}>{media.originalFilename}</option>)}</select></label> : <input name="mediaId" type="hidden" value={selectedItem.mediaId || ""}/>} 
+              {contract?.media === "item-image" ? <label><span>{contract.mediaLabel || "Mídia"}</span><select name="mediaId" value={selectedItem.mediaId || ""} onChange={(event) => patchItemMeta(selectedItem.id, { mediaId: event.target.value || null })}><option value="">Sem mídia</option>{mediaOptions.filter((media) => media.mimeType.startsWith("image/")).map((media) => <option key={media.id} value={media.id}>{media.originalFilename}</option>)}</select></label> : <input name="mediaId" type="hidden" value={selectedItem.mediaId || ""}/>} 
               <label><span>Ordem</span><input min="1" name="position" type="number" value={selectedItem.position} onChange={(event) => patchItemMeta(selectedItem.id, { position: Math.max(1, Number(event.target.value) || 1) })}/></label>
               <label className={styles.toggle}><input name="enabled" type="checkbox" checked={selectedItem.enabled} onChange={(event) => patchItemMeta(selectedItem.id, { enabled: event.target.checked })}/><span><strong>Item ativo</strong><small>Itens inativos não são retornados ao frontend público.</small></span></label>
             </div>
@@ -222,7 +271,7 @@ export default function PageContentWorkbench({ page, publicRoute, sections, item
         </section> : !hasEditableContent ? <div className={styles.emptyInline}>Esta seção é controlada pelo módulo de domínio indicado acima; não existem campos de página sem consumidor real para editar.</div> : null}
       </> : null}
 
-      {tab === "appearance" ? <section className={styles.detailCard}><header><h3>Aparência</h3><p>O frontend público da Lander Records é a fonte de verdade visual. O Portal Lander não define este conteúdo.</p></header><div className={styles.readonlyGrid}><div><span>Renderer</span><strong>{contract?.source || "Componente público da Lander Records"}</strong></div><div><span>Preview</span><strong>{viewportLabel(viewport)}</strong></div><div><span>Estilo</span><strong>CSS público da Lander Records</strong></div></div></section> : null}
+      {tab === "appearance" ? <section className={styles.detailCard}><header><h3>Aparência</h3><p>O frontend público da Lander Records é a fonte de verdade visual. O Portal Lander não define este conteúdo.</p></header><div className={styles.readonlyGrid}><div><span>Renderer</span><strong>{contract?.source || "Componente público da Lander Records"}</strong></div><div><span>Preview</span><strong>{viewportLabel(viewport)}</strong></div><div><span>Estilo</span><strong>CSS público da Lander Records</strong></div>{contract?.media === "section-image-video" ? <div><span>Mídia do Hero</span><strong>{sectionMediaOption ? `${sectionMediaOption.originalFilename} · ${sectionMediaOption.mimeType.startsWith("video/") ? "Vídeo" : "Imagem"}` : "Fundo visual padrão"}</strong></div> : null}</div></section> : null}
 
       {tab === "behavior" ? <section className={styles.detailCard}><header><h3>Comportamento</h3><p>A ordem estrutural é definida pelo renderer público; o CMS controla a ativação desta seção.</p></header><form action={updatePageSection} className={styles.form}>
         <input type="hidden" name="id" value={selected.id}/><input type="hidden" name="pageId" value={page.id}/><input type="hidden" name="position" value={selected.position}/>{allSectionFields.map((field) => <input key={field} type="hidden" name={field} value={selected[field]}/>) }
