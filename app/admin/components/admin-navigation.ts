@@ -1,7 +1,15 @@
 import type { IconName } from "./AdminIcon";
 
 export type AdminRole = "viewer" | "editor" | "admin" | "owner";
-export type AdminNavItem = { label: string; href: string; previewHref: string; icon: IconName; minimumRole?: "admin" | "owner" };
+export type AdminNavItem = {
+  label: string;
+  href: string;
+  previewHref: string;
+  icon: IconName;
+  minimumRole?: "admin" | "owner";
+  activePrefixes?: string[];
+  previewActivePrefixes?: string[];
+};
 export type AdminNavModule = { label: string; icon: IconName };
 export type AdminNavGroup = { key: string; label: string; items: AdminNavItem[]; module?: AdminNavModule };
 const rank: Record<AdminRole, number> = { viewer: 0, editor: 1, admin: 2, owner: 3 };
@@ -20,14 +28,18 @@ export const adminNavigation: AdminNavGroup[] = [
       { label: "Mídia Kit", href: "/admin/media-kit", previewHref: "/cms-preview/media-kit", icon: "media" },
     ],
   },
-  { key: "settings", label: "Configurações", items: [
-    { label: "Empresa", href: "/admin/settings", previewHref: "/cms-preview/settings", icon: "home" },
-    { label: "Identidade do Site", href: "/admin/settings#identity", previewHref: "/cms-preview/settings#identity", icon: "media" },
-    { label: "Automações", href: "/admin/settings#automations", previewHref: "/cms-preview/settings#automations", icon: "activity" },
-    { label: "Segurança", href: "/admin/settings#security", previewHref: "/cms-preview/settings#security", icon: "settings" },
-    { label: "Integrações", href: "/admin/settings/lander-records", previewHref: "/cms-preview/integrations", icon: "integration" },
-    { label: "Usuários", href: "/admin/users", previewHref: "/cms-preview/users", icon: "users", minimumRole: "owner" },
-  ] },
+  {
+    key: "settings",
+    label: "",
+    items: [{
+      label: "Configurações",
+      href: "/admin/settings",
+      previewHref: "/cms-preview/settings",
+      icon: "settings",
+      activePrefixes: ["/admin/settings", "/admin/users"],
+      previewActivePrefixes: ["/cms-preview/settings", "/cms-preview/integrations", "/cms-preview/users"],
+    }],
+  },
 ];
 
 export function visibleAdminNavigation(role: AdminRole) {
@@ -49,25 +61,30 @@ export function resolveAdminLocation(locationValue: string, role: AdminRole, pre
   const canonical = normalized === "/cms-preview" ? root : normalized;
   const items = visibleAdminNavigation(role).flatMap((group) => group.items);
   const hrefFor = (item: AdminNavItem) => preview ? item.previewHref : item.href;
+  const prefixesFor = (item: AdminNavItem) => preview ? item.previewActivePrefixes : item.activePrefixes;
+  const prefixMatches = (prefix: string) => canonical === prefix || (prefix !== root && canonical.startsWith(`${prefix}/`));
+  const specificity = (item: AdminNavItem) => Math.max(...((prefixesFor(item) || [hrefParts(hrefFor(item)).path]).map((prefix) => prefix.length)));
+
   const active = items
     .filter((item) => {
+      const prefixes = prefixesFor(item);
+      if (prefixes?.some(prefixMatches)) return true;
       const parts = hrefParts(hrefFor(item));
       if (canonical === parts.path) {
         if (parts.hash) return parts.hash === currentHash;
-        const hashSiblings = items.some((candidate) => {
-          const candidateParts = hrefParts(hrefFor(candidate));
-          return candidateParts.path === parts.path && Boolean(candidateParts.hash);
-        });
-        return !currentHash || !hashSiblings;
+        return true;
       }
       return !parts.hash && parts.path !== root && canonical.startsWith(`${parts.path}/`);
     })
-    .sort((a, b) => hrefParts(hrefFor(b)).path.length - hrefParts(hrefFor(a)).path.length)[0];
+    .sort((a, b) => specificity(b) - specificity(a))[0];
+
   const selected = active;
   const breadcrumbs: Array<{ label: string; href?: string }> = [];
   if (canonical !== root) breadcrumbs.push({ label: "Dashboard", href: root });
   const selectedPath = selected ? hrefParts(hrefFor(selected)).path : "";
-  const tail = selected ? canonical.slice(selectedPath.length).split("/").filter(Boolean) : [];
+  const ownsCanonicalPath = Boolean(selectedPath) && (canonical === selectedPath || canonical.startsWith(`${selectedPath}/`));
+  const settingsArea = selected?.label === "Configurações";
+  const tail = selected && ownsCanonicalPath && !settingsArea ? canonical.slice(selectedPath.length).split("/").filter(Boolean) : [];
   const label = selected?.label || (canonical.split("/")[2] === "releases" ? "Lançamentos" : "Portal administrativo");
   if (tail.length && selected) {
     breadcrumbs.push({ label, href: hrefFor(selected) });
