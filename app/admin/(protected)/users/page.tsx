@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { asc } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
 import { adminUsers } from "../../../../lib/db/schema";
 import { createAdminUser, resetAdminPassword, updateAdminUser } from "../../actions";
 import { AdminIcon } from "../../components/AdminIcon";
+import settingsStyles from "../settings/Settings.module.css";
 import styles from "./Users.module.css";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +22,15 @@ export default async function UsersPage() {
   const owners = rows.filter((user) => user.role === "owner").length;
 
   return <div className={styles.page}>
+    <nav aria-label="Seções de configurações" className={settingsStyles.tabs}>
+      <Link href="/admin/settings"><AdminIcon name="home" size={15}/>Empresa</Link>
+      <Link href="/admin/settings#identity"><AdminIcon name="media" size={15}/>Identidade do Site</Link>
+      <Link href="/admin/settings#automations"><AdminIcon name="activity" size={15}/>Automações</Link>
+      <Link href="/admin/settings#security"><AdminIcon name="shield" size={15}/>Segurança</Link>
+      <Link href="/admin/settings/lander-records"><AdminIcon name="integration" size={15}/>Integrações</Link>
+      <Link aria-current="page" href="/admin/users"><AdminIcon name="users" size={15}/>Usuários</Link>
+    </nav>
+
     <section className={styles.kpis} aria-label="Resumo de usuários">
       <article><span>Usuários ativos</span><strong>{active}</strong></article>
       <article><span>Contas totais</span><strong>{rows.length}</strong></article>
