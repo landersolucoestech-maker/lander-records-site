@@ -61,6 +61,54 @@ export async function deletePageAction(formData: FormData) {
   redirect("/admin/pages?deleted=1");
 }
 
+export async function createPageSectionAction(formData: FormData) {
+  const session = await requirePersistentAdmin("editor");
+  const pageId = uuid(text(formData, "pageId"));
+  const name = text(formData, "name");
+  const key = slugify(text(formData, "identifier") || name);
+  if (!pageId || !name || !key) throw new Error("Página, nome e identificador da seção são obrigatórios.");
+
+  const db = getDb();
+  const page = (await db.select().from(pages).where(eq(pages.id, pageId)).limit(1))[0];
+  if (!page) throw new Error("Página não encontrada.");
+
+  const existing = await db.select({ id: pageSections.id }).from(pageSections).where(and(eq(pageSections.pageId, pageId), eq(pageSections.sectionKey, key))).limit(1);
+  if (existing.length) throw new Error("Já existe uma seção com esse identificador nesta página.");
+
+  const created = await db.transaction(async (tx) => {
+    let definition = (await tx.select({ id: sectionDefinitions.id, type: sectionDefinitions.type }).from(sectionDefinitions).where(eq(sectionDefinitions.key, key)).limit(1))[0];
+    if (!definition) {
+      const inserted = await tx.insert(sectionDefinitions).values({
+        key,
+        name,
+        type: "content",
+        description: `Seção ${name} criada pelo módulo Páginas.`,
+        active: true,
+      }).onConflictDoNothing({ target: sectionDefinitions.key }).returning({ id: sectionDefinitions.id, type: sectionDefinitions.type });
+      definition = inserted[0] || (await tx.select({ id: sectionDefinitions.id, type: sectionDefinitions.type }).from(sectionDefinitions).where(eq(sectionDefinitions.key, key)).limit(1))[0];
+    }
+    if (!definition) throw new Error("Não foi possível registrar a definição da seção.");
+
+    const positions = await tx.select({ position: pageSections.position }).from(pageSections).where(eq(pageSections.pageId, pageId)).orderBy(asc(pageSections.position));
+    const position = positions.length ? Math.max(...positions.map((item) => item.position)) + 1 : 1;
+    const rows = await tx.insert(pageSections).values({
+      pageId,
+      sectionKey: key,
+      type: definition.type,
+      title: name,
+      position,
+      enabled: true,
+    }).returning({ id: pageSections.id });
+    await tx.insert(pageSectionBindings).values({ pageSectionId: rows[0].id, definitionId: definition.id });
+    return { id: rows[0].id, definitionId: definition.id };
+  });
+
+  await audit(session.user.id, "page.section_created", "page_section", created.id, { pageId, definitionId: created.definitionId, key, name });
+  revalidatePagePaths([page.slug]);
+  revalidatePath(`/admin/pages/${pageId}`);
+  redirect(`/admin/pages/${pageId}?section=${encodeURIComponent(created.id)}`);
+}
+
 export async function attachSectionAction(formData: FormData) {
   const session = await requirePersistentAdmin("editor");
   const pageId = uuid(text(formData, "pageId"));
