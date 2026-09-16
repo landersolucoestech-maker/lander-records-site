@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getPublishedPostBySlug, getPublishedPosts, getSlugRedirect, getPublicPostPresentation } from "@/modules/posts";
 import { absoluteUrl, buildMetadata } from "@/lib/seo";
+import { trustedExternalUrl } from "@/lib/media-embed";
 import { CopyArticleLink } from "@/app/components/CopyArticleLink";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +41,9 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
   const presentation = await getPublicPostPresentation(article.id);
   const related = allPosts.filter((item) => item.slug !== article.slug).slice(0, 2);
   const publicationUrl = presentation.publicationLink || `/noticias/${article.slug}`;
+  const trustedSocialLinks = Object.entries(presentation.links)
+    .map(([platform, url]) => [platform, trustedExternalUrl(url)] as const)
+    .filter((entry): entry is readonly [string, string] => Boolean(entry[1]));
 
   return (
     <>
@@ -64,7 +68,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
           </div>
           <aside className="shareRail">
             <span>Compartilhe</span>
-            {Object.entries(presentation.links).map(([platform, url]) => <a key={platform} href={url} target="_blank" rel="noreferrer">{socialLabels[platform] || platform}</a>)}
+            {trustedSocialLinks.map(([platform, url]) => <a key={platform} href={url} target="_blank" rel="noreferrer">{socialLabels[platform] || platform}</a>)}
             <CopyArticleLink href={publicationUrl} />
           </aside>
         </div>
