@@ -22,6 +22,7 @@ const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]
 export function AdminShell({ children, email, footerAction, name, preview = false, role = "viewer", sessionSource = "session" }: ShellProps) {
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [siteExpanded, setSiteExpanded] = useState(true);
   const mobileToggleRef = useRef<HTMLButtonElement>(null);
   const sidebarRef = useRef<HTMLElement>(null);
   const workspaceRef = useRef<HTMLDivElement>(null);
@@ -99,14 +100,27 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
       </div>
       {readOnly ? <div className="adminPreviewBadge">{preview ? "Preview local" : "Desenvolvimento"} · somente leitura</div> : null}
       <nav aria-label="Painel administrativo">
-        {visibleAdminNavigation(role).map((group) => <div className="adminNavGroup" key={group.label || "dashboard"}>
-          {group.label ? <span className="adminNavLabel">{group.label}</span> : null}
-          {group.items.map((item) => {
+        {visibleAdminNavigation(role).map((group) => {
+          const links = group.items.map((item) => {
             const href = preview ? item.previewHref : item.href;
             const active = location.activeHref === href || location.activeHref?.split(/[?#]/, 1)[0] === href.split(/[?#]/, 1)[0];
-            return <Link aria-current={active ? "page" : undefined} href={href} key={`${group.label}-${item.label}`} onClick={() => setOpen(false)} title={collapsed ? item.label : undefined}><AdminIcon name={item.icon} size={19} /><span>{item.label}</span></Link>;
-          })}
-        </div>)}
+            return <Link aria-current={active ? "page" : undefined} href={href} key={`${group.key}-${item.label}`} onClick={() => setOpen(false)} title={collapsed ? item.label : undefined}><AdminIcon name={item.icon} size={19} /><span>{item.label}</span></Link>;
+          });
+          if (group.module) {
+            return <div className="adminNavModule" key={group.key}>
+              <button aria-expanded={siteExpanded} className="adminNavParent" onClick={() => setSiteExpanded((value) => !value)} title={collapsed ? group.module.label : undefined} type="button">
+                <AdminIcon name={group.module.icon} size={19} />
+                <span>{group.module.label}</span>
+                <AdminIcon name="chevron" size={15} />
+              </button>
+              {siteExpanded ? <div className="adminNavChildren">{links}</div> : null}
+            </div>;
+          }
+          return <div className="adminNavGroup" key={group.key}>
+            {group.label ? <span className="adminNavLabel">{group.label}</span> : null}
+            {links}
+          </div>;
+        })}
       </nav>
       <div className="adminSidebarFooter">
         <div className="adminUserSummary"><span className="adminAvatar">{initials}</span><span><strong>{name}</strong><small>{readOnly ? "Acesso de leitura" : email || role}</small></span></div>
