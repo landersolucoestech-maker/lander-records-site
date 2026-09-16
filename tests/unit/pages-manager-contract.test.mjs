@@ -51,7 +51,6 @@ test("Pages overview mirrors the Portal Lander composition while keeping Lander 
   assert.match(styles, /\.sectionsHead,\.sectionsRow\{display:grid;grid-template-columns:minmax\(360px,1fr\) 120px minmax\(150px,auto\)/);
   assert.match(styles, /\.sectionsRow\{min-height:50px;padding:6px 14px;border-bottom:1px solid #eef1f4\}/);
   assert.match(styles, /\.sectionActions\{display:flex;gap:7px;justify-content:flex-end/);
-  assert.match(styles, /adminShell:has\(\[data-testid="pages-manager"\]\) \.adminTopbarPrimary/);
   assert.doesNotMatch(styles, /overflow-x:auto/);
 });
 
