@@ -72,11 +72,12 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [siteExpanded, setSiteExpanded] = useState(true);
+  const [hash, setHash] = useState("");
   const mobileToggleRef = useRef<HTMLButtonElement>(null);
   const sidebarRef = useRef<HTMLElement>(null);
   const workspaceRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
-  const location = resolveAdminLocation(pathname, role, preview);
+  const location = resolveAdminLocation(`${pathname}${hash}`, role, preview);
   const developmentPreview = sessionSource === "development-auth-bypass";
   const readOnly = preview || developmentPreview;
   const showReadOnlyChrome = preview;
@@ -86,6 +87,10 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
   useEffect(() => {
     const stored = window.localStorage.getItem("lander-admin-sidebar-collapsed");
     if (stored === "true") setCollapsed(true);
+    const syncHash = () => setHash(window.location.hash);
+    syncHash();
+    window.addEventListener("hashchange", syncHash);
+    return () => window.removeEventListener("hashchange", syncHash);
   }, []);
 
   useEffect(() => {
@@ -155,7 +160,8 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
         {visibleAdminNavigation(role).map((group) => {
           const links = group.items.map((item) => {
             const href = preview ? item.previewHref : item.href;
-            const active = location.activeHref === href || location.activeHref?.split(/[?#]/, 1)[0] === href.split(/[?#]/, 1)[0];
+            const samePathFallback = !href.includes("#") && location.activeHref?.split(/[?#]/, 1)[0] === href.split(/[?#]/, 1)[0];
+            const active = location.activeHref === href || samePathFallback;
             return <Link aria-current={active ? "page" : undefined} href={href} key={`${group.key}-${item.label}`} onClick={() => setOpen(false)} title={collapsed ? item.label : undefined}><AdminIcon name={item.icon} size={19} /><span>{item.label}</span></Link>;
           });
           if (group.module) {
