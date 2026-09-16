@@ -28,44 +28,44 @@ const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]
 function moduleHeader(pathname: string, preview: boolean): ModuleHeader | null {
   const path = pathname.replace(/\/+$/, "") || "/";
   const root = preview ? "/cms-preview" : "/admin";
-  const map: Record<string, ModuleHeader> = {
-    [`${root}/posts`]: {
-      title: "Conteúdos",
-      description: "Gerencie publicações, rascunhos editoriais e materiais do site com uma experiência consistente.",
-      action: { label: "Novo conteúdo", href: preview ? `${root}/posts` : "/admin/posts/new" },
-    },
-    [`${root}/artists`]: {
-      title: "Artistas",
-      description: "Gerencie artistas, perfis, publicação e conteúdos relacionados sem alterar os fluxos existentes.",
-      action: { label: "Novo artista", href: preview ? `${root}/artists` : "/admin/artists/new" },
-    },
-    [`${root}/media`]: {
-      title: "Mídias",
-      description: "Organize a biblioteca de arquivos, metadados e ciclo de vida dos assets do site.",
-    },
-    [`${root}/pages`]: {
-      title: "Páginas",
-      description: "Gerencie páginas e configure cada seção com edição e preview em tempo real.",
-      action: { label: "Criar página", href: preview ? `${root}/pages` : "/admin/pages/new" },
-    },
-    [`${root}/media-kit`]: {
-      title: "Mídia Kit",
-      description: "Edite a apresentação comercial e acompanhe as informações que compõem o material institucional.",
-    },
-    [`${root}/settings`]: {
-      title: "Configurações",
-      description: "Gerencie identidade, preferências e configurações do sistema em uma experiência unificada.",
-    },
-    [preview ? `${root}/integrations` : "/admin/settings/lander-records"]: {
-      title: "Integrações",
-      description: "Gerencie conexões externas, estado de sincronização e fontes de dados sem expor credenciais no cliente.",
-    },
-    [preview ? `${root}/users` : "/admin/users"]: {
-      title: "Usuários",
-      description: "Gerencie contas administrativas, papéis e controles de acesso do Portal.",
-    },
-  };
-  return map[path] || null;
+  const starts = (segment: string) => path === `${root}/${segment}` || path.startsWith(`${root}/${segment}/`);
+
+  if (starts("posts")) {
+    if (path === `${root}/posts`) return { title: "Conteúdos", description: "Gerencie publicações, rascunhos editoriais e materiais enviados pelo público sem misturar os fluxos.", action: { label: "Novo conteúdo", href: preview ? `${root}/posts` : "/admin/posts/new" } };
+    if (path.endsWith("/new")) return { title: "Novo conteúdo", description: "Crie uma publicação usando a estrutura editorial e o preview visual do Portal." };
+    if (path.endsWith("/view")) return { title: "Visualizar conteúdo", description: "Consulte a publicação preservando o mesmo contexto visual do módulo editorial." };
+    return { title: "Editar conteúdo", description: "Edite publicação, mídia, autoria, organização e SEO com preview em tempo real." };
+  }
+
+  if (starts("artists")) {
+    if (path === `${root}/artists`) return { title: "Artistas", description: "Gerencie artistas, perfis, publicação e conteúdos relacionados em uma única área.", action: { label: "Novo artista", href: preview ? `${root}/artists` : "/admin/artists/new" } };
+    if (path.endsWith("/new")) return { title: "Novo artista", description: "Cadastre identidade, mídias, plataformas, destinos e metadados do artista." };
+    if (path.endsWith("/view")) return { title: "Visualizar artista", description: "Consulte o perfil administrativo e a presença pública do artista." };
+    return { title: "Editar artista", description: "Configure identidade, publicação, integrações, mídia e conteúdo público com preview em tempo real." };
+  }
+
+  if (starts("media")) return { title: "Mídias", description: "Organize a biblioteca de arquivos, metadados e ciclo de vida dos assets do site." };
+
+  if (starts("pages")) {
+    if (path === `${root}/pages`) return { title: "Páginas", description: "Gerencie páginas e configure cada seção com edição e preview em tempo real.", action: { label: "Criar página", href: preview ? `${root}/pages` : "/admin/pages/new" } };
+    if (path.endsWith("/new")) return { title: "Criar página", description: "Crie uma página usando a estrutura e os contratos atuais do projeto." };
+    if (path.endsWith("/view")) return { title: "Visualizar página", description: "Consulte a estrutura administrativa e o destino público da página." };
+    return { title: "Configurar página", description: "Edite seções e conteúdo usando o workbench visual com preview em tempo real." };
+  }
+
+  if (starts("media-kit")) return { title: "Mídia Kit", description: "Edite a apresentação comercial e acompanhe as informações que compõem o material institucional." };
+  if (starts("settings/lander-records") || (preview && starts("integrations"))) return { title: "Integrações", description: "Gerencie conexões externas, estado de sincronização e fontes de dados sem expor credenciais no cliente." };
+  if (starts("settings")) return { title: "Configurações", description: "Gerencie identidade, preferências, segurança e integrações em uma experiência unificada." };
+  if (starts("users")) return { title: "Usuários", description: "Gerencie contas administrativas, papéis e controles de acesso do Portal." };
+  if (starts("home")) return { title: "Home", description: "Configure as áreas editoriais e a composição da página inicial." };
+  if (starts("navigation")) return { title: "Navegação", description: "Gerencie menus, destinos e hierarquia da navegação pública." };
+  if (starts("header")) return { title: "Cabeçalho", description: "Configure os elementos estruturais do cabeçalho público." };
+  if (starts("post-categories") || starts("categories")) return { title: "Categorias", description: "Gerencie as taxonomias usadas na organização editorial." };
+  if (starts("artist-categories")) return { title: "Categorias de artistas", description: "Gerencie classificações e filtros usados no catálogo de artistas." };
+  if (starts("tags")) return { title: "Tags", description: "Gerencie marcadores editoriais usados pelas publicações." };
+  if (starts("releases")) return { title: "Lançamentos", description: "Gerencie lançamentos musicais e seus destinos públicos." };
+  if (starts("audit")) return { title: "Auditoria", description: "Consulte eventos administrativos e histórico de alterações." };
+  return null;
 }
 
 export function AdminShell({ children, email, footerAction, name, preview = false, role = "viewer", sessionSource = "session" }: ShellProps) {
@@ -179,6 +179,7 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
         {footerAction}
       </div> : null}
     </aside>
+
     <div className="adminWorkspace" ref={workspaceRef}>
       <a className="adminSkipLink" href="#admin-main">Ir para o conteúdo</a>
       <header className={`adminTopbar${contextualHeader ? " adminTopbarContextual" : ""}`} data-testid="admin-topbar">
