@@ -4,11 +4,14 @@ import test from "node:test";
 
 const read = (path) => fs.readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 const shell = read("app/admin/components/AdminShell.tsx");
+const navigation = read("app/admin/components/admin-navigation.ts");
 const primitives = read("styles/admin/primitives.css");
+const portalContract = read("styles/admin/portal-lander-contract.css");
 const posts = read("app/admin/(protected)/posts/PostManager.tsx");
 const postStyles = read("app/admin/(protected)/posts/NewsManager.module.css");
 const artists = read("app/admin/(protected)/artists/ArtistManager.tsx");
 const artistStyles = read("app/admin/(protected)/artists/ArtistManager.module.css");
+const artistFormStyles = read("app/admin/(protected)/artists/ArtistForm.module.css");
 const media = read("app/admin/(protected)/media/MediaLibrary.tsx");
 const mediaStyles = read("app/admin/(protected)/media/MediaLibrary.module.css");
 const mediaPage = read("app/admin/(protected)/media/page.tsx");
@@ -19,36 +22,48 @@ const settingsStyles = read("app/admin/(protected)/settings/Settings.module.css"
 const users = read("app/admin/(protected)/users/page.tsx");
 const integrations = read("app/admin/(protected)/settings/lander-records/page.tsx");
 
-test("shared admin chrome matches the cloned neutral visual system", () => {
+test("shared admin chrome matches the Portal Lander visual contract", () => {
   assert.match(primitives, /\.adminButton\.primary \{ background: #111827/);
   assert.match(primitives, /\.adminBadge\.live/);
-  assert.match(primitives, /\.adminBadge\.draft/);
   assert.match(primitives, /\.adminTabs/);
-  assert.match(primitives, /#e4e7ec|#e5e7eb/);
-  assert.match(primitives, /#667085/);
+  assert.match(portalContract, /\.adminMain \.admin-toolbar/);
+  assert.match(portalContract, /table:not\(\.tableview-freeform\)/);
+  assert.match(portalContract, /--ui-table-row-height:64px/);
+  assert.match(portalContract, /#e30613/);
 });
 
-test("major modules retain one contextual shell while cloning the reference hierarchy", () => {
-  for (const title of ["Conteúdos", "Artistas", "Mídias", "Páginas", "Mídia Kit", "Configurações", "Integrações", "Usuários"]) {
+test("sidebar exposes Configurações once while its six areas stay internal tabs", () => {
+  assert.equal((navigation.match(/label: "Configurações"/g) || []).length, 1);
+  assert.match(navigation, /activePrefixes: \["\/admin\/settings", "\/admin\/users"\]/);
+  assert.doesNotMatch(navigation, /label: "Empresa"|label: "Identidade do Site"|label: "Automações"|label: "Segurança"|label: "Integrações"|label: "Usuários"/);
+  for (const tab of ["Empresa", "Identidade do Site", "Automações", "Segurança", "Integrações", "Usuários"]) assert.match(settings, new RegExp(tab));
+});
+
+test("major modules retain one contextual shell and common Portal header chrome", () => {
+  for (const title of ["Conteúdos", "Artistas", "Mídias", "Páginas", "Mídia Kit", "Configurações"]) {
     assert.ok(shell.includes(`title: "${title}"`), `missing contextual header for ${title}`);
   }
   assert.match(shell, /adminTopbarContextual/);
   assert.match(shell, /name="bell"/);
 });
 
-test("content and artists use the cloned compact toolbar, table and three-dot action menu while keeping real routes", () => {
+test("content and artists keep real routes while using compact Portal catalog patterns", () => {
   for (const source of [posts, artists]) {
     assert.match(source, /<details>/);
     assert.match(source, /name="more"/);
-    assert.match(source, /className=\{styles\.toolbar\}/);
-    assert.match(source, /className=\{styles\.tableHeader\}/);
   }
+  assert.match(artists, /admin-toolbar/);
+  assert.match(artists, /tableview-surface/);
+  assert.match(artists, /table-card/);
+  assert.match(artists, /<table>/);
   assert.match(posts, /\/admin\/posts\/\$\{post\.id\}/);
   assert.match(posts, /\/noticias\/\$\{post\.slug\}/);
   assert.match(artists, /\/admin\/artists\/\$\{artist\.id\}/);
   assert.match(artists, /\/artistas\/\$\{artist\.slug\}/);
   assert.match(postStyles, /min-height:64px/);
-  assert.match(artistStyles, /min-height:64px/);
+  assert.match(artistStyles, /height:64px/);
+  assert.match(artistFormStyles, /grid-template-columns:minmax\(360px,420px\) minmax\(0,1fr\)/);
+  assert.match(artistFormStyles, /position:sticky;top:78px/);
 });
 
 test("media library mirrors the reference inline upload, table and pagination without replacing server actions", () => {
@@ -64,7 +79,7 @@ test("media library mirrors the reference inline upload, table and pagination wi
   assert.match(mediaStyles, /\.pagination/);
 });
 
-test("media kit clones the editor plus sticky live preview while reading the existing project data", () => {
+test("media kit keeps editor plus sticky live preview while reading existing project data", () => {
   assert.match(mediaKit, /getDb\(\)/);
   assert.match(mediaKit, /Identidade e apresentação/);
   assert.match(mediaKit, /Inventário publicitário/);
@@ -75,21 +90,16 @@ test("media kit clones the editor plus sticky live preview while reading the exi
   assert.match(mediaKitStyles, /position:sticky/);
 });
 
-test("settings, users and integrations clone the reference organization while preserving actual mutations and RBAC", () => {
+test("settings internal tabs preserve actual mutations and RBAC", () => {
   assert.match(settings, /updateSiteSettings/);
   assert.match(settings, /upsertSocialLink/);
   assert.match(settings, /upsertContactTopic/);
-  for (const tab of ["Empresa", "Identidade do Site", "Automações", "Segurança", "Integrações", "Usuários"]) assert.match(settings, new RegExp(tab));
   assert.match(settingsStyles, /gap:24px/);
   assert.match(settingsStyles, /min-height:66px/);
-
   assert.match(users, /requireAdmin\("owner"\)/);
   assert.match(users, /createAdminUser/);
   assert.match(users, /updateAdminUser/);
   assert.match(users, /resetAdminPassword/);
-  assert.match(users, /Gerenciar Equipe/);
-  assert.match(users, /Papéis e Permissões/);
-
   assert.match(integrations, /saveLanderRecordsIntegrationSettings/);
   assert.match(integrations, /syncLanderRecordsIntegrationsAction/);
   assert.match(integrations, /Spotify/);
