@@ -3,6 +3,7 @@ import fs from "node:fs";
 import test from "node:test";
 
 const actions = fs.readFileSync(new URL("../../app/admin/post-actions.ts", import.meta.url), "utf8");
+const publicPage = fs.readFileSync(new URL("../../app/(public)/noticias/[slug]/page.tsx", import.meta.url), "utf8");
 
 test("post image preparation is sequential so earlier uploads can be compensated", () => {
   assert.match(actions, /coverUpload = await prepareImage\(formData, "coverMediaUpload", slug, "cover"\)/);
@@ -25,4 +26,11 @@ test("successful post saves keep uploaded media and return to the modal edit wor
   const successTail = actions.slice(auditBoundary);
   assert.doesNotMatch(successTail, /cleanupPreparedUploads|deleteStoredMedia/);
   assert.match(successTail, /redirect\(`\/admin\/posts\?edit=\$\{encodeURIComponent\(postId\)\}&saved=1`\)/);
+});
+
+test("news public page renders only trusted social destinations", () => {
+  assert.match(publicPage, /trustedExternalUrl/);
+  assert.match(publicPage, /const trustedSocialLinks = Object\.entries\(presentation\.links\)/);
+  assert.match(publicPage, /trustedSocialLinks\.map/);
+  assert.doesNotMatch(publicPage, /Object\.entries\(presentation\.links\)\.map\(\(\[platform, url\]\) => <a/);
 });
