@@ -36,7 +36,10 @@ export default async function PagesAdminPage() {
   const summary: PageSummary[] = rows.map((page) => {
     const contract = pageContract(page.key);
     const configuredRoute = page.slug ? `/${page.slug}` : "/";
-    const pageStructure = sections.filter((section) => section.pageId === page.id).map(({ pageId: _pageId, ...section }) => section;
+    const pageStructure = sections
+      .filter((section) => section.pageId === page.id)
+      .map(({ pageId: _pageId, ...section }) => section);
+
     return {
       id: page.id,
       key: page.key,
