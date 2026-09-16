@@ -3,6 +3,8 @@
 /* This module intentionally outranks the legacy feature override for the approved Artists reference. */
 :global(.adminShell) :global(.adminMain) [data-testid="artist-manager"].manager .toolbar{min-height:102px!important;padding:20px 18px 24px!important;gap:24px!important;border-radius:10px 10px 0 0!important}
 :global(.adminShell) :global(.adminMain) [data-testid="artist-manager"].manager .searchField{padding-top:18px!important}
+:global(.adminShell) :global(.adminMain) [data-testid="artist-manager"].manager .toolbar input,:global(.adminShell) :global(.adminMain) [data-testid="artist-manager"].manager .toolbar select{height:38px!important;min-height:38px!important}
+:global(.adminShell) :global(.adminMain) [data-testid="artist-manager"].manager :global(.adminPrimaryCompact){min-height:38px!important;padding:8px 14px!important}
 :global(.adminShell) :global(.adminMain) [data-testid="artist-manager"].manager .artistTable th{height:38px!important;padding:8px 14px!important;background:#f9fafb!important}
 :global(.adminShell) :global(.adminMain) [data-testid="artist-manager"].manager .artistTable td{height:56px!important;padding:6px 14px!important}
 :global(.adminShell) :global(.adminMain) [data-testid="artist-manager"].manager .identity img,:global(.adminShell) :global(.adminMain) [data-testid="artist-manager"].manager .avatarFallback{width:42px!important;height:42px!important;border-radius:6px!important}
