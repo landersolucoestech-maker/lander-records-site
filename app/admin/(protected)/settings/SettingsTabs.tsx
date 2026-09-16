@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { AdminIcon, type IconName } from "../../components/AdminIcon";
 import styles from "./Settings.module.css";
 
@@ -17,6 +17,12 @@ const tabs: Tab[] = [
   { key: "users", label: "Usuários", icon: "users" },
 ];
 
+function tabFromHash(): TabKey {
+  if (typeof window === "undefined") return "company";
+  const hash = window.location.hash.replace(/^#/, "") as TabKey;
+  return tabs.some((item) => item.key === hash) ? hash : "company";
+}
+
 export function SettingsTabs({ company, identity, automations, security, integrations, users, canManageUsers }: {
   company: ReactNode;
   identity: ReactNode;
@@ -29,9 +35,23 @@ export function SettingsTabs({ company, identity, automations, security, integra
   const [tab, setTab] = useState<TabKey>("company");
   const panels: Record<TabKey, ReactNode> = { company, identity, automations, security, integrations, users };
 
+  useEffect(() => {
+    const sync = () => setTab(tabFromHash());
+    sync();
+    window.addEventListener("hashchange", sync);
+    return () => window.removeEventListener("hashchange", sync);
+  }, []);
+
+  const selectTab = (next: TabKey) => {
+    setTab(next);
+    const hash = next === "company" ? "" : `#${next}`;
+    window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}${hash}`);
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+  };
+
   return <div className={styles.settingsWorkspace}>
     <div className={styles.tabs} role="tablist" aria-label="Seções de configurações">
-      {tabs.filter((item) => item.key !== "users" || canManageUsers).map((item) => <button aria-selected={tab === item.key} className={tab === item.key ? styles.activeTab : ""} key={item.key} onClick={() => setTab(item.key)} role="tab" type="button"><AdminIcon name={item.icon} size={15}/><span>{item.label}</span></button>)}
+      {tabs.filter((item) => item.key !== "users" || canManageUsers).map((item) => <button aria-selected={tab === item.key} className={tab === item.key ? styles.activeTab : ""} key={item.key} onClick={() => selectTab(item.key)} role="tab" type="button"><AdminIcon name={item.icon} size={15}/><span>{item.label}</span></button>)}
     </div>
     <section className={styles.tabPanel} role="tabpanel">{panels[tab]}</section>
   </div>;
