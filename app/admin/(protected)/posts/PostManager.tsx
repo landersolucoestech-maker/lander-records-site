@@ -66,7 +66,7 @@ export default function PostManager({ availableCategories, availableTags, canEdi
     {preview ? <div className="adminNotice">Os dados deste preview são isolados e não alteram a persistência do ambiente real.</div> : null}
 
     <section className={styles.catalog} aria-label="Publicações">
-      <div className={styles.toolbar} role="search">
+      <div className={`admin-toolbar ${styles.toolbar}`} role="search">
         <label className={styles.search}><span className="srOnly">Buscar publicações</span><AdminIcon name="search" size={16} /><input onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por título, resumo ou autor..." type="search" value={query} /></label>
         <label><span className="srOnly">Status</span><select onChange={(event) => setStatus(event.target.value)} value={status}><option value="all">Todos os status</option><option value="published">Publicados</option><option value="draft">Rascunhos</option><option value="archived">Arquivados</option></select></label>
         <label><span className="srOnly">Categoria</span><select onChange={(event) => setCategory(event.target.value)} value={category}><option value="all">Todas as categorias</option>{categories.map((item) => <option key={item}>{item}</option>)}</select></label>
@@ -75,19 +75,23 @@ export default function PostManager({ availableCategories, availableTags, canEdi
         {hasFilters ? <button className={styles.clearButton} onClick={clearFilters} type="button">Limpar</button> : null}
       </div>
 
-      {filtered.length ? <div className={styles.tableWrap} aria-label="Publicações cadastradas" role="table">
-        <div className={styles.tableHeader} role="row"><span role="columnheader">Conteúdo</span><span role="columnheader">Categoria</span><span role="columnheader">Slug</span><span role="columnheader">Status</span><span role="columnheader">Autor</span><span role="columnheader">Atualização</span><span role="columnheader">Ações</span></div>
-        <div className={styles.rows} role="rowgroup">{filtered.map((post) => <div className={styles.row} data-testid="news-row" key={post.id} role="row">
-          <div className={styles.identity} role="cell">{post.coverImage ? <Image alt="" height={40} src={post.coverImage} unoptimized width={40} /> : <span className={styles.coverFallback} aria-hidden="true"><AdminIcon name="posts" size={16} /></span>}<span><strong>{post.title}</strong><small>{post.excerpt || "Sem resumo"}</small></span></div>
-          <div className={styles.category} role="cell">{post.category || "Sem categoria"}</div>
-          <div className={styles.slug} role="cell">/{post.slug}</div>
-          <div role="cell"><StatusBadge status={post.status} /></div>
-          <div className={styles.author} role="cell">{post.authorName || "—"}</div>
-          <time className={styles.date} role="cell">{post.updatedAt}</time>
-          <div className={styles.actions} role="cell"><details><summary aria-label={`Ações de ${post.title}`}><AdminIcon name="more" size={17}/></summary><div className={styles.actionMenu}>{canEdit && !preview ? <Link href={`/admin/posts/${post.id}`}><AdminIcon name="edit" size={14}/>Editar</Link> : null}{post.isPubliclyVisible && !preview ? <Link href={`/noticias/${post.slug}`} target="_blank"><AdminIcon name="eye" size={14}/>Visualizar</Link> : null}<Link href={preview ? "/cms-preview/posts" : `/admin/posts/${post.id}/view`}><AdminIcon name="document" size={14}/>Consultar</Link></div></details></div>
-        </div>)}</div>
-        <div className={styles.resultCount}><span>{filtered.length} registro{filtered.length === 1 ? "" : "s"}</span><span>Mostrando {filtered.length} de {posts.length}</span></div>
-      </div> : <div className={styles.empty}><strong>{posts.length ? "Nenhuma publicação encontrada para os filtros selecionados." : "Nenhuma publicação cadastrada."}</strong>{hasFilters ? <button className="adminButton" onClick={clearFilters} type="button">Limpar filtros</button> : canEdit && !preview ? <Link className="adminButton primary" href="/admin/posts/new">Criar primeira publicação</Link> : null}</div>}
+      {filtered.length ? <div className={`tableview-surface cms-tableview-surface ${styles.tableSurface}`} aria-label="Publicações cadastradas">
+        <section className={`table-card ${styles.tableCard}`}>
+          <div className={styles.scrollArea}><table>
+            <thead><tr><th>Conteúdo</th><th>Categoria</th><th>Slug</th><th>Status</th><th>Autor</th><th>Atualização</th><th className={styles.actions}>Ações</th></tr></thead>
+            <tbody>{filtered.map((post) => <tr data-testid="news-row" key={post.id}>
+              <td><div className={`table-primary ${styles.identity}`}>{post.coverImage ? <Image alt="" height={42} src={post.coverImage} unoptimized width={42} /> : <span className={styles.coverFallback} aria-hidden="true"><AdminIcon name="posts" size={16} /></span>}<span><strong>{post.title}</strong><small>{post.excerpt || "Sem resumo"}</small></span></div></td>
+              <td><span className={styles.category}>{post.category || "Sem categoria"}</span></td>
+              <td><span className={styles.slug}>/{post.slug}</span></td>
+              <td><StatusBadge status={post.status} /></td>
+              <td><span className={styles.author}>{post.authorName || "—"}</span></td>
+              <td><time className={styles.date}>{post.updatedAt}</time></td>
+              <td className={styles.actions}><details><summary aria-label={`Ações de ${post.title}`}><AdminIcon name="more" size={17}/></summary><div className={styles.actionMenu}>{canEdit && !preview ? <Link href={`/admin/posts/${post.id}`}><AdminIcon name="edit" size={14}/>Editar</Link> : null}{post.isPubliclyVisible && !preview ? <Link href={`/noticias/${post.slug}`} target="_blank"><AdminIcon name="eye" size={14}/>Visualizar</Link> : null}<Link href={preview ? "/cms-preview/posts" : `/admin/posts/${post.id}/view`}><AdminIcon name="document" size={14}/>Consultar</Link></div></details></td>
+            </tr>)}</tbody>
+          </table></div>
+          <footer className={styles.resultCount}><span>{filtered.length} registro{filtered.length === 1 ? "" : "s"}</span><span>Mostrando {filtered.length} de {posts.length}</span></footer>
+        </section>
+      </div> : <div className={`admin-empty ${styles.empty}`}><strong>{posts.length ? "Nenhuma publicação encontrada para os filtros selecionados." : "Nenhuma publicação cadastrada."}</strong>{hasFilters ? <button className="adminButton" onClick={clearFilters} type="button">Limpar filtros</button> : canEdit && !preview ? <Link className="adminButton primary" href="/admin/posts/new">Criar primeira publicação</Link> : null}</div>}
     </section>
   </div>;
 }
