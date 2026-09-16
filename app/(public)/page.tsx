@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { getPageContent } from "@/modules/pages";
 import { getPublishedArtists } from "@/modules/artists";
@@ -55,7 +54,9 @@ export default async function Home() {
   const shortcuts = sectionByKey(content, "shortcuts");
   const artistsSection = sectionByKey(content, "artists");
   const releasesSection = sectionByKey(content, "releases");
+  const advertiseSection = sectionByKey(content, "advertise_banner");
   const newsSection = sectionByKey(content, "news");
+  const advertiseBanner = advertiseSection?.items[0];
   const instagramFollowers = socialMetrics["instagram:followers"];
   const youtubeSubscribers = socialMetrics["youtube:subscribers"];
 
@@ -146,15 +147,17 @@ export default async function Home() {
           </section>
         ) : null}
 
-        <section aria-label="Anuncie com a Lander Records" style={{ marginTop: 24 }}>
-          <Image
-            src="/lander-records-anuncie-banner.webp"
-            alt="Anuncie com a gente — Lander Records"
-            width={2048}
-            height={682}
-            style={{ display: "block", width: "100%", height: "auto" }}
-          />
-        </section>
+        {advertiseSection && advertiseBanner?.mediaUrl ? (
+          <section aria-label={advertiseBanner.title || "Anuncie com a Lander Records"} style={{ marginTop: 24 }}>
+            {/* CMS media can come from the static bundle or object storage. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={advertiseBanner.mediaUrl}
+              alt={advertiseBanner.mediaAltText || advertiseBanner.title || "Anuncie com a gente — Lander Records"}
+              style={{ display: "block", width: "100%", height: "auto" }}
+            />
+          </section>
+        ) : null}
 
         {newsSection ? (
           <section className="homeBlock">
