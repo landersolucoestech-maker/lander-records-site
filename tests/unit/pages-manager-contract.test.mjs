@@ -46,11 +46,11 @@ test("Pages overview mirrors the Portal Lander composition while keeping Lander 
   assert.match(manager, /className=\{styles\.sectionsHead\} role="row"/);
   assert.match(manager, /className=\{styles\.sectionsRow\}/);
   assert.doesNotMatch(manager, /<table>/);
-  assert.match(styles, /\.selectionCard\{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:18px 20px;margin-bottom:16px\}/);
-  assert.match(styles, /\.selectionMain\{display:flex;align-items:flex-end;gap:24px;min-width:0\}/);
+  assert.match(styles, /\.selectionCard\{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;padding:12px 14px;margin-bottom:14px\}/);
+  assert.match(styles, /\.selectionMain\{display:flex;align-items:flex-end;gap:16px;min-width:0\}/);
   assert.match(styles, /\.sectionsHead,\.sectionsRow\{display:grid;grid-template-columns:minmax\(360px,1fr\) 120px minmax\(150px,auto\)/);
-  assert.match(styles, /\.sectionsRow\{min-height:74px;padding:10px 16px;border-bottom:1px solid #eceef1\}/);
-  assert.match(styles, /\.sectionActions\{display:flex;gap:8px;justify-content:flex-end/);
+  assert.match(styles, /\.sectionsRow\{min-height:50px;padding:6px 14px;border-bottom:1px solid #eef1f4\}/);
+  assert.match(styles, /\.sectionActions\{display:flex;gap:7px;justify-content:flex-end/);
   assert.match(styles, /adminShell:has\(\[data-testid="pages-manager"\]\) \.adminTopbarPrimary/);
   assert.doesNotMatch(styles, /overflow-x:auto/);
 });
