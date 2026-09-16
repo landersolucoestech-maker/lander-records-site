@@ -10,8 +10,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: lander-records-dev-preview
-  cancel-in-progress: true
+  group: lander-records-dev-preview-${{ github.run_id }}
+  cancel-in-progress: false
 
 jobs:
   preview:
@@ -182,7 +182,7 @@ jobs:
             echo "- Ambiente descartável: PostgreSQL temporário, sem secrets de produção."
             echo "- Autenticação do portal desativada apenas neste preview descartável do GitHub Actions."
             echo "- Todas as rotas públicas e administrativas conhecidas foram validadas como navegáveis antes da publicação."
-            echo "- O endereço expira quando este job termina ou é substituído por um novo push em dev."
+            echo "- O endereço expira quando este job termina; novos pushes agora abrem outro preview sem derrubar este imediatamente."
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Verify public tunnel navigation
