@@ -32,3 +32,9 @@ test("Home manager deep-links CMS-owned section editing and keeps source managem
   assert.match(source, /secondaryActionHref/);
   assert.match(source, /secondaryActionLabel/);
 });
+
+test("Home manager reads the same playlist-scoped Spotify feed as the public Home", () => {
+  assert.match(pageSource, /getHomeSpotifyReleaseFeed/);
+  assert.match(pageSource, /const releases = spotifyFeed\.releases/);
+  assert.doesNotMatch(pageSource, /getCachedSpotifyReleases/);
+});

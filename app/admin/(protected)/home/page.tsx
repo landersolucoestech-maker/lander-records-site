@@ -1,6 +1,6 @@
 import { requireAdmin } from "../../../../lib/auth";
 import { getPageContent } from "../../../../lib/content";
-import { getCachedSpotifyReleases, getLanderRecordsSocialMetrics } from "../../../../lib/integrations/sync";
+import { getHomeSpotifyReleaseFeed, getLanderRecordsSocialMetrics } from "../../../../lib/integrations/sync";
 import { getPublishedArtists } from "../../../../modules/artists";
 import { getPublishedPosts } from "../../../../modules/posts";
 import { HomeManagerView, type HomeManagerSection } from "../../components/HomeManagerView";
@@ -16,11 +16,11 @@ function dateLabel(value: Date | string | null | undefined) {
 
 export default async function AdminHomePage() {
   const session = await requireAdmin();
-  const [content, artists, posts, releases, metrics] = await Promise.all([
+  const [content, artists, posts, spotifyFeed, metrics] = await Promise.all([
     getPageContent("home"),
     getPublishedArtists(true),
     getPublishedPosts(true),
-    getCachedSpotifyReleases().catch(() => []),
+    getHomeSpotifyReleaseFeed().catch(() => ({ playlistUrl: "", releases: [] })),
     getLanderRecordsSocialMetrics().catch(() => ({} as Record<string, number>)),
   ]);
 
@@ -34,6 +34,7 @@ export default async function AdminHomePage() {
   const advertiseSection = byKey("advertise_banner");
   const newsSection = byKey("news");
   const advertiseBanner = advertiseSection?.items[0];
+  const releases = spotifyFeed.releases;
   const socialValue = (key: string) => typeof metrics[key] === "number" ? metrics[key].toLocaleString("pt-BR") : "—";
   const editSectionHref = (section: { id: string } | undefined) => section
     ? `/admin/pages/${content.page.id}?section=${encodeURIComponent(section.id)}`
