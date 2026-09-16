@@ -4,7 +4,8 @@ import { requireAdmin } from "../../../../../lib/auth";
 import { getDb } from "../../../../../lib/db";
 import { pageSectionItems, pageSections, pages } from "../../../../../lib/db/schema";
 import { AdminContextHeaderSync } from "../../../components/AdminContextHeaderSync";
-import PageContentWorkbench, { type PageEditorItem, type PageEditorSection } from "./PageContentWorkbench";
+import type { PageEditorItem, PageEditorSection } from "./PageContentWorkbench";
+import PortalLanderPageWorkbench from "./PortalLanderPageWorkbench";
 import { pageContract } from "../page-contract";
 
 export const dynamic = "force-dynamic";
@@ -81,7 +82,7 @@ export default async function PageContentEditor({ params, searchParams }: { para
 
   return <>
     <AdminContextHeaderSync title={`Configurar seção: ${initialLabel}`} description={headerDescription} />
-    <PageContentWorkbench
+    <PortalLanderPageWorkbench
       page={{ id: page.id, key: page.key, title: page.title }}
       publicRoute={pageContract(page.key).route}
       sections={editorSections}
