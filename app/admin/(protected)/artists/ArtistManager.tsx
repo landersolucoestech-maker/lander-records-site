@@ -16,6 +16,7 @@ export type ArtistSummary = {
   genres: string[];
   roles?: string[];
   releaseCount?: number;
+  views?: number;
   audience?: number;
   homePosition?: number;
   isPubliclyVisible: boolean;
@@ -152,7 +153,7 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
           <table className={styles.artistTable} aria-label="Artistas cadastrados">
             <thead><tr>
               <th className={styles.checkboxColumn}><input aria-label="Selecionar artistas desta página" checked={allCurrentSelected} onChange={toggleCurrentPage} type="checkbox" /></th>
-              <th>Artista</th><th>Gênero</th><th>Lançamentos</th><th>Audiência</th><th>Status</th><th>Última atualização</th><th className={styles.actions}>Ações</th>
+              <th>Artista</th><th>Gênero</th><th>Lançamentos</th><th>Visualizações</th><th>Status</th><th>Última atualização</th><th className={styles.actions}>Ações</th>
             </tr></thead>
             <tbody>{pageRows.map((artist) => {
               const roleLine = artist.roles?.length ? artist.roles.slice(0, 2).join(" · ") : `/artistas/${artist.slug}`;
@@ -161,7 +162,7 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
                 <td><div className={styles.identity}>{artist.cardImage ? <Image alt="" height={42} src={artist.cardImage} unoptimized width={42} /> : <span className={styles.avatarFallback} aria-hidden="true"><AdminIcon name="artists" size={17} /></span>}<span><strong>{artist.name}</strong><small>{roleLine}</small></span></div></td>
                 <td><div className={styles.taxonomy}><span>{artist.genres[0] || "Não informado"}</span>{artist.genres.length > 1 ? <small>+{artist.genres.length - 1}</small> : null}</div></td>
                 <td><span className={styles.numericValue}>{numberLabel(artist.releaseCount)}</span></td>
-                <td><span className={styles.numericValue}>{numberLabel(artist.audience)}</span></td>
+                <td><span className={styles.numericValue}>{numberLabel(artist.views)}</span></td>
                 <td><StatusBadge status={artist.status} /></td>
                 <td><time dateTime={dateValue(artist.updatedAt) ? artist.updatedAt : undefined}>{dateLabel(artist.updatedAt)}</time></td>
                 <td className={styles.actions}><details><summary aria-label={`Ações de ${artist.name}`}><AdminIcon name="more" size={18}/></summary><div className={styles.actionMenu}>{canEdit && !preview ? <Link href={`/admin/artists/${artist.id}`}><AdminIcon name="edit" size={14}/>Editar</Link> : null}{artist.isPubliclyVisible && !preview ? <Link href={`/artistas/${artist.slug}`} target="_blank"><AdminIcon name="eye" size={14}/>Visualizar</Link> : null}<Link href={preview ? "/cms-preview/artists" : `/admin/artists/${artist.id}/view`}><AdminIcon name="document" size={14}/>Consultar</Link></div></details></td>
