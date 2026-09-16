@@ -1,9 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AdminIcon } from "../../components/AdminIcon";
 import styles from "./NewsManager.module.css";
 
@@ -24,74 +22,98 @@ export type PostSummary = {
 };
 
 type Filters = { category?: string; q?: string; status?: string; tag?: string };
+type ContentView = "publications" | "collaborations";
+
+const statusLabel: Record<PostSummary["status"], string> = {
+  published: "published",
+  draft: "draft",
+  archived: "archived",
+  unpublished: "unpublished",
+};
 
 function StatusBadge({ status }: { status: PostSummary["status"] }) {
-  const label = status === "published" ? "Publicado" : status === "archived" ? "Arquivado" : status === "unpublished" ? "Não publicado" : "Rascunho";
-  return <span className={status === "published" ? "adminBadge live" : status === "archived" ? "adminBadge archived" : "adminBadge draft"}><i aria-hidden="true" />{label}</span>;
+  return <span className={`${styles.statusBadge} ${styles[status]}`}>{statusLabel[status]}</span>;
 }
 
-export default function PostManager({ availableCategories, availableTags, canEdit = true, deleted, initialFilters = {}, posts, preview = false }: { availableCategories?: string[]; availableTags?: string[]; canEdit?: boolean; deleted?: boolean; initialFilters?: Filters; metrics?: { archived: number; drafts: number; published: number; total: number }; posts: PostSummary[]; preview?: boolean }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const [query, setQuery] = useState(initialFilters.q || "");
-  const [status, setStatus] = useState(initialFilters.status || "all");
-  const [category, setCategory] = useState(initialFilters.category || "all");
-  const [tag, setTag] = useState(initialFilters.tag || "all");
-  const categories = useMemo(() => availableCategories || Array.from(new Set(posts.map((post) => post.category))).sort((a, b) => a.localeCompare(b, "pt-BR")), [availableCategories, posts]);
-  const tags = useMemo(() => availableTags || Array.from(new Set(posts.flatMap((post) => post.tags))).sort((a, b) => a.localeCompare(b, "pt-BR")), [availableTags, posts]);
+function clampPage(page: number, totalPages: number) {
+  return Math.min(Math.max(page, 1), Math.max(totalPages, 1));
+}
 
-  useEffect(() => {
-    if (preview) return;
-    const params = new URLSearchParams();
-    if (query.trim()) params.set("q", query.trim());
-    if (status !== "all") params.set("status", status);
-    if (category !== "all") params.set("category", category);
-    if (tag !== "all") params.set("tag", tag);
-    const timer = window.setTimeout(() => router.replace(`${pathname}${params.size ? `?${params}` : ""}`, { scroll: false }), 180);
-    return () => window.clearTimeout(timer);
-  }, [category, pathname, preview, query, router, status, tag]);
+export default function PostManager({
+  canEdit = true,
+  deleted,
+  posts,
+  preview = false,
+}: {
+  availableCategories?: string[];
+  availableTags?: string[];
+  canEdit?: boolean;
+  deleted?: boolean;
+  initialFilters?: Filters;
+  metrics?: { archived: number; drafts: number; published: number; total: number };
+  posts: PostSummary[];
+  preview?: boolean;
+}) {
+  const [view, setView] = useState<ContentView>("publications");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const totalPages = Math.max(1, Math.ceil(posts.length / pageSize));
+  const safePage = clampPage(page, totalPages);
+  const startIndex = (safePage - 1) * pageSize;
+  const visiblePosts = useMemo(() => posts.slice(startIndex, startIndex + pageSize), [pageSize, posts, startIndex]);
+  const firstShown = posts.length ? startIndex + 1 : 0;
+  const lastShown = Math.min(startIndex + visiblePosts.length, posts.length);
 
-  const filtered = useMemo(() => {
-    if (!preview) return posts;
-    const needle = query.trim().toLocaleLowerCase("pt-BR");
-    return posts.filter((post) => (!needle || [post.title, post.slug, post.excerpt, post.authorName, post.category, ...post.tags].join(" ").toLocaleLowerCase("pt-BR").includes(needle)) && (status === "all" || post.status === status) && (category === "all" || post.category === category) && (tag === "all" || post.tags.includes(tag)));
-  }, [category, posts, preview, query, status, tag]);
-
-  const hasFilters = Boolean(query.trim() || status !== "all" || category !== "all" || tag !== "all");
-  const clearFilters = () => { setQuery(""); setStatus("all"); setCategory("all"); setTag("all"); };
+  const changePageSize = (value: number) => {
+    setPageSize(value);
+    setPage(1);
+  };
 
   return <div className={styles.manager} data-testid="news-manager">
-    <nav aria-label="Visualização de conteúdo" className="adminTabs"><span className="active" aria-current="page"><AdminIcon name="posts" size={15}/>Publicações</span></nav>
-    {deleted ? <div className="adminNotice">Publicação excluída com sucesso.</div> : null}
-    {preview ? <div className="adminNotice">Os dados deste preview são isolados e não alteram a persistência do ambiente real.</div> : null}
+    <nav aria-label="Visualização de conteúdo" className={styles.viewTabs}>
+      <button aria-current={view === "publications" ? "page" : undefined} className={view === "publications" ? styles.activeTab : undefined} onClick={() => setView("publications")} type="button"><AdminIcon name="posts" size={15} /><span>Publicações</span></button>
+      <button aria-current={view === "collaborations" ? "page" : undefined} className={view === "collaborations" ? styles.activeTab : undefined} onClick={() => setView("collaborations")} type="button"><AdminIcon name="mail" size={15} /><span>Colaborações recebidas</span></button>
+    </nav>
 
-    <section className={styles.catalog} aria-label="Publicações">
-      <div className={`admin-toolbar ${styles.toolbar}`} role="search">
-        <label className={styles.search}><span className="srOnly">Buscar publicações</span><AdminIcon name="search" size={16} /><input onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por título, resumo ou autor..." type="search" value={query} /></label>
-        <label><span className="srOnly">Status</span><select onChange={(event) => setStatus(event.target.value)} value={status}><option value="all">Todos os status</option><option value="published">Publicados</option><option value="draft">Rascunhos</option><option value="archived">Arquivados</option></select></label>
-        <label><span className="srOnly">Categoria</span><select onChange={(event) => setCategory(event.target.value)} value={category}><option value="all">Todas as categorias</option>{categories.map((item) => <option key={item}>{item}</option>)}</select></label>
-        <label><span className="srOnly">Tag</span><select onChange={(event) => setTag(event.target.value)} value={tag}><option value="all">Todas as tags</option>{tags.map((item) => <option key={item}>{item}</option>)}</select></label>
-        <span className={styles.count}>{filtered.length} de {posts.length} publicações</span>
-        {hasFilters ? <button className={styles.clearButton} onClick={clearFilters} type="button">Limpar</button> : null}
-      </div>
+    {deleted ? <div className={styles.successNotice}>Publicação excluída com sucesso.</div> : null}
+    <section className={styles.notice} aria-label="Fluxo editorial">
+      <strong>{preview ? "Preview administrativo" : "Fluxo editorial da Lander Records"}</strong>
+      <p>{preview ? "Este ambiente apresenta os dados de demonstração sem alterar a persistência real." : "Crie, revise e publique conteúdos usando os dados, permissões e estados editoriais reais da Lander Records."}</p>
+    </section>
 
-      {filtered.length ? <div className={`tableview-surface cms-tableview-surface ${styles.tableSurface}`} aria-label="Publicações cadastradas">
+    {view === "publications" ? <section className={styles.catalog} aria-label="Publicações">
+      {posts.length ? <div className={`tableview-surface cms-tableview-surface ${styles.tableSurface}`} aria-label="Publicações cadastradas">
         <section className={`table-card ${styles.tableCard}`}>
           <div className={styles.scrollArea}><table>
-            <thead><tr><th>Conteúdo</th><th>Categoria</th><th>Slug</th><th>Status</th><th>Autor</th><th>Atualização</th><th className={styles.actions}>Ações</th></tr></thead>
-            <tbody>{filtered.map((post) => <tr data-testid="news-row" key={post.id}>
-              <td><div className={`table-primary ${styles.identity}`}>{post.coverImage ? <Image alt="" height={42} src={post.coverImage} unoptimized width={42} /> : <span className={styles.coverFallback} aria-hidden="true"><AdminIcon name="posts" size={16} /></span>}<span><strong>{post.title}</strong><small>{post.excerpt || "Sem resumo"}</small></span></div></td>
+            <thead><tr><th>Conteúdo</th><th>Página</th><th>Slug</th><th>Status</th><th>Autor</th><th>Atualização</th><th className={styles.actions}>Ações</th></tr></thead>
+            <tbody>{visiblePosts.map((post) => <tr data-testid="news-row" key={post.id}>
+              <td><div className={`table-primary ${styles.identity}`}><span className={styles.documentIcon} aria-hidden="true"><AdminIcon name="document" size={15} /></span><span><strong>{post.title}</strong><small>{post.excerpt || "Sem resumo"}</small></span></div></td>
               <td><span className={styles.category}>{post.category || "Sem categoria"}</span></td>
-              <td><span className={styles.slug}>/{post.slug}</span></td>
+              <td><span className={styles.slug}>/noticias/{post.slug}</span></td>
               <td><StatusBadge status={post.status} /></td>
               <td><span className={styles.author}>{post.authorName || "—"}</span></td>
               <td><time className={styles.date}>{post.updatedAt}</time></td>
               <td className={styles.actions}><details><summary aria-label={`Ações de ${post.title}`}><AdminIcon name="more" size={17}/></summary><div className={styles.actionMenu}>{canEdit && !preview ? <Link href={`/admin/posts/${post.id}`}><AdminIcon name="edit" size={14}/>Editar</Link> : null}{post.isPubliclyVisible && !preview ? <Link href={`/noticias/${post.slug}`} target="_blank"><AdminIcon name="eye" size={14}/>Visualizar</Link> : null}<Link href={preview ? "/cms-preview/posts" : `/admin/posts/${post.id}/view`}><AdminIcon name="document" size={14}/>Consultar</Link></div></details></td>
             </tr>)}</tbody>
           </table></div>
-          <footer className={styles.resultCount}><span>{filtered.length} registro{filtered.length === 1 ? "" : "s"}</span><span>Mostrando {filtered.length} de {posts.length}</span></footer>
+          <footer className={styles.pagination}>
+            <div className={styles.paginationSummary}><strong>{posts.length}</strong><span>registros</span><i aria-hidden="true" /><span>{firstShown}-{lastShown} exibidos</span></div>
+            <div className={styles.paginationNav} aria-label="Paginação">
+              <button aria-label="Primeira página" disabled={safePage === 1} onClick={() => setPage(1)} type="button">«</button>
+              <button aria-label="Página anterior" disabled={safePage === 1} onClick={() => setPage((current) => clampPage(current - 1, totalPages))} type="button">‹</button>
+              <span>Página <strong>{safePage}</strong> de <strong>{totalPages}</strong></span>
+              <button aria-label="Próxima página" disabled={safePage === totalPages} onClick={() => setPage((current) => clampPage(current + 1, totalPages))} type="button">›</button>
+              <button aria-label="Última página" disabled={safePage === totalPages} onClick={() => setPage(totalPages)} type="button">»</button>
+            </div>
+            <label className={styles.pageSize}><span>Por página</span><select aria-label="Registros por página" onChange={(event) => changePageSize(Number(event.target.value))} value={pageSize}><option value={10}>10</option><option value={20}>20</option><option value={50}>50</option></select></label>
+          </footer>
         </section>
-      </div> : <div className={`admin-empty ${styles.empty}`}><strong>{posts.length ? "Nenhuma publicação encontrada para os filtros selecionados." : "Nenhuma publicação cadastrada."}</strong>{hasFilters ? <button className="adminButton" onClick={clearFilters} type="button">Limpar filtros</button> : canEdit && !preview ? <Link className="adminButton primary" href="/admin/posts/new">Criar primeira publicação</Link> : null}</div>}
+      </div> : <div className={`admin-empty ${styles.empty}`}><strong>Nenhuma publicação cadastrada.</strong>{canEdit && !preview ? <Link className="adminButton primary" href="/admin/posts/new">Criar primeira publicação</Link> : null}</div>}
+    </section> : <section className={styles.collaborations} aria-label="Colaborações recebidas"><AdminIcon name="mail" size={24}/><strong>Nenhuma fonte de colaborações está configurada.</strong><p>O projeto Lander Records ainda não possui um fluxo externo de submissões conectado ao CMS. Esta área permanece separada das publicações para não inventar dados nem misturar regras editoriais.</p></section>}
+
+    <section className={styles.notice} aria-label="Candidatos editoriais">
+      <strong>Candidatos editoriais</strong>
+      <p>Nenhuma fonte externa de candidatos editoriais está configurada na Lander Records. Quando uma integração real existir, ela deverá alimentar este fluxo sem misturar as publicações internas.</p>
     </section>
   </div>;
 }
