@@ -43,16 +43,18 @@ test("Disposable development preview reproduces the ten-section approved referen
   assert.match(page, /pageSections\.subtitle/);
 });
 
-test("Pages uses the shared contextual module header without reintroducing a pages-only shell", () => {
-  assert.match(shell, /function moduleHeader/);
-  assert.match(shell, /title: "Páginas"/);
-  assert.match(shell, /Gerencie páginas e configure cada seção com edição e preview em tempo real\./);
-  assert.match(shell, /label: "Criar página"/);
+test("Admin chrome follows the Portal Lander black-header and grouped-navigation pattern", () => {
+  assert.match(shell, /adminAdministrationLabel/);
+  assert.match(shell, />ADMINISTRAÇÃO</);
+  assert.match(shell, />NAVEGAÇÃO</);
+  assert.match(shell, /adminHeaderBack/);
+  assert.match(shell, /adminAccountPopover/);
   assert.match(shell, /name="bell"/);
-  assert.match(shell, /developmentPreview \? "DE"/);
-  assert.match(shellStyles, /adminTopbarContextual/);
-  assert.match(shellStyles, /adminContextTitle/);
-  assert.match(shellStyles, /adminNotificationButton/);
+  assert.match(shellStyles, /--admin-sidebar-width: 238px/);
+  assert.match(shellStyles, /--admin-header-height: 68px/);
+  assert.match(shellStyles, /background: #050505/);
+  assert.match(shellStyles, /background: #211113/);
+  assert.match(shellStyles, /background: var\(--admin-accent\)/);
 });
 
 test("Public page destinations remain deterministic and real routes are used", () => {
@@ -65,21 +67,28 @@ test("Public page destinations remain deterministic and real routes are used", (
   assert.match(view, /pageContract\(page\.key\)\.route/);
 });
 
-test("Page editor clones the reference section workbench while preserving current persistence actions", () => {
+test("Page editor clones the Portal Lander section workbench while preserving current persistence actions", () => {
+  assert.match(editor, /AdminContextHeaderSync/);
   assert.match(editor, /PageContentWorkbench/);
   assert.match(editor, /where\(inArray\(pageSectionItems\.sectionId/);
   assert.match(workbench, /Configurar seção:/);
-  assert.match(workbench, /Preview da seção/);
+  assert.match(workbench, /Imagem de Fundo/);
+  assert.match(workbench, /Destaques do Hero/);
+  assert.match(workbench, /Preview da página inteira/);
   assert.match(workbench, /Conteúdo/);
   assert.match(workbench, /Aparência/);
   assert.match(workbench, /Comportamento/);
   assert.match(workbench, /updatePageSection/);
   assert.match(workbench, /updatePageSectionItem/);
+  assert.match(workbench, /<iframe/);
+  assert.match(workbench, /src=\{publicRoute\}/);
   assert.match(workbench, /name="monitor"/);
   assert.match(workbench, /name="tablet"/);
   assert.match(workbench, /name="smartphone"/);
-  assert.match(workbenchStyles, /grid-template-columns:minmax\(390px,500px\) minmax\(0,1fr\)/);
-  assert.match(workbenchStyles, /position:sticky/);
-  assert.match(workbenchStyles, /min-height:610px/);
+  assert.match(workbenchStyles, /grid-template-columns:minmax\(350px,390px\) minmax\(0,1fr\)/);
+  assert.match(workbenchStyles, /height:calc\(100dvh - 120px\)/);
+  assert.match(workbenchStyles, /overflow-y:auto/);
+  assert.match(workbenchStyles, /min-height:52px/);
+  assert.match(workbenchStyles, /border-color:#ff1824/);
   assert.doesNotMatch(editor, /adminPanel adminStack/);
 });
