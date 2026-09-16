@@ -135,6 +135,7 @@ export default function PageContentWorkbench({ page, publicRoute, sections, item
       .map((item) => itemDrafts[item.id] || item)
       .sort((a, b) => a.position - b.position);
   }, [itemDrafts, items, selected]);
+  const selectedTitle = selected ? sectionLabel(selected) : "";
 
   useEffect(() => {
     if (!selectedItems.length) {
@@ -144,23 +145,26 @@ export default function PageContentWorkbench({ page, publicRoute, sections, item
     if (!selectedItems.some((item) => item.id === selectedItemId)) setSelectedItemId(selectedItems[0].id);
   }, [selectedId, selectedItemId, selectedItems]);
 
+  useEffect(() => {
+    if (!selectedTitle) return;
+    const detail = {
+      title: `Configurar seção: ${selectedTitle}`,
+      description: `Configure ${selectedTitle} no painel rolável à esquerda e acompanhe a página completa no preview fixo à direita.`,
+      back: { label: "Páginas", href: "/admin/pages" },
+    };
+    window.dispatchEvent(new CustomEvent("admin:context-header", { detail }));
+    return () => {
+      window.dispatchEvent(new CustomEvent("admin:context-header", { detail: null }));
+    };
+  }, [selectedTitle]);
+
   if (!selected) return <div className={styles.empty}>Nenhuma seção registrada para esta página.</div>;
 
   const visibleSectionFields = sectionFields[selected.sectionKey] || [];
   const visibleItemFields = itemFields[selected.sectionKey] || [];
   const selectedItem = selectedItems.find((item) => item.id === selectedItemId) || selectedItems[0];
-  const title = sectionLabel(selected);
+  const title = selectedTitle;
   const hasLinkedMedia = selectedItems.some((item) => Boolean(item.mediaId));
-
-  useEffect(() => {
-    const detail = {
-      title: `Configurar seção: ${title}`,
-      description: `Configure ${title} no painel rolável à esquerda e acompanhe a página completa no preview fixo à direita.`,
-      back: { label: "Páginas", href: "/admin/pages" },
-    };
-    window.dispatchEvent(new CustomEvent("admin:context-header", { detail }));
-    return () => window.dispatchEvent(new CustomEvent("admin:context-header", { detail: null }));
-  }, [title]);
 
   const patchSection = (field: SectionField, value: string) => setSectionDrafts((current) => ({ ...current, [selected.id]: { ...current[selected.id], [field]: value } }));
   const patchItem = (id: string, field: ItemField, value: string) => setItemDrafts((current) => ({ ...current, [id]: { ...current[id], [field]: value } }));
