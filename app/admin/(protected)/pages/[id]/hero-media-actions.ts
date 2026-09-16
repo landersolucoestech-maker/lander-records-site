@@ -74,7 +74,7 @@ export async function uploadPageSectionMedia(formData: FormData) {
   const stored = await uploadStoredMedia(storageKey, new Uint8Array(await upload.arrayBuffer()), upload.type);
   const altText = text(formData, "altText");
   const db = getDb();
-  let mediaId: string;
+  let mediaId = "";
 
   try {
     const inserted = await db.insert(mediaAssets).values({
@@ -89,8 +89,9 @@ export async function uploadPageSectionMedia(formData: FormData) {
       createdBy: session.user.id,
       updatedBy: session.user.id,
     }).returning({ id: mediaAssets.id });
-    mediaId = inserted[0]?.id;
-    if (!mediaId) throw new Error("Não foi possível registrar a mídia enviada.");
+    const insertedMediaId = inserted[0]?.id;
+    if (!insertedMediaId) throw new Error("Não foi possível registrar a mídia enviada.");
+    mediaId = insertedMediaId;
   } catch (error) {
     await deleteStoredMedia(stored.key).catch(() => undefined);
     throw error;
