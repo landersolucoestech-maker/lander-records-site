@@ -60,6 +60,7 @@ export default async function AdminDashboardPage() {
       recentActivity: databaseAvailable ? recentAudits.map((item) => ({ id: item.id, label: activityLabel(item.action), meta: `${item.entityType} · ${dateTime.format(item.createdAt)}` })) : [],
       recentPublications: databaseAvailable ? recentPosts.map((item) => ({ id: item.id, title: item.title, type: "Notícia", status: item.status, updatedAt: dateOnly.format(item.updatedAt) })) : [],
     }}
+    demoMode={session.source === "development-auth-bypass"}
     name={session.user.name}
     readOnly={session.source !== "session"}
     role={session.user.role}
