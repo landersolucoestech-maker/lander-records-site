@@ -86,9 +86,9 @@ test("Page editor clones the Portal Lander section workbench while preserving cu
   assert.match(workbench, /name="tablet"/);
   assert.match(workbench, /name="smartphone"/);
   assert.match(workbenchStyles, /grid-template-columns:minmax\(350px,390px\) minmax\(0,1fr\)/);
-  assert.match(workbenchStyles, /height:calc\(100dvh - 120px\)/);
-  assert.match(workbenchStyles, /overflow-y:auto/);
+  assert.match(workbenchStyles, /height:calc\(100dvh - 132px\)/);
+  assert.match(workbenchStyles, /overflow-y:scroll/);
   assert.match(workbenchStyles, /min-height:52px/);
-  assert.match(workbenchStyles, /border-color:#ff1824/);
+  assert.match(workbenchStyles, /border-color:#e50914/);
   assert.doesNotMatch(editor, /adminPanel adminStack/);
 });
