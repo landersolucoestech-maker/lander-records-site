@@ -6,6 +6,7 @@ const page = fs.readFileSync(new URL("../../app/admin/(protected)/pages/page.tsx
 const manager = fs.readFileSync(new URL("../../app/admin/(protected)/pages/PageManager.tsx", import.meta.url), "utf8");
 const styles = fs.readFileSync(new URL("../../app/admin/(protected)/pages/PagesManager.module.css", import.meta.url), "utf8");
 const shell = fs.readFileSync(new URL("../../app/admin/components/AdminShell.tsx", import.meta.url), "utf8");
+const shellStyles = fs.readFileSync(new URL("../../styles/admin/shell.css", import.meta.url), "utf8");
 const contract = fs.readFileSync(new URL("../../app/admin/(protected)/pages/page-contract.ts", import.meta.url), "utf8");
 const editor = fs.readFileSync(new URL("../../app/admin/(protected)/pages/[id]/page.tsx", import.meta.url), "utf8");
 const view = fs.readFileSync(new URL("../../app/admin/(protected)/pages/[id]/view/page.tsx", import.meta.url), "utf8");
@@ -40,14 +41,16 @@ test("Disposable development preview reproduces the ten-section approved referen
   assert.match(page, /pageSections\.subtitle/);
 });
 
-test("Pages shell uses the approved contextual header", () => {
-  assert.match(shell, /pagesIndex/);
+test("Pages uses the shared contextual module header without reintroducing a pages-only shell", () => {
+  assert.match(shell, /function moduleHeader/);
+  assert.match(shell, /title: "Páginas"/);
   assert.match(shell, /Gerencie páginas e configure cada seção com edição e preview em tempo real\./);
-  assert.match(shell, />Criar página</);
+  assert.match(shell, /label: "Criar página"/);
   assert.match(shell, /name="bell"/);
   assert.match(shell, /developmentPreview \? "DE"/);
-  assert.match(styles, /adminTopbarPages/);
-  assert.match(styles, /adminNotificationButton/);
+  assert.match(shellStyles, /adminTopbarContextual/);
+  assert.match(shellStyles, /adminContextTitle/);
+  assert.match(shellStyles, /adminNotificationButton/);
 });
 
 test("Public page destinations remain deterministic and real routes are used", () => {
