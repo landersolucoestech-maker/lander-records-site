@@ -1,4 +1,4 @@
-type IconName = "activity" | "artists" | "audit" | "bell" | "calendar" | "chart" | "check" | "chevron" | "dashboard" | "document" | "edit" | "external" | "eye" | "home" | "image" | "integration" | "mail" | "media" | "menu" | "monitor" | "more" | "navigation" | "pages" | "plus" | "posts" | "search" | "settings" | "shield" | "sliders" | "smartphone" | "tablet" | "tags" | "target" | "trash" | "upload" | "users" | "x";
+type IconName = "activity" | "artists" | "audit" | "bell" | "calendar" | "chart" | "check" | "chevron" | "dashboard" | "desktop" | "document" | "edit" | "external" | "eye" | "home" | "image" | "integration" | "mail" | "media" | "menu" | "monitor" | "more" | "navigation" | "pages" | "plus" | "posts" | "search" | "settings" | "shield" | "sliders" | "smartphone" | "tablet" | "tags" | "target" | "trash" | "upload" | "users" | "x";
 
 const paths: Record<IconName, React.ReactNode> = {
   activity: <><path d="M4 12h3l2-6 4 12 2-6h5" /></>,
@@ -10,6 +10,7 @@ const paths: Record<IconName, React.ReactNode> = {
   check: <path d="m5 12 4 4L19 6" />,
   chevron: <path d="m9 18 6-6-6-6" />,
   dashboard: <><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></>,
+  desktop: <><rect x="3" y="4" width="18" height="13" rx="2" /><path d="M8 21h8M12 17v4" /></>,
   document: <><path d="M6 3h8l4 4v14H6z" /><path d="M14 3v5h5M9 12h6M9 16h6" /></>,
   edit: <><path d="M4 20h4l11-11-4-4L4 16z" /><path d="m13.5 6.5 4 4" /></>,
   external: <><path d="M14 3h7v7M10 14 21 3" /><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5" /></>,
