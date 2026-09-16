@@ -9,9 +9,11 @@ const formStyles = fs.readFileSync(new URL("../../app/admin/(protected)/artists/
 const preview = fs.readFileSync(new URL("../../app/cms-preview/AdminPreview.tsx", import.meta.url), "utf8");
 
 test("Artists manager uses the Dashboard visual hierarchy without inventing unsupported domain data", () => {
+  assert.match(manager, /adminDashboard/);
   assert.match(manager, /adminDashboardHeading/);
   assert.match(manager, /adminMetricGrid/);
   assert.match(manager, /adminMetricCard/);
+  assert.match(manager, /adminMetricSpark/);
   assert.match(manager, /adminDashboardPanel/);
   assert.match(manager, /adminAnalyticsPanelHeading/);
   assert.match(manager, /adminPanelHeadingIdentity/);
@@ -30,7 +32,6 @@ test("Artists manager uses the Dashboard visual hierarchy without inventing unsu
   assert.match(manager, /Selecionar artistas desta página/);
   assert.match(manager, /paginationItems/);
   assert.match(manager, /pageSize/);
-  assert.match(manager, /admin-toolbar/);
   assert.doesNotMatch(manager, /Lançamentos|Visualizações/);
   assert.doesNotMatch(manager, /Importar CSV|Configurar módulo|Mais filtros|deleteArtistAction/);
 });
@@ -52,16 +53,18 @@ test("Artists catalog surfaces real roles, metrics and Home placement from persi
   assert.match(manager, /audienceTotal = artists\.reduce/);
 });
 
-test("Artists catalog reproduces Dashboard density, cards and pagination", () => {
-  assert.match(managerStyles, /\.moduleHeading\{padding:0 2px 3px\}/);
-  assert.match(managerStyles, /\.catalogHeading\{min-height:68px\}/);
-  assert.match(managerStyles, /\.artistTable td\{height:44px/);
-  assert.match(managerStyles, /width:34px;height:34px/);
+test("Artists catalog reproduces the real Dashboard density, cards and pagination", () => {
+  assert.match(managerStyles, /\.manager\{width:100%;display:grid;gap:14px\}/);
+  assert.match(managerStyles, /\.toolbar\{display:grid;[\s\S]*padding:12px 14px;[\s\S]*background:#fafbfc/);
+  assert.match(managerStyles, /\.toolbar input,\.toolbar select\{[\s\S]*height:34px;[\s\S]*border:1px solid #e1e6eb;[\s\S]*font-family:Montserrat,Arial,sans-serif/);
+  assert.match(managerStyles, /\.artistTable th\{height:34px/);
+  assert.match(managerStyles, /\.artistTable td\{height:50px/);
+  assert.match(managerStyles, /\.identity img,\.avatarFallback\{[\s\S]*width:38px;height:38px[\s\S]*border-radius:50%/);
   assert.match(managerStyles, /grid-template-columns:minmax\(180px,1fr\) auto minmax\(180px,1fr\)/);
-  assert.match(managerStyles, /border-color:#ef2731/);
-  assert.match(managerStyles, /min-width:1080px/);
-  assert.match(managerStyles, /\.panelSummary\{display:flex;align-items:baseline/);
-  assert.match(managerStyles, /\.metricCue\{display:grid;width:42px;height:42px/);
+  assert.match(managerStyles, /\.paginationControls \.activePage\{border-color:#e30613/);
+  assert.match(managerStyles, /min-width:1050px/);
+  assert.match(managerStyles, /\.panelSummary\{display:flex;align-items:center/);
+  assert.match(managerStyles, /\.statusBadge\{[\s\S]*min-height:20px[\s\S]*border-radius:5px/);
 });
 
 test("Artists editor uses the Portal workbench proportions without changing artist persistence", () => {
