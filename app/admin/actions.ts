@@ -28,8 +28,6 @@ import {
   integrationOutbox,
   mediaAssets,
   navigationItems,
-  pageSectionItems,
-  pageSections,
   pages,
   postCategories,
   postTags,
@@ -41,6 +39,12 @@ import {
   tags,
 } from "../../lib/db/schema";
 import { slugify } from "../../lib/slug";
+import {
+  addPageSectionItem as guardedAddPageSectionItem,
+  deletePageSectionItem as guardedDeletePageSectionItem,
+  updatePageSection as guardedUpdatePageSection,
+  updatePageSectionItem as guardedUpdatePageSectionItem,
+} from "./page-content-actions";
 import {
   isNavigationLinkType,
   isNavigationMenuKey,
@@ -68,7 +72,7 @@ function uuidOrNull(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value) ? value : null;
 }
 function revalidatePublic() {
-  for (const path of ["/", "/artistas", "/noticias", "/sobre-nos", "/contato", "/sitemap.xml"]) revalidatePath(path);
+  for (const path of ["/", "/artistas", "/noticias", "/sobre-nos", "/contato", "/politica-de-privacidade", "/termos-e-condicoes", "/sitemap.xml"]) revalidatePath(path);
 }
 
 export async function logoutAction() {
@@ -506,73 +510,19 @@ export async function updatePage(formData: FormData) {
 }
 
 export async function updatePageSection(formData: FormData) {
-  const session = await requirePersistentAdmin("editor");
-  const id = text(formData, "id");
-  const pageId = text(formData, "pageId");
-  await getDb().update(pageSections).set({
-    eyebrow: text(formData, "eyebrow"),
-    title: text(formData, "title"),
-    subtitle: text(formData, "subtitle"),
-    body: text(formData, "body"),
-    position: integer(formData, "position"),
-    enabled: checked(formData, "enabled"),
-    updatedAt: new Date(),
-  }).where(eq(pageSections.id, id));
-  await audit(session.user.id, "page_section.updated", "page_section", id, { pageId });
-  revalidatePublic();
-  revalidatePath(`/admin/pages/${pageId}`);
+  return guardedUpdatePageSection(formData);
 }
 
 export async function addPageSectionItem(formData: FormData) {
-  const session = await requirePersistentAdmin("editor");
-  const sectionId = text(formData, "sectionId");
-  const pageId = text(formData, "pageId");
-  const rows = await getDb().insert(pageSectionItems).values({
-    sectionId,
-    itemKey: text(formData, "itemKey"),
-    title: text(formData, "title"),
-    subtitle: text(formData, "subtitle"),
-    body: text(formData, "body"),
-    label: text(formData, "label"),
-    url: text(formData, "url"),
-    mediaId: uuidOrNull(text(formData, "mediaId")),
-    position: integer(formData, "position"),
-    enabled: true,
-  }).returning({ id: pageSectionItems.id });
-  await audit(session.user.id, "page_section_item.created", "page_section_item", rows[0].id, { sectionId });
-  revalidatePublic();
-  revalidatePath(`/admin/pages/${pageId}`);
+  return guardedAddPageSectionItem(formData);
 }
 
 export async function updatePageSectionItem(formData: FormData) {
-  const session = await requirePersistentAdmin("editor");
-  const id = text(formData, "id");
-  const pageId = text(formData, "pageId");
-  await getDb().update(pageSectionItems).set({
-    itemKey: text(formData, "itemKey"),
-    title: text(formData, "title"),
-    subtitle: text(formData, "subtitle"),
-    body: text(formData, "body"),
-    label: text(formData, "label"),
-    url: text(formData, "url"),
-    mediaId: uuidOrNull(text(formData, "mediaId")),
-    position: integer(formData, "position"),
-    enabled: checked(formData, "enabled"),
-    updatedAt: new Date(),
-  }).where(eq(pageSectionItems.id, id));
-  await audit(session.user.id, "page_section_item.updated", "page_section_item", id);
-  revalidatePublic();
-  revalidatePath(`/admin/pages/${pageId}`);
+  return guardedUpdatePageSectionItem(formData);
 }
 
 export async function deletePageSectionItem(formData: FormData) {
-  const session = await requirePersistentAdmin("editor");
-  const id = text(formData, "id");
-  const pageId = text(formData, "pageId");
-  await getDb().delete(pageSectionItems).where(eq(pageSectionItems.id, id));
-  await audit(session.user.id, "page_section_item.deleted", "page_section_item", id);
-  revalidatePublic();
-  revalidatePath(`/admin/pages/${pageId}`);
+  return guardedDeletePageSectionItem(formData);
 }
 
 export async function upsertNavigationItem(formData: FormData) {
