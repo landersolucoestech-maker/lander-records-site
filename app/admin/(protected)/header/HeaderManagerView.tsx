@@ -16,7 +16,7 @@ export type HeaderManagerData = {
 export function HeaderManagerView({ data, preview = false, viewer = false }: { data: HeaderManagerData; preview?: boolean; viewer?: boolean }) {
   const moduleHref = (path: string) => preview ? `/cms-preview/${path.split("/").filter(Boolean).at(-1)}` : path;
   const metrics: Array<[IconName, string, string, string]> = [
-    ["media", "Logo do Header", "Asset estrutural", data.publicLogoSrc],
+    ["media", "Logo do Header", data.globalLogoUrl ? "Configurada no CMS" : "Fallback estrutural", data.publicLogoSrc],
     ["external", "CTA principal", "Definido no frontend", `Destino ${data.ctaUrl}`],
     ["navigation", "Menu principal", "primary", `${data.primaryItems.length} itens raiz habilitados`],
     ["menu", "Menu mobile", "Automático", "Ativo abaixo de 980 px"],
@@ -30,7 +30,7 @@ export function HeaderManagerView({ data, preview = false, viewer = false }: { d
     <div className={styles.workspace}>
       <section aria-label="Fontes do cabeçalho" className={styles.sources}>
         <div className={styles.sourceHeading}><p>GERAL</p><h2>Fontes oficiais</h2><span>Somente conteúdo com contrato real é apresentado como administrável.</span></div>
-        <article className={styles.sourceBlock}><div><h3>Logo pública</h3><p>O Header usa diretamente o asset estrutural abaixo.</p></div><div className={styles.logoPreview}><Image alt={data.brandName} height={46} src={data.publicLogoSrc} unoptimized width={170} /></div><dl><div><dt>Asset utilizado</dt><dd>{data.publicLogoSrc}</dd></div><div><dt>Logo global do CMS</dt><dd>{data.globalLogoUrl ? "Configurada, mas ainda não consumida pelo Header" : "Sem mídia selecionada; fallback estático"}</dd></div></dl><p className={styles.deferred}>PUBLIC HEADER LOGO CONSUMPTION — FRONTEND DEFERRED</p><Link className="adminButton" href={moduleHref("/admin/settings")}>Abrir configurações globais</Link></article>
+        <article className={styles.sourceBlock}><div><h3>Logo pública</h3><p>Header e Footer consomem a logo selecionada em Configurações, com fallback para a marca estrutural da Lander Records.</p></div><div className={styles.logoPreview}><Image alt={data.brandName} height={46} src={data.publicLogoSrc} unoptimized width={170} /></div><dl><div><dt>Asset utilizado</dt><dd>{data.publicLogoSrc}</dd></div><div><dt>Logo global do CMS</dt><dd>{data.globalLogoUrl ? "Configurada e em uso no site público" : "Sem mídia selecionada; fallback estrutural em uso"}</dd></div></dl><Link className="adminButton" href={moduleHref("/admin/settings")}>Abrir configurações globais</Link></article>
         <article className={styles.sourceBlock}><div><h3>Call to action (CTA)</h3><p>Desktop e mobile repetem o mesmo conteúdo estrutural.</p></div><dl><div><dt>Texto</dt><dd>{data.ctaLabel}</dd></div><div><dt>Destino</dt><dd>{data.ctaUrl}</dd></div><div><dt>Persistência</dt><dd>Não existe no modelo atual</dd></div></dl><p className={styles.deferred}>HEADER CTA CONFIGURATION — BACKEND DEFERRED</p></article>
         <article className={styles.sourceBlock}><div><h3>Menu principal</h3><p>Itens, ordem e disponibilidade pertencem ao módulo Navegação.</p></div><dl><div><dt>Chave</dt><dd>primary</dd></div><div><dt>Itens raiz ativos</dt><dd>{data.primaryItems.length}</dd></div><div><dt>Submenus públicos</dt><dd>Não renderizados</dd></div></dl><Link className="adminButton" href={moduleHref("/admin/navigation")}>Gerenciar Navegação <AdminIcon name="external" size={14} /></Link></article>
       </section>

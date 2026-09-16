@@ -22,10 +22,12 @@ const iconByPlatform: Record<string, ReactNode> = {
 
 type ChromeView = {
   settings: { brandName: string; contactPhone: string; contactEmail: string; address: string; hours: string };
+  logoUrl: string;
   navigation: Array<{ id: string; menuKey: string; parentId: string | null; label: string; url: string; newTab: boolean }>;
   socials: Array<{ id: string; label: string; url: string; platform: string }>;
 };
 
+const fallbackLogo = "/lander-records-brand.svg";
 const fallbackNavigation: ChromeView["navigation"] = [
   { id: "fallback-home", menuKey: "primary", parentId: null, label: "Início", url: "/", newTab: false },
   { id: "fallback-about", menuKey: "primary", parentId: null, label: "Sobre Nós", url: "/sobre-nos/", newTab: false },
@@ -36,12 +38,13 @@ const fallbackNavigation: ChromeView["navigation"] = [
 
 async function getChromeView(): Promise<ChromeView> {
   try {
-    const { settings, navigation, socials } = await getSiteChrome();
-    return { settings, navigation, socials };
+    const { settings, logoUrl, navigation, socials } = await getSiteChrome();
+    return { settings, logoUrl, navigation, socials };
   } catch {
     console.error("[site-chrome] Configuração pública temporariamente indisponível.");
     return {
       settings: { brandName: "Lander Records", contactPhone: "", contactEmail: "", address: "", hours: "" },
+      logoUrl: "",
       navigation: fallbackNavigation,
       socials: [],
     };
@@ -67,13 +70,14 @@ function SocialIcon({ label, href, icon }: { label: string; href: string; icon: 
 }
 
 export async function Header() {
-  const { settings, navigation } = await getChromeView();
+  const { settings, logoUrl, navigation } = await getChromeView();
   const primary = navigation.filter((item) => item.menuKey === "primary" && !item.parentId);
+  const logoSrc = logoUrl || fallbackLogo;
 
   return (
     <header className="siteHeader">
       <Link className="brand" href="/" aria-label={settings.brandName}>
-        <Image src="/lander-records-brand.svg" alt={settings.brandName} width={170} height={46} style={{ maxWidth: 170, maxHeight: 46, width: "auto", height: "auto" }} />
+        <Image src={logoSrc} alt={settings.brandName} width={170} height={46} style={{ maxWidth: 170, maxHeight: 46, width: "auto", height: "auto" }} unoptimized={Boolean(logoUrl)} />
       </Link>
 
       <nav className="desktopNav" aria-label="Navegação principal">
@@ -89,14 +93,15 @@ export async function Header() {
 }
 
 export async function Footer() {
-  const { settings, navigation, socials } = await getChromeView();
+  const { settings, logoUrl, navigation, socials } = await getChromeView();
   const footerLinks = navigation.filter((item) => item.menuKey === "footer" && !item.parentId);
+  const logoSrc = logoUrl || fallbackLogo;
 
   return (
     <footer className="siteFooter">
       <div className="footerMain">
         <div className="footerBrandColumn">
-          <Link className="footerBrand" href="/" aria-label={settings.brandName}><Image src="/lander-records-brand.svg" alt={settings.brandName} width={220} height={70} style={{ maxWidth: 220, maxHeight: 70, width: "auto", height: "auto" }} /></Link>
+          <Link className="footerBrand" href="/" aria-label={settings.brandName}><Image src={logoSrc} alt={settings.brandName} width={220} height={70} style={{ maxWidth: 220, maxHeight: 70, width: "auto", height: "auto" }} unoptimized={Boolean(logoUrl)} /></Link>
           <p>Entre em contato com a gente e vamos fazer o seu projeto acontecer. Contato para parcerias, shows, publicidades ou criar algo novo.</p>
         </div>
         <div className="footerColumn">

@@ -15,6 +15,6 @@ export default async function HeaderPage() {
     ctaUrl: "/contato",
     globalLogoUrl: chrome.logoUrl,
     primaryItems,
-    publicLogoSrc: "/lander-records-brand.svg",
+    publicLogoSrc: chrome.logoUrl || "/lander-records-brand.svg",
   }} viewer={session.source !== "session" || session.user.role === "viewer"} />;
 }

@@ -13,13 +13,20 @@ const previewRoot = source("app/cms-preview/AdminPreview.tsx");
 const globalCss = source("app/globals.css");
 const navigationCss = source("app/navigation-polish.css");
 
-test("Header manager reflects the real hardcoded logo and CTA contracts", () => {
-  assert.match(publicHeader, /src="\/lander-records-brand\.svg"/);
+test("Header and Footer consume the configured CMS logo with a structural fallback", () => {
+  assert.match(content, /logoUrl: resolvedSettings\.logoMediaId/);
+  assert.match(publicHeader, /const \{ settings, logoUrl, navigation \} = await getChromeView\(\)/);
+  assert.match(publicHeader, /const \{ settings, logoUrl, navigation, socials \} = await getChromeView\(\)/);
+  assert.equal((publicHeader.match(/const logoSrc = logoUrl \|\| fallbackLogo/g) || []).length, 2);
+  assert.equal((publicHeader.match(/src=\{logoSrc\}/g) || []).length, 2);
+  assert.match(page, /publicLogoSrc: chrome\.logoUrl \|\| "\/lander-records-brand\.svg"/);
+  assert.match(manager, /Configurada e em uso no site público/);
+  assert.doesNotMatch(manager, /PUBLIC HEADER LOGO CONSUMPTION — FRONTEND DEFERRED/);
+});
+
+test("Header CTA remains an explicit structural frontend contract", () => {
   assert.match(publicHeader, /href="\/contato">Quero Contratar/);
   assert.match(mobileHeader, /href="\/contato">Quero Contratar/);
-  assert.match(content, /logoUrl: resolvedSettings\.logoMediaId/);
-  assert.doesNotMatch(publicHeader, /logoUrl/);
-  assert.match(manager, /PUBLIC HEADER LOGO CONSUMPTION — FRONTEND DEFERRED/);
   assert.match(manager, /HEADER CTA CONFIGURATION — BACKEND DEFERRED/);
 });
 
