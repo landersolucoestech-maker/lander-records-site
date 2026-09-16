@@ -7,7 +7,7 @@ import { AdminDialog } from "../../components/AdminDialog";
 import { AdminIcon } from "../../components/AdminIcon";
 import styles from "./PagesManager.module.css";
 import type { PageClassification } from "./page-contract";
-import { sitePageContract, siteSectionContract } from "./site-page-contract";
+import { sitePageContract, siteSectionContract, siteSectionOrder } from "./site-page-contract";
 
 export type PageSectionSummary = {
   id: string;
@@ -74,6 +74,20 @@ function sectionDescription(page: PageSummary, section: PageSectionSummary) {
     || `Seção ${section.type.replaceAll("_", " ")} configurada nesta página.`;
 }
 
+function previewContractSections(page: PageSummary): PageSectionSummary[] {
+  const contract = sitePageContract(page.key);
+  if (!contract) return [];
+  return contract.sectionOrder.map((sectionKey, index) => ({
+    id: `contract-${page.key}-${sectionKey}`,
+    sectionKey,
+    type: sectionKey,
+    position: index + 1,
+    enabled: true,
+    title: "",
+    subtitle: "",
+  }));
+}
+
 export default function PageManager({ canEdit = true, demoMode = false, pages, preview = false }: { canEdit?: boolean; demoMode?: boolean; pages: PageSummary[]; preview?: boolean }) {
   const defaultPage = pages.find((page) => page.key === "home") || pages[0];
   const [selectedId, setSelectedId] = useState(defaultPage?.id || "");
@@ -83,7 +97,12 @@ export default function PageManager({ canEdit = true, demoMode = false, pages, p
   if (!selected) return <div className={styles.empty}>Nenhuma página administrável encontrada.</div>;
 
   const contract = sitePageContract(selected.key);
-  const sections = [...(selected.sections || [])].sort((a, b) => a.position - b.position);
+  const storedSections = selected.sections || [];
+  const sections = [...(storedSections.length ? storedSections : preview ? previewContractSections(selected) : [])].sort((a, b) => {
+    const aOrder = siteSectionOrder(selected.key, a.sectionKey) ?? a.position;
+    const bOrder = siteSectionOrder(selected.key, b.sectionKey) ?? b.position;
+    return aOrder - bOrder;
+  });
   const title = displayTitle(selected);
   const kind = pageKind(selected);
   const editHref = preview ? "/cms-preview/pages" : `/admin/pages/${selected.id}`;
