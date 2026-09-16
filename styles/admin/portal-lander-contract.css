@@ -1,0 +1,44 @@
+/* Canonical Portal Lander visual contract. Current project routes, auth and data remain unchanged. */
+.adminShell{
+  --ui-bg:#f5f5f4;--ui-surface:#fff;--ui-text:#1f2937;--ui-text-strong:#101828;--ui-muted:#667085;--ui-border:#e5e7eb;--ui-border-strong:#d0d5dd;--ui-accent:#e30613;
+  --ui-sidebar-width:238px;--ui-sidebar-compact-width:78px;--ui-header-height:68px;--ui-radius-md:8px;--ui-radius-lg:10px;
+  grid-template-columns:var(--ui-sidebar-width) minmax(0,1fr);background:var(--ui-bg);font-family:Montserrat,Arial,sans-serif;font-size:12px;line-height:1.4
+}
+.adminShell.sidebarCollapsed{grid-template-columns:var(--ui-sidebar-compact-width) minmax(0,1fr)}
+.adminSidebar{width:var(--ui-sidebar-width);padding:18px 12px 16px;background:linear-gradient(180deg,#090909 0%,#0c0c0c 100%);border-right:1px solid #1e1e1e}
+.sidebarCollapsed .adminSidebar{width:var(--ui-sidebar-compact-width)}
+.adminBrandBlock{gap:12px;padding:4px 8px 22px;margin-bottom:14px;border-bottom:1px solid #202020}
+.adminBrandRow{min-height:34px}
+.adminBrandLink{height:34px;align-items:center;color:#fff;font-size:17px;font-weight:850;letter-spacing:-.025em;white-space:nowrap}
+.adminBrandLink::before{content:"LANDER RECORDS"}
+.adminBrandLogo{display:none!important}
+.adminAdministrationLabel{color:var(--ui-accent);font-size:9px;font-weight:850;letter-spacing:.18em}
+.adminSidebarCollapse{width:34px;height:34px;border-color:#343434;border-radius:7px;background:#111}
+.adminSidebar nav{gap:3px;padding-top:0}
+.adminNavigationEyebrow,.adminNavLabel{padding:4px 11px 8px;color:#777;font-size:9px;font-weight:800;letter-spacing:.16em}
+.adminNavParent,.adminSidebar nav a{min-height:42px;gap:11px;padding:0 11px;border-radius:8px;color:#d1d1d1;font-size:12px;font-weight:650}
+.adminNavParent{min-height:38px;color:#f0f0f0;font-size:11px;font-weight:800}
+.adminNavParent:hover,.adminSidebar nav a:hover{background:#171717;color:#fff}
+.adminNavChildren{gap:2px;padding-left:18px}
+.adminNavChildren a{min-height:34px!important;padding:0 10px!important;border-radius:6px!important;color:#aaa!important;font-size:10px!important}
+.adminNavChildren a[aria-current="page"]{background:#211113!important;color:#fff!important;box-shadow:none!important}
+.adminNavChildren a[aria-current="page"]::before{content:""!important;display:block!important;position:absolute!important;left:-7px!important;top:8px!important;bottom:auto!important;width:3px!important;height:18px!important;border-radius:999px!important;background:var(--ui-accent)!important}
+.adminNavChildren a[aria-current="page"] .adminIcon{color:#fff!important}
+.adminNavGroup:first-of-type>a[aria-current="page"]{background:linear-gradient(90deg,var(--ui-accent) 0%,#c9000b 100%);color:#fff;box-shadow:0 8px 22px rgba(227,6,19,.18)}
+.adminTopbar{height:var(--ui-header-height);min-height:var(--ui-header-height);max-height:var(--ui-header-height);padding:0 28px;background:#050505;border-bottom:1px solid #1b1b1b;color:#fff}
+.adminTopbarContextual{background:#050505}
+.adminPageHeadingRow{gap:16px;height:100%}
+.adminHeaderBack{min-height:36px;padding:0 12px;border:1px solid #30343a;border-radius:8px;background:#0c0d0f;color:#f4f4f4;font-size:11px;font-weight:800}
+.adminContextTitle{display:flex;flex-direction:column;justify-content:center;gap:4px;height:100%}
+.adminContextTitle strong{color:#fff;font-size:28px;font-weight:800;letter-spacing:-.035em;line-height:1;white-space:nowrap}
+.adminContextTitle small{max-width:780px;color:#8d8d8d;font-size:10px;font-weight:600;line-height:1.1;white-space:nowrap}
+.adminTopbarActions{height:100%;gap:8px}
+.adminNotificationButton{width:36px;height:36px;border:1px solid #2b2b2b;border-radius:8px;background:#111;color:#eee}
+.adminNotificationButton:hover{background:#fff0f1;border-color:#ffd7da;color:#e30613}
+.adminTopbarUser{min-height:44px;height:44px;padding:4px 6px 4px 4px;gap:8px;border:1px solid transparent;border-radius:10px}
+.adminTopbarUser:hover{border-color:#2b2b2b;background:#111}
+.adminTopbarUser .adminAvatar{width:32px;height:32px;background:#fff;color:#111}
+.adminTopbarUser strong{font-size:11px;color:#fff}.adminTopbarUser small{margin-top:4px;font-size:9px;color:#8d8d8d}
+.adminMain{padding:20px 24px 46px;max-width:1600px;width:100%;margin:0 auto;background:var(--ui-bg)}
+@media(max-width:1180px){.adminShell{grid-template-columns:78px minmax(0,1fr)}.adminSidebar{width:78px}.adminBrandLink,.adminAdministrationLabel,.adminNavigationEyebrow,.adminNavLabel,.adminSidebar nav a>span,.adminNavParent>span,.adminNavParent>.adminIcon:last-child{display:none}.adminBrandBlock{align-items:center;padding-inline:0}.adminBrandRow{justify-content:center}.adminNavParent,.adminSidebar nav a{justify-content:center;padding:0}.adminNavChildren{padding-left:0}.adminTopbar{padding-inline:20px}.adminContextTitle strong{font-size:25px}}
+@media(max-width:900px){.adminContextTitle strong{font-size:20px}.adminContextTitle small{max-width:58vw}.adminMain{padding:18px 14px 84px}}
