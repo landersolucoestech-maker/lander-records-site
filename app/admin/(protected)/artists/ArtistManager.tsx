@@ -25,6 +25,13 @@ type Filters = { genre?: string; q?: string; status?: string };
 type SortMode = "updated-desc" | "updated-asc" | "name-asc" | "name-desc";
 type MetricAccent = "red" | "blue" | "green" | "orange";
 
+const sparkPaths: Record<MetricAccent, string> = {
+  red: "M2 25 L14 18 L26 27 L38 20 L50 20 L62 12 L76 6",
+  blue: "M2 22 L14 15 L26 27 L38 20 L50 20 L62 11 L76 6",
+  green: "M2 20 L15 14 L27 25 L39 18 L50 19 L62 11 L76 6",
+  orange: "M2 22 L15 15 L28 27 L40 20 L52 18 L64 10 L76 5",
+};
+
 function StatusBadge({ status }: { status: ArtistSummary["status"] }) {
   const label = status === "published" ? "Publicado" : status === "draft" ? "Rascunho" : status === "inactive" ? "Inativo" : "Arquivado";
   const className = status === "published" ? styles.statusPublished : status === "draft" ? styles.statusDraft : status === "inactive" ? styles.statusInactive : styles.statusArchived;
@@ -33,9 +40,9 @@ function StatusBadge({ status }: { status: ArtistSummary["status"] }) {
 
 function ArtistMetricCard({ accent, hint, icon, label, value }: { accent: MetricAccent; hint: string; icon: IconName; label: string; value: string }) {
   return <article className={`adminMetricCard is-${accent}`}>
-    <span className="adminMetricIcon"><AdminIcon name={icon} size={24} /></span>
+    <span className="adminMetricIcon"><AdminIcon name={icon} size={25} /></span>
     <div className="adminMetricCopy"><span>{label}</span><strong>{value}</strong><small>{hint}</small></div>
-    <span className={styles.metricCue} aria-hidden="true"><AdminIcon name={icon} size={18} /></span>
+    <svg aria-hidden="true" className="adminMetricSpark" viewBox="0 0 78 36"><defs><linearGradient id={`artists-spark-${accent}`} x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="currentColor" stopOpacity=".18" /><stop offset="1" stopColor="currentColor" stopOpacity="0" /></linearGradient></defs><path d={`${sparkPaths[accent]} L76 36 L2 36 Z`} fill={`url(#artists-spark-${accent})`} stroke="none" /><path d={sparkPaths[accent]} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" /></svg>
   </article>;
 }
 
@@ -142,29 +149,29 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
     return next;
   });
 
-  return <div className={styles.manager} data-testid="artist-manager">
+  return <div className={`adminDashboard ${styles.manager}`} data-testid="artist-manager">
     {deleted ? <div className="adminNotice">Artista excluído com sucesso.</div> : null}
     {preview ? <div className="adminNotice">Os dados deste preview são isolados e não alteram a persistência do ambiente real.</div> : null}
 
-    <header className={`adminDashboardHeading ${styles.moduleHeading}`}>
+    <header className="adminDashboardHeading">
       <div><h1>Artistas</h1><p>Gerencie o casting, a publicação e os destaques da Lander Records.</p></div>
       {canEdit && !preview ? <Link className="adminPrimaryCompact" href="/admin/artists/new"><AdminIcon name="plus" size={15} />Novo artista</Link> : null}
     </header>
 
     <section aria-label="Resumo do catálogo de artistas" className="adminMetricGrid">
       <ArtistMetricCard accent="red" hint="no casting" icon="artists" label="Artistas" value={new Intl.NumberFormat("pt-BR").format(artists.length)} />
-      <ArtistMetricCard accent="green" hint="visíveis no catálogo" icon="eye" label="Publicados" value={new Intl.NumberFormat("pt-BR").format(publishedCount)} />
-      <ArtistMetricCard accent="orange" hint="na seção Artistas" icon="home" label="Destaques na Home" value={new Intl.NumberFormat("pt-BR").format(homeFeaturedCount)} />
-      <ArtistMetricCard accent="blue" hint="soma das métricas registradas" icon="users" label="Audiência" value={compactAudienceLabel(audienceTotal)} />
+      <ArtistMetricCard accent="blue" hint="visíveis no catálogo" icon="eye" label="Publicados" value={new Intl.NumberFormat("pt-BR").format(publishedCount)} />
+      <ArtistMetricCard accent="green" hint="na seção Artistas" icon="home" label="Destaques na Home" value={new Intl.NumberFormat("pt-BR").format(homeFeaturedCount)} />
+      <ArtistMetricCard accent="orange" hint="soma das métricas registradas" icon="users" label="Audiência" value={compactAudienceLabel(audienceTotal)} />
     </section>
 
     <section className={`adminDashboardPanel ${styles.catalogPanel}`} aria-label="Catálogo de artistas">
-      <div className={`adminAnalyticsPanelHeading ${styles.catalogHeading}`}>
+      <div className="adminAnalyticsPanelHeading">
         <div className="adminPanelHeadingIdentity"><span className="adminPanelHeadingIcon"><AdminIcon name="artists" size={20} /></span><div><h2>Catálogo de artistas</h2><p>Busque, filtre e gerencie os artistas cadastrados.</p></div></div>
         <div className={styles.panelSummary}><strong>{filtered.length}</strong><span>{filtered.length === 1 ? "resultado" : "resultados"}</span></div>
       </div>
 
-      <div className={`admin-toolbar ${styles.toolbar}`} role="search">
+      <div className={styles.toolbar} role="search">
         <label className={styles.searchField}>
           <span className="srOnly">Buscar artistas</span>
           <AdminIcon name="search" size={16} />
@@ -187,7 +194,7 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
               const roleLine = artist.roles?.length ? artist.roles.slice(0, 2).join(" · ") : `/artistas/${artist.slug}`;
               return <tr data-testid="artist-row" key={artist.id}>
                 <td className={styles.checkboxColumn}><input aria-label={`Selecionar ${artist.name}`} checked={selected.has(artist.id)} onChange={() => toggleArtist(artist.id)} type="checkbox" /></td>
-                <td><div className={`table-primary ${styles.identity}`}>{artist.cardImage ? <Image alt="" height={34} src={artist.cardImage} unoptimized width={34} /> : <span className={styles.avatarFallback} aria-hidden="true"><AdminIcon name="artists" size={16} /></span>}<span><strong>{artist.name}</strong><small>{roleLine}</small></span></div></td>
+                <td><div className={styles.identity}>{artist.cardImage ? <Image alt="" height={38} src={artist.cardImage} unoptimized width={38} /> : <span className={styles.avatarFallback} aria-hidden="true"><AdminIcon name="artists" size={16} /></span>}<span><strong>{artist.name}</strong><small>{roleLine}</small></span></div></td>
                 <td><div className={styles.taxonomy}><span>{artist.genres[0] || "Não informado"}</span>{artist.genres.length > 1 ? <small>+{artist.genres.length - 1}</small> : null}</div></td>
                 <td><strong className={styles.metricValue}>{audienceLabel(artist.audience)}</strong></td>
                 <td><div className={styles.homePlacement}>{typeof artist.homePosition === "number" ? <><span className={styles.homePosition}>#{artist.homePosition}</span><small>Home</small></> : <span className={styles.noPlacement}>—</span>}</div></td>
