@@ -118,8 +118,21 @@ export default function PostManager({
 
   useEffect(() => {
     const openModal = () => setCreateOpen(true);
+    const interceptLegacyNewContentLink = (event: MouseEvent) => {
+      const target = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>("a[href]") : null;
+      if (!target) return;
+      const href = target.getAttribute("href");
+      if (href !== "/admin/posts/new" && href !== "/cms-preview/posts/new") return;
+      event.preventDefault();
+      event.stopPropagation();
+      setCreateOpen(true);
+    };
     window.addEventListener("admin:new-content", openModal);
-    return () => window.removeEventListener("admin:new-content", openModal);
+    document.addEventListener("click", interceptLegacyNewContentLink, true);
+    return () => {
+      window.removeEventListener("admin:new-content", openModal);
+      document.removeEventListener("click", interceptLegacyNewContentLink, true);
+    };
   }, []);
 
   return <div className={styles.manager} data-testid="news-manager">
