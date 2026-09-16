@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { getSiteChrome } from "@/modules/pages";
+import { trustedExternalHref, trustedPublicLink } from "@/lib/public-link";
 import { MobileNavigation } from "./MobileNavigation";
 
 function InstagramIcon() {
@@ -51,22 +52,21 @@ async function getChromeView(): Promise<ChromeView> {
   }
 }
 
-function isExternal(url: string) {
-  return /^https?:\/\//i.test(url);
-}
-
 function SiteLink({ href, children, newTab = false, className }: { href: string; children: ReactNode; newTab?: boolean; className?: string }) {
-  if (isExternal(href)) {
-    return <a className={className} href={href} target={newTab ? "_blank" : undefined} rel={newTab ? "noreferrer" : undefined}>{children}</a>;
+  const resolved = trustedPublicLink(href);
+  if (!resolved) return <span className={className} aria-disabled="true">{children}</span>;
+  if (resolved.external) {
+    return <a className={className} href={resolved.href} target={newTab ? "_blank" : undefined} rel={newTab ? "noreferrer" : undefined}>{children}</a>;
   }
-  return <Link className={className} href={href}>{children}</Link>;
+  return <Link className={className} href={resolved.href}>{children}</Link>;
 }
 
 function SocialIcon({ label, href, icon }: { label: string; href: string; icon: ReactNode }) {
-  if (!href) {
+  const resolvedHref = trustedExternalHref(href);
+  if (!resolvedHref) {
     return <span className="socialIconDisabled" aria-label={`${label} ainda não configurado`} title={`${label} ainda não configurado`}>{icon}</span>;
   }
-  return <a href={href} target="_blank" rel="noreferrer" aria-label={label} title={label}>{icon}</a>;
+  return <a href={resolvedHref} target="_blank" rel="noreferrer" aria-label={label} title={label}>{icon}</a>;
 }
 
 export async function Header() {
