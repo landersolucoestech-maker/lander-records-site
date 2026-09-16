@@ -1,0 +1,210 @@
+/* Feature-level exceptions normalized to the Dashboard contract. */
+
+/* Home: keep its editorial previews, but use Dashboard geometry and density. */
+.adminShell .adminMain .homeManager {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  gap: 18px !important;
+}
+.adminShell .adminMain .homeManagerHeader {
+  gap: 16px !important;
+}
+.adminShell .adminMain .homeManagerHeader h1 {
+  margin: 0 0 5px !important;
+  color: #202630 !important;
+  font-size: clamp(25px, 2.1vw, 33px) !important;
+  font-weight: 850 !important;
+  letter-spacing: -.036em !important;
+  line-height: 1.1 !important;
+}
+.adminShell .adminMain .homeManagerHeader p {
+  margin-bottom: 5px !important;
+  color: #687385 !important;
+  font-size: 10px !important;
+}
+.adminShell .adminMain .homeManagerHeader > div > span {
+  color: #687385 !important;
+  font-size: 12.5px !important;
+  line-height: 1.45 !important;
+}
+.adminShell .adminMain .homeManagerTabs {
+  min-height: 40px !important;
+  border-bottom-color: #e1e6eb !important;
+}
+.adminShell .adminMain .homeManagerTabs span {
+  min-height: 40px !important;
+  padding: 0 12px !important;
+  font-size: 11px !important;
+}
+.adminShell .adminMain .homeManagerInfo {
+  gap: 9px !important;
+  padding: 11px 12px !important;
+  border: 1px solid #e1e6eb !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  color: #687385 !important;
+  font-size: 11px !important;
+  line-height: 1.45 !important;
+}
+.adminShell .adminMain .homeManagerList { gap: 12px !important; }
+.adminShell .adminMain .homeSectionCard {
+  grid-template-columns: 24px 210px minmax(0, 1fr) 150px !important;
+  gap: 16px !important;
+  min-height: 136px !important;
+  padding: 14px !important;
+  border: 1px solid #e1e6eb !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+.adminShell .adminMain .homeManagerPreview {
+  width: 210px !important;
+  height: 104px !important;
+}
+.adminShell .adminMain .homeSectionContent { gap: 5px !important; }
+.adminShell .adminMain .homeSectionContent h2 {
+  color: #202630 !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+}
+.adminShell .adminMain .homeSectionContent p,
+.adminShell .adminMain .homeSectionContent small,
+.adminShell .adminMain .homeSectionState,
+.adminShell .adminMain .homeSectionUnavailable {
+  color: #687385 !important;
+  font-size: 10px !important;
+  line-height: 1.45 !important;
+}
+.adminShell .adminMain .homeSectionActions { gap: 8px !important; }
+
+/* Module roots with legacy max-width/margins become full-width like Dashboard. */
+.adminShell .adminMain > [data-testid$="-manager"] {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+/* Header manager: preserve preview semantics, normalize surrounding admin UI. */
+.adminShell .adminMain [data-testid="header-manager"] {
+  gap: 18px !important;
+}
+.adminShell .adminMain [data-testid="header-manager"] > [class*="_header__"] {
+  gap: 16px !important;
+}
+.adminShell .adminMain [data-testid="header-manager"] > [class*="_header__"] h1 {
+  margin: 0 0 5px !important;
+  color: #202630 !important;
+  font-size: clamp(25px, 2.1vw, 33px) !important;
+  font-weight: 850 !important;
+  letter-spacing: -.036em !important;
+  line-height: 1.1 !important;
+}
+.adminShell .adminMain [data-testid="header-manager"] > [class*="_header__"] span {
+  color: #687385 !important;
+  font-size: 12.5px !important;
+}
+.adminShell .adminMain [data-testid="header-manager"] [class*="_metrics__"] {
+  gap: 12px !important;
+}
+.adminShell .adminMain [data-testid="header-manager"] [class*="_metrics__"] article {
+  min-height: 90px !important;
+  padding: 14px !important;
+  border: 1px solid #e1e6eb !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+.adminShell .adminMain [data-testid="header-manager"] [class*="_metrics__"] strong {
+  color: #202630 !important;
+  font-size: 17px !important;
+  font-weight: 850 !important;
+}
+.adminShell .adminMain [data-testid="header-manager"] [class*="_workspace__"] {
+  border: 1px solid #e1e6eb !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+.adminShell .adminMain [data-testid="header-manager"] [class*="_sourceHeading__"],
+.adminShell .adminMain [data-testid="header-manager"] [class*="_previewHeading__"],
+.adminShell .adminMain [data-testid="header-manager"] [class*="_sourceBlock__"] {
+  padding: 14px !important;
+}
+.adminShell .adminMain [data-testid="header-manager"] [class*="_sourceHeading__"] h2,
+.adminShell .adminMain [data-testid="header-manager"] [class*="_previewHeading__"] h2 {
+  color: #202630 !important;
+  font-size: 15px !important;
+  font-weight: 850 !important;
+}
+
+/* Pages workbench: editing cards use the same Dashboard surfaces as overview pages. */
+.adminShell .adminMain [data-testid="page-section-workbench"] {
+  gap: 12px !important;
+}
+.adminShell .adminMain [data-testid="page-section-workbench"] :is(
+  [class*="_mediaCard__"],
+  [class*="_detailCard__"],
+  [class*="_sectionSelector__"],
+  [class*="_highlightsCard__"],
+  [class*="_previewPanel__"]
+) {
+  border: 1px solid #e1e6eb !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+.adminShell .adminMain [data-testid="page-section-workbench"] :is(
+  [class*="_mediaCard__"],
+  [class*="_sectionSelector__"]
+) {
+  padding: 12px !important;
+}
+.adminShell .adminMain [data-testid="page-section-workbench"] :is(
+  [class*="_mediaHeading__"] h2,
+  [class*="_previewPanel__"] > header h2
+) {
+  color: #202630 !important;
+  font-size: 15px !important;
+  font-weight: 850 !important;
+  letter-spacing: -.02em !important;
+}
+.adminShell .adminMain [data-testid="page-section-workbench"] :is(
+  [class*="_detailCard__"] > header h3,
+  [class*="_highlightsCard__"] > header h3
+) {
+  color: #202630 !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+}
+.adminShell .adminMain [data-testid="page-section-workbench"] [class*="_previewStage__"] {
+  background: #f5f6f7 !important;
+}
+
+/* Any feature metrics not using Dashboard global classes still inherit its cards. */
+.adminShell .adminMain [class*="_metrics__"] article {
+  border-color: #e1e6eb !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 1200px) {
+  .adminShell .adminMain .homeSectionCard {
+    grid-template-columns: 24px 180px minmax(0, 1fr) !important;
+  }
+  .adminShell .adminMain .homeManagerPreview { width: 180px !important; }
+  .adminShell .adminMain .homeSectionActions { grid-column: 3; justify-items: start; }
+}
+@media (max-width: 760px) {
+  .adminShell .adminMain .homeSectionCard {
+    grid-template-columns: 24px minmax(0, 1fr) !important;
+    padding: 12px !important;
+  }
+  .adminShell .adminMain .homeManagerPreview { width: 100% !important; max-width: 360px; }
+  .adminShell .adminMain .homeSectionContent,
+  .adminShell .adminMain .homeSectionActions { grid-column: 2; }
+}
+@media (max-width: 480px) {
+  .adminShell .adminMain .homeSectionCard { display: flex !important; }
+  .adminShell .adminMain .homeManagerPreview { max-width: none; height: 116px !important; }
+}
