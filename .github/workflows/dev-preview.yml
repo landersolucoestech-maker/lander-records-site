@@ -10,8 +10,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: lander-records-dev-preview-${{ github.run_id }}
-  cancel-in-progress: false
+  group: lander-records-dev-preview
+  cancel-in-progress: true
 
 jobs:
   preview:
@@ -62,8 +62,8 @@ jobs:
       - name: Apply disposable preview migrations
         run: npm run db:migrate
 
-      - name: Dashboard regression tests
-        run: node --test tests/unit/admin-dashboard-refactor.test.mjs tests/unit/admin-navigation.test.mjs tests/unit/production-readiness.test.mjs tests/auth/development-bypass.test.mjs
+      - name: Admin regression tests
+        run: node --test tests/unit/admin-dashboard-refactor.test.mjs tests/unit/admin-navigation.test.mjs tests/unit/pages-manager-contract.test.mjs tests/unit/production-readiness.test.mjs tests/auth/development-bypass.test.mjs
 
       - name: Typecheck
         run: npm run typecheck
@@ -201,7 +201,7 @@ jobs:
             echo "- Ambiente descartável: PostgreSQL temporário, sem secrets de produção."
             echo "- Autenticação do portal desativada apenas neste preview descartável do GitHub Actions."
             echo "- Todas as rotas públicas e administrativas conhecidas foram validadas como navegáveis antes da publicação."
-            echo "- O endereço expira quando este job termina; novos pushes agora abrem outro preview sem derrubar este imediatamente."
+            echo "- O endereço representa a revisão mais recente de dev e é substituído por um novo preview no próximo push."
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Verify public tunnel navigation
