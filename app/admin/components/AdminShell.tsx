@@ -28,7 +28,9 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
   const workspaceRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const location = resolveAdminLocation(pathname, role, preview);
-  const readOnly = preview || sessionSource !== "session";
+  const developmentPreview = sessionSource === "development-auth-bypass";
+  const readOnly = preview || developmentPreview;
+  const showReadOnlyChrome = preview;
   const initials = name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "LR";
 
   useEffect(() => {
@@ -98,7 +100,7 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
         <Image alt="Lander Records" className="adminBrandLogo" height={72} priority src="/lander-records-brand.svg" unoptimized width={152} />
         <button aria-label={collapsed ? "Expandir menu" : "Colapsar menu"} className="adminSidebarCollapse" onClick={toggleSidebar} title={collapsed ? "Expandir menu" : "Colapsar menu"} type="button"><AdminIcon name="chevron" /></button>
       </div>
-      {readOnly ? <div className="adminPreviewBadge">{preview ? "Preview local" : "Desenvolvimento"} · somente leitura</div> : null}
+      {showReadOnlyChrome ? <div className="adminPreviewBadge">Preview local · somente leitura</div> : null}
       <nav aria-label="Painel administrativo">
         {visibleAdminNavigation(role).map((group) => {
           const links = group.items.map((item) => {
@@ -122,10 +124,10 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
           </div>;
         })}
       </nav>
-      <div className="adminSidebarFooter">
+      {!developmentPreview ? <div className="adminSidebarFooter">
         <div className="adminUserSummary"><span className="adminAvatar">{initials}</span><span><strong>{name}</strong><small>{readOnly ? "Acesso de leitura" : email || role}</small></span></div>
         {footerAction}
-      </div>
+      </div> : null}
     </aside>
     <div className="adminWorkspace" ref={workspaceRef}>
       <a className="adminSkipLink" href="#admin-main">Ir para o conteúdo</a>
@@ -134,9 +136,9 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
           <button aria-controls="admin-sidebar" aria-expanded={open} aria-label={open ? "Fechar menu" : "Abrir menu"} className="adminMenuButton" onClick={() => setOpen((value) => !value)} ref={mobileToggleRef} type="button"><AdminIcon name="menu" /></button>
           <nav aria-label="Breadcrumb" className="adminBreadcrumb"><ol>{location.breadcrumbs.map((crumb, index) => <li key={`${crumb.label}-${index}`}>{crumb.href ? <Link href={crumb.href}>{crumb.label}</Link> : <span aria-current="page">{crumb.label}</span>}</li>)}</ol></nav>
         </div>
-        <div className="adminTopbarActions"><Link aria-label="Ver site público (abre em nova aba)" className="adminPublicLink" href="/" rel="noopener noreferrer" target="_blank"><span>Ver site público</span><AdminIcon name="external" size={15} /></Link><span className="adminTopbarUser"><span className="adminAvatar">{initials}</span><span><strong>{name}</strong><small>{readOnly ? "Somente leitura" : role}</small></span></span></div>
+        <div className="adminTopbarActions"><Link aria-label="Ver site público (abre em nova aba)" className="adminPublicLink" href="/" rel="noopener noreferrer" target="_blank"><span>Ver site público</span><AdminIcon name="external" size={15} /></Link><span className="adminTopbarUser"><span className="adminAvatar">{initials}</span><span><strong>{name}</strong><small>{email || role}</small></span></span></div>
       </header>
-      {readOnly ? <div className="adminReadOnlyNotice" role="status"><strong>{preview ? "Preview local" : "Sessão de desenvolvimento"}</strong><span>Somente leitura. Para salvar alterações, entre com uma conta administrativa real.</span>{!preview ? <Link href="/admin/login">Entrar com uma conta</Link> : null}</div> : null}
+      {showReadOnlyChrome ? <div className="adminReadOnlyNotice" role="status"><strong>Preview local</strong><span>Somente leitura. Para salvar alterações, entre com uma conta administrativa real.</span></div> : null}
       <main className="adminMain" id="admin-main" tabIndex={-1}>{children}</main>
     </div>
   </div>;
