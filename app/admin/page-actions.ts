@@ -8,6 +8,7 @@ import { getDb } from "../../lib/db";
 import { pageSectionBindings, sectionDefinitions } from "../../lib/db/page-management-schema";
 import { pageSections, pages } from "../../lib/db/schema";
 import { slugify } from "../../lib/slug";
+import { sitePageContract } from "./(protected)/pages/site-page-contract";
 
 function text(formData: FormData, name: string) {
   return String(formData.get(name) || "").trim();
@@ -19,6 +20,12 @@ function checked(formData: FormData, name: string) {
 
 function uuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value) ? value : null;
+}
+
+function assertMutablePageStructure(page: { key: string }) {
+  if (sitePageContract(page.key)) {
+    throw new Error("A estrutura desta página é canônica e não pode ser criada, anexada, removida ou excluída arbitrariamente.");
+  }
 }
 
 function revalidatePagePaths(slugs: string[]) {
@@ -55,6 +62,7 @@ export async function deletePageAction(formData: FormData) {
   const db = getDb();
   const current = (await db.select().from(pages).where(eq(pages.id, id)).limit(1))[0];
   if (!current) throw new Error("Página não encontrada.");
+  assertMutablePageStructure(current);
   await db.delete(pages).where(eq(pages.id, id));
   await audit(session.user.id, "page.deleted", "page", id, { title: current.title, key: current.key, slug: current.slug });
   revalidatePagePaths([current.slug]);
@@ -71,6 +79,7 @@ export async function createPageSectionAction(formData: FormData) {
   const db = getDb();
   const page = (await db.select().from(pages).where(eq(pages.id, pageId)).limit(1))[0];
   if (!page) throw new Error("Página não encontrada.");
+  assertMutablePageStructure(page);
 
   const existing = await db.select({ id: pageSections.id }).from(pageSections).where(and(eq(pageSections.pageId, pageId), eq(pageSections.sectionKey, key))).limit(1);
   if (existing.length) throw new Error("Já existe uma seção com esse identificador nesta página.");
@@ -120,6 +129,7 @@ export async function attachSectionAction(formData: FormData) {
     db.select().from(sectionDefinitions).where(and(eq(sectionDefinitions.id, definitionId), eq(sectionDefinitions.active, true))).limit(1),
   ]);
   if (!page[0] || !definition[0]) throw new Error("Página ou seção não encontrada.");
+  assertMutablePageStructure(page[0]);
   const existing = await db.select({ id: pageSections.id }).from(pageSections).where(and(eq(pageSections.pageId, pageId), eq(pageSections.sectionKey, definition[0].key))).limit(1);
   if (existing.length) throw new Error("Essa seção já está vinculada à página.");
   const positions = await db.select({ position: pageSections.position }).from(pageSections).where(eq(pageSections.pageId, pageId)).orderBy(asc(pageSections.position));
@@ -146,6 +156,7 @@ export async function detachSectionAction(formData: FormData) {
   const page = (await db.select().from(pages).where(eq(pages.id, pageId)).limit(1))[0];
   const section = (await db.select().from(pageSections).where(and(eq(pageSections.id, sectionId), eq(pageSections.pageId, pageId))).limit(1))[0];
   if (!page || !section) throw new Error("Página ou seção não encontrada.");
+  assertMutablePageStructure(page);
   await db.delete(pageSections).where(eq(pageSections.id, sectionId));
   await audit(session.user.id, "page.section_detached", "page_section", sectionId, { pageId, key: section.sectionKey });
   revalidatePagePaths([page.slug]);
