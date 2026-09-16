@@ -59,7 +59,7 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
     {preview ? <div className="adminNotice">Os dados deste preview são isolados e não alteram a persistência do ambiente real.</div> : null}
 
     <section className={styles.catalog} aria-label="Artistas">
-      <div className={styles.toolbar} role="search">
+      <div className={`admin-toolbar ${styles.toolbar}`} role="search">
         <label className={styles.search}><span className="srOnly">Buscar artistas</span><AdminIcon name="search" size={16} /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar artista por nome, gênero ou slug..." /></label>
         <label><span className="srOnly">Status</span><select value={status} onChange={(event) => setStatus(event.target.value)}><option value="all">Todos os status</option><option value="published">Publicados</option><option value="draft">Rascunhos</option><option value="inactive">Inativos</option><option value="archived">Arquivados</option></select></label>
         <label><span className="srOnly">Gênero</span><select value={genre} onChange={(event) => setGenre(event.target.value)}><option value="all">Todos os gêneros</option>{genres.map((item) => <option key={item}>{item}</option>)}</select></label>
@@ -68,18 +68,24 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
         {hasFilters ? <button className={styles.clearButton} onClick={clearFilters} type="button">Limpar</button> : null}
       </div>
 
-      {filtered.length ? <div className={styles.tableWrap} aria-label="Artistas cadastrados" role="table">
-        <div className={styles.tableHeader} role="row"><span role="columnheader">Artista</span><span role="columnheader">Gênero</span><span role="columnheader">Status</span><span role="columnheader">Destaque</span><span role="columnheader">Atualização</span><span role="columnheader">Ações</span></div>
-        <div className={styles.rows} role="rowgroup">{filtered.map((artist) => <div className={styles.row} data-testid="artist-row" key={artist.id} role="row">
-          <div className={styles.identity} role="cell">{artist.cardImage ? <Image alt="" height={40} src={artist.cardImage} unoptimized width={40} /> : <span className={styles.avatarFallback} aria-hidden="true"><AdminIcon name="artists" size={17} /></span>}<span><strong>{artist.name}</strong><small>/artistas/{artist.slug}</small></span></div>
-          <div className={styles.taxonomy} role="cell"><span>{artist.genres[0] || "Não informado"}</span>{artist.genres.length > 1 ? <small>+{artist.genres.length - 1}</small> : null}</div>
-          <div role="cell"><StatusBadge status={artist.status} /></div>
-          <div className={styles.homePlacement} role="cell">{typeof artist.homePosition === "number" ? <><b aria-hidden="true">★</b><span><strong>Posição {artist.homePosition}</strong><small>Home</small></span></> : <span><strong>—</strong><small>Sem destaque</small></span>}</div>
-          <time role="cell">{artist.updatedAt}</time>
-          <div className={styles.actions} role="cell"><details><summary aria-label={`Ações de ${artist.name}`}><AdminIcon name="more" size={17}/></summary><div className={styles.actionMenu}>{canEdit && !preview ? <Link href={`/admin/artists/${artist.id}`}><AdminIcon name="edit" size={14}/>Editar</Link> : null}{artist.isPubliclyVisible && !preview ? <Link href={`/artistas/${artist.slug}`} target="_blank"><AdminIcon name="eye" size={14}/>Visualizar</Link> : null}<Link href={preview ? "/cms-preview/artists" : `/admin/artists/${artist.id}/view`}><AdminIcon name="document" size={14}/>Consultar</Link></div></details></div>
-        </div>)}</div>
-        <div className={styles.resultCount}><span>{filtered.length} artista{filtered.length === 1 ? "" : "s"}</span><span>Mostrando {filtered.length} de {artists.length}</span></div>
-      </div> : <div className={styles.empty}><strong>{artists.length ? "Nenhum artista encontrado para os filtros selecionados." : "Nenhum artista cadastrado."}</strong>{hasFilters ? <button className="adminButton" onClick={clearFilters} type="button">Limpar filtros</button> : canEdit && !preview ? <Link className="adminButton primary" href="/admin/artists/new">Cadastrar primeiro artista</Link> : null}</div>}
+      {filtered.length ? <div className={`tableview-surface cms-tableview-surface ${styles.tableSurface}`} aria-label="Artistas cadastrados">
+        <section className={`table-card ${styles.tableCard}`}>
+          <div className={styles.scrollArea}>
+            <table>
+              <thead><tr><th>Artista</th><th>Gênero</th><th>Status</th><th>Destaque</th><th>Atualização</th><th className={styles.actions}>Ações</th></tr></thead>
+              <tbody>{filtered.map((artist) => <tr data-testid="artist-row" key={artist.id}>
+                <td><div className={`table-primary ${styles.identity}`}>{artist.cardImage ? <Image alt="" height={42} src={artist.cardImage} unoptimized width={42} /> : <span className={styles.avatarFallback} aria-hidden="true"><AdminIcon name="artists" size={17} /></span>}<span><strong>{artist.name}</strong><small>/artistas/{artist.slug}</small></span></div></td>
+                <td><div className={styles.taxonomy}><span>{artist.genres[0] || "Não informado"}</span>{artist.genres.length > 1 ? <small>+{artist.genres.length - 1}</small> : null}</div></td>
+                <td><StatusBadge status={artist.status} /></td>
+                <td><div className={styles.homePlacement}>{typeof artist.homePosition === "number" ? <><b aria-hidden="true">★</b><span><strong>Posição {artist.homePosition}</strong><small>Home</small></span></> : <span><strong>—</strong><small>Sem destaque</small></span>}</div></td>
+                <td><time>{artist.updatedAt}</time></td>
+                <td className={styles.actions}><details><summary aria-label={`Ações de ${artist.name}`}><AdminIcon name="more" size={17}/></summary><div className={styles.actionMenu}>{canEdit && !preview ? <Link href={`/admin/artists/${artist.id}`}><AdminIcon name="edit" size={14}/>Editar</Link> : null}{artist.isPubliclyVisible && !preview ? <Link href={`/artistas/${artist.slug}`} target="_blank"><AdminIcon name="eye" size={14}/>Visualizar</Link> : null}<Link href={preview ? "/cms-preview/artists" : `/admin/artists/${artist.id}/view`}><AdminIcon name="document" size={14}/>Consultar</Link></div></details></td>
+              </tr>)}</tbody>
+            </table>
+          </div>
+          <footer className={styles.resultCount}><span>{filtered.length} artista{filtered.length === 1 ? "" : "s"}</span><span>Mostrando {filtered.length} de {artists.length}</span></footer>
+        </section>
+      </div> : <div className={`admin-empty ${styles.empty}`}><strong>{artists.length ? "Nenhum artista encontrado para os filtros selecionados." : "Nenhum artista cadastrado."}</strong>{hasFilters ? <button className="adminButton" onClick={clearFilters} type="button">Limpar filtros</button> : canEdit && !preview ? <Link className="adminButton primary" href="/admin/artists/new">Cadastrar primeiro artista</Link> : null}</div>}
     </section>
   </div>;
 }
