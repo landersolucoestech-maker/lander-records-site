@@ -39,16 +39,18 @@ test("Pages overview mirrors the Portal Lander composition while keeping Lander 
   assert.doesNotMatch(manager, /referencePages|referenceSections|demoMode \|\| preview \?/);
   assert.doesNotMatch(manager, /Mais Lidas|Publicidade Lateral|Em Alta|Newsletter|Sobre o Portal/);
   assert.match(page, /sections: pageStructure/);
-  assert.match(manager, /<table>/);
-  assert.match(styles, /\.selectionCard\{display:grid;grid-template-columns:160px 300px minmax\(0,1fr\)/);
-  assert.match(styles, /\.tableWrap\{width:100%;min-width:0;overflow:hidden\}/);
-  assert.match(styles, /\.tableWrap table\{width:100%!important;min-width:0!important;border-collapse:collapse;table-layout:fixed!important\}/);
-  assert.match(styles, /\.structureCard\{--ui-table-action-width:140px;overflow:hidden\}/);
-  assert.match(styles, /\.tableWrap th:nth-child\(2\),\.tableWrap td:nth-child\(2\)\{width:110px\}/);
-  assert.match(styles, /\.tableWrap th:nth-child\(3\),\.tableWrap td:nth-child\(3\)\{width:140px\}/);
-  assert.match(styles, /\.configureButton\{width:104px;min-width:104px;height:32px;padding:0 9px\}/);
-  assert.match(styles, /adminTopbarPrimary\)\{display:none!important\}/);
-  assert.match(styles, /@media\(max-width:800px\)[\s\S]*\.tableWrap\{overflow-x:auto;overflow-y:visible\}[\s\S]*\.tableWrap table\{min-width:620px!important\}/);
+  assert.match(manager, /className=\{styles\.selectionMain\}/);
+  assert.match(manager, /className=\{styles\.sectionsList\} role="table"/);
+  assert.match(manager, /className=\{styles\.sectionsHead\} role="row"/);
+  assert.match(manager, /className=\{styles\.sectionsRow\}/);
+  assert.doesNotMatch(manager, /<table>/);
+  assert.match(styles, /\.selectionCard\{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:18px 20px;margin-bottom:16px\}/);
+  assert.match(styles, /\.selectionMain\{display:flex;align-items:flex-end;gap:24px;min-width:0\}/);
+  assert.match(styles, /\.sectionsHead,\.sectionsRow\{display:grid;grid-template-columns:minmax\(360px,1fr\) 120px minmax\(150px,auto\)/);
+  assert.match(styles, /\.sectionsRow\{min-height:74px;padding:10px 16px;border-bottom:1px solid #eceef1\}/);
+  assert.match(styles, /\.sectionActions\{display:flex;gap:8px;justify-content:flex-end/);
+  assert.match(styles, /adminShell:has\(\[data-testid="pages-manager"\]\) \.adminTopbarPrimary/);
+  assert.doesNotMatch(styles, /overflow-x:auto/);
 });
 
 test("Create page uses the compact modal flow from the Pages reference", () => {
