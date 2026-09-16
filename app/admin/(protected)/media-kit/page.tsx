@@ -19,47 +19,75 @@ export default async function MediaKitPage() {
   const brand = settings?.brandName || "Lander Records";
   const tagline = settings?.tagline || "Apresentação comercial do portal";
   const contact = settings?.contactEmail || "Contato comercial não configurado";
+  const phone = settings?.contactPhone || "Não configurado";
+  const location = settings?.address || settings?.location || "Não configurado";
+  const pagesTotal = pageCount?.value || 0;
+  const postsTotal = postCount?.value || 0;
+  const mediaTotal = mediaCount?.value || 0;
 
   return <div className={styles.page}>
-    <div className={styles.notice}><AdminIcon name="document" size={18} /><div><strong>Composição baseada em dados reais do Portal</strong>Esta etapa padroniza a experiência do Mídia Kit sem criar um novo domínio de persistência. Audiência e inventário só serão exibidos quando houver fonte real conectada.</div></div>
-
     <section className={styles.metrics} aria-label="Resumo do Mídia Kit">
-      <article className={styles.metric}><div><small>Páginas ativas</small><strong>{pageCount?.value || 0}</strong><span>estrutura pública atual</span></div><span className={styles.metricIcon}><AdminIcon name="pages" size={18} /></span></article>
-      <article className={styles.metric}><div><small>Publicações</small><strong>{postCount?.value || 0}</strong><span>conteúdos publicados</span></div><span className={styles.metricIcon}><AdminIcon name="posts" size={18} /></span></article>
-      <article className={styles.metric}><div><small>Mídias</small><strong>{mediaCount?.value || 0}</strong><span>arquivos ativos</span></div><span className={styles.metricIcon}><AdminIcon name="media" size={18} /></span></article>
-      <article className={styles.metric}><div><small>Versão do kit</small><strong>—</strong><span>versionamento ainda não persistido</span></div><span className={styles.metricIcon}><AdminIcon name="document" size={18} /></span></article>
+      <article><span className={styles.metricIcon}><AdminIcon name="pages" size={16}/></span><div><small>Páginas ativas</small><strong>{pagesTotal}</strong><p>Estrutura atual do Site</p></div></article>
+      <article><span className={styles.metricIcon}><AdminIcon name="posts" size={16}/></span><div><small>Publicações</small><strong>{postsTotal}</strong><p>Conteúdos públicos</p></div></article>
+      <article><span className={styles.metricIcon}><AdminIcon name="media" size={16}/></span><div><small>Mídias</small><strong>{mediaTotal}</strong><p>Arquivos da biblioteca</p></div></article>
+      <article><span className={styles.metricIcon}><AdminIcon name="document" size={16}/></span><div><small>Versão do kit</small><strong>—</strong><p>Versionamento ainda não persistido</p></div></article>
     </section>
 
     <div className={styles.workspace}>
-      <div className={styles.stack}>
+      <div className={styles.editor}>
         <section className={styles.card}>
-          <div className={styles.cardHeader}><div><h2>Identidade e apresentação</h2><p>Informações já existentes no projeto, apresentadas no padrão visual do novo Admin.</p></div><Link className="adminButton" href="/admin/settings">Editar dados</Link></div>
-          <div className={styles.cardBody}><div className={styles.identityGrid}>
-            <div className={styles.field}><span>Marca</span><strong>{brand}</strong></div>
-            <div className={styles.field}><span>Tagline</span><strong>{tagline || "Não configurada"}</strong></div>
-            <div className={styles.field}><span>E-mail comercial</span><p>{contact}</p></div>
-            <div className={styles.field}><span>Telefone</span><p>{settings?.contactPhone || "Não configurado"}</p></div>
-            <div className={`${styles.field} ${styles.wide}`}><span>Endereço</span><p>{settings?.address || settings?.location || "Não configurado"}</p></div>
+          <header><div><h2>Identidade e apresentação</h2><p>Defina como o Portal se apresenta comercialmente usando os dados reais já persistidos no projeto.</p></div><Link className={styles.outlineButton} href="/admin/settings">Editar dados</Link></header>
+          <div className={styles.cardBody}><div className={styles.formGrid}>
+            <label><span>Título do documento</span><input value={brand} disabled readOnly/></label>
+            <label><span>Subtítulo</span><input value={tagline} disabled readOnly/></label>
+            <label><span>Versão editorial</span><input value="Não persistida" disabled readOnly/></label>
+            <label><span>Status</span><input value="Composição atual" disabled readOnly/></label>
+            <label className={styles.span2}><span>Resumo institucional</span><textarea rows={4} value={tagline} disabled readOnly/></label>
+            <label className={styles.span2}><span>Posicionamento comercial</span><textarea rows={4} value={location} disabled readOnly/></label>
           </div></div>
         </section>
 
         <section className={styles.card}>
-          <div className={styles.cardHeader}><div><h2>Audiência</h2><p>Métricas só entram no documento quando uma fonte elegível estiver conectada.</p></div></div>
-          <div className={styles.cardBody}><div className={styles.emptyState}><AdminIcon name="chart" size={24} /><strong>Nenhum dado real de audiência disponível</strong><p>O Mídia Kit não cria estimativas nem substitui ausência por zero. Quando analytics estiver conectado, esta área poderá consumir os dados reais.</p></div></div>
+          <header><div><h2>Audiência</h2><p>Os números entram no documento somente quando houver uma fonte real elegível conectada ao projeto.</p></div><Link className={styles.outlineButton} href="/admin/settings/lander-records">Integrações</Link></header>
+          <div className={styles.cardBody}><div className={styles.emptyState}><AdminIcon name="chart" size={24}/><strong>Nenhum dado real de audiência disponível</strong><p>Ausência de dado não vira zero, estimativa ou valor manual. A lógica atual do projeto permanece preservada.</p></div></div>
         </section>
 
         <section className={styles.card}>
-          <div className={styles.cardHeader}><div><h2>Inventário e presença digital</h2><p>Biblioteca e conteúdo público continuam sendo gerenciados em seus módulos de origem.</p></div></div>
-          <div className={styles.cardBody}><div className={styles.actions}><Link className="adminButton" href="/admin/media"><AdminIcon name="media" size={15} />Abrir biblioteca</Link><Link className="adminButton" href="/admin/posts"><AdminIcon name="posts" size={15} />Ver conteúdos</Link><Link className="adminButton" href="/admin/settings/lander-records"><AdminIcon name="integration" size={15} />Integrações</Link></div></div>
+          <header><div><h2>Inventário publicitário</h2><p>A referência visual é reproduzida sem criar um novo domínio de inventário que hoje não existe no projeto.</p></div></header>
+          <div className={styles.cardBody}><div className={styles.inventoryList}>
+            <article><div><strong>Biblioteca de mídia</strong><small>{mediaTotal} arquivos ativos disponíveis para composição editorial.</small></div><Link className={styles.outlineButton} href="/admin/media">Abrir biblioteca</Link></article>
+            <article><div><strong>Conteúdo editorial</strong><small>{postsTotal} publicações atualmente publicadas.</small></div><Link className={styles.outlineButton} href="/admin/posts">Ver conteúdos</Link></article>
+          </div></div>
         </section>
+
+        <section className={styles.card}>
+          <header><div><h2>Newsletter e presença digital</h2><p>A camada visual acompanha a referência; configurações continuam sendo lidas dos módulos reais existentes.</p></div></header>
+          <div className={styles.cardBody}><div className={styles.formGrid}>
+            <label><span>Presença digital</span><input value="Gerenciada em Integrações" disabled readOnly/></label>
+            <label><span>Newsletter</span><input value="Sem configuração independente persistida" disabled readOnly/></label>
+          </div></div>
+        </section>
+
+        <section className={styles.card}>
+          <header><div><h2>Contato comercial</h2><p>Informações apresentadas ao anunciante, preservando a fonte de dados atual do projeto.</p></div><Link className={styles.outlineButton} href="/admin/settings">Editar contato</Link></header>
+          <div className={styles.cardBody}><div className={styles.formGrid}>
+            <label><span>Responsável / equipe</span><input value={brand} disabled readOnly/></label>
+            <label><span>E-mail</span><input value={contact} disabled readOnly/></label>
+            <label><span>Telefone / WhatsApp</span><input value={phone} disabled readOnly/></label>
+            <label><span>Localização</span><input value={location} disabled readOnly/></label>
+          </div></div>
+        </section>
+
+        <div className={styles.editorActions}><Link className={styles.outlineButton} href="/" target="_blank"><AdminIcon name="eye" size={15}/>Preview público</Link><Link className={styles.outlineButton} href="/admin/settings"><AdminIcon name="edit" size={15}/>Editar dados de origem</Link></div>
       </div>
 
       <aside className={styles.preview} aria-label="Prévia visual do Mídia Kit">
-        <div className={styles.previewHeader}><strong>LIVE PREVIEW</strong><span>Composição não persistida</span></div>
+        <header><div><span>LIVE PREVIEW</span><strong>{brand}</strong></div><small>Dados reais disponíveis</small></header>
         <div className={styles.sheet}>
           <div className={styles.sheetBrand}><span>MÍDIA · PUBLICAÇÕES · PRESENÇA</span><h3>{brand}</h3><p>{tagline}</p></div>
-          <div className={styles.sheetStats}><div><strong>{pageCount?.value || 0}</strong><small>PÁGINAS ATIVAS</small></div><div><strong>{postCount?.value || 0}</strong><small>PUBLICAÇÕES</small></div><div><strong>{mediaCount?.value || 0}</strong><small>ARQUIVOS</small></div></div>
-          <div className={styles.sheetFooter}><span>{contact}</span><span>LANDER RECORDS · MÍDIA KIT</span></div>
+          <div className={styles.sheetStats}><div><strong>{pagesTotal}</strong><small>PÁGINAS ATIVAS</small></div><div><strong>{postsTotal}</strong><small>PUBLICAÇÕES</small></div><div><strong>{mediaTotal}</strong><small>ARQUIVOS</small></div></div>
+          <div className={styles.sheetContact}><strong>Contato comercial</strong><span>{contact}</span><span>{phone}</span></div>
+          <div className={styles.sheetFooter}><span>{location}</span><span>LANDER RECORDS · MÍDIA KIT</span></div>
         </div>
       </aside>
     </div>
