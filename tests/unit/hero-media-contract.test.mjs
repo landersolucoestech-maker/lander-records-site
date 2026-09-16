@@ -31,15 +31,27 @@ test("Hero editor exposes upload, library reuse and removal controls", () => {
   assert.match(editorPage, /mediaId: sectionMediaId\(section\.settings\)/);
 });
 
-test("Hero media write path validates file type, size and the actual hero section", () => {
+test("Hero media write path validates file type, size and the canonical section media contract", () => {
   assert.match(actions, /requirePersistentAdmin\("editor"\)/);
   assert.match(actions, /MAX_HERO_MEDIA_BYTES = 50 \* 1024 \* 1024/);
   assert.match(actions, /mimeType\.startsWith\("image\/"\) \|\| mimeType\.startsWith\("video\/"\)/);
-  assert.match(actions, /section\.sectionKey !== "hero"/);
+  assert.match(actions, /sitePageContract\(page\.key\)/);
+  assert.match(actions, /siteSectionContract\(page\.key, section\.sectionKey\)/);
+  assert.match(actions, /sectionContract\.media !== "section-image-video"/);
+  assert.match(actions, /Esta seção não possui contrato público para mídia de fundo/);
+  assert.match(actions, /eq\(pageSections\.pageId, pageId\)/);
+  assert.match(actions, /eq\(mediaAssets\.status, "active"\)/);
+  assert.match(actions, /deleteStoredMedia\(stored\.key\)/);
   assert.match(actions, /uploadStoredMedia/);
-  assert.match(actions, /mediaAssets/);
-  assert.match(actions, /settings: \{ \.\.\.\(section\.settings \|\| \{\}\), mediaId \}/);
+  assert.match(actions, /settings: \{ \.\.\.\(context\.section\.settings \|\| \{\}\), mediaId \}/);
   assert.match(nextConfig, /bodySizeLimit: "64mb"/);
+});
+
+test("Hero media revalidates the public route owned by the page contract", () => {
+  assert.match(actions, /revalidatePath\(publicRoute\)/);
+  assert.match(actions, /refreshSection\(context\.page\.id, context\.pageContract\.route\)/);
+  assert.doesNotMatch(actions, /function refreshHero[\s\S]*revalidatePath\("\/"\)/);
+  assert.match(actions, /redirect\(`\/admin\/pages\/\$\{pageId\}\?section=/);
 });
 
 test("Public Home resolves and renders the configured hero image or video", () => {
