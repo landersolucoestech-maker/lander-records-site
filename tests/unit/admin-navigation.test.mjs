@@ -9,12 +9,14 @@ const { resolveAdminLocation, visibleAdminNavigation } = await import(`data:text
 
 test("admin navigation matches the approved sidebar hierarchy for owners", () => {
   const groups = visibleAdminNavigation("owner");
-  assert.deepEqual(groups.map((group) => group.label), ["", "Site", "Configurações"]);
+  assert.deepEqual(groups.map((group) => group.module?.label || group.label), ["", "Site", "", "Configurações"]);
   assert.deepEqual(groups.flatMap((group) => group.items.map((item) => item.label)), [
     "Dashboard",
     "Conteúdos",
+    "Mídias",
+    "Páginas",
+    "Mídia Kit",
     "Artistas",
-    "Media Kit",
     "Empresa",
     "Identidade do Site",
     "Automações",
@@ -22,6 +24,9 @@ test("admin navigation matches the approved sidebar hierarchy for owners", () =>
     "Integrações",
     "Usuários",
   ]);
+  const site = groups.find((group) => group.module?.label === "Site");
+  assert.ok(site);
+  assert.deepEqual(site.items.map((item) => item.href), ["/admin/posts", "/admin/media", "/admin/pages", "/admin/media-kit"]);
 });
 
 test("admin navigation selects the most specific real route", () => {
@@ -29,6 +34,7 @@ test("admin navigation selects the most specific real route", () => {
   assert.equal(location.activeHref, "/admin/settings/lander-records");
   assert.equal(resolveAdminLocation("/admin/artists/new", "owner", false).activeHref, "/admin/artists");
   assert.equal(resolveAdminLocation("/admin/artists/new", "owner", false).breadcrumbs.at(-1).label, "Criar");
+  assert.equal(resolveAdminLocation("/admin/media-kit", "owner", false).activeHref, "/admin/media-kit");
   assert.equal(resolveAdminLocation("/admin/artists-unrelated", "owner", false).activeHref, undefined);
 });
 
