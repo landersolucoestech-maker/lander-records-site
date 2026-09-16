@@ -56,6 +56,14 @@ function moduleHeader(pathname: string, preview: boolean): ModuleHeader | null {
       title: "Configurações",
       description: "Gerencie identidade, preferências e configurações do sistema em uma experiência unificada.",
     },
+    [preview ? `${root}/integrations` : "/admin/settings/lander-records"]: {
+      title: "Integrações",
+      description: "Gerencie conexões externas, estado de sincronização e fontes de dados sem expor credenciais no cliente.",
+    },
+    [preview ? `${root}/users` : "/admin/users"]: {
+      title: "Usuários",
+      description: "Gerencie contas administrativas, papéis e controles de acesso do Portal.",
+    },
   };
   return map[path] || null;
 }
