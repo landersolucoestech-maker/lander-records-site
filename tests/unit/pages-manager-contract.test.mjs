@@ -38,7 +38,10 @@ test("Pages overview is data-driven and no longer injects Portal Lander content"
   assert.doesNotMatch(manager, /referencePages|referenceSections|demoMode \|\| preview \?/);
   assert.doesNotMatch(manager, /Mais Lidas|Publicidade Lateral|Em Alta|Newsletter|Sobre o Portal/);
   assert.match(page, /sections: pageStructure/);
-  assert.match(styles, /grid-template-columns:minmax\(0,1fr\) 180px 220px/);
+  assert.match(manager, /<table>/);
+  assert.match(styles, /\.tableWrap table\{width:100%;min-width:760px;border-collapse:collapse;table-layout:fixed\}/);
+  assert.match(styles, /\.tableWrap th:nth-child\(2\)\{width:150px\}/);
+  assert.match(styles, /\.tableWrap th:nth-child\(3\)\{width:210px\}/);
 });
 
 test("Canonical page and section map comes from the Lander Records public implementation", () => {
