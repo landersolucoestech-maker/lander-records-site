@@ -14,6 +14,10 @@ const artists = read("app/admin/(protected)/artists/ArtistManager.module.css");
 const artistManager = read("app/admin/(protected)/artists/ArtistManager.tsx");
 const posts = read("app/admin/(protected)/posts/NewsManager.module.css");
 const postManager = read("app/admin/(protected)/posts/PostManager.tsx");
+const postsPage = read("app/admin/(protected)/posts/page.tsx");
+const legacyPostRoute = read("app/admin/(protected)/posts/[id]/page.tsx");
+const legacyPostViewRoute = read("app/admin/(protected)/posts/[id]/view/page.tsx");
+const postActions = read("app/admin/post-actions.ts");
 const pages = read("app/admin/(protected)/pages/PagesManager.module.css");
 
 test("Dashboard contracts load after the shared protected-admin styles", () => {
@@ -102,12 +106,18 @@ test("Contents matches the approved publication-list reference rather than KPI p
   assert.match(posts, /Approved Contents reference/);
 });
 
-test("New content is modal-only and cannot navigate to a standalone create page", () => {
+test("Content create, edit and view stay inside the unified modal workflow", () => {
   assert.match(adminShell, /action: \{ label: "Novo conteúdo", event: "admin:new-content" \}/);
-  assert.match(adminShell, /<button aria-controls="new-content-modal" aria-haspopup="dialog"/);
+  assert.match(adminShell, /aria-haspopup="dialog"/);
+  assert.match(postManager, /type ModalMode = "create" \| "edit" \| "view"/);
   assert.match(postManager, /window\.addEventListener\("admin:new-content", openModal\)/);
-  assert.match(postManager, /interceptLegacyNewContentLink/);
-  assert.match(postManager, /href !== "\/admin\/posts\/new"/);
+  assert.match(postManager, /setModal\(\{ mode: "view", postId: post\.id \}\)/);
+  assert.match(postManager, /setModal\(\{ mode: "edit", postId: post\.id \}\)/);
+  assert.match(postsPage, /filters\.create === "1" \? "create" : filters\.edit \? "edit" : filters\.view \? "view"/);
+  assert.match(legacyPostRoute, /if \(id === "new"\) redirect\("\/admin\/posts\?create=1"\)/);
+  assert.match(legacyPostRoute, /new URLSearchParams\(\{ edit: id \}\)/);
+  assert.match(legacyPostViewRoute, /redirect\(`\/admin\/posts\?view=\$\{encodeURIComponent\(id\)\}`\)/);
+  assert.match(postActions, /redirect\(`\/admin\/posts\?edit=\$\{encodeURIComponent\(postId\)\}&saved=1`\)/);
   assert.equal(fs.existsSync(new URL("../../app/admin/(protected)/posts/new/page.tsx", import.meta.url)), false);
 });
 
