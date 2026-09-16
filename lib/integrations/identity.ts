@@ -1,4 +1,6 @@
 const HOST_ALIASES: Record<string, string> = {
+  "www.facebook.com": "facebook.com",
+  "m.facebook.com": "facebook.com",
   "www.instagram.com": "instagram.com",
   "www.youtube.com": "youtube.com",
   "m.youtube.com": "youtube.com",
@@ -7,16 +9,28 @@ const HOST_ALIASES: Record<string, string> = {
   "open.spotify.com": "open.spotify.com",
 };
 
+const PLATFORM_HOSTS: Record<string, ReadonlySet<string>> = {
+  facebook: new Set(["facebook.com"]),
+  instagram: new Set(["instagram.com"]),
+  spotify: new Set(["open.spotify.com"]),
+  youtube: new Set(["youtube.com", "youtu.be"]),
+  tiktok: new Set(["tiktok.com"]),
+  soundcloud: new Set(["soundcloud.com"]),
+};
+
 export function normalizeExternalUrl(raw: string) {
   const value = raw.trim();
   if (!value) return "";
+  if (/[\u0000-\u001f\u007f\\]/.test(value)) throw new Error(`URL inválida: ${value}`);
   let url: URL;
   try {
     url = new URL(value);
   } catch {
     throw new Error(`URL inválida: ${value}`);
   }
-  if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error(`URL inválida: ${value}`);
+  if ((url.protocol !== "https:" && url.protocol !== "http:") || url.username || url.password || !url.hostname) {
+    throw new Error(`URL inválida: ${value}`);
+  }
   url.protocol = "https:";
   url.hostname = HOST_ALIASES[url.hostname.toLowerCase()] || url.hostname.toLowerCase();
   url.hash = "";
@@ -25,6 +39,17 @@ export function normalizeExternalUrl(raw: string) {
   }
   url.pathname = url.pathname.replace(/\/+$/, "") || "/";
   return url.toString().replace(/\/$/, "");
+}
+
+export function normalizePlatformUrl(platform: string, raw: string) {
+  if (!raw.trim()) return "";
+  const normalized = normalizeExternalUrl(raw);
+  const hostname = new URL(normalized).hostname.toLowerCase();
+  const allowedHosts = PLATFORM_HOSTS[platform.trim().toLowerCase()];
+  if (!allowedHosts || !allowedHosts.has(hostname)) {
+    throw new Error(`URL de ${platform} não pertence à plataforma informada.`);
+  }
+  return normalized;
 }
 
 export function spotifyPlaylistIdFromUrl(raw: string) {
@@ -48,6 +73,7 @@ export function spotifyArtistIdFromUrl(raw: string) {
 export function platformFromUrl(raw: string) {
   if (!raw.trim()) return "";
   const hostname = new URL(normalizeExternalUrl(raw)).hostname;
+  if (hostname === "facebook.com") return "facebook";
   if (hostname === "instagram.com") return "instagram";
   if (hostname === "youtube.com" || hostname === "youtu.be") return "youtube";
   if (hostname === "tiktok.com") return "tiktok";
