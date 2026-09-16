@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import sharp from "sharp";
 import { audit, requirePersistentAdmin } from "../../lib/auth";
 import { getDb } from "../../lib/db";
-import { uploadMedia as uploadStoredMedia } from "@/lib/storage";
+import { deleteMedia as deleteStoredMedia, uploadMedia as uploadStoredMedia } from "@/lib/storage";
 import {
   artistGenreRelations,
   artistMetrics,
@@ -79,7 +79,7 @@ async function prepareArtistImage(formData: FormData, fieldName: string, slug: s
   const stored = await uploadStoredMedia(key, output.data, "image/webp");
   return {
     storageProvider: "supabase_storage" as const,
-    storageKey: key,
+    storageKey: stored.key,
     url: stored.url,
     mimeType: "image/webp",
     byteSize: output.info.size,
@@ -87,6 +87,10 @@ async function prepareArtistImage(formData: FormData, fieldName: string, slug: s
     height: output.info.height,
     originalFilename: file.name,
   };
+}
+
+async function cleanupPreparedUploads(...uploads: Array<Awaited<ReturnType<typeof prepareArtistImage>>>) {
+  await Promise.allSettled(uploads.filter((upload): upload is NonNullable<typeof upload> => Boolean(upload)).map((upload) => deleteStoredMedia(upload.storageKey)));
 }
 
 export async function saveArtistAction(_: ArtistActionState, formData: FormData): Promise<ArtistActionState> {
@@ -119,11 +123,10 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
   let cardUpload: Awaited<ReturnType<typeof prepareArtistImage>> = null;
   let heroUpload: Awaited<ReturnType<typeof prepareArtistImage>> = null;
   try {
-    [cardUpload, heroUpload] = await Promise.all([
-      prepareArtistImage(formData, "cardMediaUpload", slug, "card"),
-      prepareArtistImage(formData, "heroMediaUpload", slug, "hero"),
-    ]);
+    cardUpload = await prepareArtistImage(formData, "cardMediaUpload", slug, "card");
+    heroUpload = await prepareArtistImage(formData, "heroMediaUpload", slug, "hero");
   } catch (error) {
+    await cleanupPreparedUploads(cardUpload, heroUpload);
     return { ok: false, error: error instanceof Error ? error.message : "Falha ao processar as imagens do artista." };
   }
 
@@ -231,6 +234,7 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
       return resolvedId;
     });
   } catch (error) {
+    await cleanupPreparedUploads(cardUpload, heroUpload);
     const message = error instanceof Error ? error.message : "Falha ao salvar artista.";
     if (/duplicate key|unique/i.test(message)) return { ok: false, error: "Já existe um artista com esse slug." };
     return { ok: false, error: message };
