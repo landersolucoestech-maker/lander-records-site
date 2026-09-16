@@ -9,14 +9,14 @@ const { resolveAdminLocation, visibleAdminNavigation } = await import(`data:text
 
 test("admin navigation matches the approved sidebar hierarchy for owners", () => {
   const groups = visibleAdminNavigation("owner");
-  assert.deepEqual(groups.map((group) => group.module?.label || group.label), ["", "Site", "", "Configurações"]);
+  assert.deepEqual(groups.map((group) => group.module?.label || group.label), ["", "Site", "Configurações"]);
   assert.deepEqual(groups.flatMap((group) => group.items.map((item) => item.label)), [
     "Dashboard",
     "Conteúdos",
+    "Artistas",
     "Mídias",
     "Páginas",
     "Mídia Kit",
-    "Artistas",
     "Empresa",
     "Identidade do Site",
     "Automações",
@@ -26,7 +26,7 @@ test("admin navigation matches the approved sidebar hierarchy for owners", () =>
   ]);
   const site = groups.find((group) => group.module?.label === "Site");
   assert.ok(site);
-  assert.deepEqual(site.items.map((item) => item.href), ["/admin/posts", "/admin/media", "/admin/pages", "/admin/media-kit"]);
+  assert.deepEqual(site.items.map((item) => item.href), ["/admin/posts", "/admin/artists", "/admin/media", "/admin/pages", "/admin/media-kit"]);
 });
 
 test("admin navigation selects the most specific real route", () => {
