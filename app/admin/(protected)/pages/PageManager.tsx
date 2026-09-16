@@ -37,55 +37,17 @@ export type PageSummary = {
 };
 
 const fallbackDescriptions: Record<string, string> = {
-  hero: "Seção principal da página.",
-  intro: "Apresentação e conteúdo introdutório.",
-  shortcuts: "Atalhos principais da página.",
-  artists: "Vitrine de artistas destacados na Home.",
-  releases: "Lançamentos sincronizados e apresentados na Home.",
-  advertise_banner: "Banner comercial da Lander Records.",
-  news: "Publicações destacadas na Home.",
-  history: "Conteúdo institucional e histórico.",
-  identity: "Identidade, missão, visão e valores.",
-  companies: "Empresas e frentes do ecossistema Lander.",
-  methodology: "Metodologia de Gestão Artística 360°.",
-  artist_filters: "Filtros disponíveis para o catálogo de artistas.",
-  artist_list: "Lista de artistas exibida ao público.",
-  news_categories: "Filtros editoriais e categorias de notícias.",
-  news_list: "Lista de publicações exibida ao público.",
-  legal_body: "Conteúdo legal exibido nesta página.",
+  hero: "Seção principal da página.", intro: "Apresentação e conteúdo introdutório.", shortcuts: "Atalhos principais da página.", artists: "Vitrine de artistas destacados na Home.", releases: "Lançamentos sincronizados e apresentados na Home.", advertise_banner: "Banner comercial da Lander Records.", news: "Publicações destacadas na Home.", history: "Conteúdo institucional e histórico.", identity: "Identidade, missão, visão e valores.", companies: "Empresas e frentes do ecossistema Lander.", methodology: "Metodologia de Gestão Artística 360°.", artist_filters: "Filtros disponíveis para o catálogo de artistas.", artist_list: "Lista de artistas exibida ao público.", news_categories: "Filtros editoriais e categorias de notícias.", news_list: "Lista de publicações exibida ao público.", legal_body: "Conteúdo legal exibido nesta página.",
 };
 
-function displayTitle(page: PageSummary) {
-  return sitePageContract(page.key)?.label || page.title;
-}
-
-function pageKind(page: PageSummary) {
-  return sitePageContract(page.key)?.classification || page.classification;
-}
-
-function sectionTitle(page: PageSummary, section: PageSectionSummary) {
-  return siteSectionContract(page.key, section.sectionKey)?.label
-    || section.sectionKey.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
-}
-
-function sectionDescription(page: PageSummary, section: PageSectionSummary) {
-  return siteSectionContract(page.key, section.sectionKey)?.description
-    || fallbackDescriptions[section.sectionKey]
-    || `Seção ${section.type.replaceAll("_", " ")} configurada nesta página.`;
-}
-
+function displayTitle(page: PageSummary) { return sitePageContract(page.key)?.label || page.title; }
+function pageKind(page: PageSummary) { return sitePageContract(page.key)?.classification || page.classification; }
+function sectionTitle(page: PageSummary, section: PageSectionSummary) { return siteSectionContract(page.key, section.sectionKey)?.label || section.sectionKey.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "); }
+function sectionDescription(page: PageSummary, section: PageSectionSummary) { return siteSectionContract(page.key, section.sectionKey)?.description || fallbackDescriptions[section.sectionKey] || `Seção ${section.type.replaceAll("_", " ")} configurada nesta página.`; }
 function previewContractSections(page: PageSummary): PageSectionSummary[] {
   const contract = sitePageContract(page.key);
   if (!contract) return [];
-  return contract.sectionOrder.map((sectionKey, index) => ({
-    id: `contract-${page.key}-${sectionKey}`,
-    sectionKey,
-    type: sectionKey,
-    position: index + 1,
-    enabled: true,
-    title: "",
-    subtitle: "",
-  }));
+  return contract.sectionOrder.map((sectionKey, index) => ({ id: `contract-${page.key}-${sectionKey}`, sectionKey, type: sectionKey, position: index + 1, enabled: true, title: "", subtitle: "" }));
 }
 
 export default function PageManager({ canEdit = true, demoMode = false, pages, preview = false }: { canEdit?: boolean; demoMode?: boolean; pages: PageSummary[]; preview?: boolean }) {
@@ -93,16 +55,11 @@ export default function PageManager({ canEdit = true, demoMode = false, pages, p
   const [selectedId, setSelectedId] = useState(defaultPage?.id || "");
   const [deleteOpen, setDeleteOpen] = useState(false);
   const selected = pages.find((page) => page.id === selectedId) || defaultPage;
-
   if (!selected) return <div className={styles.empty}>Nenhuma página administrável encontrada.</div>;
 
   const contract = sitePageContract(selected.key);
   const storedSections = selected.sections || [];
-  const sections = [...(storedSections.length ? storedSections : preview ? previewContractSections(selected) : [])].sort((a, b) => {
-    const aOrder = siteSectionOrder(selected.key, a.sectionKey) ?? a.position;
-    const bOrder = siteSectionOrder(selected.key, b.sectionKey) ?? b.position;
-    return aOrder - bOrder;
-  });
+  const sections = [...(storedSections.length ? storedSections : preview ? previewContractSections(selected) : [])].sort((a, b) => (siteSectionOrder(selected.key, a.sectionKey) ?? a.position) - (siteSectionOrder(selected.key, b.sectionKey) ?? b.position));
   const title = displayTitle(selected);
   const kind = pageKind(selected);
   const editHref = preview ? "/cms-preview/pages" : `/admin/pages/${selected.id}`;
@@ -113,29 +70,18 @@ export default function PageManager({ canEdit = true, demoMode = false, pages, p
     <section className={styles.selectionCard} aria-label="Página selecionada">
       <div className={styles.selectedSummary}><span className={styles.eyebrow}>Página selecionada</span><strong>{title}</strong><small>{selected.enabled ? "Publicada" : "Não publicada"} · {kind}</small></div>
       <label className={styles.pageSelector}><span>Página</span><select aria-label="Selecionar página" onChange={(event) => { setSelectedId(event.target.value); setDeleteOpen(false); }} value={selected.id}>{pages.map((page) => <option key={page.id} value={page.id}>{displayTitle(page)} · {pageKind(page)} · {page.enabled ? "publicada" : "não publicada"}</option>)}</select></label>
-      <div className={styles.pageActions}>
-        {selected.publicRoute ? <Link className={styles.outlineButton} href={selected.publicRoute} rel="noopener noreferrer" target="_blank"><AdminIcon name="eye" size={18} /><span>Ver página pública</span></Link> : <button className={styles.outlineButton} disabled type="button"><AdminIcon name="eye" size={18} /><span>Ver página pública</span></button>}
-        <Link className={styles.outlineButton} href={editHref}><AdminIcon name="edit" size={17} /><span>Editar</span></Link>
-        {allowDelete ? <button className={`${styles.outlineButton} ${styles.dangerButton}`} onClick={() => setDeleteOpen(true)} type="button"><AdminIcon name="trash" size={17} /><span>Excluir</span></button> : <button aria-disabled="true" className={`${styles.outlineButton} ${styles.dangerButton}`} title={canonicalPage ? "Página estrutural do site público" : "Ação indisponível neste acesso"} type="button"><AdminIcon name="trash" size={17} /><span>Excluir</span></button>}
-      </div>
+      <div className={styles.pageActions}>{selected.publicRoute ? <Link className={styles.outlineButton} href={selected.publicRoute} rel="noopener noreferrer" target="_blank"><AdminIcon name="eye" size={18} /><span>Ver página pública</span></Link> : <button className={styles.outlineButton} disabled type="button"><AdminIcon name="eye" size={18} /><span>Ver página pública</span></button>}<Link className={styles.outlineButton} href={editHref}><AdminIcon name="edit" size={17} /><span>Editar</span></Link>{allowDelete ? <button className={`${styles.outlineButton} ${styles.dangerButton}`} onClick={() => setDeleteOpen(true)} type="button"><AdminIcon name="trash" size={17} /><span>Excluir</span></button> : <button aria-disabled="true" className={`${styles.outlineButton} ${styles.dangerButton}`} title={canonicalPage ? "Página estrutural do site público" : "Ação indisponível neste acesso"} type="button"><AdminIcon name="trash" size={17} /><span>Excluir</span></button>}</div>
     </section>
 
-    <section className={styles.structureCard} aria-label="Estrutura da página">
-      <div className={styles.structureHeading}>
-        <div><span className={styles.eyebrow}>Estrutura da página</span><strong>{title}</strong><small>{sections.length} {sections.length === 1 ? "seção" : "seções"} · {kind}</small></div>
-        {canonicalPage ? <span className={styles.structureBound}><AdminIcon name="check" size={14}/> Estrutura vinculada ao site</span> : <Link className={styles.primaryButton} href={editHref}><span aria-hidden="true">+</span> Criar seção</Link>}
-      </div>
-      <div className={styles.table} role="table" aria-label={`Seções de ${title}`}>
-        <div className={styles.tableHeader} role="row"><span role="columnheader">Seção</span><span role="columnheader">Status</span><span role="columnheader">Ações</span></div>
-        <div role="rowgroup">{sections.map((section, index) => {
+    <section className={`tableview-surface ${styles.structureCard}`} aria-label="Estrutura da página">
+      <div className={styles.structureHeading}><div><span className={styles.eyebrow}>Estrutura da página</span><strong>{title}</strong><small>{sections.length} {sections.length === 1 ? "seção" : "seções"} · {kind}</small></div>{canonicalPage ? <span className={styles.structureBound}><AdminIcon name="check" size={14}/> Estrutura vinculada ao site</span> : <Link className={styles.primaryButton} href={editHref}><span aria-hidden="true">+</span> Criar seção</Link>}</div>
+      {sections.length ? <div className={styles.tableWrap}><table>
+        <thead><tr><th>Seção</th><th>Status</th><th className={styles.actionsColumn}>Ações</th></tr></thead>
+        <tbody>{sections.map((section, index) => {
           const configureHref = preview ? editHref : `${editHref}?section=${encodeURIComponent(section.id)}`;
-          return <div className={styles.sectionRow} key={section.id} role="row">
-            <div className={styles.sectionIdentity} role="cell"><span className={styles.position}>{String(index + 1).padStart(2, "0")}</span><span><strong>{sectionTitle(selected, section)}</strong><small>{sectionDescription(selected, section)}</small></span></div>
-            <div role="cell"><span className={`${styles.statusBadge} ${section.enabled ? styles.active : styles.inactive}`}><i aria-hidden="true" />{section.enabled ? "Ativo" : "Inativo"}</span></div>
-            <div className={styles.sectionActions} role="cell"><Link className={styles.configureButton} href={configureHref}><AdminIcon name="sliders" size={17} /><span>Configurar</span></Link><Link aria-label={`Mais ações para ${sectionTitle(selected, section)}`} className={styles.moreButton} href={configureHref}><AdminIcon name="more" size={18} /></Link></div>
-          </div>;
-        })}{!sections.length ? <div className={styles.noSections}>Nenhuma seção cadastrada nesta página.</div> : null}</div>
-      </div>
+          return <tr key={section.id}><td><div className={`table-primary ${styles.sectionIdentity}`}><span className={styles.position}>{String(index + 1).padStart(2, "0")}</span><span><strong>{sectionTitle(selected, section)}</strong><small>{sectionDescription(selected, section)}</small></span></div></td><td><span className={`${styles.statusBadge} ${section.enabled ? styles.active : styles.inactive}`}><i aria-hidden="true" />{section.enabled ? "Ativo" : "Inativo"}</span></td><td className={styles.actionsColumn}><div className={styles.sectionActions}><Link className={styles.configureButton} href={configureHref}><AdminIcon name="sliders" size={17} /><span>Configurar</span></Link><Link aria-label={`Mais ações para ${sectionTitle(selected, section)}`} className={styles.moreButton} href={configureHref}><AdminIcon name="more" size={18} /></Link></div></td></tr>;
+        })}</tbody>
+      </table></div> : <div className={styles.noSections}>Nenhuma seção cadastrada nesta página.</div>}
     </section>
 
     {deleteOpen ? <AdminDialog description="Esta ação usa o fluxo de exclusão já existente e não pode ser desfeita." footer={<><button className="adminButton" onClick={() => setDeleteOpen(false)} type="button">Cancelar</button><form action={deletePageAction}><input name="id" type="hidden" value={selected.id} /><button className="adminButton danger" type="submit">Excluir página</button></form></>} onClose={() => setDeleteOpen(false)} title={`Excluir ${title}?`}><p>Confirme a exclusão somente se esta página não for mais necessária. Rotas, seções e consumidores continuam sujeitos às regras atuais do projeto.</p></AdminDialog> : null}
