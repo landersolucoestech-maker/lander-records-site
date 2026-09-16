@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AdminIcon } from "./AdminIcon";
 import { resolveAdminLocation, visibleAdminNavigation, type AdminRole } from "./admin-navigation";
 
@@ -21,6 +21,7 @@ type ModuleHeader = {
   title: string;
   description: string;
   action?: { label: string; href: string };
+  back?: { label: string; href: string };
 };
 
 const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex="0"]';
@@ -30,27 +31,31 @@ function moduleHeader(pathname: string, preview: boolean): ModuleHeader | null {
   const root = preview ? "/cms-preview" : "/admin";
   const starts = (segment: string) => path === `${root}/${segment}` || path.startsWith(`${root}/${segment}/`);
 
+  if (path === "/admin" || path === "/cms-preview/dashboard") {
+    return { title: "Dashboard", description: "Visão geral da operação, conteúdo e desempenho do portal." };
+  }
+
   if (starts("posts")) {
     if (path === `${root}/posts`) return { title: "Conteúdos", description: "Gerencie publicações, rascunhos editoriais e materiais enviados pelo público sem misturar os fluxos.", action: { label: "Novo conteúdo", href: preview ? `${root}/posts` : "/admin/posts/new" } };
-    if (path.endsWith("/new")) return { title: "Novo conteúdo", description: "Crie uma publicação usando a estrutura editorial e o preview visual do Portal." };
-    if (path.endsWith("/view")) return { title: "Visualizar conteúdo", description: "Consulte a publicação preservando o mesmo contexto visual do módulo editorial." };
-    return { title: "Editar conteúdo", description: "Edite publicação, mídia, autoria, organização e SEO com preview em tempo real." };
+    if (path.endsWith("/new")) return { title: "Novo conteúdo", description: "Crie uma publicação usando a estrutura editorial e o preview visual do Portal.", back: { label: "Conteúdos", href: preview ? `${root}/posts` : "/admin/posts" } };
+    if (path.endsWith("/view")) return { title: "Visualizar conteúdo", description: "Consulte a publicação preservando o mesmo contexto visual do módulo editorial.", back: { label: "Conteúdos", href: preview ? `${root}/posts` : "/admin/posts" } };
+    return { title: "Editar conteúdo", description: "Edite publicação, mídia, autoria, organização e SEO com preview em tempo real.", back: { label: "Conteúdos", href: preview ? `${root}/posts` : "/admin/posts" } };
   }
 
   if (starts("artists")) {
     if (path === `${root}/artists`) return { title: "Artistas", description: "Gerencie artistas, perfis, publicação e conteúdos relacionados em uma única área.", action: { label: "Novo artista", href: preview ? `${root}/artists` : "/admin/artists/new" } };
-    if (path.endsWith("/new")) return { title: "Novo artista", description: "Cadastre identidade, mídias, plataformas, destinos e metadados do artista." };
-    if (path.endsWith("/view")) return { title: "Visualizar artista", description: "Consulte o perfil administrativo e a presença pública do artista." };
-    return { title: "Editar artista", description: "Configure identidade, publicação, integrações, mídia e conteúdo público com preview em tempo real." };
+    if (path.endsWith("/new")) return { title: "Novo artista", description: "Cadastre identidade, mídias, plataformas, destinos e metadados do artista.", back: { label: "Artistas", href: preview ? `${root}/artists` : "/admin/artists" } };
+    if (path.endsWith("/view")) return { title: "Visualizar artista", description: "Consulte o perfil administrativo e a presença pública do artista.", back: { label: "Artistas", href: preview ? `${root}/artists` : "/admin/artists" } };
+    return { title: "Editar artista", description: "Configure identidade, publicação, integrações, mídia e conteúdo público com preview em tempo real.", back: { label: "Artistas", href: preview ? `${root}/artists` : "/admin/artists" } };
   }
 
   if (starts("media")) return { title: "Mídias", description: "Organize a biblioteca de arquivos, metadados e ciclo de vida dos assets do site." };
 
   if (starts("pages")) {
     if (path === `${root}/pages`) return { title: "Páginas", description: "Gerencie páginas e configure cada seção com edição e preview em tempo real.", action: { label: "Criar página", href: preview ? `${root}/pages` : "/admin/pages/new" } };
-    if (path.endsWith("/new")) return { title: "Criar página", description: "Crie uma página usando a estrutura e os contratos atuais do projeto." };
-    if (path.endsWith("/view")) return { title: "Visualizar página", description: "Consulte a estrutura administrativa e o destino público da página." };
-    return { title: "Configurar página", description: "Edite seções e conteúdo usando o workbench visual com preview em tempo real." };
+    if (path.endsWith("/new")) return { title: "Criar página", description: "Crie uma página usando a estrutura e os contratos atuais do projeto.", back: { label: "Páginas", href: preview ? `${root}/pages` : "/admin/pages" } };
+    if (path.endsWith("/view")) return { title: "Visualizar página", description: "Consulte a estrutura administrativa e o destino público da página.", back: { label: "Páginas", href: preview ? `${root}/pages` : "/admin/pages" } };
+    return { title: "Configurar página", description: "Edite seções e conteúdo usando o mesmo workbench visual do Portal Lander.", back: { label: "Páginas", href: preview ? `${root}/pages` : "/admin/pages" } };
   }
 
   if (starts("media-kit")) return { title: "Mídia Kit", description: "Edite a apresentação comercial e acompanhe as informações que compõem o material institucional." };
@@ -71,11 +76,13 @@ function moduleHeader(pathname: string, preview: boolean): ModuleHeader | null {
 export function AdminShell({ children, email, footerAction, name, preview = false, role = "viewer", sessionSource = "session" }: ShellProps) {
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [siteExpanded, setSiteExpanded] = useState(true);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const [accountOpen, setAccountOpen] = useState(false);
   const [hash, setHash] = useState("");
   const mobileToggleRef = useRef<HTMLButtonElement>(null);
   const sidebarRef = useRef<HTMLElement>(null);
   const workspaceRef = useRef<HTMLDivElement>(null);
+  const accountRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const location = resolveAdminLocation(`${pathname}${hash}`, role, preview);
   const developmentPreview = sessionSource === "development-auth-bypass";
@@ -83,6 +90,7 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
   const showReadOnlyChrome = preview;
   const contextualHeader = moduleHeader(pathname, preview);
   const initials = developmentPreview ? "DE" : name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "LR";
+  const navigation = useMemo(() => visibleAdminNavigation(role), [role]);
 
   useEffect(() => {
     const stored = window.localStorage.getItem("lander-admin-sidebar-collapsed");
@@ -96,6 +104,17 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
   useEffect(() => {
     window.localStorage.setItem("lander-admin-sidebar-collapsed", String(collapsed));
   }, [collapsed]);
+
+  useEffect(() => {
+    if (!accountOpen) return;
+    const close = (event: PointerEvent) => {
+      if (event.target instanceof Node && accountRef.current && !accountRef.current.contains(event.target)) setAccountOpen(false);
+    };
+    const keydown = (event: KeyboardEvent) => { if (event.key === "Escape") setAccountOpen(false); };
+    document.addEventListener("pointerdown", close);
+    document.addEventListener("keydown", keydown);
+    return () => { document.removeEventListener("pointerdown", close); document.removeEventListener("keydown", keydown); };
+  }, [accountOpen]);
 
   useEffect(() => {
     if (!open) return;
@@ -152,38 +171,46 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
     <button aria-label="Fechar menu pela sobreposição" className="adminSidebarBackdrop" onClick={() => setOpen(false)} tabIndex={-1} type="button" />
     <aside className="adminSidebar" data-testid="admin-sidebar" id="admin-sidebar" ref={sidebarRef} tabIndex={-1}>
       <div className="adminBrandBlock">
-        <Image alt="Lander Records" className="adminBrandLogo" height={72} priority src="/lander-records-brand.svg" unoptimized width={152} />
-        <button aria-label={collapsed ? "Expandir menu" : "Colapsar menu"} className="adminSidebarCollapse" onClick={toggleSidebar} title={collapsed ? "Expandir menu" : "Colapsar menu"} type="button"><AdminIcon name="chevron" /></button>
+        <div className="adminBrandRow">
+          <Link className="adminBrandLink" href="/" aria-label="Ir para o site público"><Image alt="Lander Records" className="adminBrandLogo" height={52} priority src="/lander-records-brand.svg" unoptimized width={150} /></Link>
+          <button aria-label={collapsed ? "Expandir menu" : "Recolher menu"} className="adminSidebarCollapse" onClick={toggleSidebar} title={collapsed ? "Expandir menu" : "Recolher menu"} type="button"><AdminIcon name="chevron" size={16} /></button>
+        </div>
+        <span className="adminAdministrationLabel">ADMINISTRAÇÃO</span>
       </div>
       {showReadOnlyChrome ? <div className="adminPreviewBadge">Preview local · somente leitura</div> : null}
       <nav aria-label="Painel administrativo">
-        {visibleAdminNavigation(role).map((group) => {
-          const links = group.items.map((item) => {
-            const href = preview ? item.previewHref : item.href;
-            const samePathFallback = !href.includes("#") && location.activeHref?.split(/[?#]/, 1)[0] === href.split(/[?#]/, 1)[0];
-            const active = location.activeHref === href || samePathFallback;
-            return <Link aria-current={active ? "page" : undefined} href={href} key={`${group.key}-${item.label}`} onClick={() => setOpen(false)} title={collapsed ? item.label : undefined}><AdminIcon name={item.icon} size={19} /><span>{item.label}</span></Link>;
-          });
+        <span className="adminNavigationEyebrow">NAVEGAÇÃO</span>
+        {navigation.map((group) => {
           if (group.module) {
-            return <div className="adminNavModule" key={group.key}>
-              <button aria-expanded={siteExpanded} className="adminNavParent" onClick={() => setSiteExpanded((value) => !value)} title={collapsed ? group.module.label : undefined} type="button">
-                <AdminIcon name={group.module.icon} size={19} />
+            const activeChild = group.items.some((item) => {
+              const href = preview ? item.previewHref : item.href;
+              return location.activeHref === href || (!href.includes("#") && location.activeHref?.split(/[?#]/, 1)[0] === href.split(/[?#]/, 1)[0]);
+            });
+            const expanded = expandedGroups[group.key] ?? activeChild;
+            return <div className={`adminNavModule${expanded ? " expanded" : ""}`} key={group.key}>
+              <button aria-expanded={expanded} className="adminNavParent" onClick={() => setExpandedGroups((current) => ({ ...current, [group.key]: !expanded }))} title={collapsed ? group.module.label : undefined} type="button">
+                <AdminIcon name={group.module.icon} size={17} />
                 <span>{group.module.label}</span>
-                <AdminIcon name="chevron" size={15} />
+                <AdminIcon name="chevron" size={13} />
               </button>
-              {siteExpanded ? <div className="adminNavChildren">{links}</div> : null}
+              {expanded ? <div className="adminNavChildren">{group.items.map((item) => {
+                const href = preview ? item.previewHref : item.href;
+                const active = location.activeHref === href || (!href.includes("#") && location.activeHref?.split(/[?#]/, 1)[0] === href.split(/[?#]/, 1)[0]);
+                return <Link aria-current={active ? "page" : undefined} href={href} key={`${group.key}-${item.label}`} onClick={() => setOpen(false)} title={collapsed ? item.label : undefined}><AdminIcon name={item.icon} size={14} /><span>{item.label}</span></Link>;
+              })}</div> : null}
             </div>;
           }
           return <div className="adminNavGroup" key={group.key}>
             {group.label ? <span className="adminNavLabel">{group.label}</span> : null}
-            {links}
+            {group.items.map((item) => {
+              const href = preview ? item.previewHref : item.href;
+              const active = location.activeHref === href || (!href.includes("#") && location.activeHref?.split(/[?#]/, 1)[0] === href.split(/[?#]/, 1)[0]);
+              return <Link aria-current={active ? "page" : undefined} href={href} key={`${group.key}-${item.label}`} onClick={() => setOpen(false)} title={collapsed ? item.label : undefined}><AdminIcon name={item.icon} size={17} /><span>{item.label}</span></Link>;
+            })}
           </div>;
         })}
       </nav>
-      {!developmentPreview ? <div className="adminSidebarFooter">
-        <div className="adminUserSummary"><span className="adminAvatar">{initials}</span><span><strong>{name}</strong><small>{readOnly ? "Acesso de leitura" : email || role}</small></span></div>
-        {footerAction}
-      </div> : null}
+      {!developmentPreview ? <div className="adminSidebarFooter"><div className="adminUserSummary"><span className="adminAvatar">{initials}</span><span><strong>{name}</strong><small>{readOnly ? "Acesso de leitura" : email || role}</small></span></div></div> : null}
     </aside>
 
     <div className="adminWorkspace" ref={workspaceRef}>
@@ -191,11 +218,15 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
       <header className={`adminTopbar${contextualHeader ? " adminTopbarContextual" : ""}`} data-testid="admin-topbar">
         <div className="adminTopbarLocation">
           <button aria-controls="admin-sidebar" aria-expanded={open} aria-label={open ? "Fechar menu" : "Abrir menu"} className="adminMenuButton" onClick={() => setOpen((value) => !value)} ref={mobileToggleRef} type="button"><AdminIcon name="menu" /></button>
-          {contextualHeader ? <div className="adminContextTitle"><strong>{contextualHeader.title}</strong><small>{contextualHeader.description}</small></div> : <nav aria-label="Breadcrumb" className="adminBreadcrumb"><ol>{location.breadcrumbs.map((crumb, index) => <li key={`${crumb.label}-${index}`}>{crumb.href ? <Link href={crumb.href}>{crumb.label}</Link> : <span aria-current="page">{crumb.label}</span>}</li>)}</ol></nav>}
+          {contextualHeader ? <div className="adminPageHeadingRow">{contextualHeader.back ? <Link className="adminHeaderBack" href={contextualHeader.back.href}><span aria-hidden="true">←</span><span>{contextualHeader.back.label}</span></Link> : null}<div className="adminContextTitle"><strong>{contextualHeader.title}</strong><small>{contextualHeader.description}</small></div></div> : <nav aria-label="Breadcrumb" className="adminBreadcrumb"><ol>{location.breadcrumbs.map((crumb, index) => <li key={`${crumb.label}-${index}`}>{crumb.href ? <Link href={crumb.href}>{crumb.label}</Link> : <span aria-current="page">{crumb.label}</span>}</li>)}</ol></nav>}
         </div>
         <div className="adminTopbarActions">
-          {contextualHeader ? <>{contextualHeader.action ? <Link className="adminTopbarPrimary" href={contextualHeader.action.href}><span aria-hidden="true">+</span><span>{contextualHeader.action.label}</span></Link> : null}<button aria-label="Notificações" className="adminNotificationButton" type="button"><AdminIcon name="bell" size={18} /></button></> : <Link aria-label="Ver site público (abre em nova aba)" className="adminPublicLink" href="/" rel="noopener noreferrer" target="_blank"><span>Ver site público</span><AdminIcon name="external" size={15} /></Link>}
-          <span className="adminTopbarUser"><span className="adminAvatar">{initials}</span><span><strong>{name}</strong><small>{email || role}</small></span></span>
+          {contextualHeader?.action ? <Link className="adminTopbarPrimary" href={contextualHeader.action.href}><AdminIcon name="plus" size={14} /><span>{contextualHeader.action.label}</span></Link> : null}
+          <button aria-label="Notificações" className="adminNotificationButton" type="button"><AdminIcon name="bell" size={17} /></button>
+          <div className="adminAccountWrap" ref={accountRef}>
+            <button aria-expanded={accountOpen} aria-haspopup="menu" className="adminTopbarUser" onClick={() => setAccountOpen((value) => !value)} type="button"><span className="adminAvatar">{initials}</span><span><strong>{name}</strong><small>{developmentPreview ? "Administrador" : role === "owner" ? "Proprietário" : role === "admin" ? "Administrador" : role === "editor" ? "Editor" : "Visualizador"}</small></span><AdminIcon name="chevron" size={13} /></button>
+            {accountOpen ? <div className="adminAccountPopover" role="menu"><Link href="/admin/settings" role="menuitem" onClick={() => setAccountOpen(false)}><AdminIcon name="settings" size={15}/><span>Configurações</span></Link>{footerAction ? <div className="adminAccountLogout" onClick={() => setAccountOpen(false)}>{footerAction}</div> : null}</div> : null}
+          </div>
         </div>
       </header>
       {showReadOnlyChrome ? <div className="adminReadOnlyNotice" role="status"><strong>Preview local</strong><span>Somente leitura. Para salvar alterações, entre com uma conta administrativa real.</span></div> : null}
