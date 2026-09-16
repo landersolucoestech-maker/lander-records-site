@@ -79,12 +79,12 @@ export const SITE_PAGE_CONTRACTS: Record<string, SitePageContract> = {
         { sourceHref: "/admin/artists" },
       ),
       releases: section(
-        "Últimos lançamentos",
-        "Título e link da área de lançamentos. Os cards vêm da sincronização real do Spotify.",
-        ["title"],
-        ["label", "url"],
-        "lib/integrations/sync + app/(public)/page.tsx · .releaseGrid",
-        { maxItems: 1, sourceHref: "/admin/settings/lander-records" },
+        "Últimos Lançamentos",
+        "Feed automático com no máximo 5 faixas da playlist Spotify exclusiva da seção. Capa, título, artista, data e destino são obtidos do Spotify; nenhum lançamento é cadastrado manualmente no CMS.",
+        ["title", "subtitle"],
+        [],
+        "Spotify playlist → lib/integrations/sync + app/(public)/page.tsx · .releaseGrid",
+        { sourceHref: "/admin/settings/lander-records" },
       ),
       advertise_banner: section(
         "Anuncie com a Lander",
