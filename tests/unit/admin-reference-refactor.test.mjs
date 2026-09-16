@@ -47,20 +47,36 @@ test("major modules retain one contextual shell and common Portal header chrome"
   assert.match(shell, /name="bell"/);
 });
 
-test("content and artists keep real routes while sharing the Portal catalog geometry", () => {
-  for (const source of [posts, artists]) {
-    assert.match(source, /<details>/);
-    assert.match(source, /name="more"/);
-    assert.match(source, /admin-toolbar/);
-    assert.match(source, /tableview-surface/);
-    assert.match(source, /table-card/);
-    assert.match(source, /<table>/);
-  }
+test("content mirrors the Portal Lander editorial list while preserving Lander Records routes and data", () => {
+  assert.match(posts, /Publicações/);
+  assert.match(posts, /Colaborações recebidas/);
+  assert.match(posts, /Fluxo editorial da Lander Records/);
+  assert.match(posts, /Candidatos editoriais/);
+  assert.match(posts, /Por página/);
+  assert.match(posts, /Página <strong>\{safePage\}<\/strong> de/);
+  assert.match(posts, /<details>/);
+  assert.match(posts, /name="more"/);
+  assert.match(posts, /tableview-surface/);
+  assert.match(posts, /table-card/);
+  assert.match(posts, /<table>/);
+  assert.doesNotMatch(posts, /admin-toolbar/);
   assert.match(posts, /\/admin\/posts\/\$\{post\.id\}/);
   assert.match(posts, /\/noticias\/\$\{post\.slug\}/);
+  assert.match(postStyles, /\.viewTabs/);
+  assert.match(postStyles, /\.notice/);
+  assert.match(postStyles, /\.pagination/);
+  assert.match(postStyles, /adminTopbarPrimary\[href=/);
+});
+
+test("artists keep real routes while sharing the Portal catalog geometry", () => {
+  assert.match(artists, /<details>/);
+  assert.match(artists, /name="more"/);
+  assert.match(artists, /admin-toolbar/);
+  assert.match(artists, /tableview-surface/);
+  assert.match(artists, /table-card/);
+  assert.match(artists, /<table>/);
   assert.match(artists, /\/admin\/artists\/\$\{artist\.id\}/);
   assert.match(artists, /\/artistas\/\$\{artist\.slug\}/);
-  assert.match(postStyles, /tableCard table/);
   assert.match(artistStyles, /height:64px/);
   assert.match(artistFormStyles, /grid-template-columns:minmax\(360px,420px\) minmax\(0,1fr\)/);
   assert.match(artistFormStyles, /position:sticky;top:78px/);
