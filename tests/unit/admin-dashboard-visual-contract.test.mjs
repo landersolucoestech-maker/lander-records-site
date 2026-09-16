@@ -10,6 +10,7 @@ const featureOverrides = read("styles/admin/dashboard-feature-overrides.css");
 const runtimeContract = read("styles/admin/dashboard-runtime-contract.css");
 const portalContract = read("styles/admin/portal-lander-contract.css");
 const artists = read("app/admin/(protected)/artists/ArtistManager.module.css");
+const artistManager = read("app/admin/(protected)/artists/ArtistManager.tsx");
 const posts = read("app/admin/(protected)/posts/NewsManager.module.css");
 const pages = read("app/admin/(protected)/pages/PagesManager.module.css");
 
@@ -65,10 +66,16 @@ test("all protected tables, controls, filters and cards resolve through the Dash
   assert.match(runtimeContract, /font-family:\s*Montserrat,Arial,sans-serif\s*!important/);
 });
 
-test("high-traffic managers use Dashboard values in their own CSS instead of relying on a global illusion", () => {
-  assert.match(artists, /\.toolbar\{[\s\S]*min-height:72px[\s\S]*padding:10px 12px 12px/);
-  assert.match(artists, /\.tableCard td\{[\s\S]*height:50px/);
-  assert.match(artists, /\.identity img,\.avatarFallback\{[\s\S]*width:38px;height:38px/);
+test("high-traffic managers use Dashboard primitives instead of relying on a global illusion", () => {
+  assert.match(artistManager, /adminDashboardHeading/);
+  assert.match(artistManager, /adminMetricGrid/);
+  assert.match(artistManager, /adminMetricCard/);
+  assert.match(artistManager, /adminDashboardPanel/);
+  assert.match(artistManager, /adminAnalyticsPanelHeading/);
+  assert.match(artistManager, /adminPrimaryCompact/);
+  assert.match(artists, /\.catalogHeading\{min-height:68px\}/);
+  assert.match(artists, /\.artistTable td\{height:44px/);
+  assert.match(artists, /\.identity img,\.avatarFallback\{[\s\S]*width:34px;height:34px/);
   assert.match(artists, /\.statusBadge\{[\s\S]*min-height:20px[\s\S]*border-radius:5px/);
 
   assert.match(posts, /\.tableSurface\{[\s\S]*border-radius:10px[\s\S]*#10182808/);
