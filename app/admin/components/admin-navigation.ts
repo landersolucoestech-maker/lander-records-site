@@ -36,27 +36,38 @@ export function visibleAdminNavigation(role: AdminRole) {
     .filter((group) => group.items.length);
 }
 
-function pathOnly(href: string) {
-  return href.split(/[?#]/, 1)[0];
+function hrefParts(href: string) {
+  const [path, hash = ""] = href.split("#", 2);
+  return { path: path.split("?", 1)[0], hash: hash ? `#${hash}` : "" };
 }
 
-export function resolveAdminLocation(pathname: string, role: AdminRole, preview: boolean) {
+export function resolveAdminLocation(locationValue: string, role: AdminRole, preview: boolean) {
   const root = preview ? "/cms-preview/dashboard" : "/admin";
-  const normalized = pathname.replace(/\/+$/, "") || "/";
+  const [pathnameValue, hashValue = ""] = locationValue.split("#", 2);
+  const currentHash = hashValue ? `#${hashValue}` : "";
+  const normalized = pathnameValue.replace(/\/+$/, "") || "/";
   const canonical = normalized === "/cms-preview" ? root : normalized;
   const items = visibleAdminNavigation(role).flatMap((group) => group.items);
   const hrefFor = (item: AdminNavItem) => preview ? item.previewHref : item.href;
   const active = items
     .filter((item) => {
-      const href = pathOnly(hrefFor(item));
-      return canonical === href || (href !== root && canonical.startsWith(`${href}/`));
+      const parts = hrefParts(hrefFor(item));
+      if (canonical === parts.path) {
+        if (parts.hash) return parts.hash === currentHash;
+        const hashSiblings = items.some((candidate) => {
+          const candidateParts = hrefParts(hrefFor(candidate));
+          return candidateParts.path === parts.path && Boolean(candidateParts.hash);
+        });
+        return !currentHash || !hashSiblings;
+      }
+      return !parts.hash && parts.path !== root && canonical.startsWith(`${parts.path}/`);
     })
-    .sort((a, b) => pathOnly(hrefFor(b)).length - pathOnly(hrefFor(a)).length)[0];
+    .sort((a, b) => hrefParts(hrefFor(b)).path.length - hrefParts(hrefFor(a)).path.length)[0];
   const selected = active;
   const breadcrumbs: Array<{ label: string; href?: string }> = [];
   if (canonical !== root) breadcrumbs.push({ label: "Dashboard", href: root });
-  const selectedHref = selected ? pathOnly(hrefFor(selected)) : "";
-  const tail = selected ? canonical.slice(selectedHref.length).split("/").filter(Boolean) : [];
+  const selectedPath = selected ? hrefParts(hrefFor(selected)).path : "";
+  const tail = selected ? canonical.slice(selectedPath.length).split("/").filter(Boolean) : [];
   const label = selected?.label || (canonical.split("/")[2] === "releases" ? "Lançamentos" : "Portal administrativo");
   if (tail.length && selected) {
     breadcrumbs.push({ label, href: hrefFor(selected) });
