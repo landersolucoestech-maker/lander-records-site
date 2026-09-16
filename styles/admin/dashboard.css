@@ -1,129 +1,152 @@
-/* Dashboard refactor: approved analytics-first hierarchy, no fabricated metrics. */
+/* Dashboard: high-fidelity implementation of the approved Lander reference. */
 .adminDashboard { display: grid; width: 100%; max-width: none; margin: 0; gap: 18px; }
-.adminDashboardHeading { display: flex; align-items: end; justify-content: space-between; gap: 20px; padding: 2px 2px 4px; }
-.adminDashboardHeading h1 { margin: 0 0 4px; color: #0f172a; font-size: clamp(27px, 2.4vw, 34px); letter-spacing: -.035em; line-height: 1.1; }
-.adminDashboardHeading p { margin: 0; color: var(--admin-muted); font-size: 13px; }
+.adminDashboardHeading { display: flex; align-items: end; justify-content: space-between; gap: 20px; padding: 1px 2px 5px; }
+.adminDashboardHeading h1 { margin: 0 0 5px; color: #101114; font-size: clamp(30px, 2.2vw, 34px); font-weight: 800; letter-spacing: -.035em; line-height: 1.05; }
+.adminDashboardHeading p { margin: 0; color: #52637a; font-size: 13px; }
 .adminPreviewNotice { padding: 10px 14px; border: 1px solid #ead5aa; border-radius: 8px; background: #fff8e8; color: #61481c; font-size: 12px; line-height: 1.5; }
 
 .adminMetricGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-.adminMetricCard { position: relative; display: grid; grid-template-columns: 48px minmax(0, 1fr) 64px; align-items: center; gap: 12px; min-height: 132px; padding: 18px; overflow: hidden; border: 1px solid var(--admin-border); border-radius: 10px; background: var(--admin-panel); box-shadow: 0 4px 18px #1018280a; }
-.adminMetricIcon { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 50%; }
-.adminMetricCard.is-red .adminMetricIcon { background: #fff0f1; color: #e21b24; }
-.adminMetricCard.is-blue .adminMetricIcon { background: #eef5ff; color: #2878ef; }
-.adminMetricCard.is-green .adminMetricIcon { background: #ecfbf3; color: #12a765; }
-.adminMetricCard.is-orange .adminMetricIcon { background: #fff6e7; color: #ee9818; }
+.adminMetricCard { position: relative; display: grid; grid-template-columns: 52px minmax(0, 1fr) 84px; align-items: center; gap: 14px; min-height: 136px; padding: 18px 20px; overflow: hidden; border: 1px solid #e1e6eb; border-radius: 11px; background: #fff; box-shadow: 0 4px 16px #10182808; }
+.adminMetricIcon { display: grid; width: 52px; height: 52px; place-items: center; border-radius: 50%; }
+.adminMetricCard.is-red .adminMetricIcon { background: #ffecee; color: #ef2731; }
+.adminMetricCard.is-blue .adminMetricIcon { background: #eaf3ff; color: #2782ff; }
+.adminMetricCard.is-green .adminMetricIcon { background: #e8fbf2; color: #10bd69; }
+.adminMetricCard.is-orange .adminMetricIcon { background: #fff4e2; color: #f2a20d; }
 .adminMetricCopy { display: grid; gap: 2px; min-width: 0; }
-.adminMetricCopy > span { color: #475467; font-size: 12px; font-weight: 700; }
-.adminMetricCopy strong { color: #101828; font-size: clamp(25px, 2vw, 30px); font-variant-numeric: tabular-nums; letter-spacing: -.03em; line-height: 1.15; }
-.adminMetricCopy small { display: flex; flex-wrap: wrap; gap: 4px; color: #98a2b3; font-size: 11px; font-weight: 600; }
-.adminMetricCopy small.isPositive { color: #079455; }
-.adminMetricCopy small.isNegative { color: #d92d20; }
-.adminMetricCopy small em { color: #98a2b3; font-style: normal; font-weight: 500; }
-.adminMetricSpark { position: relative; align-self: end; width: 64px; height: 30px; opacity: .7; }
-.adminMetricSpark::before, .adminMetricSpark::after { content: ""; position: absolute; inset: auto 0 8px; height: 2px; transform: skewY(-17deg); transform-origin: left; border-radius: 99px; background: #d0d5dd; }
-.adminMetricSpark::after { inset: auto 12px 15px 20px; transform: skewY(22deg); opacity: .65; }
-.adminMetricCard.is-red .adminMetricSpark::before, .adminMetricCard.is-red .adminMetricSpark::after { background: #ff6b73; }
-.adminMetricCard.is-blue .adminMetricSpark::before, .adminMetricCard.is-blue .adminMetricSpark::after { background: #5597ff; }
-.adminMetricCard.is-green .adminMetricSpark::before, .adminMetricCard.is-green .adminMetricSpark::after { background: #42c986; }
-.adminMetricCard.is-orange .adminMetricSpark::before, .adminMetricCard.is-orange .adminMetricSpark::after { background: #f9ad3d; }
+.adminMetricCopy > span { color: #26364b; font-size: 12px; font-weight: 700; }
+.adminMetricCopy strong { color: #090b0f; font-size: clamp(27px, 2vw, 31px); font-variant-numeric: tabular-nums; font-weight: 800; letter-spacing: -.04em; line-height: 1.08; }
+.adminMetricCopy small { display: grid; gap: 1px; margin-top: 4px; color: #74869d; font-size: 10px; line-height: 1.25; }
+.adminMetricCopy small b { font-size: 11px; font-weight: 800; }
+.adminMetricCopy small.isPositive b { color: #08a458; }
+.adminMetricCopy small.isNegative b { color: #d92d20; }
+.adminMetricCopy small em { color: #6d819d; font-style: normal; font-weight: 500; }
+.adminMetricSpark { align-self: center; width: 84px; height: 38px; overflow: visible; }
+.adminMetricCard.is-red .adminMetricSpark { color: #ff5c67; }
+.adminMetricCard.is-blue .adminMetricSpark { color: #2580ff; }
+.adminMetricCard.is-green .adminMetricSpark { color: #13bb68; }
+.adminMetricCard.is-orange .adminMetricSpark { color: #f4a20b; }
 
-.adminPerformanceGrid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(320px, .9fr); gap: 16px; }
-.adminDashboardLowerGrid { display: grid; grid-template-columns: minmax(320px, .8fr) minmax(0, 1.2fr); gap: 16px; align-items: stretch; }
-.adminDashboardPanel { min-width: 0; overflow: hidden; border: 1px solid var(--admin-border); border-radius: 10px; background: var(--admin-panel); box-shadow: 0 4px 18px #10182808; }
-.adminAnalyticsPanelHeading { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 70px; padding: 16px 18px; border-bottom: 1px solid #edf0f3; }
-.adminAnalyticsPanelHeading > div { min-width: 0; }
-.adminAnalyticsPanelHeading h2 { margin: 0; color: #172033; font-size: 15px; letter-spacing: -.015em; }
-.adminAnalyticsPanelHeading p { margin: 2px 0 0; color: var(--admin-muted); font-size: 11px; }
-.adminPeriodSelect { min-height: 36px; padding: 0 32px 0 11px; border: 1px solid var(--admin-border); border-radius: 7px; background: #fff; color: #344054; font: inherit; font-size: 11px; font-weight: 700; }
+.adminPerformanceGrid { display: grid; grid-template-columns: minmax(0, 1.42fr) minmax(360px, 1fr); gap: 16px; }
+.adminDashboardLowerGrid { display: grid; grid-template-columns: minmax(360px, .78fr) minmax(0, 1.02fr); gap: 16px; align-items: stretch; }
+.adminDashboardPanel { min-width: 0; overflow: hidden; border: 1px solid #e1e6eb; border-radius: 11px; background: #fff; box-shadow: 0 4px 16px #10182807; }
+.adminAnalyticsPanelHeading { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 78px; padding: 14px 18px; border-bottom: 1px solid #eef1f4; }
+.adminPanelHeadingIdentity { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.adminPanelHeadingIcon { display: grid; flex: none; width: 44px; height: 44px; place-items: center; border-radius: 50%; background: #f2f4f6; color: #171b20; }
+.adminPanelHeadingIdentity > div { min-width: 0; }
+.adminAnalyticsPanelHeading h2 { margin: 0; color: #15191e; font-size: 16px; font-weight: 800; letter-spacing: -.02em; }
+.adminAnalyticsPanelHeading p { margin: 2px 0 0; color: #6d819d; font-size: 11px; line-height: 1.35; }
+.adminPeriodSelect { min-height: 38px; min-width: 146px; padding: 0 34px 0 13px; border: 1px solid #e1e6eb; border-radius: 8px; background: #fff; color: #161a20; font: inherit; font-size: 11px; font-weight: 800; }
 .adminPeriodSelect:disabled { color: #98a2b3; background: #f8fafc; }
-.adminTextButton { flex: none; min-height: 34px; padding: 8px 11px; border: 1px solid var(--admin-border); border-radius: 7px; background: #fff; color: #344054; font-size: 11px; font-weight: 700; text-decoration: none; }
-.adminPrimaryCompact { flex: none; min-height: 36px; padding: 9px 13px; border-radius: 7px; background: #101418; color: #fff; font-size: 11px; font-weight: 800; }
-.adminPrimaryCompact:hover { background: #252b31; }
+.adminTextButton { flex: none; min-height: 36px; padding: 9px 14px; border: 1px solid #e1e6eb; border-radius: 8px; background: #fff; color: #111820; font-size: 11px; font-weight: 800; text-decoration: none; }
+.adminPrimaryCompact { display: inline-flex; align-items: center; gap: 7px; flex: none; min-height: 38px; padding: 9px 16px; border-radius: 8px; background: #090b0e; color: #fff; font-size: 11px; font-weight: 800; text-decoration: none; }
+.adminPrimaryCompact:hover { background: #20252b; }
 
-.adminAnalyticsEmpty { display: grid; min-height: 250px; place-items: center; align-content: center; gap: 7px; padding: 30px; color: var(--admin-muted); text-align: center; }
-.adminDevicesPanel .adminAnalyticsEmpty { min-height: 250px; }
+.adminAnalyticsEmpty { display: grid; min-height: 255px; place-items: center; align-content: center; gap: 7px; padding: 30px; color: var(--admin-muted); text-align: center; }
+.adminDevicesPanel .adminAnalyticsEmpty { min-height: 255px; }
 .adminAnalyticsEmptyIcon { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 50%; background: #f2f4f7; color: #667085; }
 .adminAnalyticsEmpty strong { color: #344054; font-size: 13px; }
 .adminAnalyticsEmpty p { max-width: 360px; margin: 0; color: #98a2b3; font-size: 11px; line-height: 1.5; }
 
-.adminSimpleChart { display: grid; min-height: 250px; gap: 12px; padding: 20px 18px 16px; }
-.adminChartLegend { display: flex; align-items: center; gap: 18px; color: #667085; font-size: 11px; }
-.adminChartLegend span { display: inline-flex; align-items: center; gap: 6px; }
+.adminLineChart { display: grid; min-height: 264px; gap: 10px; padding: 14px 18px 12px; }
+.adminLineChartPlot { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 6px; min-height: 205px; }
+.adminChartYLabels { display: flex; flex-direction: column; justify-content: space-between; padding: 1px 0 23px; color: #7c8ea7; font-size: 10px; line-height: 1; text-align: right; }
+.adminLineChartCanvas { position: relative; min-width: 0; padding-bottom: 24px; }
+.adminLineChartCanvas svg { display: block; width: 100%; height: 180px; overflow: visible; }
+.adminChartGridLine { stroke: #edf0f3; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.adminChartVisitorsLine { stroke: #ef1c24; stroke-width: 2.4; vector-effect: non-scaling-stroke; }
+.adminChartViewsLine { stroke: #b7bec8; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.adminChartXAxis { position: absolute; right: 0; bottom: 0; left: 0; display: flex; justify-content: space-between; gap: 4px; color: #70839f; font-size: 9px; }
+.adminChartXAxis span { white-space: nowrap; }
+.adminChartLegend { display: flex; align-items: center; gap: 24px; padding-left: 48px; color: #445873; font-size: 11px; }
+.adminChartLegend span { display: inline-flex; align-items: center; gap: 7px; }
 .adminChartLegend i { width: 8px; height: 8px; border-radius: 50%; }
-.adminChartLegend i.visitors { background: #e21b24; }
-.adminChartLegend i.views { background: #c8ced6; }
-.adminChartBars { display: flex; align-items: end; gap: 6px; min-height: 190px; padding-top: 10px; border-bottom: 1px solid #e7ebef; background: repeating-linear-gradient(to bottom, transparent 0, transparent 44px, #eef1f4 45px); }
-.adminChartPoint { position: relative; display: flex; flex: 1; align-items: end; justify-content: center; gap: 2px; height: 175px; min-width: 8px; }
-.adminChartPoint > span { width: 5px; min-height: 8px; border-radius: 4px 4px 0 0; }
-.adminChartPoint > span.visitors { background: #e21b24; }
-.adminChartPoint > span.views { background: #c8ced6; }
-.adminChartPoint small { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); color: #98a2b3; font-size: 9px; white-space: nowrap; }
+.adminChartLegend i.visitors { background: #ef1c24; }
+.adminChartLegend i.views { background: #c6ccd4; }
 
-.adminDeviceBreakdown { display: grid; grid-template-columns: 160px minmax(0, 1fr); align-items: center; gap: 20px; min-height: 250px; padding: 24px; }
-.adminDeviceDonut { position: relative; display: grid; width: 150px; height: 150px; place-content: center; border-radius: 50%; background: conic-gradient(#e21b24 0 54%, #222a33 54% 93%, #d5dae0 93% 100%); text-align: center; }
-.adminDeviceDonut::after { content: ""; position: absolute; inset: 30px; border-radius: 50%; background: #fff; }
+.adminDeviceBreakdown { display: grid; grid-template-columns: 190px minmax(0, 1fr); align-items: center; gap: 22px; min-height: 264px; padding: 20px 28px 22px; }
+.adminDeviceDonut { position: relative; display: grid; width: 168px; height: 168px; place-content: center; border-radius: 50%; text-align: center; }
+.adminDeviceDonut::after { content: ""; position: absolute; inset: 36px; border-radius: 50%; background: #fff; }
 .adminDeviceDonut strong, .adminDeviceDonut span { position: relative; z-index: 1; }
-.adminDeviceDonut strong { font-size: 20px; }
-.adminDeviceDonut span { color: var(--admin-muted); font-size: 10px; }
+.adminDeviceDonut strong { color: #111318; font-size: 24px; font-weight: 800; letter-spacing: -.035em; }
+.adminDeviceDonut span { color: #687c96; font-size: 10px; }
 .adminDeviceList { display: grid; gap: 0; }
-.adminDeviceList > div { display: grid; grid-template-columns: 1fr auto 58px; gap: 10px; align-items: center; min-height: 48px; border-bottom: 1px solid #eef1f4; font-size: 11px; }
+.adminDeviceList > div { display: grid; grid-template-columns: 1fr auto 62px; gap: 10px; align-items: center; min-height: 48px; border-bottom: 1px solid #edf0f3; color: #26364b; font-size: 11px; }
 .adminDeviceList > div:last-child { border-bottom: 0; }
-.adminDeviceList strong { font-size: 12px; }
-.adminDeviceList small { color: #667085; text-align: right; }
+.adminDeviceName { display: inline-flex; align-items: center; gap: 9px; }
+.adminDeviceName i { width: 10px; height: 10px; border-radius: 50%; background: #d7dce2; }
+.adminDeviceName.is-desktop i { background: #ef111b; }
+.adminDeviceName.is-mobile i { background: #252c34; }
+.adminDeviceName.is-tablet i { background: #d7dce2; }
+.adminDeviceList strong { color: #111318; font-size: 12px; font-weight: 800; }
+.adminDeviceList small { color: #5f7593; font-size: 11px; text-align: right; }
 
 .adminActivityList { display: grid; padding: 0 18px; }
-.adminActivityList > div { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px 0; border-bottom: 1px solid #eef1f4; }
+.adminActivityList > div { display: grid; grid-template-columns: 42px minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 58px; padding: 8px 0; border-bottom: 1px solid #eef1f4; }
 .adminActivityList > div:last-child { border-bottom: 0; }
-.adminActivityIcon { display: grid; flex: none; width: 34px; height: 34px; place-items: center; border-radius: 50%; background: #fff0f1; color: #e21b24; }
-.adminActivityList > div > span:last-child { display: grid; gap: 2px; min-width: 0; }
-.adminActivityList b { color: #273244; font-size: 12px; }
-.adminActivityList small { color: #667085; font-size: 10px; line-height: 1.45; }
+.adminActivityIcon { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 50%; background: #ffecef; color: #ef2731; }
+.adminActivityIcon.is-neutral { background: #f0f2f4; color: #11161b; }
+.adminActivityCopy { display: grid; gap: 1px; min-width: 0; }
+.adminActivityList b { overflow: hidden; color: #273244; font-size: 12px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.adminActivityList small { overflow: hidden; color: #607694; font-size: 10px; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
+.adminActivityList time { color: #607694; font-size: 10px; white-space: nowrap; }
 .adminPanelEmpty { display: grid; min-height: 210px; place-items: center; padding: 28px 20px; color: #98a2b3; font-size: 12px; text-align: center; }
 
-.adminPublicationsTableWrap { width: 100%; overflow-x: auto; }
+.adminPublicationsTableWrap { width: 100%; overflow-x: auto; padding: 0 14px 10px; }
 .adminPublicationsTable { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.adminPublicationsTable th { padding: 10px 12px; border-bottom: 1px solid #eef1f4; color: #667085; font-size: 9px; font-weight: 800; letter-spacing: .035em; text-align: left; text-transform: uppercase; }
-.adminPublicationsTable td { padding: 10px 12px; border-bottom: 1px solid #eef1f4; color: #475467; font-size: 10px; vertical-align: middle; }
+.adminPublicationsTable th { padding: 7px 8px; border-bottom: 1px solid #eef1f4; color: #607694; font-size: 9px; font-weight: 800; letter-spacing: .03em; text-align: left; text-transform: uppercase; }
+.adminPublicationsTable td { height: 38px; padding: 5px 8px; border-bottom: 1px solid #eef1f4; color: #475467; font-size: 10px; vertical-align: middle; }
 .adminPublicationsTable tbody tr:last-child td { border-bottom: 0; }
-.adminPublicationsTable th:first-child, .adminPublicationsTable td:first-child { width: 41%; }
+.adminPublicationsTable th:first-child, .adminPublicationsTable td:first-child { width: 42%; }
 .adminPublicationsTable th:nth-child(2), .adminPublicationsTable td:nth-child(2) { width: 14%; }
 .adminPublicationsTable th:nth-child(3), .adminPublicationsTable td:nth-child(3) { width: 16%; }
-.adminPublicationsTable th:nth-child(4), .adminPublicationsTable td:nth-child(4) { width: 20%; }
-.adminPublicationsTable td strong { display: block; overflow: hidden; color: #273244; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.adminPublicationsTable th:nth-child(4), .adminPublicationsTable td:nth-child(4) { width: 21%; }
+.adminPublicationTitle { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.adminPublicationTitle img, .adminPublicationThumbFallback { flex: none; width: 42px; height: 28px; border-radius: 5px; background: #1a1d22; object-fit: cover; }
+.adminPublicationTitle strong { display: block; min-width: 0; overflow: hidden; color: #253246; font-size: 10px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
 .adminPublicationsTable td:last-child { width: 32px; text-align: right; }
-.adminPublicationsTable td:last-child a { display: inline-grid; width: 28px; height: 28px; place-items: center; border-radius: 6px; color: #667085; }
+.adminPublicationsTable td:last-child a { display: inline-grid; width: 26px; height: 26px; place-items: center; border-radius: 6px; color: #355a83; }
 .adminPublicationsTable td:last-child a:hover { background: #f2f4f7; }
-.adminTypeBadge, .adminPublicationStatus { display: inline-flex; align-items: center; width: max-content; max-width: 100%; padding: 4px 7px; border-radius: 5px; font-size: 9px; font-weight: 700; }
-.adminTypeBadge { background: #f1f4f9; color: #475467; }
-.adminPublicationStatus.is-published { background: #e8f8ef; color: #067647; }
+.adminTypeBadge, .adminPublicationStatus { display: inline-flex; align-items: center; width: max-content; max-width: 100%; padding: 3px 7px; border-radius: 5px; font-size: 9px; font-weight: 700; }
+.adminTypeBadge.is-news { background: #e9f2ff; color: #1d6ee9; }
+.adminTypeBadge.is-artist { background: #eff1f5; color: #485872; }
+.adminTypeBadge.is-page { background: #eef2f8; color: #4f6380; }
+.adminTypeBadge.is-media { background: #eef1f5; color: #52637a; }
+.adminPublicationStatus { gap: 5px; }
+.adminPublicationStatus i { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.adminPublicationStatus.is-published { background: #dcf7e7; color: #078847; }
 .adminPublicationStatus.is-draft { background: #fff4e5; color: #b54708; }
 .adminPublicationStatus.is-archived { background: #f2f4f7; color: #667085; }
 
 @media (max-width: 1280px) {
-  .adminMetricCard { grid-template-columns: 42px minmax(0, 1fr); min-height: 120px; }
+  .adminMetricCard { grid-template-columns: 48px minmax(0, 1fr); min-height: 122px; padding: 16px; }
   .adminMetricSpark { display: none; }
-  .adminPerformanceGrid { grid-template-columns: minmax(0, 1.45fr) minmax(290px, .8fr); }
-  .adminDeviceBreakdown { grid-template-columns: 130px minmax(0, 1fr); padding: 20px; }
-  .adminDeviceDonut { width: 126px; height: 126px; }
-  .adminDeviceDonut::after { inset: 25px; }
+  .adminPerformanceGrid { grid-template-columns: minmax(0, 1.35fr) minmax(330px, .95fr); }
+  .adminDeviceBreakdown { grid-template-columns: 150px minmax(0, 1fr); padding: 18px; }
+  .adminDeviceDonut { width: 140px; height: 140px; }
+  .adminDeviceDonut::after { inset: 30px; }
 }
 @media (max-width: 1024px) {
   .adminMetricGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .adminPerformanceGrid, .adminDashboardLowerGrid { grid-template-columns: minmax(0, 1fr); }
-  .adminDeviceBreakdown { grid-template-columns: 180px minmax(0, 1fr); }
-  .adminDeviceDonut { width: 150px; height: 150px; }
-  .adminDeviceDonut::after { inset: 30px; }
+  .adminDeviceBreakdown { grid-template-columns: 190px minmax(0, 1fr); }
+  .adminDeviceDonut { width: 168px; height: 168px; }
+  .adminDeviceDonut::after { inset: 36px; }
 }
 @media (max-width: 650px) {
   .adminDashboard { gap: 14px; }
-  .adminDashboardHeading h1 { font-size: 26px; }
+  .adminDashboardHeading h1 { font-size: 27px; }
   .adminMetricGrid { grid-template-columns: 1fr; gap: 10px; }
-  .adminMetricCard { min-height: 104px; padding: 14px; }
+  .adminMetricCard { min-height: 106px; padding: 14px; }
   .adminAnalyticsPanelHeading { align-items: flex-start; flex-direction: column; min-height: 0; padding: 14px; }
+  .adminPanelHeadingIdentity { align-items: flex-start; }
   .adminAnalyticsPanelHeading .adminPeriodSelect, .adminAnalyticsPanelHeading .adminPrimaryCompact { width: 100%; }
   .adminAnalyticsEmpty { min-height: 210px; }
+  .adminLineChart { padding-inline: 10px; }
+  .adminChartXAxis { font-size: 8px; }
   .adminDeviceBreakdown { grid-template-columns: 1fr; justify-items: center; }
   .adminDeviceList { width: 100%; }
   .adminActivityList { padding-inline: 14px; }
-  .adminPublicationsTable { min-width: 620px; }
+  .adminActivityList > div { grid-template-columns: 38px minmax(0, 1fr); }
+  .adminActivityList time { grid-column: 2; }
+  .adminPublicationsTable { min-width: 670px; }
 }
