@@ -14,6 +14,7 @@ const SPOTIFY_IMAGE_HOST = "i.scdn.co";
 
 export type SpotifyRelease = {
   albumId: string;
+  trackId: string;
   title: string;
   artistName: string;
   coverUrl: string;
@@ -24,7 +25,11 @@ export type SpotifyRelease = {
 };
 
 type SpotifyTrack = {
+  id?: string;
+  name?: string;
   type?: string;
+  duration_ms?: number;
+  external_urls?: { spotify?: string };
   artists?: Array<{ name?: string }>;
   album?: {
     id?: string;
@@ -122,13 +127,14 @@ export function resolveSpotifyApiUrl(urlOrPath: string) {
   return url.toString();
 }
 
-function safePublicSpotifyUrl(raw: string | undefined, kind: "album" | "image") {
+function safePublicSpotifyUrl(raw: string | undefined, kind: "album" | "track" | "image") {
   if (!raw) return "";
   try {
     const url = new URL(raw);
     if (url.protocol !== "https:" || url.port || url.username || url.password || url.hash) return "";
     if (kind === "image") return url.hostname === SPOTIFY_IMAGE_HOST ? url.toString() : "";
-    return url.hostname === SPOTIFY_OPEN_HOST && /^\/album\/[A-Za-z0-9]+\/?$/.test(url.pathname) && !url.search ? url.toString() : "";
+    const path = kind === "track" ? /^\/track\/[A-Za-z0-9]+\/?$/ : /^\/album\/[A-Za-z0-9]+\/?$/;
+    return url.hostname === SPOTIFY_OPEN_HOST && path.test(url.pathname) && !url.search ? url.toString() : "";
   } catch { return ""; }
 }
 
@@ -290,34 +296,39 @@ export async function fetchLatestSpotifyPlaylistReleases(playlistId: string) {
     nextUrl = typeof page.next === "string" && page.next ? page.next : null;
   }
 
-  const albums = new Map<string, SpotifyRelease>();
+  const tracks = new Map<string, SpotifyRelease>();
   for (const row of allItems) {
     const track = row.item || row.track;
-    if (!track || track.type !== "track" || !track.album?.id || !track.album.name || !track.album.release_date || !track.album.release_date_precision) continue;
-    const spotifyUrl = safePublicSpotifyUrl(track.album.external_urls?.spotify, "album");
+    if (!track || track.type !== "track" || !track.album?.id || !track.album.release_date || !track.album.release_date_precision) continue;
+    const title = track.name?.trim() || track.album.name?.trim() || "";
+    if (!title) continue;
+    const artistName = (track.artists?.map((artist) => artist.name).filter(Boolean) as string[] | undefined)?.join(", ")
+      || (track.album.artists?.map((artist) => artist.name).filter(Boolean) as string[] | undefined)?.join(", ")
+      || "";
+    const spotifyUrl = safePublicSpotifyUrl(track.external_urls?.spotify, "track") || safePublicSpotifyUrl(track.album.external_urls?.spotify, "album");
     if (!spotifyUrl) continue;
+    const trackId = track.id?.trim() || `${track.album.id}:${title}:${artistName}`;
     const candidate: SpotifyRelease = {
       albumId: track.album.id,
-      title: track.album.name,
-      artistName: (track.album.artists?.map((artist) => artist.name).filter(Boolean) as string[] | undefined)?.join(", ")
-        || (track.artists?.map((artist) => artist.name).filter(Boolean) as string[] | undefined)?.join(", ")
-        || "",
+      trackId,
+      title,
+      artistName,
       coverUrl: chooseCover(track.album.images),
       spotifyUrl,
       releaseDate: track.album.release_date,
       releaseDatePrecision: track.album.release_date_precision,
       playlistAddedAt: row.added_at ? new Date(row.added_at) : null,
     };
-    const previous = albums.get(candidate.albumId);
-    if (!previous || (candidate.playlistAddedAt?.getTime() || 0) > (previous.playlistAddedAt?.getTime() || 0)) albums.set(candidate.albumId, candidate);
+    const previous = tracks.get(trackId);
+    if (!previous || (candidate.playlistAddedAt?.getTime() || 0) > (previous.playlistAddedAt?.getTime() || 0)) tracks.set(trackId, candidate);
   }
 
-  const releases = [...albums.values()].sort((a, b) => {
+  const releases = [...tracks.values()].sort((a, b) => {
     const dateDiff = releaseDateSortValue(b.releaseDate, b.releaseDatePrecision) - releaseDateSortValue(a.releaseDate, a.releaseDatePrecision);
     if (dateDiff) return dateDiff;
     const addedDiff = (b.playlistAddedAt?.getTime() || 0) - (a.playlistAddedAt?.getTime() || 0);
     if (addedDiff) return addedDiff;
-    return a.albumId.localeCompare(b.albumId);
+    return a.trackId.localeCompare(b.trackId);
   }).slice(0, 5);
 
   return { snapshotId, releases };
