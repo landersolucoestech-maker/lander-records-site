@@ -7,13 +7,14 @@ const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]
 
 type AdminDialogProps = {
   children: React.ReactNode;
+  className?: string;
   description?: string;
   footer?: React.ReactNode;
   onClose: () => void;
   title: string;
 };
 
-export function AdminDialog({ children, description, footer, onClose, title }: AdminDialogProps) {
+export function AdminDialog({ children, className, description, footer, onClose, title }: AdminDialogProps) {
   const dialogRef = useRef<HTMLElement>(null);
   const openerRef = useRef<HTMLElement | null>(null);
 
@@ -59,7 +60,7 @@ export function AdminDialog({ children, description, footer, onClose, title }: A
   }, [onClose]);
 
   return <div className="adminDialogBackdrop" onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }} role="presentation">
-    <section aria-labelledby="admin-dialog-title" aria-modal="true" className="adminDialog" ref={dialogRef} role="dialog" tabIndex={-1}>
+    <section aria-labelledby="admin-dialog-title" aria-modal="true" className={["adminDialog", className].filter(Boolean).join(" ")} ref={dialogRef} role="dialog" tabIndex={-1}>
       <header><div><h2 id="admin-dialog-title">{title}</h2>{description ? <p>{description}</p> : null}</div><button aria-label="Fechar" className="adminIconButton" onClick={onClose} type="button"><AdminIcon name="x" size={17} /></button></header>
       <div className="adminDialogBody">{children}</div>
       {footer ? <footer>{footer}</footer> : null}
