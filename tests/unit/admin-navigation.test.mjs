@@ -7,9 +7,9 @@ const source = fs.readFileSync("app/admin/components/admin-navigation.ts", "utf8
 const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText;
 const { resolveAdminLocation, visibleAdminNavigation } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`);
 
-test("admin navigation matches the approved sidebar hierarchy for owners", () => {
+test("admin navigation exposes settings as one sidebar module", () => {
   const groups = visibleAdminNavigation("owner");
-  assert.deepEqual(groups.map((group) => group.module?.label || group.label), ["", "Site", "Configurações"]);
+  assert.deepEqual(groups.map((group) => group.module?.label || group.label), ["", "Site", ""]);
   assert.deepEqual(groups.flatMap((group) => group.items.map((item) => item.label)), [
     "Dashboard",
     "Conteúdos",
@@ -17,37 +17,45 @@ test("admin navigation matches the approved sidebar hierarchy for owners", () =>
     "Mídias",
     "Páginas",
     "Mídia Kit",
-    "Empresa",
-    "Identidade do Site",
-    "Automações",
-    "Segurança",
-    "Integrações",
-    "Usuários",
+    "Configurações",
   ]);
+  const forbiddenSidebarItems = ["Empresa", "Identidade do Site", "Automações", "Segurança", "Integrações", "Usuários"];
+  assert.ok(forbiddenSidebarItems.every((label) => !groups.flatMap((group) => group.items).some((item) => item.label === label)));
   const site = groups.find((group) => group.module?.label === "Site");
   assert.ok(site);
   assert.deepEqual(site.items.map((item) => item.href), ["/admin/posts", "/admin/artists", "/admin/media", "/admin/pages", "/admin/media-kit"]);
 });
 
 test("admin navigation selects the most specific real route", () => {
-  const location = resolveAdminLocation("/admin/settings/lander-records", "owner", false);
-  assert.equal(location.activeHref, "/admin/settings/lander-records");
+  assert.equal(resolveAdminLocation("/admin/settings/lander-records", "owner", false).activeHref, "/admin/settings");
+  assert.equal(resolveAdminLocation("/admin/users", "owner", false).activeHref, "/admin/settings");
   assert.equal(resolveAdminLocation("/admin/artists/new", "owner", false).activeHref, "/admin/artists");
   assert.equal(resolveAdminLocation("/admin/artists/new", "owner", false).breadcrumbs.at(-1).label, "Criar");
   assert.equal(resolveAdminLocation("/admin/media-kit", "owner", false).activeHref, "/admin/media-kit");
   assert.equal(resolveAdminLocation("/admin/artists-unrelated", "owner", false).activeHref, undefined);
 });
 
-test("settings hash routes keep the matching reference tab active", () => {
-  assert.equal(resolveAdminLocation("/admin/settings", "owner", false).activeHref, "/admin/settings");
-  assert.equal(resolveAdminLocation("/admin/settings#identity", "owner", false).activeHref, "/admin/settings#identity");
-  assert.equal(resolveAdminLocation("/admin/settings#automations", "owner", false).activeHref, "/admin/settings#automations");
-  assert.equal(resolveAdminLocation("/admin/settings#security", "owner", false).activeHref, "/admin/settings#security");
+test("settings internal tabs keep Configurações active in the sidebar", () => {
+  for (const location of [
+    "/admin/settings",
+    "/admin/settings#identity",
+    "/admin/settings#automations",
+    "/admin/settings#security",
+    "/admin/settings/lander-records",
+    "/admin/users",
+  ]) assert.equal(resolveAdminLocation(location, "owner", false).activeHref, "/admin/settings", location);
+
+  for (const location of [
+    "/cms-preview/settings",
+    "/cms-preview/settings#identity",
+    "/cms-preview/integrations",
+    "/cms-preview/users",
+  ]) assert.equal(resolveAdminLocation(location, "owner", true).activeHref, "/cms-preview/settings", location);
 });
 
-test("viewer navigation keeps privileged users hidden", () => {
+test("viewer sidebar still exposes only the Configurações entry, not privileged internal tabs", () => {
   const items = visibleAdminNavigation("viewer").flatMap((group) => group.items);
-  assert.ok(items.length > 0);
+  assert.ok(items.some((item) => item.label === "Configurações"));
   assert.ok(!items.some((item) => item.href === "/admin/users"));
 });
 
