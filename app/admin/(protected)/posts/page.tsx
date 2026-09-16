@@ -79,13 +79,9 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
     updatedAt: dateFormatter.format(post.updatedAt),
   }));
 
-  const persistent = session.source === "session";
-  const canEdit = persistent && session.user.role !== "viewer";
-  const canDelete = persistent && (session.user.role === "admin" || session.user.role === "owner");
-
   return <PostManager
-    canDelete={canDelete}
-    canEdit={canEdit}
+    canDelete={session.source === "session" && (session.user.role === "admin" || session.user.role === "owner")}
+    canEdit={session.source === "session" && session.user.role !== "viewer"}
     createCategories={categoryRows}
     deleted={filters.deleted === "1"}
     developmentMode={session.source === "development-auth-bypass"}
