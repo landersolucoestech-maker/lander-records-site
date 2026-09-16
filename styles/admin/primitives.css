@@ -1,59 +1,84 @@
-/* Shared Admin controls; shell and auth own distinct semantic tokens. */
-.adminPage { max-width: 1320px; margin: 0 auto; display: grid; gap: 24px; }
-.adminPageHeader { display: flex; justify-content: space-between; align-items: end; gap: 24px; }
-.adminPageHeader h1 { margin: 4px 0 8px; font-size: clamp(28px, 3vw, 34px); letter-spacing: -.035em; }
-.adminPageHeader p { margin: 0; color: var(--admin-muted, #65655f); line-height: 1.6; }
-.adminEyebrow { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--admin-accent, #c52b27); }
+/* Shared Admin controls. The protected workspace uses a neutral system with restrained Lander red accents. */
+.adminPage { width: 100%; max-width: none; margin: 0; display: grid; gap: 20px; }
+.adminPageHeader { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; }
+.adminPageHeader h1 { margin: 3px 0 5px; color: #101828; font-size: 24px; line-height: 1.15; letter-spacing: -.03em; }
+.adminPageHeader p { margin: 0; color: var(--admin-muted, #667085); font-size: 12px; line-height: 1.5; }
+.adminEyebrow { font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #667085; }
 .adminActions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.adminButton { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; appearance: none; border: 1px solid var(--admin-border, #dfdfd9); background: var(--admin-panel, #fff); color: var(--admin-text, #20201e); padding: 10px 16px; border-radius: 6px; font: inherit; font-size: 13px; font-weight: 700; text-decoration: none; cursor: pointer; }
-.adminButton:hover { border-color: var(--admin-muted, #65655f); }
-.adminButton.primary { background: var(--admin-accent, #c52b27); border-color: var(--admin-accent, #c52b27); color: #fff; }
-.adminButton.primary:hover { background: #a9211e; border-color: #a9211e; }
-.adminButton.danger { color: #a42624; border-color: #e6bfbc; }
-.adminButton:disabled { opacity: .55; cursor: not-allowed; }
-:where(.adminShell, .adminAuthPage) :is(a, button, input, textarea, select):focus-visible { outline: 3px solid var(--admin-focus, #2863bc); outline-offset: 3px; }
-.adminPanel { min-width: 0; padding: 24px; border: 1px solid var(--admin-border, #dfdfd9); border-radius: 10px; background: var(--admin-panel, #fff); overflow: auto; }
-.adminPanel h2, .adminPanel h3 { margin-top: 0; letter-spacing: -.02em; }
-.adminMetricGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
-.adminMetricCard { display: grid; gap: 8px; padding: 20px 0; border-bottom: 1px solid var(--admin-border, #dfdfd9); color: var(--admin-text, #20201e); }
-.adminMetricCard span, .adminMetricCard small { color: var(--admin-muted, #65655f); font-size: 13px; }
-.adminMetricCard strong { font-size: 30px; font-variant-numeric: tabular-nums; }
-.adminTable { width: 100%; min-width: 640px; border-collapse: collapse; font-size: 14px; line-height: 1.5; }
-.adminTable th, .adminTable td { padding: 14px 12px; border-bottom: 1px solid var(--admin-border, #dfdfd9); text-align: left; vertical-align: top; }
-.adminTable th { font-size: 12px; font-weight: 700; color: var(--admin-muted, #65655f); }
-.adminTable tbody tr:hover { background: #f8f7f4; }
-.adminTable a { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
-.adminBadge { display: inline-flex; align-items: center; padding: 5px 9px; border-radius: 5px; background: #eeede8; font-size: 12px; font-weight: 700; }
-.adminBadge.live { background: #e5f2e9; color: #24623a; }
-.adminBadge.draft { background: #fff1d6; color: #75520c; }
-.adminBadge.archived { background: #f5e5e3; color: #852d29; }
+.adminButton { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; appearance: none; border: 1px solid #d0d5dd; background: #fff; color: #344054; padding: 0 12px; border-radius: 7px; font: inherit; font-size: 12px; font-weight: 700; text-decoration: none; cursor: pointer; transition: background .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease; }
+.adminButton:hover { border-color: #98a2b3; background: #f9fafb; }
+.adminButton.primary { background: #111827; border-color: #111827; color: #fff; box-shadow: 0 1px 2px rgba(16,24,40,.08); }
+.adminButton.primary:hover { background: #1f2937; border-color: #1f2937; }
+.adminButton.danger { color: #b42318; border-color: #fecdca; background: #fff; }
+.adminButton.danger:hover { background: #fffbfa; border-color: #fda29b; }
+.adminButton:disabled { opacity: .45; cursor: not-allowed; }
+:where(.adminShell, .adminAuthPage) :is(a, button, input, textarea, select):focus-visible { outline: 3px solid rgba(37,99,235,.22); outline-offset: 2px; }
+.adminPanel { min-width: 0; padding: 20px; border: 1px solid #e4e7ec; border-radius: 10px; background: #fff; overflow: auto; box-shadow: 0 1px 2px rgba(16,24,40,.02); }
+.adminPanel h2, .adminPanel h3 { margin-top: 0; color: #101828; letter-spacing: -.02em; }
+.adminPanel h2 { font-size: 15px; }
+.adminPanel h3 { font-size: 13px; }
+.adminSectionHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin: -20px -20px 20px; padding: 16px 20px; border-bottom: 1px solid #eef0f2; }
+.adminSectionHeader h2 { margin: 0; }
+.adminSectionHeader p { margin: 4px 0 0; color: #667085; font-size: 12px; line-height: 1.45; }
+.adminMetricGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.adminMetricCard { display: grid; gap: 6px; min-height: 96px; padding: 16px; border: 1px solid #e4e7ec; border-radius: 10px; background: #fff; color: #101828; }
+.adminMetricCard span, .adminMetricCard small { color: #667085; font-size: 11px; }
+.adminMetricCard strong { font-size: 24px; line-height: 1; font-variant-numeric: tabular-nums; }
+.adminTableWrap { overflow: auto; border: 1px solid #e4e7ec; border-radius: 10px; background: #fff; }
+.adminTable { width: 100%; min-width: 700px; border-collapse: collapse; font-size: 12px; line-height: 1.45; }
+.adminTable th, .adminTable td { padding: 12px 14px; border-bottom: 1px solid #eef0f2; text-align: left; vertical-align: middle; }
+.adminTable th { height: 40px; background: #fafbfc; color: #667085; font-size: 10px; font-weight: 800; letter-spacing: .035em; text-transform: uppercase; }
+.adminTable tbody tr:last-child td { border-bottom: 0; }
+.adminTable tbody tr:hover { background: #fcfcfd; }
+.adminTable a { font-weight: 700; text-decoration: none; }
+.adminBadge { display: inline-flex; align-items: center; gap: 6px; width: max-content; padding: 4px 8px; border: 1px solid #d0d5dd; border-radius: 999px; background: #fff; color: #475467; font-size: 10px; font-weight: 700; }
+.adminBadge i { display: block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.adminBadge.live { background: #ecfdf3; border-color: #abefc6; color: #067647; }
+.adminBadge.draft { background: #fffaeb; border-color: #fedf89; color: #b54708; }
+.adminBadge.archived { background: #fef3f2; border-color: #fecdca; color: #b42318; }
 .adminForm, .adminStack { display: grid; gap: 16px; }
-.adminFormGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
-.adminForm label { display: grid; gap: 8px; color: var(--admin-text, #20201e); font-size: 13px; font-weight: 700; }
-.adminForm input, .adminForm textarea, .adminForm select, .adminInlineForm input, .adminInlineForm select, .adminInlineForm textarea { width: 100%; min-height: 44px; border: 1px solid var(--admin-border, #dfdfd9); border-radius: 6px; background: var(--admin-panel, #fff); padding: 11px 12px; color: var(--admin-text, #20201e); font: inherit; }
-.adminForm input:disabled, .adminForm textarea:disabled, .adminForm select:disabled { cursor: not-allowed; opacity: .65; }
-.adminForm textarea { min-height: 140px; resize: vertical; }
+.adminFormGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.adminForm label { display: grid; gap: 6px; color: #344054; font-size: 12px; font-weight: 650; }
+.adminForm input, .adminForm textarea, .adminForm select, .adminInlineForm input, .adminInlineForm select, .adminInlineForm textarea { width: 100%; min-height: 38px; border: 1px solid #d0d5dd; border-radius: 7px; background: #fff; padding: 9px 10px; color: #101828; font: inherit; font-size: 13px; outline: none; }
+.adminForm input:hover, .adminForm textarea:hover, .adminForm select:hover, .adminInlineForm input:hover, .adminInlineForm select:hover { border-color: #98a2b3; }
+.adminForm input:disabled, .adminForm textarea:disabled, .adminForm select:disabled { cursor: not-allowed; background: #f8fafc; color: #667085; }
+.adminForm textarea { min-height: 116px; resize: vertical; }
 .adminForm .full { grid-column: 1 / -1; }
-.adminCheck { display: flex !important; align-items: center; gap: 10px !important; }
-.adminCheck input { width: 18px; min-height: 18px; accent-color: var(--admin-accent, #c52b27); }
-.adminInlineForm { display: grid; grid-template-columns: repeat(3, minmax(100px, 1fr)) auto; align-items: end; gap: 12px; }
-.adminDivider { height: 1px; background: var(--admin-border, #dfdfd9); margin: 8px 0; }
-.adminAlert { padding: 14px 16px; border-radius: 6px; background: #eaf3ec; color: #245d31; font-size: 14px; line-height: 1.6; }
-.adminAlert.error { background: #f9e8e6; color: #8e2620; }
-.adminEmpty { padding: 40px 24px; color: var(--admin-muted, #65655f); text-align: center; line-height: 1.6; }
-.adminMediaGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
-.adminMediaCard { border: 1px solid var(--admin-border, #dfdfd9); border-radius: 8px; overflow: hidden; background: var(--admin-panel, #fff); }
-.adminMediaCard img { display: block; width: 100%; height: 160px; object-fit: cover; background: #eeede8; }
-.adminMediaCard > div { display: grid; gap: 8px; padding: 16px; font-size: 13px; }
-.adminSectionCard { display: grid; gap: 16px; padding: 20px; border: 1px solid var(--admin-border, #dfdfd9); border-radius: 8px; }
+.adminCheck { display: flex !important; align-items: center; gap: 9px !important; }
+.adminCheck input { width: 17px; min-height: 17px; accent-color: #111827; }
+.adminInlineForm { display: grid; grid-template-columns: repeat(3, minmax(100px, 1fr)) auto; align-items: end; gap: 10px; }
+.adminDivider { height: 1px; background: #eef0f2; margin: 4px 0; }
+.adminAlert, .adminNotice { padding: 12px 14px; border: 1px solid #d1fadf; border-radius: 8px; background: #f6fef9; color: #05603a; font-size: 12px; line-height: 1.5; }
+.adminAlert.error, .adminNotice.error { border-color: #fecdca; background: #fffbfa; color: #b42318; }
+.adminEmpty { padding: 42px 24px; color: #667085; text-align: center; font-size: 12px; line-height: 1.6; }
+.adminMediaGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
+.adminMediaCard { overflow: hidden; border: 1px solid #e4e7ec; border-radius: 10px; background: #fff; }
+.adminMediaCard img { display: block; width: 100%; height: 150px; object-fit: cover; background: #f2f4f7; }
+.adminMediaCard > div { display: grid; gap: 6px; padding: 12px; font-size: 12px; }
+.adminSectionCard { display: grid; gap: 16px; padding: 18px; border: 1px solid #e4e7ec; border-radius: 10px; background: #fff; }
 .adminSectionCard h3 { margin: 0; }
-.adminCode { padding: 4px 7px; border-radius: 4px; background: #f0efea; color: #3a3a35; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 12px; overflow-wrap: anywhere; }
+.adminCode { padding: 4px 7px; border: 1px solid #eef0f2; border-radius: 5px; background: #f8fafc; color: #344054; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 11px; overflow-wrap: anywhere; }
+.adminToolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 14px; border: 1px solid #e4e7ec; border-radius: 10px; background: #fff; }
+.adminToolbarGroup { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.adminTabs { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; width: max-content; max-width: 100%; padding: 4px; border: 1px solid #e4e7ec; border-radius: 8px; background: #fff; }
+.adminTabs a, .adminTabs button { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 12px; border: 0; border-radius: 6px; background: transparent; color: #667085; font: inherit; font-size: 12px; font-weight: 700; text-decoration: none; cursor: pointer; }
+.adminTabs [aria-current="page"], .adminTabs .active { background: #111827; color: #fff; }
+.adminIconButton { display: grid; width: 34px; height: 34px; place-items: center; padding: 0; border: 1px solid #d0d5dd; border-radius: 7px; background: #fff; color: #344054; cursor: pointer; }
+.adminIconButton:hover { background: #f9fafb; }
+.adminDialogBackdrop { position: fixed; inset: 0; z-index: 120; display: grid; place-items: center; padding: 18px; background: rgba(16,24,40,.48); }
+.adminDialog { display: flex; flex-direction: column; width: min(672px, calc(100vw - 32px)); max-height: 90vh; overflow: hidden; border: 1px solid #e4e7ec; border-radius: 10px; background: #fff; box-shadow: 0 24px 64px rgba(16,24,40,.24); }
+.adminDialog > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 16px 18px; border-bottom: 1px solid #eaecf0; }
+.adminDialog > header h2 { margin: 0; color: #101828; font-size: 15px; }
+.adminDialog > header p { margin: 4px 0 0; color: #667085; font-size: 12px; }
+.adminDialogBody { overflow: auto; padding: 18px; }
+.adminDialog > footer { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 18px; border-top: 1px solid #eaecf0; background: #fff; }
 
-/* Authentication surface, independent of protected workspace tokens. */
+/* Authentication surface remains independent of protected workspace tokens. */
 .adminAuthPage { --admin-bg: #151515; --admin-panel: #202020; --admin-border: #454545; --admin-text: #f7f7f3; --admin-muted: #c1c1b8; --admin-accent: #c52b27; --admin-focus: #8eb9ff; display: grid; min-height: 100dvh; place-items: center; padding: 24px; background: var(--admin-bg); color: var(--admin-text); font-family: Arial, Helvetica, sans-serif; }
 .adminAuthCard { display: grid; gap: 20px; width: min(440px, 100%); padding: 32px; border: 1px solid var(--admin-border); border-radius: 10px; background: var(--admin-panel); }
 .adminAuthCard h1 { margin: 0; font-size: 30px; letter-spacing: -.035em; }
 .adminAuthCard > p { margin: 0; color: var(--admin-muted); line-height: 1.6; }
 .adminAuthCard .adminForm input { background: #151515; }
 @media (max-width: 960px) { .adminMetricGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .adminFormGrid { grid-template-columns: 1fr; } .adminInlineForm { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 560px) { .adminPageHeader { align-items: start; flex-direction: column; } .adminInlineForm { grid-template-columns: 1fr; } .adminPanel { padding: 18px; } .adminAuthCard { padding: 24px; } }
+@media (max-width: 640px) { .adminDialog { width: min(100%, calc(100vw - 24px)); } .adminDialog > footer { flex-wrap: wrap; } .adminDialog > footer .adminButton { flex: 1; } }
+@media (max-width: 560px) { .adminPageHeader { align-items: flex-start; flex-direction: column; } .adminInlineForm { grid-template-columns: 1fr; } .adminPanel { padding: 16px; } .adminSectionHeader { margin: -16px -16px 16px; padding: 14px 16px; } .adminAuthCard { padding: 24px; } }
