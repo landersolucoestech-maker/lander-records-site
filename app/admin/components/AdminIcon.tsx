@@ -1,4 +1,4 @@
-type IconName = "activity" | "artists" | "audit" | "bell" | "calendar" | "chart" | "chevron" | "dashboard" | "document" | "edit" | "external" | "eye" | "home" | "image" | "integration" | "media" | "menu" | "monitor" | "more" | "navigation" | "pages" | "posts" | "search" | "settings" | "sliders" | "tags" | "target" | "trash" | "users" | "x";
+type IconName = "activity" | "artists" | "audit" | "bell" | "calendar" | "chart" | "check" | "chevron" | "dashboard" | "document" | "edit" | "external" | "eye" | "home" | "image" | "integration" | "mail" | "media" | "menu" | "monitor" | "more" | "navigation" | "pages" | "plus" | "posts" | "search" | "settings" | "shield" | "sliders" | "tags" | "target" | "trash" | "upload" | "users" | "x";
 
 const paths: Record<IconName, React.ReactNode> = {
   activity: <><path d="M4 12h3l2-6 4 12 2-6h5" /></>,
@@ -7,6 +7,7 @@ const paths: Record<IconName, React.ReactNode> = {
   bell: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" /><path d="M10 21h4" /></>,
   calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M7 3v4M17 3v4M3 10h18" /></>,
   chart: <><path d="M5 20V10M10 20V4M15 20v-7M20 20V7" /></>,
+  check: <path d="m5 12 4 4L19 6" />,
   chevron: <path d="m9 18 6-6-6-6" />,
   dashboard: <><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></>,
   document: <><path d="M6 3h8l4 4v14H6z" /><path d="M14 3v5h5M9 12h6M9 16h6" /></>,
@@ -16,19 +17,23 @@ const paths: Record<IconName, React.ReactNode> = {
   home: <><path d="m3 11 9-8 9 8" /><path d="M5 10v11h14V10M9 21v-7h6v7" /></>,
   image: <><rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="9" cy="10" r="2" /><path d="m3 17 5-4 4 3 3-2 6 5" /></>,
   integration: <><path d="M8 3v4M16 3v4M5 7h14v4a7 7 0 0 1-14 0ZM12 18v3" /></>,
+  mail: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m4 7 8 6 8-6" /></>,
   media: <><rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="9" cy="10" r="2" /><path d="m3 17 5-4 4 3 3-2 6 5" /></>,
   menu: <path d="M4 7h16M4 12h16M4 17h16" />,
   monitor: <><rect x="3" y="4" width="18" height="13" rx="2" /><path d="M8 21h8M12 17v4" /></>,
   more: <><circle cx="5" cy="12" r="1" fill="currentColor" stroke="none" /><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" /><circle cx="19" cy="12" r="1" fill="currentColor" stroke="none" /></>,
   navigation: <><path d="M4 6h16M4 12h16M4 18h16" /><circle cx="7" cy="6" r="1" fill="currentColor" /><circle cx="12" cy="12" r="1" fill="currentColor" /><circle cx="9" cy="18" r="1" fill="currentColor" /></>,
   pages: <><path d="M6 3h9l4 4v14H6z" /><path d="M15 3v5h5M9 13h6M9 17h6" /></>,
+  plus: <path d="M12 5v14M5 12h14" />,
   posts: <><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 8h8M8 12h8M8 16h5" /></>,
   search: <><circle cx="11" cy="11" r="7" /><path d="m16 16 5 5" /></>,
   settings: <><circle cx="12" cy="12" r="3" /><path d="M19 13.5v-3l-2-.7-.7-1.7.9-1.9-2.1-2.1-1.9.9-1.7-.7L10.5 2h-3l-.7 2-1.7.7-1.9-.9-2.1 2.1.9 1.9-.7 1.7-2 .7v3l2 .7.7 1.7-.9 1.9 2.1 2.1 1.9-.9 1.7.7.7 2h3l.7-2 1.7-.7 1.9.9 2.1-2.1-.9-1.9.7-1.7z" transform="scale(.8) translate(3 3)" /></>,
+  shield: <path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6z" />,
   sliders: <><path d="M4 7h6M14 7h6M4 17h10M18 17h2" /><circle cx="12" cy="7" r="2" /><circle cx="16" cy="17" r="2" /></>,
   tags: <><path d="M20 13 11 4H4v7l9 9z" /><circle cx="7.5" cy="7.5" r="1" /></>,
   target: <><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="4" /><path d="M12 2v4M22 12h-4" /></>,
   trash: <><path d="M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14" /><path d="M10 11v6M14 11v6" /></>,
+  upload: <><path d="M12 16V4M7 9l5-5 5 5" /><path d="M5 15v5h14v-5" /></>,
   users: <><circle cx="9" cy="8" r="3" /><path d="M3 20c.7-4 2.7-6 6-6s5.3 2 6 6M16 5c2 .3 3 1.3 3 3s-1 2.7-3 3M17 14c2.3.6 3.6 2.6 4 6" /></>,
   x: <path d="m6 6 12 12M18 6 6 18" />,
 };
