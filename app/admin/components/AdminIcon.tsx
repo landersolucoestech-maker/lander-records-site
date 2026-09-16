@@ -1,4 +1,4 @@
-type IconName = "activity" | "artists" | "audit" | "bell" | "calendar" | "chart" | "check" | "chevron" | "dashboard" | "document" | "edit" | "external" | "eye" | "home" | "image" | "integration" | "mail" | "media" | "menu" | "monitor" | "more" | "navigation" | "pages" | "plus" | "posts" | "search" | "settings" | "shield" | "sliders" | "tags" | "target" | "trash" | "upload" | "users" | "x";
+type IconName = "activity" | "artists" | "audit" | "bell" | "calendar" | "chart" | "check" | "chevron" | "dashboard" | "document" | "edit" | "external" | "eye" | "home" | "image" | "integration" | "mail" | "media" | "menu" | "monitor" | "more" | "navigation" | "pages" | "plus" | "posts" | "search" | "settings" | "shield" | "sliders" | "smartphone" | "tablet" | "tags" | "target" | "trash" | "upload" | "users" | "x";
 
 const paths: Record<IconName, React.ReactNode> = {
   activity: <><path d="M4 12h3l2-6 4 12 2-6h5" /></>,
@@ -30,6 +30,8 @@ const paths: Record<IconName, React.ReactNode> = {
   settings: <><circle cx="12" cy="12" r="3" /><path d="M19 13.5v-3l-2-.7-.7-1.7.9-1.9-2.1-2.1-1.9.9-1.7-.7L10.5 2h-3l-.7 2-1.7.7-1.9-.9-2.1 2.1.9 1.9-.7 1.7-2 .7v3l2 .7.7 1.7-.9 1.9 2.1 2.1 1.9-.9 1.7.7.7 2h3l.7-2 1.7-.7 1.9.9 2.1-2.1-.9-1.9.7-1.7z" transform="scale(.8) translate(3 3)" /></>,
   shield: <path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6z" />,
   sliders: <><path d="M4 7h6M14 7h6M4 17h10M18 17h2" /><circle cx="12" cy="7" r="2" /><circle cx="16" cy="17" r="2" /></>,
+  smartphone: <><rect x="7" y="2" width="10" height="20" rx="2" /><path d="M10 5h4M11.5 19h1" /></>,
+  tablet: <><rect x="5" y="2" width="14" height="20" rx="2" /><path d="M9 5h6M11.5 19h1" /></>,
   tags: <><path d="M20 13 11 4H4v7l9 9z" /><circle cx="7.5" cy="7.5" r="1" /></>,
   target: <><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="4" /><path d="M12 2v4M22 12h-4" /></>,
   trash: <><path d="M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14" /><path d="M10 11v6M14 11v6" /></>,
