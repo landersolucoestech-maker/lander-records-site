@@ -2,10 +2,11 @@ import { and, asc, desc, eq, ilike, isNotNull, isNull, or, sql, type SQL } from 
 import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
 import { mediaAssets, postCategories, posts, postTags, tags } from "../../../../lib/db/schema";
+import NewContentModalOpener from "./NewContentModalOpener";
 import PostManager, { type PostSummary } from "./PostManager";
 
 export const dynamic = "force-dynamic";
-type PostFilters = { category?: string; deleted?: string; q?: string; status?: string; tag?: string };
+type PostFilters = { category?: string; create?: string; deleted?: string; q?: string; status?: string; tag?: string };
 
 const publicPost = sql<boolean>`${posts.status} = 'published' AND ${posts.archivedAt} IS NULL AND (${posts.publishedAt} IS NULL OR ${posts.publishedAt} <= now()) AND (${posts.scheduledAt} IS NULL OR ${posts.scheduledAt} <= now())`;
 
@@ -79,12 +80,15 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
     updatedAt: dateFormatter.format(post.updatedAt),
   }));
 
-  return <PostManager
-    canDelete={session.source === "session" && (session.user.role === "admin" || session.user.role === "owner")}
-    canEdit={session.source === "session" && session.user.role !== "viewer"}
-    createCategories={categoryRows}
-    deleted={filters.deleted === "1"}
-    developmentMode={session.source === "development-auth-bypass"}
-    posts={summary}
-  />;
+  return <>
+    <PostManager
+      canDelete={session.source === "session" && (session.user.role === "admin" || session.user.role === "owner")}
+      canEdit={session.source === "session" && session.user.role !== "viewer"}
+      createCategories={categoryRows}
+      deleted={filters.deleted === "1"}
+      developmentMode={session.source === "development-auth-bypass"}
+      posts={summary}
+    />
+    {filters.create === "1" ? <NewContentModalOpener /> : null}
+  </>;
 }
