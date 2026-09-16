@@ -47,20 +47,20 @@ test("major modules retain one contextual shell and common Portal header chrome"
   assert.match(shell, /name="bell"/);
 });
 
-test("content and artists keep real routes while using compact Portal catalog patterns", () => {
+test("content and artists keep real routes while sharing the Portal catalog geometry", () => {
   for (const source of [posts, artists]) {
     assert.match(source, /<details>/);
     assert.match(source, /name="more"/);
+    assert.match(source, /admin-toolbar/);
+    assert.match(source, /tableview-surface/);
+    assert.match(source, /table-card/);
+    assert.match(source, /<table>/);
   }
-  assert.match(artists, /admin-toolbar/);
-  assert.match(artists, /tableview-surface/);
-  assert.match(artists, /table-card/);
-  assert.match(artists, /<table>/);
   assert.match(posts, /\/admin\/posts\/\$\{post\.id\}/);
   assert.match(posts, /\/noticias\/\$\{post\.slug\}/);
   assert.match(artists, /\/admin\/artists\/\$\{artist\.id\}/);
   assert.match(artists, /\/artistas\/\$\{artist\.slug\}/);
-  assert.match(postStyles, /min-height:64px/);
+  assert.match(postStyles, /tableCard table/);
   assert.match(artistStyles, /height:64px/);
   assert.match(artistFormStyles, /grid-template-columns:minmax\(360px,420px\) minmax\(0,1fr\)/);
   assert.match(artistFormStyles, /position:sticky;top:78px/);
