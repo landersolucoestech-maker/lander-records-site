@@ -34,11 +34,14 @@ test("approved dashboard uses line chart, contextual activities, thumbnails and 
   assert.match(dashboard, /name="more"/);
 });
 
-test("public-site action lives in the topbar and development preview does not add reference-breaking chrome", () => {
+test("admin shell uses Portal Lander navigation and account chrome without preview-only noise", () => {
   const footer = shell.slice(shell.indexOf('<div className="adminSidebarFooter">'), shell.indexOf("</aside>"));
   assert.ok(!footer.includes("Ver site público"));
-  assert.match(shell, /adminPublicLink/);
+  assert.match(shell, /adminAdministrationLabel/);
+  assert.match(shell, /adminNavigationEyebrow/);
   assert.match(shell, /adminSidebarCollapse/);
+  assert.match(shell, /adminNotificationButton/);
+  assert.match(shell, /adminAccountPopover/);
   assert.match(shell, /const showReadOnlyChrome = preview/);
-  assert.match(shell, /<small>\{email \|\| role\}<\/small>/);
+  assert.match(shell, /developmentPreview \? "Administrador"/);
 });
