@@ -65,21 +65,19 @@ test("all protected tables, controls, filters and cards resolve through the Dash
   assert.match(runtimeContract, /font-family:\s*Montserrat,Arial,sans-serif\s*!important/);
 });
 
-test("high-traffic managers use Dashboard primitives instead of relying on a global illusion", () => {
+test("Artists uses the approved table-first reference rather than Dashboard KPI panels", () => {
   assert.match(artistManager, /className={`adminDashboard \$\{styles\.manager\}`}/);
   assert.match(artistManager, /adminDashboardHeading/);
-  assert.match(artistManager, /adminMetricGrid/);
-  assert.match(artistManager, /adminMetricCard/);
-  assert.match(artistManager, /adminMetricSpark/);
-  assert.match(artistManager, /adminDashboardPanel/);
-  assert.match(artistManager, /adminAnalyticsPanelHeading/);
   assert.match(artistManager, /adminPrimaryCompact/);
-  assert.match(artists, /\.manager\{width:100%;display:grid;gap:14px\}/);
-  assert.match(artists, /\.toolbar\{display:grid;[\s\S]*background:#fafbfc/);
-  assert.match(artists, /\.artistTable th\{height:34px/);
-  assert.match(artists, /\.artistTable td\{height:50px/);
-  assert.match(artists, /\.identity img,\.avatarFallback\{[\s\S]*width:38px;height:38px[\s\S]*border-radius:50%/);
-  assert.match(artists, /\.statusBadge\{[\s\S]*min-height:20px[\s\S]*border-radius:5px/);
+  assert.match(artistManager, /styles\.tableSurface/);
+  assert.doesNotMatch(artistManager, /adminMetricGrid|adminMetricCard|adminMetricSpark|adminDashboardPanel|adminAnalyticsPanelHeading/);
+  assert.match(artists, /\.manager\{width:100%;display:grid;gap:18px\}/);
+  assert.match(artists, /\.toolbar\{display:grid;[\s\S]*min-height:102px[\s\S]*background:#fff/);
+  assert.match(artists, /\.artistTable th\{height:38px/);
+  assert.match(artists, /\.artistTable td\{height:56px/);
+  assert.match(artists, /\.identity img,\.avatarFallback\{[\s\S]*width:42px;height:42px[\s\S]*border-radius:6px/);
+  assert.match(artists, /\.statusBadge\{[\s\S]*min-height:22px[\s\S]*border-radius:7px/);
+  assert.match(artists, /approved Artists reference/);
 
   assert.match(posts, /\.tableSurface\{[\s\S]*border-radius:10px[\s\S]*#10182808/);
   assert.match(posts, /\.published\{background:#dcf7e7;color:#078847\}/);
@@ -91,7 +89,7 @@ test("high-traffic managers use Dashboard primitives instead of relying on a glo
   assert.doesNotMatch(pages, /adminTopbarPrimary\).*display:none/);
 });
 
-test("Artists, Home, Header and Pages workbench cannot keep separate visual systems", () => {
+test("Artists, Home, Header and Pages workbench cannot keep separate shell systems", () => {
   assert.match(featureOverrides, /\[data-testid="artist-manager"\]/);
   assert.match(featureOverrides, /\.homeManager \{/);
   assert.match(featureOverrides, /\.homeSectionCard \{/);
