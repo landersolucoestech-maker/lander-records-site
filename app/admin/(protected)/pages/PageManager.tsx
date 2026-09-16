@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { deletePageAction } from "../../page-actions";
+import { useCallback, useState } from "react";
+import { createPageAction, deletePageAction } from "../../page-actions";
 import { AdminDialog } from "../../components/AdminDialog";
 import { AdminIcon } from "../../components/AdminIcon";
 import styles from "./PagesManager.module.css";
@@ -49,12 +49,34 @@ function previewContractSections(page: PageSummary): PageSectionSummary[] {
   if (!contract) return [];
   return contract.sectionOrder.map((sectionKey, index) => ({ id: `contract-${page.key}-${sectionKey}`, sectionKey, type: sectionKey, position: index + 1, enabled: true, title: "", subtitle: "" }));
 }
+function pageSlug(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
 export default function PageManager({ canEdit = true, demoMode = false, pages, preview = false }: { canEdit?: boolean; demoMode?: boolean; pages: PageSummary[]; preview?: boolean }) {
   const defaultPage = pages.find((page) => page.key === "home") || pages[0];
   const [selectedId, setSelectedId] = useState(defaultPage?.id || "");
+  const [createOpen, setCreateOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [draftTitle, setDraftTitle] = useState("");
+  const [draftSlug, setDraftSlug] = useState("");
+  const [slugEdited, setSlugEdited] = useState(false);
   const selected = pages.find((page) => page.id === selectedId) || defaultPage;
+
+  const openCreate = useCallback(() => {
+    setDraftTitle("");
+    setDraftSlug("");
+    setSlugEdited(false);
+    setCreateOpen(true);
+  }, []);
+  const closeCreate = useCallback(() => setCreateOpen(false), []);
+
   if (!selected) return <div className={styles.empty}>Nenhuma página administrável encontrada.</div>;
 
   const contract = sitePageContract(selected.key);
@@ -63,8 +85,8 @@ export default function PageManager({ canEdit = true, demoMode = false, pages, p
   const title = displayTitle(selected);
   const kind = pageKind(selected);
   const editHref = preview ? "/cms-preview/pages" : `/admin/pages/${selected.id}`;
-  const createPageHref = preview ? "/cms-preview/pages" : "/admin/pages/new";
   const canonicalPage = Boolean(contract);
+  const allowCreate = canEdit && !demoMode && !preview;
   const allowDelete = canEdit && !demoMode && !preview && !canonicalPage;
 
   return <div className={styles.manager} data-testid="pages-manager">
@@ -81,7 +103,7 @@ export default function PageManager({ canEdit = true, demoMode = false, pages, p
         </select>
       </label>
       <div className={styles.pageActions}>
-        <Link className={styles.primaryButton} href={createPageHref}><span aria-hidden="true">+</span><span>Criar página</span></Link>
+        <button className={styles.primaryButton} onClick={openCreate} type="button"><span aria-hidden="true">+</span><span>Criar página</span></button>
         {selected.publicRoute ? <Link className={styles.outlineButton} href={selected.publicRoute} rel="noopener noreferrer" target="_blank"><AdminIcon name="eye" size={17} /><span>Ver página pública</span></Link> : <button className={styles.outlineButton} disabled type="button"><AdminIcon name="eye" size={17} /><span>Ver página pública</span></button>}
         <Link className={styles.outlineButton} href={editHref}><AdminIcon name="edit" size={16} /><span>Editar</span></Link>
         {allowDelete ? <button className={`${styles.outlineButton} ${styles.dangerButton}`} onClick={() => setDeleteOpen(true)} type="button"><AdminIcon name="trash" size={16} /><span>Excluir</span></button> : <button aria-disabled="true" className={`${styles.outlineButton} ${styles.dangerButton}`} title={canonicalPage ? "Página estrutural do site público" : "Ação indisponível neste acesso"} type="button"><AdminIcon name="trash" size={16} /><span>Excluir</span></button>}
@@ -109,6 +131,32 @@ export default function PageManager({ canEdit = true, demoMode = false, pages, p
         })}</tbody>
       </table></div> : <div className={styles.noSections}>Nenhuma seção cadastrada nesta página.</div>}
     </section>
+
+    {createOpen ? <AdminDialog
+      className={styles.createPageDialog}
+      description="Novas páginas são criadas como rascunho no CMS da Lander Records e podem ser configuradas antes da publicação."
+      footer={<>
+        <button className={styles.modalButton} onClick={closeCreate} type="button">Cancelar</button>
+        <button className={styles.modalPrimary} disabled={!allowCreate || !draftTitle.trim() || !draftSlug.trim()} form="create-page-form" title={!allowCreate ? "Criação indisponível neste modo de visualização" : undefined} type="submit"><span aria-hidden="true" className={styles.modalPlus}>+</span>Criar rascunho</button>
+      </>}
+      onClose={closeCreate}
+      title="Criar página de conteúdo"
+    >
+      <form action={createPageAction} className={styles.createPageForm} id="create-page-form">
+        <label className={styles.createPageField}>
+          <span>Nome da página</span>
+          <input autoComplete="off" maxLength={180} name="title" onChange={(event) => { const nextTitle = event.target.value; setDraftTitle(nextTitle); if (!slugEdited) setDraftSlug(pageSlug(nextTitle)); }} placeholder="Ex.: Música" required type="text" value={draftTitle} />
+        </label>
+        <label className={styles.createPageField}>
+          <span>Slug</span>
+          <input autoComplete="off" name="slug" onChange={(event) => { setSlugEdited(true); setDraftSlug(pageSlug(event.target.value)); }} placeholder="musica" required type="text" value={draftSlug} />
+        </label>
+        <label className={styles.createPageField}>
+          <span>Modelo</span>
+          <input aria-readonly="true" readOnly type="text" value="Editorial · estrutura CMS da Lander Records" />
+        </label>
+      </form>
+    </AdminDialog> : null}
 
     {deleteOpen ? <AdminDialog description="Esta ação usa o fluxo de exclusão já existente e não pode ser desfeita." footer={<><button className="adminButton" onClick={() => setDeleteOpen(false)} type="button">Cancelar</button><form action={deletePageAction}><input name="id" type="hidden" value={selected.id} /><button className="adminButton danger" type="submit">Excluir página</button></form></>} onClose={() => setDeleteOpen(false)} title={`Excluir ${title}?`}><p>Confirme a exclusão somente se esta página não for mais necessária. Rotas, seções e consumidores continuam sujeitos às regras atuais do projeto.</p></AdminDialog> : null}
   </div>;
