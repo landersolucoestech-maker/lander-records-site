@@ -23,7 +23,7 @@ test("shared admin system uses neutral surfaces, black primary actions and restr
 
 test("major modules use shared contextual headers instead of duplicating page chrome", () => {
   for (const title of ["Conteúdos", "Artistas", "Mídias", "Páginas", "Mídia Kit", "Configurações", "Integrações", "Usuários"]) {
-    assert.match(shell, new RegExp(`title: \\"${title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\"`));
+    assert.ok(shell.includes(`title: "${title}"`), `missing contextual header for ${title}`);
   }
   assert.match(shell, /adminTopbarContextual/);
   assert.match(shell, /name="bell"/);
