@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { updatePageSection, updatePageSectionItem } from "../../../actions";
 import { AdminIcon } from "../../../components/AdminIcon";
 import styles from "./PageContentWorkbench.module.css";
@@ -125,87 +125,122 @@ export default function PageContentWorkbench({ page, publicRoute, sections, item
   const [viewport, setViewport] = useState<Viewport>("desktop");
   const [sectionDrafts, setSectionDrafts] = useState<Record<string, PageEditorSection>>(() => Object.fromEntries(ordered.map((section) => [section.id, { ...section }])));
   const [itemDrafts, setItemDrafts] = useState<Record<string, PageEditorItem>>(() => Object.fromEntries(items.map((item) => [item.id, { ...item }])));
+  const [selectedItemId, setSelectedItemId] = useState("");
 
   const selected = sectionDrafts[selectedId] || ordered[0];
+  const selectedItems = useMemo(() => {
+    if (!selected) return [];
+    return items
+      .filter((item) => item.sectionId === selected.id)
+      .map((item) => itemDrafts[item.id] || item)
+      .sort((a, b) => a.position - b.position);
+  }, [itemDrafts, items, selected]);
+
+  useEffect(() => {
+    if (!selectedItems.length) {
+      setSelectedItemId("");
+      return;
+    }
+    if (!selectedItems.some((item) => item.id === selectedItemId)) setSelectedItemId(selectedItems[0].id);
+  }, [selectedId, selectedItemId, selectedItems]);
+
   if (!selected) return <div className={styles.empty}>Nenhuma seção registrada para esta página.</div>;
 
   const visibleSectionFields = sectionFields[selected.sectionKey] || [];
   const visibleItemFields = itemFields[selected.sectionKey] || [];
-  const selectedItems = items.filter((item) => item.sectionId === selected.id).map((item) => itemDrafts[item.id] || item);
+  const selectedItem = selectedItems.find((item) => item.id === selectedItemId) || selectedItems[0];
   const title = sectionLabel(selected);
+  const hasLinkedMedia = selectedItems.some((item) => Boolean(item.mediaId));
+
+  useEffect(() => {
+    const detail = {
+      title: `Configurar seção: ${title}`,
+      description: `Configure ${title} no painel rolável à esquerda e acompanhe a página completa no preview fixo à direita.`,
+      back: { label: "Páginas", href: "/admin/pages" },
+    };
+    window.dispatchEvent(new CustomEvent("admin:context-header", { detail }));
+    return () => window.dispatchEvent(new CustomEvent("admin:context-header", { detail: null }));
+  }, [title]);
 
   const patchSection = (field: SectionField, value: string) => setSectionDrafts((current) => ({ ...current, [selected.id]: { ...current[selected.id], [field]: value } }));
   const patchItem = (id: string, field: ItemField, value: string) => setItemDrafts((current) => ({ ...current, [id]: { ...current[id], [field]: value } }));
 
-  return <div className={styles.editor} data-testid="page-section-workbench">
-    <div className={styles.topline}>
-      <Link className={styles.backButton} href="/admin/pages"><span aria-hidden="true">←</span> Páginas</Link>
-      <div className={styles.topActions}>{publicRoute ? <Link className={styles.outlineButton} href={publicRoute} target="_blank" rel="noopener noreferrer"><AdminIcon name="eye" size={16} />Ver página pública</Link> : null}</div>
-    </div>
+  const chooseSection = (id: string) => {
+    setSelectedId(id);
+    setTab("content");
+    setSelectedItemId("");
+  };
 
-    <div className={styles.heading}>
-      <span>{page.title.toUpperCase()}</span>
-      <h1>Configurar seção: {title}</h1>
-      <p>Configure {title} no painel rolável à esquerda e acompanhe o preview fixo à direita.</p>
-    </div>
-
-    <div className={styles.workbench}>
-      <div className={styles.rail}>
-        <section className={styles.summaryCard}>
-          <div className={styles.summaryHead}><div><small>{title.toUpperCase()}</small><h2>Configurações da seção</h2><p>{selected.enabled ? "Seção ativa no conteúdo CMS." : "Seção atualmente desativada no conteúdo CMS."}</p></div><span className={`${styles.stateBadge} ${selected.enabled ? styles.active : styles.inactive}`}><i />{selected.enabled ? "Ativa" : "Inativa"}</span></div>
-          <div className={styles.sectionPicker}><span>Seção</span><select value={selected.id} onChange={(event) => { setSelectedId(event.target.value); setTab("content"); }}>{ordered.map((section, index) => <option key={section.id} value={section.id}>{String(index + 1).padStart(2, "0")} · {sectionLabel(section)}</option>)}</select></div>
-        </section>
-
-        <div className={styles.tabs} role="tablist" aria-label="Configuração da seção">
-          <button className={tab === "content" ? styles.currentTab : ""} onClick={() => setTab("content")} type="button">Conteúdo</button>
-          <button className={tab === "appearance" ? styles.currentTab : ""} onClick={() => setTab("appearance")} type="button">Aparência</button>
-          <button className={tab === "behavior" ? styles.currentTab : ""} onClick={() => setTab("behavior")} type="button">Comportamento</button>
+  return <div className={styles.workbench} data-testid="page-section-workbench">
+    <aside className={styles.editorRail} aria-label="Configuração da seção">
+      <section className={styles.mediaCard}>
+        <div className={styles.mediaHeading}>
+          <div><span>{title.toUpperCase()}</span><h2>Imagem de Fundo</h2></div>
+          <span className={styles.mediaState}>{hasLinkedMedia ? "Mídia vinculada" : "Sem imagem"}</span>
         </div>
+        <p>A miniatura identifica apenas o asset. O resultado final é mostrado exclusivamente no preview oficial da página.</p>
+        <div className={styles.mediaPreview}>{hasLinkedMedia ? <><AdminIcon name="image" size={30}/><strong>Mídia vinculada à seção</strong><small>O componente público decide como este asset é apresentado.</small></> : <><AdminIcon name="image" size={30}/><strong>Nenhuma imagem configurada</strong><small>A seção continuará funcionando com o fundo visual padrão.</small></>}</div>
+        <Link className={styles.uploadButton} href="/admin/media"><AdminIcon name="upload" size={14}/><span>{hasLinkedMedia ? "Gerenciar imagem" : "Adicionar imagem"}</span></Link>
+        <div className={styles.mediaFooter}><span>Imagem sincronizada</span><div><button disabled type="button">Descartar</button><Link href="/admin/media"><AdminIcon name="document" size={13}/>Salvar imagem</Link></div></div>
+      </section>
 
-        <section className={styles.detailCard}>
-          {tab === "content" ? <>
-            <header><h3>Conteúdo</h3><p>Edite somente os campos funcionais desta seção. A persistência e as regras atuais do projeto continuam sendo usadas.</p></header>
-            {visibleSectionFields.length ? <form action={updatePageSection} className={styles.form}>
-              <input type="hidden" name="id" value={selected.id} />
-              <input type="hidden" name="pageId" value={page.id} />
-              <input type="hidden" name="position" value={selected.position} />
-              <input type="hidden" name="enabled" value={selected.enabled ? "true" : ""} />
-              {hiddenSectionFields(selected, visibleSectionFields)}
-              <div className={styles.fields}>{visibleSectionFields.map((field) => <label key={field}><span>{fieldLabels[field]}</span>{field === "body" || field === "subtitle" ? <textarea name={field} rows={field === "body" ? 7 : 4} value={selected[field]} onChange={(event) => patchSection(field, event.target.value)} /> : <input name={field} value={selected[field]} onChange={(event) => patchSection(field, event.target.value)} />}</label>)}</div>
-              <div className={styles.formActions}><button className={styles.darkButton} type="submit"><AdminIcon name="document" size={15} />Salvar alterações</button></div>
-            </form> : <div className={styles.emptyInline}>Esta seção não possui campos editoriais diretos neste contrato.</div>}
-
-            {selectedItems.length && visibleItemFields.length ? <div className={styles.itemsBlock}><div className={styles.itemsHeading}><strong>Itens da seção</strong><span>{selectedItems.length} item{selectedItems.length === 1 ? "" : "s"}</span></div>{selectedItems.map((item, index) => <form action={updatePageSectionItem} className={styles.itemCard} key={item.id}>
-              <input type="hidden" name="id" value={item.id} /><input type="hidden" name="pageId" value={page.id} /><input type="hidden" name="itemKey" value={item.itemKey} /><input type="hidden" name="position" value={item.position} /><input type="hidden" name="enabled" value={item.enabled ? "true" : ""} /><input type="hidden" name="mediaId" value={item.mediaId || ""} />{hiddenItemFields(item, visibleItemFields)}
-              <div className={styles.itemHead}><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{item.title || item.label || `Item ${index + 1}`}</strong><small>{item.enabled ? "Item ativo" : "Item inativo"}</small></div></div>
-              <div className={styles.itemFields}>{visibleItemFields.map((field) => <label key={field}><span>{fieldLabels[field]}</span>{field === "body" ? <textarea name={field} rows={4} value={item[field]} onChange={(event) => patchItem(item.id, field, event.target.value)} /> : <input name={field} value={item[field]} onChange={(event) => patchItem(item.id, field, event.target.value)} />}</label>)}</div>
-              <div className={styles.itemActions}><button className={styles.outlineButton} type="submit">Salvar item</button></div>
-            </form>)}</div> : null}
-          </> : null}
-
-          {tab === "appearance" ? <><header><h3>Aparência · {viewportLabel(viewport)}</h3><p>O componente público atual continua sendo a fonte de verdade para tipografia, cores e composição visual.</p></header><div className={styles.readonlyGrid}><div><span>Layout</span><strong>Herdado do componente público</strong></div><div><span>Viewport do preview</span><strong>{viewportLabel(viewport)}</strong></div><div><span>Tipo da seção</span><strong>{selected.type.replaceAll("_", " ")}</strong></div></div></> : null}
-
-          {tab === "behavior" ? <><header><h3>Comportamento</h3><p>Estado e ordem permanecem vinculados aos mesmos campos persistidos pelo projeto.</p></header><form action={updatePageSection} className={styles.behaviorForm}>
-            <input type="hidden" name="id" value={selected.id} /><input type="hidden" name="pageId" value={page.id} /><input type="hidden" name="position" value={selected.position} />{(["eyebrow", "title", "subtitle", "body"] as SectionField[]).map((field) => <input key={field} name={field} type="hidden" value={selected[field]} />)}
-            <label className={styles.toggle}><input checked={selected.enabled} name="enabled" type="checkbox" onChange={(event) => setSectionDrafts((current) => ({ ...current, [selected.id]: { ...current[selected.id], enabled: event.target.checked } }))} /><span><strong>Seção ativa</strong><small>Controla a disponibilidade desta seção no conteúdo CMS.</small></span></label>
-            <div className={styles.rule}><span>Ordem</span><strong>{String(selected.position).padStart(2, "0")}</strong><small>A ordem estrutural continua sendo a registrada no banco.</small></div>
-            <div className={styles.formActions}><button className={styles.darkButton} type="submit">Salvar comportamento</button></div>
-          </form></> : null}
-        </section>
+      <div className={styles.tabs} role="tablist" aria-label="Configuração da seção">
+        <button aria-selected={tab === "content"} className={tab === "content" ? styles.currentTab : ""} onClick={() => setTab("content")} role="tab" type="button">Conteúdo</button>
+        <button aria-selected={tab === "appearance"} className={tab === "appearance" ? styles.currentTab : ""} onClick={() => setTab("appearance")} role="tab" type="button">Aparência</button>
+        <button aria-selected={tab === "behavior"} className={tab === "behavior" ? styles.currentTab : ""} onClick={() => setTab("behavior")} role="tab" type="button">Comportamento</button>
       </div>
 
-      <section className={styles.previewPanel} aria-label="Preview da seção">
-        <header><div><h2>Preview da seção</h2><p>{viewportLabel(viewport)} · edição em tempo real · alterações refletidas antes de salvar.</p></div><div className={styles.devices}>
-          <button aria-label="Desktop" aria-pressed={viewport === "desktop"} className={viewport === "desktop" ? styles.deviceActive : ""} onClick={() => setViewport("desktop")} type="button"><AdminIcon name="monitor" size={17} /></button>
-          <button aria-label="Tablet" aria-pressed={viewport === "tablet"} className={viewport === "tablet" ? styles.deviceActive : ""} onClick={() => setViewport("tablet")} type="button"><AdminIcon name="tablet" size={17} /></button>
-          <button aria-label="Mobile" aria-pressed={viewport === "mobile"} className={viewport === "mobile" ? styles.deviceActive : ""} onClick={() => setViewport("mobile")} type="button"><AdminIcon name="smartphone" size={17} /></button>
-        </div></header>
-        <div className={styles.previewCanvas}><div className={`${styles.deviceCanvas} ${styles[viewport]}`}>
-          <section className={`${styles.previewSection} ${selected.sectionKey === "hero" ? styles.heroPreview : ""}`}>
-            <div className={styles.previewCopy}>{selected.eyebrow ? <span>{selected.eyebrow}</span> : null}<h2>{selected.title || title}</h2>{selected.subtitle ? <p>{selected.subtitle}</p> : null}{selected.body ? <p>{selected.body}</p> : null}{selectedItems.length ? <div className={styles.previewItems}>{selectedItems.slice(0, 4).map((item) => <div key={item.id}><strong>{item.title || item.label || "Item"}</strong>{item.subtitle ? <small>{item.subtitle}</small> : null}{item.label ? <b>{item.label}</b> : null}</div>)}</div> : null}</div>
-          </section>
-        </div></div>
-      </section>
-    </div>
+      {tab === "content" ? <>
+        <section className={styles.sectionSelector}>
+          <label><span>Seção</span><select value={selected.id} onChange={(event) => chooseSection(event.target.value)}>{ordered.map((section, index) => <option key={section.id} value={section.id}>{String(index + 1).padStart(2, "0")} · {sectionLabel(section)}</option>)}</select></label>
+        </section>
+
+        {selectedItems.length && visibleItemFields.length ? <section className={styles.highlightsCard}>
+          <header><div><h3>{selected.sectionKey === "hero" ? "Destaques do Hero" : "Itens da seção"}</h3><p>Conteúdo editorial já persistido no projeto. Selecione um item para editar.</p></div></header>
+          <div className={styles.highlightList}>{selectedItems.map((item, index) => <button className={item.id === selectedItem?.id ? styles.selectedHighlight : ""} key={item.id} onClick={() => setSelectedItemId(item.id)} type="button"><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{item.title || item.label || `Item ${index + 1}`}</strong><small>Ordem {item.position} · {item.enabled ? "Ativo" : "Inativo"}</small></div><span className={styles.dragMark}>⋮⋮</span></button>)}</div>
+        </section> : null}
+
+        {selectedItem && visibleItemFields.length ? <section className={styles.detailCard}>
+          <header className={styles.editingHeader}><span>Editando destaque {String(selectedItems.findIndex((item) => item.id === selectedItem.id) + 1).padStart(2, "0")} — {selectedItem.title || selectedItem.label || "Item"}</span></header>
+          <form action={updatePageSectionItem} className={styles.form}>
+            <input type="hidden" name="id" value={selectedItem.id}/><input type="hidden" name="pageId" value={page.id}/><input type="hidden" name="itemKey" value={selectedItem.itemKey}/><input type="hidden" name="position" value={selectedItem.position}/><input type="hidden" name="enabled" value={selectedItem.enabled ? "true" : ""}/><input type="hidden" name="mediaId" value={selectedItem.mediaId || ""}/>{hiddenItemFields(selectedItem, visibleItemFields)}
+            <div className={styles.innerSectionTitle}><strong>Conteúdo</strong><small>Conteúdo único + tipografia responsiva da headline</small></div>
+            <div className={styles.fields}>{visibleItemFields.map((field) => <label key={field}><span>{fieldLabels[field]}</span>{field === "body" ? <textarea name={field} rows={5} value={selectedItem[field]} onChange={(event) => patchItem(selectedItem.id, field, event.target.value)}/> : <input name={field} value={selectedItem[field]} onChange={(event) => patchItem(selectedItem.id, field, event.target.value)}/>}</label>)}</div>
+            <div className={styles.formActions}><button className={styles.primaryButton} type="submit"><AdminIcon name="document" size={14}/>Salvar item</button></div>
+          </form>
+        </section> : null}
+
+        <section className={styles.detailCard}>
+          <header><h3>Conteúdo da seção</h3><p>Campos funcionais ligados diretamente ao contrato atual desta seção.</p></header>
+          {visibleSectionFields.length ? <form action={updatePageSection} className={styles.form}>
+            <input type="hidden" name="id" value={selected.id}/><input type="hidden" name="pageId" value={page.id}/><input type="hidden" name="position" value={selected.position}/><input type="hidden" name="enabled" value={selected.enabled ? "true" : ""}/>{hiddenSectionFields(selected, visibleSectionFields)}
+            <div className={styles.fields}>{visibleSectionFields.map((field) => <label key={field}><span>{fieldLabels[field]}</span>{field === "body" || field === "subtitle" ? <textarea name={field} rows={field === "body" ? 7 : 4} value={selected[field]} onChange={(event) => patchSection(field, event.target.value)}/> : <input name={field} value={selected[field]} onChange={(event) => patchSection(field, event.target.value)}/>}</label>)}</div>
+            <div className={styles.formActions}><button className={styles.primaryButton} type="submit"><AdminIcon name="document" size={14}/>Salvar alterações</button></div>
+          </form> : <div className={styles.emptyInline}>Esta seção não possui campos editoriais diretos neste contrato.</div>}
+        </section>
+      </> : null}
+
+      {tab === "appearance" ? <section className={styles.detailCard}><header><h3>Aparência</h3><p>A renderização pública real é a fonte de verdade visual.</p></header><div className={styles.readonlyGrid}><div><span>Layout</span><strong>Componente público do projeto</strong></div><div><span>Preview</span><strong>{viewportLabel(viewport)}</strong></div><div><span>Tipo</span><strong>{selected.type.replaceAll("_", " ")}</strong></div></div></section> : null}
+
+      {tab === "behavior" ? <section className={styles.detailCard}><header><h3>Comportamento</h3><p>Estado e ordem usam os mesmos campos persistidos atualmente.</p></header><form action={updatePageSection} className={styles.form}>
+        <input type="hidden" name="id" value={selected.id}/><input type="hidden" name="pageId" value={page.id}/><input type="hidden" name="position" value={selected.position}/>{(["eyebrow", "title", "subtitle", "body"] as SectionField[]).map((field) => <input key={field} name={field} type="hidden" value={selected[field]}/>)}
+        <label className={styles.toggle}><input checked={selected.enabled} name="enabled" type="checkbox" onChange={(event) => setSectionDrafts((current) => ({ ...current, [selected.id]: { ...current[selected.id], enabled: event.target.checked } }))}/><span><strong>Seção ativa</strong><small>Controla a disponibilidade desta seção no conteúdo CMS.</small></span></label>
+        <div className={styles.rule}><span>Ordem</span><strong>{String(selected.position).padStart(2, "0")}</strong><small>A ordem continua sendo a registrada no banco.</small></div>
+        <div className={styles.formActions}><button className={styles.primaryButton} type="submit">Salvar comportamento</button></div>
+      </form></section> : null}
+    </aside>
+
+    <section className={styles.previewPanel} aria-label="Preview da página inteira">
+      <header><div><h2>Preview da página inteira</h2><p>{viewportLabel(viewport)} · página pública real · o conteúdo salvo é carregado no mesmo destino do site.</p></div><div className={styles.devices}>
+        <button aria-label="Desktop" aria-pressed={viewport === "desktop"} className={viewport === "desktop" ? styles.deviceActive : ""} onClick={() => setViewport("desktop")} type="button"><AdminIcon name="monitor" size={17}/></button>
+        <button aria-label="Tablet" aria-pressed={viewport === "tablet"} className={viewport === "tablet" ? styles.deviceActive : ""} onClick={() => setViewport("tablet")} type="button"><AdminIcon name="tablet" size={17}/></button>
+        <button aria-label="Mobile" aria-pressed={viewport === "mobile"} className={viewport === "mobile" ? styles.deviceActive : ""} onClick={() => setViewport("mobile")} type="button"><AdminIcon name="smartphone" size={17}/></button>
+      </div></header>
+      <div className={styles.previewStage}>
+        <div className={`${styles.frameViewport} ${styles[viewport]}`}>
+          {publicRoute ? <iframe className={styles.previewFrame} src={publicRoute} title={`Preview de ${page.title}`} /> : <div className={styles.noPreview}><AdminIcon name="eye" size={26}/><strong>Preview público indisponível</strong><p>Esta página não possui rota pública registrada.</p></div>}
+        </div>
+      </div>
+    </section>
   </div>;
 }
