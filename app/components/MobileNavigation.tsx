@@ -2,11 +2,17 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
+import { trustedPublicLink } from "@/lib/public-link";
 
 type NavigationItem = { id: string; label: string; url: string; newTab: boolean };
 
-function isExternal(url: string) {
-  return /^https?:\/\//i.test(url);
+function MobileNavigationLink({ item }: { item: NavigationItem }) {
+  const resolved = trustedPublicLink(item.url);
+  if (!resolved) return <span aria-disabled="true">{item.label}</span>;
+  if (resolved.external) {
+    return <a href={resolved.href} target={item.newTab ? "_blank" : undefined} rel={item.newTab ? "noreferrer" : undefined}>{item.label}</a>;
+  }
+  return <Link href={resolved.href}>{item.label}</Link>;
 }
 
 export function MobileNavigation({ items }: { items: NavigationItem[] }) {
@@ -30,9 +36,7 @@ export function MobileNavigation({ items }: { items: NavigationItem[] }) {
         <span>Menu</span><i aria-hidden="true" />
       </summary>
       <nav id="mobile-navigation-menu" aria-label="Navegação mobile" onClick={() => closeMenu()}>
-        {items.map((item) => isExternal(item.url) ? (
-          <a key={item.id} href={item.url} target={item.newTab ? "_blank" : undefined} rel={item.newTab ? "noreferrer" : undefined}>{item.label}</a>
-        ) : <Link key={item.id} href={item.url}>{item.label}</Link>)}
+        {items.map((item) => <MobileNavigationLink item={item} key={item.id} />)}
         <Link className="mobileNavCta" href="/contato">Quero Contratar</Link>
       </nav>
     </details>
