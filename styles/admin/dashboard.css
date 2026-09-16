@@ -1,95 +1,95 @@
 /* Dashboard: high-fidelity implementation of the approved Lander reference. */
-.adminDashboard { display: grid; width: 100%; max-width: none; margin: 0; gap: 18px; }
-.adminDashboardHeading { display: flex; align-items: end; justify-content: space-between; gap: 20px; padding: 1px 2px 5px; }
-.adminDashboardHeading h1 { margin: 0 0 5px; color: #101114; font-size: clamp(30px, 2.2vw, 34px); font-weight: 800; letter-spacing: -.035em; line-height: 1.05; }
-.adminDashboardHeading p { margin: 0; color: #52637a; font-size: 13px; }
-.adminPreviewNotice { padding: 10px 14px; border: 1px solid #ead5aa; border-radius: 8px; background: #fff8e8; color: #61481c; font-size: 12px; line-height: 1.5; }
+.adminDashboard { display: grid; width: 100%; max-width: none; margin: 0; gap: 14px; }
+.adminDashboardHeading { display: flex; align-items: end; justify-content: space-between; gap: 16px; padding: 0 2px 3px; }
+.adminDashboardHeading h1 { margin: 0 0 4px; color: #101114; font-size: clamp(22px, 1.6vw, 26px); font-weight: 800; letter-spacing: -.03em; line-height: 1.1; }
+.adminDashboardHeading p { margin: 0; color: #52637a; font-size: 12px; }
+.adminPreviewNotice { padding: 9px 12px; border: 1px solid #ead5aa; border-radius: 8px; background: #fff8e8; color: #61481c; font-size: 12px; line-height: 1.5; }
 
-.adminMetricGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-.adminMetricCard { position: relative; display: grid; grid-template-columns: 52px minmax(0, 1fr) 84px; align-items: center; gap: 14px; min-height: 136px; padding: 18px 20px; overflow: hidden; border: 1px solid #e1e6eb; border-radius: 11px; background: #fff; box-shadow: 0 4px 16px #10182808; }
-.adminMetricIcon { display: grid; width: 52px; height: 52px; place-items: center; border-radius: 50%; }
+.adminMetricGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.adminMetricCard { position: relative; display: grid; grid-template-columns: 44px minmax(0, 1fr) 72px; align-items: center; gap: 12px; min-height: 108px; padding: 14px 16px; overflow: hidden; border: 1px solid #e1e6eb; border-radius: 10px; background: #fff; box-shadow: 0 3px 12px #10182808; }
+.adminMetricIcon { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 50%; }
 .adminMetricCard.is-red .adminMetricIcon { background: #ffecee; color: #ef2731; }
 .adminMetricCard.is-blue .adminMetricIcon { background: #eaf3ff; color: #2782ff; }
 .adminMetricCard.is-green .adminMetricIcon { background: #e8fbf2; color: #10bd69; }
 .adminMetricCard.is-orange .adminMetricIcon { background: #fff4e2; color: #f2a20d; }
-.adminMetricCopy { display: grid; gap: 2px; min-width: 0; }
-.adminMetricCopy > span { color: #26364b; font-size: 12px; font-weight: 700; }
-.adminMetricCopy strong { color: #090b0f; font-size: clamp(27px, 2vw, 31px); font-variant-numeric: tabular-nums; font-weight: 800; letter-spacing: -.04em; line-height: 1.08; }
-.adminMetricCopy small { display: grid; gap: 1px; margin-top: 4px; color: #74869d; font-size: 10px; line-height: 1.25; }
-.adminMetricCopy small b { font-size: 11px; font-weight: 800; }
+.adminMetricCopy { display: grid; gap: 1px; min-width: 0; }
+.adminMetricCopy > span { color: #26364b; font-size: 11px; font-weight: 700; }
+.adminMetricCopy strong { color: #090b0f; font-size: clamp(21px, 1.45vw, 25px); font-variant-numeric: tabular-nums; font-weight: 800; letter-spacing: -.035em; line-height: 1.1; }
+.adminMetricCopy small { display: grid; gap: 1px; margin-top: 3px; color: #74869d; font-size: 10px; line-height: 1.25; }
+.adminMetricCopy small b { font-size: 10px; font-weight: 800; }
 .adminMetricCopy small.isPositive b { color: #08a458; }
 .adminMetricCopy small.isNegative b { color: #d92d20; }
 .adminMetricCopy small em { color: #6d819d; font-style: normal; font-weight: 500; }
-.adminMetricSpark { align-self: center; width: 84px; height: 38px; overflow: visible; }
+.adminMetricSpark { align-self: center; width: 72px; height: 32px; overflow: visible; }
 .adminMetricCard.is-red .adminMetricSpark { color: #ff5c67; }
 .adminMetricCard.is-blue .adminMetricSpark { color: #2580ff; }
 .adminMetricCard.is-green .adminMetricSpark { color: #13bb68; }
 .adminMetricCard.is-orange .adminMetricSpark { color: #f4a20b; }
 
-.adminPerformanceGrid { display: grid; grid-template-columns: minmax(0, 1.42fr) minmax(360px, 1fr); gap: 16px; }
-.adminDashboardLowerGrid { display: grid; grid-template-columns: minmax(360px, .78fr) minmax(0, 1.02fr); gap: 16px; align-items: stretch; }
-.adminDashboardPanel { min-width: 0; overflow: hidden; border: 1px solid #e1e6eb; border-radius: 11px; background: #fff; box-shadow: 0 4px 16px #10182807; }
-.adminAnalyticsPanelHeading { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 78px; padding: 14px 18px; border-bottom: 1px solid #eef1f4; }
-.adminPanelHeadingIdentity { display: flex; align-items: center; gap: 14px; min-width: 0; }
-.adminPanelHeadingIcon { display: grid; flex: none; width: 44px; height: 44px; place-items: center; border-radius: 50%; background: #f2f4f6; color: #171b20; }
+.adminPerformanceGrid { display: grid; grid-template-columns: minmax(0, 1.42fr) minmax(340px, 1fr); gap: 12px; }
+.adminDashboardLowerGrid { display: grid; grid-template-columns: minmax(340px, .78fr) minmax(0, 1.02fr); gap: 12px; align-items: stretch; }
+.adminDashboardPanel { min-width: 0; overflow: hidden; border: 1px solid #e1e6eb; border-radius: 10px; background: #fff; box-shadow: 0 3px 12px #10182807; }
+.adminAnalyticsPanelHeading { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 68px; padding: 11px 14px; border-bottom: 1px solid #eef1f4; }
+.adminPanelHeadingIdentity { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.adminPanelHeadingIcon { display: grid; flex: none; width: 38px; height: 38px; place-items: center; border-radius: 50%; background: #f2f4f6; color: #171b20; }
 .adminPanelHeadingIdentity > div { min-width: 0; }
-.adminAnalyticsPanelHeading h2 { margin: 0; color: #15191e; font-size: 16px; font-weight: 800; letter-spacing: -.02em; }
+.adminAnalyticsPanelHeading h2 { margin: 0; color: #15191e; font-size: 14px; font-weight: 800; letter-spacing: -.015em; }
 .adminAnalyticsPanelHeading p { margin: 2px 0 0; color: #6d819d; font-size: 11px; line-height: 1.35; }
-.adminPeriodSelect { min-height: 38px; min-width: 146px; padding: 0 34px 0 13px; border: 1px solid #e1e6eb; border-radius: 8px; background: #fff; color: #161a20; font: inherit; font-size: 11px; font-weight: 800; }
+.adminPeriodSelect { min-height: 34px; min-width: 136px; padding: 0 30px 0 11px; border: 1px solid #e1e6eb; border-radius: 8px; background: #fff; color: #161a20; font: inherit; font-size: 11px; font-weight: 800; }
 .adminPeriodSelect:disabled { color: #98a2b3; background: #f8fafc; }
-.adminTextButton { flex: none; min-height: 36px; padding: 9px 14px; border: 1px solid #e1e6eb; border-radius: 8px; background: #fff; color: #111820; font-size: 11px; font-weight: 800; text-decoration: none; }
-.adminPrimaryCompact { display: inline-flex; align-items: center; gap: 7px; flex: none; min-height: 38px; padding: 9px 16px; border-radius: 8px; background: #090b0e; color: #fff; font-size: 11px; font-weight: 800; text-decoration: none; }
+.adminTextButton { flex: none; min-height: 34px; padding: 8px 12px; border: 1px solid #e1e6eb; border-radius: 8px; background: #fff; color: #111820; font-size: 11px; font-weight: 800; text-decoration: none; }
+.adminPrimaryCompact { display: inline-flex; align-items: center; gap: 6px; flex: none; min-height: 34px; padding: 8px 13px; border-radius: 8px; background: #090b0e; color: #fff; font-size: 11px; font-weight: 800; text-decoration: none; }
 .adminPrimaryCompact:hover { background: #20252b; }
 
-.adminAnalyticsEmpty { display: grid; min-height: 255px; place-items: center; align-content: center; gap: 7px; padding: 30px; color: var(--admin-muted); text-align: center; }
-.adminDevicesPanel .adminAnalyticsEmpty { min-height: 255px; }
-.adminAnalyticsEmptyIcon { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 50%; background: #f2f4f7; color: #667085; }
-.adminAnalyticsEmpty strong { color: #344054; font-size: 13px; }
+.adminAnalyticsEmpty { display: grid; min-height: 224px; place-items: center; align-content: center; gap: 6px; padding: 24px; color: var(--admin-muted); text-align: center; }
+.adminDevicesPanel .adminAnalyticsEmpty { min-height: 224px; }
+.adminAnalyticsEmptyIcon { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 50%; background: #f2f4f7; color: #667085; }
+.adminAnalyticsEmpty strong { color: #344054; font-size: 12px; }
 .adminAnalyticsEmpty p { max-width: 360px; margin: 0; color: #98a2b3; font-size: 11px; line-height: 1.5; }
 
-.adminLineChart { display: grid; min-height: 264px; gap: 10px; padding: 14px 18px 12px; }
-.adminLineChartPlot { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 6px; min-height: 205px; }
-.adminChartYLabels { display: flex; flex-direction: column; justify-content: space-between; padding: 1px 0 23px; color: #7c8ea7; font-size: 10px; line-height: 1; text-align: right; }
-.adminLineChartCanvas { position: relative; min-width: 0; padding-bottom: 24px; }
-.adminLineChartCanvas svg { display: block; width: 100%; height: 180px; overflow: visible; }
+.adminLineChart { display: grid; min-height: 232px; gap: 8px; padding: 12px 14px 10px; }
+.adminLineChartPlot { display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 6px; min-height: 178px; }
+.adminChartYLabels { display: flex; flex-direction: column; justify-content: space-between; padding: 1px 0 21px; color: #7c8ea7; font-size: 10px; line-height: 1; text-align: right; }
+.adminLineChartCanvas { position: relative; min-width: 0; padding-bottom: 22px; }
+.adminLineChartCanvas svg { display: block; width: 100%; height: 154px; overflow: visible; }
 .adminChartGridLine { stroke: #edf0f3; stroke-width: 1; vector-effect: non-scaling-stroke; }
 .adminChartVisitorsLine { stroke: #ef1c24; stroke-width: 2.4; vector-effect: non-scaling-stroke; }
 .adminChartViewsLine { stroke: #b7bec8; stroke-width: 2; vector-effect: non-scaling-stroke; }
 .adminChartXAxis { position: absolute; right: 0; bottom: 0; left: 0; display: flex; justify-content: space-between; gap: 4px; color: #70839f; font-size: 9px; }
 .adminChartXAxis span { white-space: nowrap; }
-.adminChartLegend { display: flex; align-items: center; gap: 24px; padding-left: 48px; color: #445873; font-size: 11px; }
+.adminChartLegend { display: flex; align-items: center; gap: 20px; padding-left: 44px; color: #445873; font-size: 11px; }
 .adminChartLegend span { display: inline-flex; align-items: center; gap: 7px; }
 .adminChartLegend i { width: 8px; height: 8px; border-radius: 50%; }
 .adminChartLegend i.visitors { background: #ef1c24; }
 .adminChartLegend i.views { background: #c6ccd4; }
 
-.adminDeviceBreakdown { display: grid; grid-template-columns: 190px minmax(0, 1fr); align-items: center; gap: 22px; min-height: 264px; padding: 20px 28px 22px; }
-.adminDeviceDonut { position: relative; display: grid; width: 168px; height: 168px; place-content: center; border-radius: 50%; text-align: center; }
-.adminDeviceDonut::after { content: ""; position: absolute; inset: 36px; border-radius: 50%; background: #fff; }
+.adminDeviceBreakdown { display: grid; grid-template-columns: 164px minmax(0, 1fr); align-items: center; gap: 18px; min-height: 232px; padding: 16px 20px 18px; }
+.adminDeviceDonut { position: relative; display: grid; width: 146px; height: 146px; place-content: center; border-radius: 50%; text-align: center; }
+.adminDeviceDonut::after { content: ""; position: absolute; inset: 32px; border-radius: 50%; background: #fff; }
 .adminDeviceDonut strong, .adminDeviceDonut span { position: relative; z-index: 1; }
-.adminDeviceDonut strong { color: #111318; font-size: 24px; font-weight: 800; letter-spacing: -.035em; }
+.adminDeviceDonut strong { color: #111318; font-size: 20px; font-weight: 800; letter-spacing: -.03em; }
 .adminDeviceDonut span { color: #687c96; font-size: 10px; }
 .adminDeviceList { display: grid; gap: 0; }
-.adminDeviceList > div { display: grid; grid-template-columns: 1fr auto 62px; gap: 10px; align-items: center; min-height: 48px; border-bottom: 1px solid #edf0f3; color: #26364b; font-size: 11px; }
+.adminDeviceList > div { display: grid; grid-template-columns: 1fr auto 58px; gap: 8px; align-items: center; min-height: 42px; border-bottom: 1px solid #edf0f3; color: #26364b; font-size: 11px; }
 .adminDeviceList > div:last-child { border-bottom: 0; }
-.adminDeviceName { display: inline-flex; align-items: center; gap: 9px; }
-.adminDeviceName i { width: 10px; height: 10px; border-radius: 50%; background: #d7dce2; }
+.adminDeviceName { display: inline-flex; align-items: center; gap: 8px; }
+.adminDeviceName i { width: 9px; height: 9px; border-radius: 50%; background: #d7dce2; }
 .adminDeviceName.is-desktop i { background: #ef111b; }
 .adminDeviceName.is-mobile i { background: #252c34; }
 .adminDeviceName.is-tablet i { background: #d7dce2; }
-.adminDeviceList strong { color: #111318; font-size: 12px; font-weight: 800; }
-.adminDeviceList small { color: #5f7593; font-size: 11px; text-align: right; }
+.adminDeviceList strong { color: #111318; font-size: 11px; font-weight: 800; }
+.adminDeviceList small { color: #5f7593; font-size: 10px; text-align: right; }
 
-.adminActivityList { display: grid; padding: 0 18px; }
-.adminActivityList > div { display: grid; grid-template-columns: 42px minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 58px; padding: 8px 0; border-bottom: 1px solid #eef1f4; }
+.adminActivityList { display: grid; padding: 0 14px; }
+.adminActivityList > div { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 50px; padding: 6px 0; border-bottom: 1px solid #eef1f4; }
 .adminActivityList > div:last-child { border-bottom: 0; }
-.adminActivityIcon { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 50%; background: #ffecef; color: #ef2731; }
+.adminActivityIcon { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 50%; background: #ffecef; color: #ef2731; }
 .adminActivityIcon.is-neutral { background: #f0f2f4; color: #11161b; }
 .adminActivityCopy { display: grid; gap: 1px; min-width: 0; }
-.adminActivityList b { overflow: hidden; color: #273244; font-size: 12px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.adminActivityList b { overflow: hidden; color: #273244; font-size: 11px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
 .adminActivityList small { overflow: hidden; color: #607694; font-size: 10px; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
 .adminActivityList time { color: #607694; font-size: 10px; white-space: nowrap; }
-.adminPanelEmpty { display: grid; min-height: 210px; place-items: center; padding: 28px 20px; color: #98a2b3; font-size: 12px; text-align: center; }
+.adminPanelEmpty { display: grid; min-height: 180px; place-items: center; padding: 24px 18px; color: #98a2b3; font-size: 11px; text-align: center; }
 
 .adminPublicationsTableWrap { width: 100%; overflow-x: auto; padding: 0 14px 10px; }
 .adminPublicationsTable { width: 100%; border-collapse: collapse; table-layout: fixed; }
@@ -118,35 +118,36 @@
 .adminPublicationStatus.is-archived { background: #f2f4f7; color: #667085; }
 
 @media (max-width: 1280px) {
-  .adminMetricCard { grid-template-columns: 48px minmax(0, 1fr); min-height: 122px; padding: 16px; }
+  .adminMetricCard { grid-template-columns: 40px minmax(0, 1fr); min-height: 100px; padding: 13px; }
+  .adminMetricIcon { width: 40px; height: 40px; }
   .adminMetricSpark { display: none; }
-  .adminPerformanceGrid { grid-template-columns: minmax(0, 1.35fr) minmax(330px, .95fr); }
-  .adminDeviceBreakdown { grid-template-columns: 150px minmax(0, 1fr); padding: 18px; }
-  .adminDeviceDonut { width: 140px; height: 140px; }
-  .adminDeviceDonut::after { inset: 30px; }
+  .adminPerformanceGrid { grid-template-columns: minmax(0, 1.35fr) minmax(320px, .95fr); }
+  .adminDeviceBreakdown { grid-template-columns: 136px minmax(0, 1fr); padding: 16px; }
+  .adminDeviceDonut { width: 124px; height: 124px; }
+  .adminDeviceDonut::after { inset: 27px; }
 }
 @media (max-width: 1024px) {
   .adminMetricGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .adminPerformanceGrid, .adminDashboardLowerGrid { grid-template-columns: minmax(0, 1fr); }
-  .adminDeviceBreakdown { grid-template-columns: 190px minmax(0, 1fr); }
-  .adminDeviceDonut { width: 168px; height: 168px; }
-  .adminDeviceDonut::after { inset: 36px; }
+  .adminDeviceBreakdown { grid-template-columns: 164px minmax(0, 1fr); }
+  .adminDeviceDonut { width: 146px; height: 146px; }
+  .adminDeviceDonut::after { inset: 32px; }
 }
 @media (max-width: 650px) {
-  .adminDashboard { gap: 14px; }
-  .adminDashboardHeading h1 { font-size: 27px; }
-  .adminMetricGrid { grid-template-columns: 1fr; gap: 10px; }
-  .adminMetricCard { min-height: 106px; padding: 14px; }
-  .adminAnalyticsPanelHeading { align-items: flex-start; flex-direction: column; min-height: 0; padding: 14px; }
+  .adminDashboard { gap: 12px; }
+  .adminDashboardHeading h1 { font-size: 22px; }
+  .adminMetricGrid { grid-template-columns: 1fr; gap: 9px; }
+  .adminMetricCard { min-height: 92px; padding: 12px; }
+  .adminAnalyticsPanelHeading { align-items: flex-start; flex-direction: column; min-height: 0; padding: 12px; }
   .adminPanelHeadingIdentity { align-items: flex-start; }
   .adminAnalyticsPanelHeading .adminPeriodSelect, .adminAnalyticsPanelHeading .adminPrimaryCompact { width: 100%; }
-  .adminAnalyticsEmpty { min-height: 210px; }
+  .adminAnalyticsEmpty { min-height: 190px; }
   .adminLineChart { padding-inline: 10px; }
   .adminChartXAxis { font-size: 8px; }
   .adminDeviceBreakdown { grid-template-columns: 1fr; justify-items: center; }
   .adminDeviceList { width: 100%; }
-  .adminActivityList { padding-inline: 14px; }
-  .adminActivityList > div { grid-template-columns: 38px minmax(0, 1fr); }
+  .adminActivityList { padding-inline: 12px; }
+  .adminActivityList > div { grid-template-columns: 34px minmax(0, 1fr); }
   .adminActivityList time { grid-column: 2; }
   .adminPublicationsTable { min-width: 670px; }
 }
