@@ -6,6 +6,7 @@ import { soundchartsCredentialsConfigured } from "../../../../../lib/integration
 import { spotifyCredentialsConfigured } from "../../../../../lib/integrations/spotify";
 import { saveLanderRecordsIntegrationSettings, syncLanderRecordsIntegrationsAction } from "../../../integration-actions";
 import { AdminIcon } from "../../../components/AdminIcon";
+import settingsStyles from "../Settings.module.css";
 import styles from "./Integrations.module.css";
 
 export const dynamic = "force-dynamic";
@@ -35,7 +36,14 @@ export default async function LanderRecordsIntegrationSettingsPage({ searchParam
   const soundchartsConnected = soundchartsReady && settings.soundchartsResolutionStatus === "resolved";
 
   return <div className={styles.page}>
-    <nav aria-label="Seções de configurações" className={styles.tabs}><Link href="/admin/settings">Empresa</Link><Link href="/admin/settings#identity">Identidade do Site</Link><Link href="/admin/settings#automations">Automações</Link><Link href="/admin/settings#security">Segurança</Link><Link aria-current="page" href="/admin/settings/lander-records">Integrações</Link><Link href="/admin/users">Usuários</Link></nav>
+    <nav aria-label="Seções de configurações" className={settingsStyles.tabs}>
+      <Link href="/admin/settings"><AdminIcon name="home" size={15}/>Empresa</Link>
+      <Link href="/admin/settings#identity"><AdminIcon name="media" size={15}/>Identidade do Site</Link>
+      <Link href="/admin/settings#automations"><AdminIcon name="activity" size={15}/>Automações</Link>
+      <Link href="/admin/settings#security"><AdminIcon name="shield" size={15}/>Segurança</Link>
+      <Link aria-current="page" href="/admin/settings/lander-records"><AdminIcon name="integration" size={15}/>Integrações</Link>
+      <Link href="/admin/users"><AdminIcon name="users" size={15}/>Usuários</Link>
+    </nav>
 
     {params.saved === "1" ? <div className="adminNotice">Configurações salvas.</div> : null}
     {params.synced === "1" ? <div className="adminNotice">Sincronização executada. Consulte os estados abaixo.</div> : null}
