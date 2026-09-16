@@ -96,6 +96,48 @@ jobs:
             exit 1
           fi
 
+      - name: Verify every navigable page locally
+        run: |
+          routes=(
+            "/"
+            "/artistas"
+            "/noticias"
+            "/contato"
+            "/sobre-nos"
+            "/politica-de-privacidade"
+            "/termos-e-condicoes"
+            "/admin"
+            "/admin/posts"
+            "/admin/artists"
+            "/admin/media"
+            "/admin/settings"
+            "/admin/settings/lander-records"
+            "/admin/users"
+            "/admin/artist-categories"
+            "/admin/audit"
+            "/admin/categories"
+            "/admin/header"
+            "/admin/home"
+            "/admin/navigation"
+            "/admin/pages"
+            "/admin/post-categories"
+            "/admin/releases"
+            "/admin/tags"
+          )
+          failed=0
+          for route in "${routes[@]}"; do
+            code=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "http://127.0.0.1:3000${route}" || true)
+            echo "${code} ${route}"
+            if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
+              failed=1
+            fi
+          done
+          if [ "$failed" != "0" ]; then
+            echo "One or more project pages are not directly navigable."
+            cat /tmp/lander-preview.log
+            exit 1
+          fi
+
       - name: Open temporary preview tunnel
         id: tunnel
         run: |
@@ -139,8 +181,51 @@ jobs:
             echo "- Site público: $PREVIEW_URL/"
             echo "- Ambiente descartável: PostgreSQL temporário, sem secrets de produção."
             echo "- Autenticação do portal desativada apenas neste preview descartável do GitHub Actions."
+            echo "- Todas as rotas públicas e administrativas conhecidas foram validadas como navegáveis antes da publicação."
             echo "- O endereço expira quando este job termina ou é substituído por um novo push em dev."
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Verify public tunnel navigation
+        run: |
+          routes=(
+            "/"
+            "/artistas"
+            "/noticias"
+            "/contato"
+            "/sobre-nos"
+            "/politica-de-privacidade"
+            "/termos-e-condicoes"
+            "/admin"
+            "/admin/posts"
+            "/admin/artists"
+            "/admin/media"
+            "/admin/settings"
+            "/admin/settings/lander-records"
+            "/admin/users"
+            "/admin/artist-categories"
+            "/admin/audit"
+            "/admin/categories"
+            "/admin/header"
+            "/admin/home"
+            "/admin/navigation"
+            "/admin/pages"
+            "/admin/post-categories"
+            "/admin/releases"
+            "/admin/tags"
+          )
+          failed=0
+          for route in "${routes[@]}"; do
+            code=$(curl --silent --show-error --retry 5 --retry-delay 1 --output /dev/null --write-out '%{http_code}' "${PREVIEW_URL}${route}" || true)
+            echo "${code} ${route}"
+            if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
+              failed=1
+            fi
+          done
+          if [ "$failed" != "0" ]; then
+            echo "One or more pages are not navigable through the public preview URL."
+            cat /tmp/cloudflared.log
+            exit 1
+          fi
 
       - name: Publish preview URL artifact
         uses: actions/upload-artifact@v4
