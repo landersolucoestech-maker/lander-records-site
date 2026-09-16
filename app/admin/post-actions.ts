@@ -209,7 +209,7 @@ export async function savePostAction(_: PostActionState, formData: FormData): Pr
 
   await audit(session.user.id, id ? "post.updated" : "post.created", "post", postId, { title, slug, status });
   revalidatePostContent([previousSlug, slug]);
-  redirect(`/admin/posts/${postId}?saved=1`);
+  redirect(`/admin/posts?edit=${encodeURIComponent(postId)}&saved=1`);
 }
 
 export async function deletePostAction(formData: FormData) {
