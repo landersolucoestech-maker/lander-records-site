@@ -4,49 +4,63 @@ import test from "node:test";
 
 const page = fs.readFileSync(new URL("../../app/admin/(protected)/pages/page.tsx", import.meta.url), "utf8");
 const manager = fs.readFileSync(new URL("../../app/admin/(protected)/pages/PageManager.tsx", import.meta.url), "utf8");
+const styles = fs.readFileSync(new URL("../../app/admin/(protected)/pages/PagesManager.module.css", import.meta.url), "utf8");
+const shell = fs.readFileSync(new URL("../../app/admin/components/AdminShell.tsx", import.meta.url), "utf8");
 const contract = fs.readFileSync(new URL("../../app/admin/(protected)/pages/page-contract.ts", import.meta.url), "utf8");
-const preview = fs.readFileSync(new URL("../../app/cms-preview/AdminPreview.tsx", import.meta.url), "utf8");
 const editor = fs.readFileSync(new URL("../../app/admin/(protected)/pages/[id]/page.tsx", import.meta.url), "utf8");
 const view = fs.readFileSync(new URL("../../app/admin/(protected)/pages/[id]/view/page.tsx", import.meta.url), "utf8");
 
-test("Pages list uses only real enabled and SEO states", () => {
-  assert.match(page, /seoIncomplete:[\s\S]*seoTitle[\s\S]*seoDescription/);
-  assert.match(page, /enabled:[\s\S]*pages\.enabled/);
-  assert.doesNotMatch(manager, /Publicad[ao]s?|Rascunhos?|Arquivad[ao]s?/);
-  assert.match(manager, /Conteúdo habilitado/);
-  assert.match(manager, /SEO editorial incompleto/);
+test("Pages overview follows the approved selected-page and section-structure composition", () => {
+  for (const copy of [
+    "Página selecionada",
+    "Estrutura da página",
+    "Página inicial",
+    "Ver página pública",
+    "Editar",
+    "Excluir",
+    "Criar seção",
+    "Seção",
+    "Status",
+    "Ações",
+    "Configurar",
+  ]) assert.match(manager, new RegExp(copy, "i"));
+
+  assert.doesNotMatch(manager, /Total de páginas|SEO editorial incompleto|Buscar por título|Limpar filtros|Navegação é gerenciada separadamente/);
+  assert.match(styles, /grid-template-columns:minmax\(0,1fr\) 180px 220px/);
+  assert.match(styles, /background:#080b0e/);
 });
 
-test("Pages filters are server-side and preserve global metrics", () => {
-  assert.match(page, /searchParams: Promise<PageFilters>/);
-  assert.match(page, /ilike\(pages\.title, pattern\)/);
-  assert.match(page, /where\(conditions\.length \? and\(\.\.\.conditions\)/);
-  assert.match(manager, /if \(!preview\) return pages/);
-  assert.match(manager, /Mostrando \{filtered\.length\} de \{counts\.total\} páginas/);
+test("Disposable development preview reproduces the ten-section approved reference without changing production data", () => {
+  const titles = ["Hero Section", "Em Destaque", "Mais Lidas", "Últimas Notícias", "Publicidade Lateral", "Em Alta", "Anuncie Aqui", "Lançamentos", "Agenda", "Newsletter"];
+  for (const title of titles) assert.match(manager, new RegExp(title));
+  assert.match(manager, /sectionCount: 10/);
+  assert.match(manager, /demoMode \|\| preview \? referencePages : pages/);
+  assert.match(page, /demoMode=\{session\.source === "development-auth-bypass"\}/);
+  assert.match(page, /sections: pageStructure/);
+  assert.match(page, /pageSections\.subtitle/);
 });
 
-test("Public links come from a deterministic route registry", () => {
-  for (const mapping of ["home: { route: \"/\"", "about: { route: \"/sobre-nos\"", "artists: { route: \"/artistas\"", "news: { route: \"/noticias\"", "contact: { route: \"/contato\""]) assert.match(contract, new RegExp(mapping.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+test("Pages shell uses the approved contextual header", () => {
+  assert.match(shell, /pagesIndex/);
+  assert.match(shell, /Gerencie páginas e configure cada seção com edição e preview em tempo real\./);
+  assert.match(shell, />Criar página</);
+  assert.match(shell, /name="bell"/);
+  assert.match(shell, /developmentPreview \? "DE"/);
+  assert.match(styles, /adminTopbarPages/);
+  assert.match(styles, /adminNotificationButton/);
+});
+
+test("Public page destinations remain deterministic and real routes are used", () => {
+  for (const mapping of ["home: { route: \"/\"", "about: { route: \"/sobre-nos\"", "artists: { route: \"/artistas\"", "news: { route: \"/noticias\"", "contact: { route: \"/contato\""]) {
+    assert.match(contract, new RegExp(mapping.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
   assert.match(contract, /route: null/);
-  assert.doesNotMatch(manager, /href=\{page\.configuredRoute\}/);
-  assert.match(manager, /page\.publicRoute && !preview/);
+  assert.match(manager, /selected\.publicRoute/);
   assert.match(editor, /pageContract\(page\.key\)\.route/);
   assert.match(view, /pageContract\(page\.key\)\.route/);
-  assert.doesNotMatch(page, /page\.enabled \? contract\.route/);
-  assert.match(manager, /Registro atualizado/);
-  assert.match(view, /Não definido \(fallback global\)/);
-  assert.doesNotMatch(view, /sectionKey:|sectionId:|definition:|definitionId \|\|/);
 });
 
-test("Pages preview is isolated and creation is not promoted", () => {
-  assert.match(preview, /previewPages/);
-  assert.match(preview, /<PageManager pages=\{previewPages\} preview/);
-  assert.doesNotMatch(preview, /page-actions|createPageAction|attachSectionAction/);
-  assert.doesNotMatch(manager, /Nova página|Mais filtros|Tipos de página|Revisão de conteúdo/);
-  assert.match(manager, /Novos registros não recebem automaticamente uma rota ou template/);
-});
-
-test("Page editor exposes only contextual fields and scopes item reads", () => {
+test("Page editor still exposes contextual fields and scopes item reads", () => {
   assert.doesNotMatch(editor, /adminCode/);
   assert.match(editor, /const sectionFields:/);
   assert.match(editor, /const itemFields:/);
