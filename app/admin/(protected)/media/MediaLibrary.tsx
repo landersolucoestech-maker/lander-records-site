@@ -1,8 +1,7 @@
 "use client";
 
-import Image from "next/image";
+import Link from "next/link";
 import { useMemo, useState } from "react";
-import { AdminDialog } from "../../components/AdminDialog";
 import { AdminIcon } from "../../components/AdminIcon";
 import styles from "./MediaLibrary.module.css";
 
@@ -21,43 +20,83 @@ export type MediaLibraryItem = {
 };
 
 type Action = (formData: FormData) => void | Promise<void>;
+type PageSize = 10 | 25 | 50;
 
 function formatSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1).replace(".", ",")} MB`;
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024)).toLocaleString("pt-BR")} KB`;
+  return `${(bytes / (1024 * 1024)).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} MB`;
+}
+
+function typeLabel(mimeType: string) {
+  if (mimeType.startsWith("image/")) return "Imagem";
+  if (mimeType.startsWith("video/")) return "Vídeo";
+  if (mimeType === "application/pdf") return "PDF";
+  return mimeType || "Arquivo";
 }
 
 export function MediaLibrary({ archiveAction, items, uploadAction }: { archiveAction: Action; items: MediaLibraryItem[]; uploadAction: Action }) {
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("active");
+  const [type, setType] = useState("Todos");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<PageSize>(10);
   const [uploadOpen, setUploadOpen] = useState(false);
 
+  const types = useMemo(() => ["Todos", ...Array.from(new Set(items.map((item) => typeLabel(item.mimeType)))).sort((a, b) => a.localeCompare(b, "pt-BR"))], [items]);
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase("pt-BR");
-    return items.filter((item) => (!needle || [item.originalFilename, item.altText, item.mimeType, item.storageProvider].join(" ").toLocaleLowerCase("pt-BR").includes(needle)) && (status === "all" || item.status === status));
-  }, [items, query, status]);
+    return items.filter((item) => {
+      const matchesQuery = !needle || [item.originalFilename, item.altText, item.mimeType, item.storageProvider].join(" ").toLocaleLowerCase("pt-BR").includes(needle);
+      const matchesType = type === "Todos" || typeLabel(item.mimeType) === type;
+      return matchesQuery && matchesType;
+    });
+  }, [items, query, type]);
 
-  return <div className={styles.page}>
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const visible = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
+
+  return <div className={styles.page} data-testid="media-library">
+    {uploadOpen ? <section className={styles.uploadCard} aria-label="Adicionar mídia">
+      <div className={styles.uploadHeader}>
+        <div><span>Nova mídia</span><h2>Adicionar arquivo à biblioteca</h2><p>Envie uma imagem para a biblioteca central usando exatamente o fluxo de armazenamento já existente no projeto.</p></div>
+        <button className={styles.outlineButton} onClick={() => setUploadOpen(false)} type="button"><AdminIcon name="close" size={15} />Fechar</button>
+      </div>
+      <form action={uploadAction} className={styles.uploadForm} onSubmit={() => setUploadOpen(false)}>
+        <label><span>Arquivo</span><input accept="image/*" name="file" required type="file" /></label>
+        <label><span>Texto alternativo</span><input maxLength={500} name="altText" placeholder="Descrição acessível da imagem ou arquivo" required /></label>
+        <div><button className={styles.primaryButton} type="submit"><AdminIcon name="upload" size={15} />Enviar mídia</button></div>
+      </form>
+    </section> : null}
+
     <div className={styles.toolbar}>
-      <label className={styles.search}><span className="srOnly">Buscar mídia</span><AdminIcon name="search" size={17} /><input onChange={(event) => setQuery(event.target.value)} placeholder="Buscar arquivo, alt text ou tipo..." type="search" value={query} /></label>
-      <label><span>Status</span><select onChange={(event) => setStatus(event.target.value)} value={status}><option value="active">Ativas</option><option value="archived">Arquivadas</option><option value="all">Todas</option></select></label>
-      <div className={styles.toolbarMeta}><span>{filtered.length} de {items.length} arquivo{items.length === 1 ? "" : "s"}</span><button className="adminButton primary" onClick={() => setUploadOpen(true)} type="button"><span aria-hidden="true">＋</span> Enviar mídia</button></div>
+      <div className={styles.toolbarGroup}>
+        <label className={styles.search}><span className="srOnly">Buscar mídia</span><AdminIcon name="search" size={16} /><input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder="Buscar arquivo, URL ou tipo..." type="search" /></label>
+        <label className="srOnly" htmlFor="media-type">Filtrar mídia por tipo</label>
+        <select id="media-type" value={type} onChange={(event) => { setType(event.target.value); setPage(1); }}>{types.map((value) => <option key={value} value={value}>{value === "Todos" ? "Todos os tipos" : value}</option>)}</select>
+      </div>
+      <div className={styles.toolbarEnd}><span>{filtered.length} de {items.length} arquivos</span><button className={styles.primaryButton} onClick={() => setUploadOpen(true)} type="button"><AdminIcon name="upload" size={15} />Adicionar mídia</button></div>
     </div>
 
-    {filtered.length ? <section className={styles.library} aria-label="Biblioteca de mídia">
-      <div className={styles.grid}>{filtered.map((item) => <article className={styles.card} key={item.id}>
-        <div className={styles.preview}><Image alt={item.altText || ""} fill sizes="(max-width: 760px) 50vw, 220px" src={item.url} unoptimized /></div>
-        <div className={styles.cardBody}><div className={styles.cardHeading}><div><strong title={item.originalFilename}>{item.originalFilename}</strong><small>{item.mimeType}</small></div><span className={item.status === "active" ? "adminBadge live" : "adminBadge archived"}><i aria-hidden="true" />{item.status === "active" ? "Ativa" : "Arquivada"}</span></div>
-          <dl><div><dt>Dimensões</dt><dd>{item.width && item.height ? `${item.width}×${item.height}` : "—"}</dd></div><div><dt>Tamanho</dt><dd>{formatSize(item.byteSize)}</dd></div><div><dt>Origem</dt><dd>{item.storageProvider}</dd></div><div><dt>Adicionada</dt><dd>{item.createdAt}</dd></div></dl>
-          <p>{item.altText || "Sem texto alternativo."}</p>
-          <div className={styles.cardActions}><a className="adminButton" href={item.url} rel="noopener noreferrer" target="_blank"><AdminIcon name="eye" size={15} />Abrir</a>{item.status === "active" ? <form action={archiveAction} onSubmit={(event) => { if (!window.confirm(`Arquivar “${item.originalFilename}”?`)) event.preventDefault(); }}><input name="id" type="hidden" value={item.id} /><button className="adminButton danger" type="submit"><AdminIcon name="trash" size={15} />Arquivar</button></form> : null}</div>
-        </div>
-      </article>)}</div>
-    </section> : <div className={styles.empty}><AdminIcon name="media" size={28} /><strong>Nenhuma mídia encontrada</strong><p>{items.length ? "Nenhum arquivo corresponde aos filtros atuais." : "A biblioteca de mídia está vazia."}</p></div>}
-
-    {uploadOpen ? <AdminDialog description="Adicione uma imagem à biblioteca central sem alterar os fluxos de armazenamento existentes." footer={<><button className="adminButton" onClick={() => setUploadOpen(false)} type="button">Cancelar</button><button className="adminButton primary" form="media-upload-form" type="submit">Enviar imagem</button></>} onClose={() => setUploadOpen(false)} title="Enviar mídia">
-      <form action={uploadAction} className="adminForm" id="media-upload-form" onSubmit={() => setUploadOpen(false)}><label>Imagem<input accept="image/*" name="file" required type="file" /></label><label>Texto alternativo<input maxLength={500} name="altText" placeholder="Descreva a imagem para acessibilidade" required /></label><div className={styles.uploadHint}><AdminIcon name="image" size={18} /><span>O processamento atual continua responsável por rotação, limite de dimensão, conversão e armazenamento.</span></div></form>
-    </AdminDialog> : null}
+    {filtered.length ? <div className={styles.tableSurface}>
+      <div className={styles.tableWrap}>
+        <table>
+          <thead><tr><th>Arquivo</th><th>Tipo</th><th>Tamanho</th><th>Adicionado em</th><th>Origem</th><th className={styles.actionsColumn}>Ações</th></tr></thead>
+          <tbody>{visible.map((item) => <tr key={item.id}>
+            <td><div className={styles.fileIdentity}><span className={styles.fileIcon}><AdminIcon name="media" size={14} /></span><div><strong>{item.originalFilename || "Mídia sem nome"}</strong><small>{item.url}</small></div></div></td>
+            <td><span className={styles.typeBadge}>{typeLabel(item.mimeType)}</span></td>
+            <td>{formatSize(item.byteSize)}</td>
+            <td>{item.createdAt}</td>
+            <td>{item.storageProvider || "Storage"}</td>
+            <td className={styles.actionsColumn}><div className={styles.rowActions}><Link aria-label={`Abrir ${item.originalFilename}`} href={item.url} rel="noopener noreferrer" target="_blank"><AdminIcon name="eye" size={15} /></Link>{item.status === "active" ? <form action={archiveAction} onSubmit={(event) => { if (!window.confirm(`Arquivar “${item.originalFilename}”?`)) event.preventDefault(); }}><input name="id" type="hidden" value={item.id} /><button aria-label={`Arquivar ${item.originalFilename}`} type="submit"><AdminIcon name="trash" size={15} /></button></form> : null}<span className={styles.moreAction} aria-hidden="true"><AdminIcon name="more" size={16} /></span></div></td>
+          </tr>)}</tbody>
+        </table>
+      </div>
+      <div className={styles.pagination}>
+        <div><span>Linhas por página</span><select value={pageSize} onChange={(event) => { setPageSize(Number(event.target.value) as PageSize); setPage(1); }}><option value={10}>10</option><option value={25}>25</option><option value={50}>50</option></select></div>
+        <span>Página {safePage} de {totalPages}</span>
+        <div className={styles.pageButtons}><button disabled={safePage <= 1} onClick={() => setPage((value) => Math.max(1, value - 1))} type="button" aria-label="Página anterior">‹</button><button disabled={safePage >= totalPages} onClick={() => setPage((value) => Math.min(totalPages, value + 1))} type="button" aria-label="Próxima página">›</button></div>
+      </div>
+    </div> : <div className={styles.empty}><AdminIcon name="media" size={28} /><strong>Nenhuma mídia encontrada</strong><p>{items.length ? "Nenhum arquivo corresponde aos filtros atuais." : "A biblioteca de mídia está vazia."}</p></div>}
   </div>;
 }
