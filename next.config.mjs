@@ -5,6 +5,11 @@ const nextConfig = {
   output: "standalone",
   poweredByHeader: false,
   trailingSlash: true,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "64mb",
+    },
+  },
   async headers() {
     return [
       {
