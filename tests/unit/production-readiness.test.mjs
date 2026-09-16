@@ -33,7 +33,8 @@ test("dev preview stays disposable, public for review, and isolated from product
   assert.match(preview, /lander_records_preview/);
   assert.match(preview, /DEV_PREVIEW_PUBLIC_ACCESS: "true"/);
   assert.match(preview, /PREVIEW_URL\/admin/);
-  assert.match(preview, /cancel-in-progress: true/);
+  assert.match(preview, /group: lander-records-dev-preview-\$\{\{ github\.run_id \}\}/);
+  assert.match(preview, /cancel-in-progress: false/);
   assert.match(preview, /preview-contact-ip-salt-not-for-production/);
   assert.ok(!preview.includes("${{ secrets."));
 });
