@@ -1,6 +1,8 @@
 type DevelopmentAuthEnvironment = Readonly<{
   NODE_ENV?: string;
   DEV_AUTH_BYPASS?: string;
+  DEV_PREVIEW_PUBLIC_ACCESS?: string;
+  GITHUB_ACTIONS?: string;
 }>;
 
 export type AdminAuthBoundary = "page" | "api" | null;
@@ -20,13 +22,28 @@ export type DevelopmentAdminSession = {
 };
 
 /**
- * The single authority for the local CMS authentication bypass.
- * Every non-development environment fails closed, even when the flag is set.
+ * Local development bypass. This remains restricted to development + loopback.
  */
 export function isDevelopmentAuthBypassEnabled(
   environment: DevelopmentAuthEnvironment = process.env,
 ): boolean {
   return environment.NODE_ENV === "development" && environment.DEV_AUTH_BYPASS === "true";
+}
+
+/**
+ * Disposable GitHub Actions preview bypass.
+ * It is intentionally allowed with NODE_ENV=production because the preview build
+ * runs the production Next runtime, but it can only activate inside GitHub Actions
+ * when the dedicated preview flag is explicitly enabled by the dev-preview workflow.
+ */
+export function isDisposablePreviewAuthBypassEnabled(
+  environment: DevelopmentAuthEnvironment = process.env,
+): boolean {
+  return (
+    environment.NODE_ENV === "production" &&
+    environment.GITHUB_ACTIONS === "true" &&
+    environment.DEV_PREVIEW_PUBLIC_ACCESS === "true"
+  );
 }
 
 export function isLoopbackRequestHost(host: string | null | undefined): boolean {
@@ -45,6 +62,13 @@ export function isDevelopmentAuthBypassAllowed(
   return isDevelopmentAuthBypassEnabled(environment) && isLoopbackRequestHost(host);
 }
 
+export function isAdminAuthBypassAllowed(
+  host: string | null | undefined,
+  environment: DevelopmentAuthEnvironment = process.env,
+): boolean {
+  return isDevelopmentAuthBypassAllowed(host, environment) || isDisposablePreviewAuthBypassEnabled(environment);
+}
+
 export function classifyAdminAuthBoundary(pathname: string): AdminAuthBoundary {
   if (pathname === "/api/admin" || pathname.startsWith("/api/admin/")) return "api";
   const isAdminPage = pathname === "/admin" || pathname.startsWith("/admin/");
@@ -61,7 +85,7 @@ export function shouldBypassAdminAuthentication(
   environment: DevelopmentAuthEnvironment = process.env,
   host?: string | null,
 ): boolean {
-  return classifyAdminAuthBoundary(pathname) !== null && isDevelopmentAuthBypassAllowed(host, environment);
+  return classifyAdminAuthBoundary(pathname) !== null && isAdminAuthBypassAllowed(host, environment);
 }
 
 export function getDevelopmentAdminSession(): DevelopmentAdminSession {
@@ -90,5 +114,5 @@ export function selectAdminSessionForRequest<T>(
   host?: string | null,
 ): T | DevelopmentAdminSession | null {
   if (realSession) return realSession;
-  return isDevelopmentAuthBypassAllowed(host, environment) ? getDevelopmentAdminSession() : null;
+  return isAdminAuthBypassAllowed(host, environment) ? getDevelopmentAdminSession() : null;
 }
