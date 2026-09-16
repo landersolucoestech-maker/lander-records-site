@@ -42,13 +42,13 @@ test("Artists catalog surfaces real roles, metrics and Home placement from persi
   assert.match(manager, /artist\.homePosition/);
 });
 
-test("Artists catalog reproduces the reference geometry with compact rows and pagination", () => {
-  assert.match(managerStyles, /min-height:98px/);
-  assert.match(managerStyles, /height:64px/);
-  assert.match(managerStyles, /width:46px;height:46px/);
+test("Artists catalog reproduces the Dashboard geometry with compact rows and pagination", () => {
+  assert.match(managerStyles, /min-height:72px/);
+  assert.match(managerStyles, /height:50px/);
+  assert.match(managerStyles, /width:38px;height:38px/);
   assert.match(managerStyles, /grid-template-columns:minmax\(180px,1fr\) auto minmax\(180px,1fr\)/);
-  assert.match(managerStyles, /border-color:#ef233c/);
-  assert.match(managerStyles, /min-width:1120px/);
+  assert.match(managerStyles, /border-color:#ef2731/);
+  assert.match(managerStyles, /min-width:1060px/);
 });
 
 test("Artists editor uses the Portal workbench proportions without changing artist persistence", () => {
