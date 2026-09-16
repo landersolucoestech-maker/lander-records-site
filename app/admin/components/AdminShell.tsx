@@ -20,7 +20,7 @@ type ShellProps = {
 type ModuleHeader = {
   title: string;
   description: string;
-  action?: { label: string; href: string };
+  action?: { label: string; href?: string; event?: "admin:new-content" };
   back?: { label: string; href: string };
 };
 
@@ -36,7 +36,7 @@ function moduleHeader(pathname: string, preview: boolean): ModuleHeader | null {
   }
 
   if (starts("posts")) {
-    if (path === `${root}/posts`) return { title: "Conteúdos", description: "Gerencie publicações, rascunhos editoriais e materiais enviados pelo público sem misturar os fluxos.", action: { label: "Novo conteúdo", href: preview ? `${root}/posts` : "/admin/posts/new" } };
+    if (path === `${root}/posts`) return { title: "Conteúdos", description: "Gerencie publicações, rascunhos editoriais e materiais enviados pelo público sem misturar os fluxos.", action: { label: "Novo conteúdo", event: "admin:new-content" } };
     if (path.endsWith("/new")) return { title: "Novo conteúdo", description: "Crie uma publicação usando a estrutura editorial e o preview visual do Portal.", back: { label: "Conteúdos", href: preview ? `${root}/posts` : "/admin/posts" } };
     if (path.endsWith("/view")) return { title: "Visualizar conteúdo", description: "Consulte a publicação preservando o mesmo contexto visual do módulo editorial.", back: { label: "Conteúdos", href: preview ? `${root}/posts` : "/admin/posts" } };
     return { title: "Editar conteúdo", description: "Edite publicação, mídia, autoria, organização e SEO com preview em tempo real.", back: { label: "Conteúdos", href: preview ? `${root}/posts` : "/admin/posts" } };
@@ -221,7 +221,7 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
           {contextualHeader ? <div className="adminPageHeadingRow">{contextualHeader.back ? <Link className="adminHeaderBack" href={contextualHeader.back.href}><span aria-hidden="true">←</span><span>{contextualHeader.back.label}</span></Link> : null}<div className="adminContextTitle"><strong>{contextualHeader.title}</strong><small>{contextualHeader.description}</small></div></div> : <nav aria-label="Breadcrumb" className="adminBreadcrumb"><ol>{location.breadcrumbs.map((crumb, index) => <li key={`${crumb.label}-${index}`}>{crumb.href ? <Link href={crumb.href}>{crumb.label}</Link> : <span aria-current="page">{crumb.label}</span>}</li>)}</ol></nav>}
         </div>
         <div className="adminTopbarActions">
-          {contextualHeader?.action ? <Link className="adminTopbarPrimary" href={contextualHeader.action.href}><AdminIcon name="plus" size={14} /><span>{contextualHeader.action.label}</span></Link> : null}
+          {contextualHeader?.action ? contextualHeader.action.event ? <button aria-controls="new-content-modal" aria-haspopup="dialog" className="adminTopbarPrimary" onClick={() => window.dispatchEvent(new Event(contextualHeader.action!.event!))} type="button"><AdminIcon name="plus" size={14} /><span>{contextualHeader.action.label}</span></button> : <Link className="adminTopbarPrimary" href={contextualHeader.action.href!}><AdminIcon name="plus" size={14} /><span>{contextualHeader.action.label}</span></Link> : null}
           <button aria-label="Notificações" className="adminNotificationButton" type="button"><AdminIcon name="bell" size={17} /></button>
           <div className="adminAccountWrap" ref={accountRef}>
             <button aria-expanded={accountOpen} aria-haspopup="menu" className="adminTopbarUser" onClick={() => setAccountOpen((value) => !value)} type="button"><span className="adminAvatar">{initials}</span><span><strong>{name}</strong><small>{developmentPreview ? "Administrador" : role === "owner" ? "Proprietário" : role === "admin" ? "Administrador" : role === "editor" ? "Editor" : "Visualizador"}</small></span><AdminIcon name="chevron" size={13} /></button>
