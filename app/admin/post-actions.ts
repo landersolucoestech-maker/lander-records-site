@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import sharp from "sharp";
 import { audit, requirePersistentAdmin } from "../../lib/auth";
 import { getDb } from "../../lib/db";
-import { uploadMedia as uploadStoredMedia } from "@/lib/storage";
+import { deleteMedia as deleteStoredMedia, uploadMedia as uploadStoredMedia } from "@/lib/storage";
 import { postLinks, postProfiles } from "../../lib/db/news-management-schema";
 import { mediaAssets, postTags, posts, slugRedirects } from "../../lib/db/schema";
 import { slugify } from "../../lib/slug";
@@ -55,7 +55,7 @@ async function prepareImage(formData: FormData, fieldName: string, slug: string,
   const stored = await uploadStoredMedia(key, output.data, "image/webp");
   return {
     storageProvider: "supabase_storage" as const,
-    storageKey: key,
+    storageKey: stored.key,
     url: stored.url,
     mimeType: "image/webp",
     byteSize: output.info.size,
@@ -63,6 +63,10 @@ async function prepareImage(formData: FormData, fieldName: string, slug: string,
     height: output.info.height,
     originalFilename: file.name,
   };
+}
+
+async function cleanupPreparedUploads(...uploads: Array<Awaited<ReturnType<typeof prepareImage>>>) {
+  await Promise.allSettled(uploads.filter((upload): upload is NonNullable<typeof upload> => Boolean(upload)).map((upload) => deleteStoredMedia(upload.storageKey)));
 }
 
 function revalidatePostContent(slugs: string[]) {
@@ -98,11 +102,10 @@ export async function savePostAction(_: PostActionState, formData: FormData): Pr
   let coverUpload: Awaited<ReturnType<typeof prepareImage>> = null;
   let authorUpload: Awaited<ReturnType<typeof prepareImage>> = null;
   try {
-    [coverUpload, authorUpload] = await Promise.all([
-      prepareImage(formData, "coverMediaUpload", slug, "cover"),
-      prepareImage(formData, "authorMediaUpload", slug, "author"),
-    ]);
+    coverUpload = await prepareImage(formData, "coverMediaUpload", slug, "cover");
+    authorUpload = await prepareImage(formData, "authorMediaUpload", slug, "author");
   } catch (error) {
+    await cleanupPreparedUploads(coverUpload, authorUpload);
     return { ok: false, error: error instanceof Error ? error.message : "Falha ao processar as imagens." };
   }
 
@@ -202,6 +205,7 @@ export async function savePostAction(_: PostActionState, formData: FormData): Pr
       return resolvedId;
     });
   } catch (error) {
+    await cleanupPreparedUploads(coverUpload, authorUpload);
     const message = error instanceof Error ? error.message : "Falha ao salvar notícia.";
     if (/duplicate key|unique/i.test(message)) return { ok: false, error: "Já existe uma notícia com esse slug." };
     return { ok: false, error: message };
