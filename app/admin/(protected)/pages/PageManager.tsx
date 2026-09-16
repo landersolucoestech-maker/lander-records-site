@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useState } from "react";
-import { createPageAction, deletePageAction } from "../../page-actions";
+import { createPageAction, createPageSectionAction, deletePageAction } from "../../page-actions";
 import { AdminDialog } from "../../components/AdminDialog";
 import { AdminIcon } from "../../components/AdminIcon";
 import styles from "./PagesManager.module.css";
@@ -42,7 +42,7 @@ const fallbackDescriptions: Record<string, string> = {
 
 function displayTitle(page: PageSummary) { return sitePageContract(page.key)?.label || page.title; }
 function pageKind(page: PageSummary) { return sitePageContract(page.key)?.classification || page.classification; }
-function sectionTitle(page: PageSummary, section: PageSectionSummary) { return siteSectionContract(page.key, section.sectionKey)?.label || section.sectionKey.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "); }
+function sectionTitle(page: PageSummary, section: PageSectionSummary) { return siteSectionContract(page.key, section.sectionKey)?.label || section.title.trim() || section.sectionKey.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "); }
 function sectionDescription(page: PageSummary, section: PageSectionSummary) { return siteSectionContract(page.key, section.sectionKey)?.description || fallbackDescriptions[section.sectionKey] || `Seção ${section.type.replaceAll("_", " ")} configurada nesta página.`; }
 function previewContractSections(page: PageSummary): PageSectionSummary[] {
   const contract = sitePageContract(page.key);
@@ -63,10 +63,14 @@ export default function PageManager({ canEdit = true, demoMode = false, pages, p
   const defaultPage = pages.find((page) => page.key === "home") || pages[0];
   const [selectedId, setSelectedId] = useState(defaultPage?.id || "");
   const [createOpen, setCreateOpen] = useState(false);
+  const [createSectionOpen, setCreateSectionOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [draftTitle, setDraftTitle] = useState("");
   const [draftSlug, setDraftSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
+  const [sectionName, setSectionName] = useState("");
+  const [sectionIdentifier, setSectionIdentifier] = useState("");
+  const [sectionIdentifierEdited, setSectionIdentifierEdited] = useState(false);
   const selected = pages.find((page) => page.id === selectedId) || defaultPage;
 
   const openCreate = useCallback(() => {
@@ -76,6 +80,13 @@ export default function PageManager({ canEdit = true, demoMode = false, pages, p
     setCreateOpen(true);
   }, []);
   const closeCreate = useCallback(() => setCreateOpen(false), []);
+  const openCreateSection = useCallback(() => {
+    setSectionName("");
+    setSectionIdentifier("");
+    setSectionIdentifierEdited(false);
+    setCreateSectionOpen(true);
+  }, []);
+  const closeCreateSection = useCallback(() => setCreateSectionOpen(false), []);
 
   if (!selected) return <div className={styles.empty}>Nenhuma página administrável encontrada.</div>;
 
@@ -98,7 +109,7 @@ export default function PageManager({ canEdit = true, demoMode = false, pages, p
       </div>
       <label className={styles.pageSelector}>
         <span>Página</span>
-        <select aria-label="Selecionar página" onChange={(event) => { setSelectedId(event.target.value); setDeleteOpen(false); }} value={selected.id}>
+        <select aria-label="Selecionar página" onChange={(event) => { setSelectedId(event.target.value); setCreateSectionOpen(false); setDeleteOpen(false); }} value={selected.id}>
           {pages.map((page) => <option key={page.id} value={page.id}>{displayTitle(page)} · {pageKind(page)} · {page.enabled ? "publicada" : "não publicada"}</option>)}
         </select>
       </label>
@@ -117,7 +128,7 @@ export default function PageManager({ canEdit = true, demoMode = false, pages, p
           <strong>{title}</strong>
           <small>{sections.length} {sections.length === 1 ? "seção" : "seções"} · {kind}</small>
         </div>
-        <Link className={styles.primaryButton} href={editHref}><span aria-hidden="true">+</span><span>Criar seção</span></Link>
+        <button className={styles.primaryButton} onClick={openCreateSection} type="button"><span aria-hidden="true">+</span><span>Criar seção</span></button>
       </div>
       {sections.length ? <div className={styles.tableWrap}><table>
         <thead><tr><th>Seção</th><th>Status</th><th className={styles.actionsColumn}>Ações</th></tr></thead>
@@ -154,6 +165,29 @@ export default function PageManager({ canEdit = true, demoMode = false, pages, p
         <label className={styles.createPageField}>
           <span>Modelo</span>
           <input aria-readonly="true" readOnly type="text" value="Editorial · estrutura CMS da Lander Records" />
+        </label>
+      </form>
+    </AdminDialog> : null}
+
+    {createSectionOpen ? <AdminDialog
+      className={styles.createPageDialog}
+      description="A seção pertence à página selecionada e será composta sobre a arquitetura global, sem criar um novo shell."
+      footer={<>
+        <button className={styles.modalButton} onClick={closeCreateSection} type="button">Cancelar</button>
+        <button className={styles.modalPrimary} disabled={!allowCreate || !sectionName.trim() || !sectionIdentifier.trim()} form="create-section-form" title={!allowCreate ? "Criação indisponível neste modo de visualização" : undefined} type="submit"><AdminIcon name="edit" size={14} /><span>Salvar seção</span></button>
+      </>}
+      onClose={closeCreateSection}
+      title="Criar seção"
+    >
+      <form action={createPageSectionAction} className={styles.createPageForm} id="create-section-form">
+        <input name="pageId" type="hidden" value={selected.id} />
+        <label className={styles.createPageField}>
+          <span>Nome da seção</span>
+          <input autoComplete="off" maxLength={180} name="name" onChange={(event) => { const nextName = event.target.value; setSectionName(nextName); if (!sectionIdentifierEdited) setSectionIdentifier(pageSlug(nextName)); }} placeholder="Ex.: Conteúdo principal" required type="text" value={sectionName} />
+        </label>
+        <label className={styles.createPageField}>
+          <span>Identificador</span>
+          <input autoComplete="off" maxLength={120} name="identifier" onChange={(event) => { setSectionIdentifierEdited(true); setSectionIdentifier(pageSlug(event.target.value)); }} placeholder="conteudo-principal" required type="text" value={sectionIdentifier} />
         </label>
       </form>
     </AdminDialog> : null}
