@@ -121,5 +121,5 @@ test("Portal Lander remains an admin UX reference, not a content source", () => 
   assert.match(shellStyles, /--admin-header-height: 68px/);
   assert.match(shellStyles, /background: #050505/);
   assert.doesNotMatch(manager, /Portal Lander/);
-  assert.doesNotMatch(workbench, /Portal Lander/);
+  assert.doesNotMatch(workbench, /PortalPagePreview|LANDER RECORDS · EM DESTAQUE|EXPLORAR DESTAQUES|Mais Lidas|Publicidade Lateral/);
 });
