@@ -10,6 +10,11 @@ import { siteSectionContract } from "../site-page-contract";
 
 export const dynamic = "force-dynamic";
 
+function sectionMediaId(settings: Record<string, unknown> | null | undefined) {
+  const value = settings?.mediaId;
+  return typeof value === "string" ? value : null;
+}
+
 export default async function PageContentEditor({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ section?: string }> }) {
   await requireAdmin("editor");
   const [{ id }, query] = await Promise.all([params, searchParams]);
@@ -42,6 +47,7 @@ export default async function PageContentEditor({ params, searchParams }: { para
     title: section.title,
     subtitle: section.subtitle,
     body: section.body,
+    mediaId: sectionMediaId(section.settings),
   }));
 
   const editorItems: PageEditorItem[] = itemRows.map((item) => ({
