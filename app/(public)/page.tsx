@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getPageContent } from "@/modules/pages";
 import { getPublishedArtists } from "@/modules/artists";
 import { getPublishedPosts } from "@/modules/posts";
-import { getCachedSpotifyReleases, getLanderRecordsSocialMetrics } from "@/lib/integrations/sync";
+import { getHomeSpotifyReleaseFeed, getLanderRecordsSocialMetrics } from "@/lib/integrations/sync";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -38,12 +38,21 @@ function newsBackground(image: string) {
   } : undefined;
 }
 
+function releaseDateLabel(value: string) {
+  const match = value.match(/^(\d{4})(?:-(\d{2}))?(?:-(\d{2}))?$/);
+  if (!match) return value;
+  const [, year, month, day] = match;
+  if (!month) return year;
+  if (!day) return new Intl.DateTimeFormat("pt-BR", { month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(`${year}-${month}-01T00:00:00Z`));
+  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(`${year}-${month}-${day}T00:00:00Z`));
+}
+
 export default async function Home() {
-  const [content, featuredArtists, featuredPosts, spotifyReleases, socialMetrics] = await Promise.all([
+  const [content, featuredArtists, featuredPosts, spotifyFeed, socialMetrics] = await Promise.all([
     getPageContent("home"),
     getPublishedArtists(true),
     getPublishedPosts(true),
-    getCachedSpotifyReleases(),
+    getHomeSpotifyReleaseFeed(),
     getLanderRecordsSocialMetrics(),
   ]);
 
@@ -130,17 +139,22 @@ export default async function Home() {
           </section>
         ) : null}
 
-        {releasesSection && spotifyReleases.length > 0 ? (
-          <section className="homeBlock">
+        {releasesSection && spotifyFeed.releases.length > 0 ? (
+          <section className="homeBlock homeReleasesBlock" aria-labelledby="home-releases-title">
             <div className="homeBlockHeader">
-              <h2 className="homeEditorialTitle">{editorialTitle(releasesSection.title)}</h2>
-              {releasesSection.items[0]?.url ? <a href={releasesSection.items[0].url} target="_blank" rel="noreferrer">{releasesSection.items[0].label} →</a> : null}
+              <h2 className="homeEditorialTitle" id="home-releases-title">{editorialTitle(releasesSection.title || "Últimos Lançamentos")}</h2>
+              {spotifyFeed.playlistUrl ? <a href={spotifyFeed.playlistUrl} target="_blank" rel="noreferrer">Abrir playlist no Spotify →</a> : null}
             </div>
+            {releasesSection.subtitle ? <p className="homeBlockSubtitle">{releasesSection.subtitle}</p> : null}
             <div className="releaseGrid">
-              {spotifyReleases.map((release, index) => (
-                <a className={`releaseCard ${index === 0 ? "releaseFeatured" : ""}`} href={release.spotifyUrl} target="_blank" rel="noreferrer" key={release.albumId}>
+              {spotifyFeed.releases.slice(0, 5).map((release) => (
+                <a className="releaseCard" href={release.spotifyUrl} target="_blank" rel="noreferrer" key={`${release.position}-${release.albumId}-${release.title}`}>
                   <div className="releaseCover" style={release.coverUrl ? { backgroundImage: `url(${release.coverUrl})` } : undefined}><span>Spotify</span></div>
-                  <div><strong>{release.title}</strong><p>{release.artistName}</p></div>
+                  <div className="releaseCardBody">
+                    <strong>{release.title}</strong>
+                    <p>{release.artistName}</p>
+                    <div className="releaseMeta"><span>{releaseDateLabel(release.releaseDate)}</span><b>OUVIR ↗</b></div>
+                  </div>
                 </a>
               ))}
             </div>
