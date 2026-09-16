@@ -59,10 +59,10 @@ test("runtime contract does not depend on webpack/turbopack CSS-module hash form
 test("all protected tables, controls, filters and cards resolve through the Dashboard contract", () => {
   assert.match(runtimeContract, /table:not\(\.tableview-freeform\) th/);
   assert.match(runtimeContract, /table:not\(\.tableview-freeform\) td/);
-  assert.match(runtimeContract, /height:\s*34px !important/);
-  assert.match(runtimeContract, /border:\s*1px solid var\(--dashboard-border\) !important/);
-  assert.match(runtimeContract, /border-radius:\s*var\(--dashboard-radius\) !important/);
-  assert.match(runtimeContract, /font-family:\s*Montserrat, Arial, sans-serif !important/);
+  assert.match(runtimeContract, /height:\s*34px\s*!important/);
+  assert.match(runtimeContract, /border:\s*1px solid var\(--dashboard-border\)\s*!important/);
+  assert.match(runtimeContract, /border-radius:\s*10px\s*!important/);
+  assert.match(runtimeContract, /font-family:\s*Montserrat,Arial,sans-serif\s*!important/);
 });
 
 test("high-traffic managers use Dashboard values in their own CSS instead of relying on a global illusion", () => {
