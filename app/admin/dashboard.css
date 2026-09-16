@@ -4,6 +4,7 @@
 @import "../../styles/admin/home.css";
 /* Final authority: every protected module resolves to the Dashboard design language. */
 @import "../../styles/admin/dashboard-module-contract.css";
+@import "../../styles/admin/dashboard-feature-overrides.css";
 
 /*
  * The Pages workbench left rail must be a real scroll container.
