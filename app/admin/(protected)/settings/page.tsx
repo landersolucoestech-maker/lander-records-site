@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { asc, eq } from "drizzle-orm";
+import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
 import { contactTopics, mediaAssets, siteSettings, socialLinks } from "../../../../lib/db/schema";
 import { updateSiteSettings, upsertContactTopic, upsertSocialLink } from "../../actions";
@@ -10,6 +11,8 @@ import styles from "./Settings.module.css";
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
+  const session = await requireAdmin();
+  const canManageUsers = session.user.role === "owner";
   const db = getDb();
   const [settingsRows, socials, topics, media] = await Promise.all([
     db.select().from(siteSettings).limit(1),
@@ -28,7 +31,7 @@ export default async function SettingsPage() {
       <Link href="/admin/settings#automations"><AdminIcon name="activity" size={15} />Automações</Link>
       <Link href="/admin/settings#security"><AdminIcon name="settings" size={15} />Segurança</Link>
       <Link href="/admin/settings/lander-records"><AdminIcon name="integration" size={15} />Integrações</Link>
-      <Link href="/admin/users"><AdminIcon name="users" size={15} />Usuários</Link>
+      {canManageUsers ? <Link href="/admin/users"><AdminIcon name="users" size={15} />Usuários</Link> : null}
     </nav>
 
     <div className={styles.companyGrid} id="company">
