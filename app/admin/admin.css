@@ -1,3 +1,17 @@
 @import "../../styles/admin/primitives.css";
 @import "../../styles/admin/shell.css";
 @import "../../styles/admin/portal-lander-contract.css";
+
+/* All protected admin modules must use the full available workspace width. */
+.adminMain {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.adminMain > * {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
