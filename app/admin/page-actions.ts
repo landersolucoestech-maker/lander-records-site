@@ -14,10 +14,6 @@ function text(formData: FormData, name: string) {
   return String(formData.get(name) || "").trim();
 }
 
-function checked(formData: FormData, name: string) {
-  return formData.get(name) === "on" || formData.get(name) === "true";
-}
-
 function uuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value) ? value : null;
 }
@@ -33,26 +29,6 @@ function revalidatePagePaths(slugs: string[]) {
   revalidatePath("/admin");
   revalidatePath("/sitemap.xml");
   for (const slug of new Set(slugs.filter(Boolean))) revalidatePath(slug ? `/${slug}` : "/");
-}
-
-export async function createPageAction(formData: FormData) {
-  const session = await requirePersistentAdmin("editor");
-  const title = text(formData, "title");
-  const rawRoute = text(formData, "slug").replace(/^\/+|\/+$/g, "");
-  const key = slugify(text(formData, "key") || title);
-  if (!title || !key) throw new Error("Nome da página é obrigatório.");
-
-  const rows = await getDb().insert(pages).values({
-    key,
-    title,
-    slug: rawRoute,
-    enabled: checked(formData, "enabled"),
-    seoTitle: text(formData, "seoTitle"),
-    seoDescription: text(formData, "seoDescription"),
-  }).returning({ id: pages.id });
-  await audit(session.user.id, "page.created", "page", rows[0].id, { title, key, slug: rawRoute });
-  revalidatePagePaths([rawRoute]);
-  redirect(`/admin/pages/${rows[0].id}`);
 }
 
 export async function deletePageAction(formData: FormData) {

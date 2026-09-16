@@ -10,6 +10,7 @@ const shell = read("app/admin/components/AdminShell.tsx");
 const shellStyles = read("styles/admin/shell.css");
 const routeContract = read("app/admin/(protected)/pages/page-contract.ts");
 const siteContract = read("app/admin/(protected)/pages/site-page-contract.ts");
+const pageActions = read("app/admin/page-actions.ts");
 const editorPage = read("app/admin/(protected)/pages/[id]/page.tsx");
 const workbench = read("app/admin/(protected)/pages/[id]/PageContentWorkbench.tsx");
 const workbenchStyles = read("app/admin/(protected)/pages/[id]/PageContentWorkbench.module.css");
@@ -20,6 +21,7 @@ const news = read("app/(public)/noticias/page.tsx");
 const contact = read("app/(public)/contato/page.tsx");
 const privacy = read("app/(public)/politica-de-privacidade/page.tsx");
 const terms = read("app/(public)/termos-e-condicoes/page.tsx");
+const sitemap = read("app/sitemap.ts");
 const repository = read("modules/pages/repository.ts");
 const migration = read("migrations/0012_lander_site_cms_alignment.sql");
 const releaseMigration = read("migrations/0013_home_latest_releases_playlist.sql");
@@ -28,7 +30,7 @@ const sync = read("lib/integrations/sync.ts");
 const spotify = read("lib/integrations/spotify.ts");
 
 test("Pages overview mirrors the Portal Lander composition while keeping Lander Records data", () => {
-  for (const copy of ["Página selecionada", "Estrutura da página", "Criar página", "Criar seção", "Ver página pública", "Editar", "Excluir", "Seção", "Status", "Ações", "Configurar"]) {
+  for (const copy of ["Página selecionada", "Estrutura da página", "Criar seção", "Ver página pública", "Editar", "Excluir", "Seção", "Status", "Ações", "Configurar"]) {
     assert.match(manager, new RegExp(copy, "i"));
   }
   assert.match(manager, /sitePageContract/);
@@ -53,19 +55,12 @@ test("Pages overview mirrors the Portal Lander composition while keeping Lander 
   assert.doesNotMatch(styles, /overflow-x:auto/);
 });
 
-test("Create page uses the compact modal flow from the Pages reference", () => {
-  assert.match(manager, /createPageAction/);
-  assert.match(manager, /title="Criar página de conteúdo"/);
-  assert.match(manager, /Nome da página/);
-  assert.match(manager, /placeholder="Ex\.: Música"/);
-  assert.match(manager, />Slug</);
-  assert.match(manager, />Modelo</);
-  assert.match(manager, /Editorial · estrutura CMS da Lander Records/);
-  assert.match(manager, /Criar rascunho/);
-  assert.match(manager, /function pageSlug/);
-  assert.doesNotMatch(manager, /href=\{createPageHref\}|"\/admin\/pages\/new"/);
-  assert.match(styles, /\.createPageDialog\{width:min\(500px,calc\(100vw - 32px\)\)/);
-  assert.match(styles, /\.createPageField input:focus\{border-color:#ef8f98;box-shadow:0 0 0 3px rgba\(227,6,19,\.14\)\}/);
+test("Pages overview does not offer arbitrary page creation without a public renderer", () => {
+  assert.doesNotMatch(manager, /createPageAction|Criar página de conteúdo|Criar rascunho|create-page-form/);
+  assert.doesNotMatch(pageActions, /export async function createPageAction/);
+  assert.match(routeContract, /route: null, classification: "Estrutura administrativa" as const, scope: "Sem renderer público registrado"/);
+  assert.doesNotMatch(sitemap, /from\(pages\)|getPageContent/);
+  assert.match(manager, /Esta estrutura não possui renderer público registrado/);
 });
 
 test("Canonical page and section map comes from the Lander Records public implementation", () => {
