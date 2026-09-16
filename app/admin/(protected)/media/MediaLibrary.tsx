@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { AdminDialog } from "../../components/AdminDialog";
 import { AdminIcon } from "../../components/AdminIcon";
 import styles from "./MediaLibrary.module.css";
 
@@ -57,18 +58,6 @@ export function MediaLibrary({ archiveAction, items, uploadAction }: { archiveAc
   const visible = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   return <div className={styles.page} data-testid="media-library">
-    {uploadOpen ? <section className={styles.uploadCard} aria-label="Adicionar mídia">
-      <div className={styles.uploadHeader}>
-        <div><span>Nova mídia</span><h2>Adicionar arquivo à biblioteca</h2><p>Envie uma imagem para a biblioteca central usando exatamente o fluxo de armazenamento já existente no projeto.</p></div>
-        <button className={styles.outlineButton} onClick={() => setUploadOpen(false)} type="button"><AdminIcon name="x" size={15} />Fechar</button>
-      </div>
-      <form action={uploadAction} className={styles.uploadForm} onSubmit={() => setUploadOpen(false)}>
-        <label><span>Arquivo</span><input accept="image/*" name="file" required type="file" /></label>
-        <label><span>Texto alternativo</span><input maxLength={500} name="altText" placeholder="Descrição acessível da imagem ou arquivo" required /></label>
-        <div><button className={styles.primaryButton} type="submit"><AdminIcon name="upload" size={15} />Enviar mídia</button></div>
-      </form>
-    </section> : null}
-
     <div className={styles.toolbar}>
       <div className={styles.toolbarGroup}>
         <label className={styles.search}><span className="srOnly">Buscar mídia</span><AdminIcon name="search" size={16} /><input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder="Buscar arquivo, URL ou tipo..." type="search" /></label>
@@ -98,5 +87,12 @@ export function MediaLibrary({ archiveAction, items, uploadAction }: { archiveAc
         <div className={styles.pageButtons}><button disabled={safePage <= 1} onClick={() => setPage((value) => Math.max(1, value - 1))} type="button" aria-label="Página anterior">‹</button><button disabled={safePage >= totalPages} onClick={() => setPage((value) => Math.min(totalPages, value + 1))} type="button" aria-label="Próxima página">›</button></div>
       </div>
     </div> : <div className={styles.empty}><AdminIcon name="media" size={28} /><strong>Nenhuma mídia encontrada</strong><p>{items.length ? "Nenhum arquivo corresponde aos filtros atuais." : "A biblioteca de mídia está vazia."}</p></div>}
+
+    {uploadOpen ? <AdminDialog description="Envie um arquivo para a biblioteca central usando o armazenamento real já configurado no projeto." footer={<><button className="adminButton" onClick={() => setUploadOpen(false)} type="button">Cancelar</button><button className="adminButton primary" form="media-upload-form" type="submit"><AdminIcon name="upload" size={15}/>Enviar mídia</button></>} onClose={() => setUploadOpen(false)} title="Adicionar mídia">
+      <form action={uploadAction} className={styles.modalForm} id="media-upload-form" onSubmit={() => setUploadOpen(false)}>
+        <label><span>Arquivo</span><input accept="image/*" name="file" required type="file"/><small>Selecione uma imagem válida para a biblioteca.</small></label>
+        <label><span>Texto alternativo</span><input maxLength={500} name="altText" placeholder="Descrição acessível da imagem ou arquivo" required/><small>Usado em acessibilidade e nos componentes públicos que exibem esta mídia.</small></label>
+      </form>
+    </AdminDialog> : null}
   </div>;
 }
