@@ -51,6 +51,21 @@ test("Pages overview mirrors the Portal Lander composition while keeping Lander 
   assert.match(styles, /@media\(max-width:800px\)[\s\S]*\.tableWrap\{overflow-x:auto;overflow-y:visible\}[\s\S]*\.tableWrap table\{min-width:620px!important\}/);
 });
 
+test("Create page uses the compact modal flow from the Pages reference", () => {
+  assert.match(manager, /createPageAction/);
+  assert.match(manager, /title="Criar página de conteúdo"/);
+  assert.match(manager, /Nome da página/);
+  assert.match(manager, /placeholder="Ex\.: Música"/);
+  assert.match(manager, />Slug</);
+  assert.match(manager, />Modelo</);
+  assert.match(manager, /Editorial · estrutura CMS da Lander Records/);
+  assert.match(manager, /Criar rascunho/);
+  assert.match(manager, /function pageSlug/);
+  assert.doesNotMatch(manager, /href=\{createPageHref\}|"\/admin\/pages\/new"/);
+  assert.match(styles, /\.createPageDialog\{width:min\(500px,calc\(100vw - 32px\)\)/);
+  assert.match(styles, /\.createPageField input:focus\{border-color:#ef8f98;box-shadow:0 0 0 3px rgba\(227,6,19,\.14\)\}/);
+});
+
 test("Canonical page and section map comes from the Lander Records public implementation", () => {
   assert.match(siteContract, /sectionOrder: \["hero", "intro", "shortcuts", "artists", "releases", "advertise_banner", "news"\]/);
   assert.match(siteContract, /sectionOrder: \["hero", "history", "identity", "methodology", "companies"\]/);
