@@ -2,17 +2,25 @@ import type { IconName } from "./AdminIcon";
 
 export type AdminRole = "viewer" | "editor" | "admin" | "owner";
 export type AdminNavItem = { label: string; href: string; previewHref: string; icon: IconName; minimumRole?: "admin" | "owner" };
-export type AdminNavGroup = { label: string; items: AdminNavItem[] };
+export type AdminNavModule = { label: string; icon: IconName };
+export type AdminNavGroup = { key: string; label: string; items: AdminNavItem[]; module?: AdminNavModule };
 const rank: Record<AdminRole, number> = { viewer: 0, editor: 1, admin: 2, owner: 3 };
 
 export const adminNavigation: AdminNavGroup[] = [
-  { label: "", items: [{ label: "Dashboard", href: "/admin", previewHref: "/cms-preview/dashboard", icon: "dashboard" }] },
-  { label: "Site", items: [
-    { label: "Conteúdos", href: "/admin/posts", previewHref: "/cms-preview/posts", icon: "posts" },
-    { label: "Artistas", href: "/admin/artists", previewHref: "/cms-preview/artists", icon: "artists" },
-    { label: "Media Kit", href: "/admin/media", previewHref: "/cms-preview/media", icon: "media" },
-  ] },
-  { label: "Configurações", items: [
+  { key: "primary", label: "", items: [{ label: "Dashboard", href: "/admin", previewHref: "/cms-preview/dashboard", icon: "dashboard" }] },
+  {
+    key: "site",
+    label: "",
+    module: { label: "Site", icon: "home" },
+    items: [
+      { label: "Conteúdos", href: "/admin/posts", previewHref: "/cms-preview/posts", icon: "posts" },
+      { label: "Mídias", href: "/admin/media", previewHref: "/cms-preview/media", icon: "media" },
+      { label: "Páginas", href: "/admin/pages", previewHref: "/cms-preview/pages", icon: "pages" },
+      { label: "Mídia Kit", href: "/admin/media-kit", previewHref: "/cms-preview/media-kit", icon: "media" },
+    ],
+  },
+  { key: "artists", label: "", items: [{ label: "Artistas", href: "/admin/artists", previewHref: "/cms-preview/artists", icon: "artists" }] },
+  { key: "settings", label: "Configurações", items: [
     { label: "Empresa", href: "/admin/settings", previewHref: "/cms-preview/settings", icon: "home" },
     { label: "Identidade do Site", href: "/admin/settings#identity", previewHref: "/cms-preview/settings#identity", icon: "media" },
     { label: "Automações", href: "/admin/settings#automations", previewHref: "/cms-preview/settings#automations", icon: "activity" },
