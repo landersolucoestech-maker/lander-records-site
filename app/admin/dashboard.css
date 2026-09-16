@@ -3,9 +3,6 @@
 @import "../../styles/admin/dashboard.css";
 @import "../../styles/admin/home.css";
 
-/* Portal Lander is the visual source of truth for the administrative chrome. */
-.adminMain { padding: 20px 24px 32px; }
-
 /*
  * The Pages workbench left rail must be a real scroll container.
  * The CSS-module rail uses grid for composition; on Windows/Chrome that allowed
@@ -34,10 +31,5 @@
   }
 }
 
-@media (max-width: 1100px) {
-  .adminMain { padding: 18px 18px 28px; }
-}
-
-@media (max-width: 520px) {
-  .adminMain { padding: 15px 11px 24px; }
-}
+/* Final authority: every protected module resolves to the Dashboard design language. */
+@import "../../styles/admin/dashboard-module-contract.css";
