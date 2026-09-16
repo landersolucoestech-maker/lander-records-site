@@ -7,7 +7,7 @@ import styles from "./AdminMediaPicker.module.css";
 
 export type AdminMediaPickerItem = { id: string; name: string; url: string };
 
-export function AdminMediaPicker({ items, onClose, onSelect, open, selectedId, title = "Selecionar mídia" }: {
+export function AdminMediaPicker({ items, onClose, onSelect, open, selectedId, title = "Selecionar imagem de capa" }: {
   items: AdminMediaPickerItem[];
   onClose: () => void;
   onSelect: (item: AdminMediaPickerItem) => void;
@@ -51,11 +51,11 @@ export function AdminMediaPicker({ items, onClose, onSelect, open, selectedId, t
 
   if (!open) return null;
 
-  return <div className={styles.backdrop} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+  return <div className={styles.backdrop} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }} role="presentation">
     <section aria-labelledby="admin-media-picker-title" aria-modal="true" className={styles.dialog} ref={dialogRef} role="dialog" tabIndex={-1}>
-      <header className={styles.header}><div><span>BIBLIOTECA DE MÍDIA</span><h2 id="admin-media-picker-title">{title}</h2><p>Escolha um arquivo já armazenado na biblioteca do Site.</p></div><button aria-label="Fechar seletor de mídia" className={styles.close} onClick={onClose} type="button"><AdminIcon name="x" size={18}/></button></header>
-      <div className={styles.toolbar}><label className={styles.search}><span className="srOnly">Buscar mídia</span><AdminIcon name="search" size={16}/><input autoComplete="off" placeholder="Buscar arquivo ou URL..." type="search" value={query} onChange={(event) => setQuery(event.target.value)}/></label><span>{filtered.length} arquivo{filtered.length === 1 ? "" : "s"}</span></div>
-      <div className={styles.body}>{filtered.length ? <div className={styles.grid}>{filtered.map((item) => <button className={`${styles.item}${item.id === selectedId ? ` ${styles.selected}` : ""}`} key={item.id} onClick={() => onSelect(item)} type="button"><span className={styles.thumb}>{item.url ? <Image alt="" fill sizes="220px" src={item.url} unoptimized/> : <AdminIcon name="media" size={24}/>} {item.id === selectedId ? <i><AdminIcon name="check" size={14}/></i> : null}</span><span className={styles.copy}><strong>{item.name || "Mídia sem nome"}</strong><small>{item.url}</small></span></button>)}</div> : <div className={styles.empty}><AdminIcon name="media" size={26}/><strong>Nenhuma mídia encontrada</strong><p>A biblioteca não possui arquivos correspondentes à busca.</p></div>}</div>
+      <header className={styles.header}><div><span>BIBLIOTECA DE MÍDIAS</span><h2 id="admin-media-picker-title">{title}</h2><p>Escolha uma imagem já armazenada no Portal Lander.</p></div><button aria-label="Fechar biblioteca" className={styles.close} onClick={onClose} type="button"><AdminIcon name="x" size={18}/></button></header>
+      <div className={styles.toolbar}><label className={styles.search}><span className="srOnly">Buscar imagem</span><AdminIcon name="search" size={16}/><input autoComplete="off" placeholder="Buscar por nome ou URL..." type="search" value={query} onChange={(event) => setQuery(event.target.value)}/></label><span>{filtered.length} imagem{filtered.length === 1 ? "" : "ns"}</span></div>
+      <div className={styles.body}>{filtered.length ? <div className={styles.grid}>{filtered.map((item) => <button aria-pressed={item.id === selectedId} className={`${styles.item}${item.id === selectedId ? ` ${styles.selected}` : ""}`} key={item.id} onClick={() => onSelect(item)} type="button"><span className={styles.thumb}>{item.url ? <Image alt={item.name || "Imagem da biblioteca"} fill sizes="220px" src={item.url} unoptimized/> : <AdminIcon name="media" size={24}/>} {item.id === selectedId ? <i><AdminIcon name="check" size={14}/></i> : null}</span><span className={styles.copy}><strong>{item.name || "Mídia sem nome"}</strong><small>{item.url}</small></span></button>)}</div> : <div className={styles.empty}><AdminIcon name="media" size={26}/><strong>Nenhuma imagem encontrada</strong><p>Envie imagens em Site → Mídias ou ajuste a busca.</p></div>}</div>
     </section>
   </div>;
 }
