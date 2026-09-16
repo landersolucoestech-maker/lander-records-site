@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { eq } from "drizzle-orm";
+import { requireAdmin } from "../../../../../lib/auth";
 import { getDb } from "../../../../../lib/db";
 import { integrationMetricCache, landerRecordsIntegrationSettings } from "../../../../../lib/db/integration-schema";
 import { soundchartsCredentialsConfigured } from "../../../../../lib/integrations/soundcharts";
@@ -18,6 +19,8 @@ function Status({ ready, label }: { ready: boolean; label: string }) {
 }
 
 export default async function LanderRecordsIntegrationSettingsPage({ searchParams }: { searchParams: Promise<{ saved?: string; synced?: string; spotify?: string }> }) {
+  const session = await requireAdmin();
+  const canManageUsers = session.user.role === "owner";
   const db = getDb();
   const [rows, metricRows] = await Promise.all([
     db.select().from(landerRecordsIntegrationSettings).where(eq(landerRecordsIntegrationSettings.key, "lander_records")).limit(1),
@@ -45,7 +48,7 @@ export default async function LanderRecordsIntegrationSettingsPage({ searchParam
 
   return <div className="adminPage">
     <nav aria-label="Seções de configurações" className="adminTabs">
-      <Link href="/admin/settings">Empresa</Link><Link href="/admin/settings#identity">Identidade do Site</Link><Link href="/admin/settings#automations">Automações</Link><Link href="/admin/settings#security">Segurança</Link><Link aria-current="page" href="/admin/settings/lander-records">Integrações</Link><Link href="/admin/users">Usuários</Link>
+      <Link href="/admin/settings">Empresa</Link><Link href="/admin/settings#identity">Identidade do Site</Link><Link href="/admin/settings#automations">Automações</Link><Link href="/admin/settings#security">Segurança</Link><Link aria-current="page" href="/admin/settings/lander-records">Integrações</Link>{canManageUsers ? <Link href="/admin/users">Usuários</Link> : null}
     </nav>
 
     {params.saved === "1" ? <div className="adminNotice">Configurações salvas.</div> : null}
