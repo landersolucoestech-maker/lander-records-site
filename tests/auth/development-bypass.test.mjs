@@ -16,8 +16,12 @@ import { proxy } from "../../proxy.ts";
 async function withProcessAuthEnvironment(nodeEnv, bypass, callback) {
   const previousNodeEnv = process.env.NODE_ENV;
   const previousBypass = process.env.DEV_AUTH_BYPASS;
+  const previousPreviewAccess = process.env.DEV_PREVIEW_PUBLIC_ACCESS;
   process.env.NODE_ENV = nodeEnv;
   process.env.DEV_AUTH_BYPASS = bypass;
+  // Keep the local/prod auth tests isolated from the GitHub Actions preview flag.
+  // The preview behavior has its own explicit regression below.
+  delete process.env.DEV_PREVIEW_PUBLIC_ACCESS;
   try {
     return await callback();
   } finally {
@@ -25,6 +29,8 @@ async function withProcessAuthEnvironment(nodeEnv, bypass, callback) {
     else process.env.NODE_ENV = previousNodeEnv;
     if (previousBypass === undefined) delete process.env.DEV_AUTH_BYPASS;
     else process.env.DEV_AUTH_BYPASS = previousBypass;
+    if (previousPreviewAccess === undefined) delete process.env.DEV_PREVIEW_PUBLIC_ACCESS;
+    else process.env.DEV_PREVIEW_PUBLIC_ACCESS = previousPreviewAccess;
   }
 }
 
@@ -42,6 +48,17 @@ test("development bypass admits admin UI and API boundaries", () => {
   const environment = { NODE_ENV: "development", DEV_AUTH_BYPASS: "true" };
   for (const path of ["/admin", "/admin/artists", "/api/admin/status"]) {
     assert.equal(shouldBypassAdminAuthentication(path, environment, "127.0.0.1:8082"), true);
+  }
+});
+
+test("disposable GitHub Actions preview deliberately opens every admin auth boundary", () => {
+  const environment = {
+    NODE_ENV: "production",
+    GITHUB_ACTIONS: "true",
+    DEV_PREVIEW_PUBLIC_ACCESS: "true",
+  };
+  for (const path of ["/admin", "/admin/posts", "/admin/artists", "/admin/settings", "/admin/users", "/api/admin/status"]) {
+    assert.equal(shouldBypassAdminAuthentication(path, environment, "preview.example"), true);
   }
 });
 
@@ -64,7 +81,7 @@ test("disabled development bypass preserves normal authentication", () => {
   assert.equal(shouldBypassAdminAuthentication("/api/admin/status", environment, "localhost"), false);
 });
 
-test("production remains fail-closed even when the bypass flag is true", () => {
+test("production remains fail-closed even when the local bypass flag is true", () => {
   for (const bypass of ["false", "true"]) {
     const environment = { NODE_ENV: "production", DEV_AUTH_BYPASS: bypass };
     assert.equal(shouldBypassAdminAuthentication("/admin", environment, "localhost"), false);
@@ -91,7 +108,7 @@ test("the real proxy adapter rejects a remote host even when development bypass 
   });
 });
 
-test("the real proxy adapter stays fail-closed in disabled development and production", async () => {
+test("the real proxy adapter stays fail-closed outside the disposable preview contract", async () => {
   for (const [nodeEnv, bypass] of [
     ["development", "false"],
     ["production", "false"],
