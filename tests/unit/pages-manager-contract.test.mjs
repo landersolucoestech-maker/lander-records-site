@@ -9,6 +9,8 @@ const shell = fs.readFileSync(new URL("../../app/admin/components/AdminShell.tsx
 const shellStyles = fs.readFileSync(new URL("../../styles/admin/shell.css", import.meta.url), "utf8");
 const contract = fs.readFileSync(new URL("../../app/admin/(protected)/pages/page-contract.ts", import.meta.url), "utf8");
 const editor = fs.readFileSync(new URL("../../app/admin/(protected)/pages/[id]/page.tsx", import.meta.url), "utf8");
+const workbench = fs.readFileSync(new URL("../../app/admin/(protected)/pages/[id]/PageContentWorkbench.tsx", import.meta.url), "utf8");
+const workbenchStyles = fs.readFileSync(new URL("../../app/admin/(protected)/pages/[id]/PageContentWorkbench.module.css", import.meta.url), "utf8");
 const view = fs.readFileSync(new URL("../../app/admin/(protected)/pages/[id]/view/page.tsx", import.meta.url), "utf8");
 
 test("Pages overview follows the approved selected-page and section-structure composition", () => {
@@ -63,10 +65,21 @@ test("Public page destinations remain deterministic and real routes are used", (
   assert.match(view, /pageContract\(page\.key\)\.route/);
 });
 
-test("Page editor still exposes contextual fields and scopes item reads", () => {
-  assert.doesNotMatch(editor, /adminCode/);
-  assert.match(editor, /const sectionFields:/);
-  assert.match(editor, /const itemFields:/);
+test("Page editor clones the reference section workbench while preserving current persistence actions", () => {
+  assert.match(editor, /PageContentWorkbench/);
   assert.match(editor, /where\(inArray\(pageSectionItems\.sectionId/);
-  assert.doesNotMatch(editor, /Mídia<select|settings JSON|metadata JSON/);
+  assert.match(workbench, /Configurar seção:/);
+  assert.match(workbench, /Preview da seção/);
+  assert.match(workbench, /Conteúdo/);
+  assert.match(workbench, /Aparência/);
+  assert.match(workbench, /Comportamento/);
+  assert.match(workbench, /updatePageSection/);
+  assert.match(workbench, /updatePageSectionItem/);
+  assert.match(workbench, /name="monitor"/);
+  assert.match(workbench, /name="tablet"/);
+  assert.match(workbench, /name="smartphone"/);
+  assert.match(workbenchStyles, /grid-template-columns:minmax\(390px,500px\) minmax\(0,1fr\)/);
+  assert.match(workbenchStyles, /position:sticky/);
+  assert.match(workbenchStyles, /min-height:610px/);
+  assert.doesNotMatch(editor, /adminPanel adminStack/);
 });
