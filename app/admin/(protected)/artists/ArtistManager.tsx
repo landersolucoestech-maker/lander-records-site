@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { AdminIcon, type IconName } from "../../components/AdminIcon";
+import { AdminIcon } from "../../components/AdminIcon";
 import styles from "./ArtistManager.module.css";
 
 export type ArtistSummary = {
@@ -15,6 +15,7 @@ export type ArtistSummary = {
   cardImage: string;
   genres: string[];
   roles?: string[];
+  releaseCount?: number;
   audience?: number;
   homePosition?: number;
   isPubliclyVisible: boolean;
@@ -23,27 +24,11 @@ export type ArtistSummary = {
 
 type Filters = { genre?: string; q?: string; status?: string };
 type SortMode = "updated-desc" | "updated-asc" | "name-asc" | "name-desc";
-type MetricAccent = "red" | "blue" | "green" | "orange";
-
-const sparkPaths: Record<MetricAccent, string> = {
-  red: "M2 25 L14 18 L26 27 L38 20 L50 20 L62 12 L76 6",
-  blue: "M2 22 L14 15 L26 27 L38 20 L50 20 L62 11 L76 6",
-  green: "M2 20 L15 14 L27 25 L39 18 L50 19 L62 11 L76 6",
-  orange: "M2 22 L15 15 L28 27 L40 20 L52 18 L64 10 L76 5",
-};
 
 function StatusBadge({ status }: { status: ArtistSummary["status"] }) {
-  const label = status === "published" ? "Publicado" : status === "draft" ? "Rascunho" : status === "inactive" ? "Inativo" : "Arquivado";
+  const label = status === "published" ? "Ativo" : status === "draft" ? "Rascunho" : status === "inactive" ? "Inativo" : "Arquivado";
   const className = status === "published" ? styles.statusPublished : status === "draft" ? styles.statusDraft : status === "inactive" ? styles.statusInactive : styles.statusArchived;
   return <span className={`${styles.statusBadge} ${className}`}><i aria-hidden="true" />{label}</span>;
-}
-
-function ArtistMetricCard({ accent, hint, icon, label, value }: { accent: MetricAccent; hint: string; icon: IconName; label: string; value: string }) {
-  return <article className={`adminMetricCard is-${accent}`}>
-    <span className="adminMetricIcon"><AdminIcon name={icon} size={25} /></span>
-    <div className="adminMetricCopy"><span>{label}</span><strong>{value}</strong><small>{hint}</small></div>
-    <svg aria-hidden="true" className="adminMetricSpark" viewBox="0 0 78 36"><defs><linearGradient id={`artists-spark-${accent}`} x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="currentColor" stopOpacity=".18" /><stop offset="1" stopColor="currentColor" stopOpacity="0" /></linearGradient></defs><path d={`${sparkPaths[accent]} L76 36 L2 36 Z`} fill={`url(#artists-spark-${accent})`} stroke="none" /><path d={sparkPaths[accent]} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" /></svg>
-  </article>;
 }
 
 function dateValue(value: string) {
@@ -57,14 +42,9 @@ function dateLabel(value: string) {
   return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(parsed));
 }
 
-function audienceLabel(value: number | undefined) {
-  if (!value || value <= 0) return "—";
+function numberLabel(value: number | undefined) {
+  if (value == null || value < 0) return "—";
   return new Intl.NumberFormat("pt-BR").format(value);
-}
-
-function compactAudienceLabel(value: number) {
-  if (value <= 0) return "0";
-  return new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFractionDigits: 1 }).format(value);
 }
 
 function paginationItems(current: number, total: number) {
@@ -118,9 +98,6 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
 
   useEffect(() => { setPage(1); }, [genre, pageSize, query, sort, status]);
 
-  const publishedCount = artists.filter((artist) => artist.status === "published").length;
-  const homeFeaturedCount = artists.filter((artist) => typeof artist.homePosition === "number").length;
-  const audienceTotal = artists.reduce((total, artist) => total + Math.max(0, artist.audience || 0), 0);
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   useEffect(() => { if (page > pageCount) setPage(pageCount); }, [page, pageCount]);
   const startIndex = filtered.length ? (page - 1) * pageSize : 0;
@@ -154,33 +131,20 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
     {preview ? <div className="adminNotice">Os dados deste preview são isolados e não alteram a persistência do ambiente real.</div> : null}
 
     <header className="adminDashboardHeading">
-      <div><h1>Artistas</h1><p>Gerencie o casting, a publicação e os destaques da Lander Records.</p></div>
+      <div><h1>Artistas</h1><p>Gerencie os artistas do seu selo, edite informações, discografia e conteúdos relacionados.</p></div>
       {canEdit && !preview ? <Link className="adminPrimaryCompact" href="/admin/artists/new"><AdminIcon name="plus" size={15} />Novo artista</Link> : null}
     </header>
 
-    <section aria-label="Resumo do catálogo de artistas" className="adminMetricGrid">
-      <ArtistMetricCard accent="red" hint="no casting" icon="artists" label="Artistas" value={new Intl.NumberFormat("pt-BR").format(artists.length)} />
-      <ArtistMetricCard accent="blue" hint="visíveis no catálogo" icon="eye" label="Publicados" value={new Intl.NumberFormat("pt-BR").format(publishedCount)} />
-      <ArtistMetricCard accent="green" hint="na seção Artistas" icon="home" label="Destaques na Home" value={new Intl.NumberFormat("pt-BR").format(homeFeaturedCount)} />
-      <ArtistMetricCard accent="orange" hint="soma das métricas registradas" icon="users" label="Audiência" value={compactAudienceLabel(audienceTotal)} />
-    </section>
-
-    <section className={`adminDashboardPanel ${styles.catalogPanel}`} aria-label="Catálogo de artistas">
-      <div className="adminAnalyticsPanelHeading">
-        <div className="adminPanelHeadingIdentity"><span className="adminPanelHeadingIcon"><AdminIcon name="artists" size={20} /></span><div><h2>Catálogo de artistas</h2><p>Busque, filtre e gerencie os artistas cadastrados.</p></div></div>
-        <div className={styles.panelSummary}><strong>{filtered.length}</strong><span>{filtered.length === 1 ? "resultado" : "resultados"}</span></div>
-      </div>
-
+    <section className={styles.tableSurface} aria-label="Artistas cadastrados">
       <div className={styles.toolbar} role="search">
         <label className={styles.searchField}>
           <span className="srOnly">Buscar artistas</span>
           <AdminIcon name="search" size={16} />
           <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar artistas..." />
         </label>
-        <label className={styles.filterField}><span>Status</span><select value={status} onChange={(event) => setStatus(event.target.value)}><option value="all">Todos</option><option value="published">Publicados</option><option value="draft">Rascunhos</option><option value="inactive">Inativos</option><option value="archived">Arquivados</option></select></label>
+        <label className={styles.filterField}><span>Status</span><select value={status} onChange={(event) => setStatus(event.target.value)}><option value="all">Todos</option><option value="published">Ativos</option><option value="draft">Rascunhos</option><option value="inactive">Inativos</option><option value="archived">Arquivados</option></select></label>
         <label className={styles.filterField}><span>Gênero</span><select value={genre} onChange={(event) => setGenre(event.target.value)}><option value="all">Todos</option>{genres.map((item) => <option key={item}>{item}</option>)}</select></label>
         <label className={styles.filterField}><span>Ordenar por</span><select value={sort} onChange={(event) => setSort(event.target.value as SortMode)}><option value="updated-desc">Mais recentes</option><option value="updated-asc">Mais antigos</option><option value="name-asc">Nome A–Z</option><option value="name-desc">Nome Z–A</option></select></label>
-        {hasFilters ? <button className={styles.clearButton} onClick={clearFilters} type="button">Limpar filtros</button> : null}
       </div>
 
       {filtered.length ? <>
@@ -188,16 +152,16 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
           <table className={styles.artistTable} aria-label="Artistas cadastrados">
             <thead><tr>
               <th className={styles.checkboxColumn}><input aria-label="Selecionar artistas desta página" checked={allCurrentSelected} onChange={toggleCurrentPage} type="checkbox" /></th>
-              <th>Artista</th><th>Gênero</th><th>Audiência</th><th>Destaque</th><th>Status</th><th>Última atualização</th><th className={styles.actions}>Ações</th>
+              <th>Artista</th><th>Gênero</th><th>Lançamentos</th><th>Audiência</th><th>Status</th><th>Última atualização</th><th className={styles.actions}>Ações</th>
             </tr></thead>
             <tbody>{pageRows.map((artist) => {
               const roleLine = artist.roles?.length ? artist.roles.slice(0, 2).join(" · ") : `/artistas/${artist.slug}`;
               return <tr data-testid="artist-row" key={artist.id}>
                 <td className={styles.checkboxColumn}><input aria-label={`Selecionar ${artist.name}`} checked={selected.has(artist.id)} onChange={() => toggleArtist(artist.id)} type="checkbox" /></td>
-                <td><div className={styles.identity}>{artist.cardImage ? <Image alt="" height={38} src={artist.cardImage} unoptimized width={38} /> : <span className={styles.avatarFallback} aria-hidden="true"><AdminIcon name="artists" size={16} /></span>}<span><strong>{artist.name}</strong><small>{roleLine}</small></span></div></td>
+                <td><div className={styles.identity}>{artist.cardImage ? <Image alt="" height={42} src={artist.cardImage} unoptimized width={42} /> : <span className={styles.avatarFallback} aria-hidden="true"><AdminIcon name="artists" size={17} /></span>}<span><strong>{artist.name}</strong><small>{roleLine}</small></span></div></td>
                 <td><div className={styles.taxonomy}><span>{artist.genres[0] || "Não informado"}</span>{artist.genres.length > 1 ? <small>+{artist.genres.length - 1}</small> : null}</div></td>
-                <td><strong className={styles.metricValue}>{audienceLabel(artist.audience)}</strong></td>
-                <td><div className={styles.homePlacement}>{typeof artist.homePosition === "number" ? <><span className={styles.homePosition}>#{artist.homePosition}</span><small>Home</small></> : <span className={styles.noPlacement}>—</span>}</div></td>
+                <td><span className={styles.numericValue}>{numberLabel(artist.releaseCount)}</span></td>
+                <td><span className={styles.numericValue}>{numberLabel(artist.audience)}</span></td>
                 <td><StatusBadge status={artist.status} /></td>
                 <td><time dateTime={dateValue(artist.updatedAt) ? artist.updatedAt : undefined}>{dateLabel(artist.updatedAt)}</time></td>
                 <td className={styles.actions}><details><summary aria-label={`Ações de ${artist.name}`}><AdminIcon name="more" size={18}/></summary><div className={styles.actionMenu}>{canEdit && !preview ? <Link href={`/admin/artists/${artist.id}`}><AdminIcon name="edit" size={14}/>Editar</Link> : null}{artist.isPubliclyVisible && !preview ? <Link href={`/artistas/${artist.slug}`} target="_blank"><AdminIcon name="eye" size={14}/>Visualizar</Link> : null}<Link href={preview ? "/cms-preview/artists" : `/admin/artists/${artist.id}/view`}><AdminIcon name="document" size={14}/>Consultar</Link></div></details></td>
@@ -207,7 +171,7 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
         </div>
 
         <footer className={styles.pagination} aria-label="Paginação dos artistas">
-          <div className={styles.paginationSummary}><strong>{selected.size ? `${selected.size} selecionado${selected.size === 1 ? "" : "s"}` : `${pageRows.length} registro${pageRows.length === 1 ? "" : "s"}`}</strong><span>{filtered.length ? `${startIndex + 1}–${endIndex} de ${filtered.length}` : "0 de 0"}{artists.length !== filtered.length ? ` · ${artists.length} no total` : ""}</span></div>
+          <div className={styles.paginationSummary}><strong>{pageRows.length} registro{pageRows.length === 1 ? "" : "s"}</strong><span>{filtered.length ? `${startIndex + 1}–${endIndex} de ${filtered.length}` : "0 de 0"}</span></div>
           <div className={styles.paginationControls}>
             <button aria-label="Primeira página" disabled={page === 1} onClick={() => setPage(1)} type="button">«</button>
             <button aria-label="Página anterior" disabled={page === 1} onClick={() => setPage((current) => Math.max(1, current - 1))} type="button">‹</button>
