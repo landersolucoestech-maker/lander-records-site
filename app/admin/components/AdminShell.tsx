@@ -17,7 +17,48 @@ type ShellProps = {
   sessionSource?: "session" | "development-auth-bypass";
 };
 
+type ModuleHeader = {
+  title: string;
+  description: string;
+  action?: { label: string; href: string };
+};
+
 const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex="0"]';
+
+function moduleHeader(pathname: string, preview: boolean): ModuleHeader | null {
+  const path = pathname.replace(/\/+$/, "") || "/";
+  const root = preview ? "/cms-preview" : "/admin";
+  const map: Record<string, ModuleHeader> = {
+    [`${root}/posts`]: {
+      title: "Conteúdos",
+      description: "Gerencie publicações, rascunhos editoriais e materiais do site com uma experiência consistente.",
+      action: { label: "Novo conteúdo", href: preview ? `${root}/posts` : "/admin/posts/new" },
+    },
+    [`${root}/artists`]: {
+      title: "Artistas",
+      description: "Gerencie artistas, perfis, publicação e conteúdos relacionados sem alterar os fluxos existentes.",
+      action: { label: "Novo artista", href: preview ? `${root}/artists` : "/admin/artists/new" },
+    },
+    [`${root}/media`]: {
+      title: "Mídias",
+      description: "Organize a biblioteca de arquivos, metadados e ciclo de vida dos assets do site.",
+    },
+    [`${root}/pages`]: {
+      title: "Páginas",
+      description: "Gerencie páginas e configure cada seção com edição e preview em tempo real.",
+      action: { label: "Criar página", href: preview ? `${root}/pages` : "/admin/pages/new" },
+    },
+    [`${root}/media-kit`]: {
+      title: "Mídia Kit",
+      description: "Edite a apresentação comercial e acompanhe as informações que compõem o material institucional.",
+    },
+    [`${root}/settings`]: {
+      title: "Configurações",
+      description: "Gerencie identidade, preferências e configurações do sistema em uma experiência unificada.",
+    },
+  };
+  return map[path] || null;
+}
 
 export function AdminShell({ children, email, footerAction, name, preview = false, role = "viewer", sessionSource = "session" }: ShellProps) {
   const [open, setOpen] = useState(false);
@@ -31,7 +72,7 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
   const developmentPreview = sessionSource === "development-auth-bypass";
   const readOnly = preview || developmentPreview;
   const showReadOnlyChrome = preview;
-  const pagesIndex = pathname === "/admin/pages" || pathname === "/cms-preview/pages";
+  const contextualHeader = moduleHeader(pathname, preview);
   const initials = developmentPreview ? "DE" : name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "LR";
 
   useEffect(() => {
@@ -132,13 +173,13 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
     </aside>
     <div className="adminWorkspace" ref={workspaceRef}>
       <a className="adminSkipLink" href="#admin-main">Ir para o conteúdo</a>
-      <header className={`adminTopbar${pagesIndex ? " adminTopbarContextual adminTopbarPages" : ""}`} data-testid="admin-topbar">
+      <header className={`adminTopbar${contextualHeader ? " adminTopbarContextual" : ""}`} data-testid="admin-topbar">
         <div className="adminTopbarLocation">
           <button aria-controls="admin-sidebar" aria-expanded={open} aria-label={open ? "Fechar menu" : "Abrir menu"} className="adminMenuButton" onClick={() => setOpen((value) => !value)} ref={mobileToggleRef} type="button"><AdminIcon name="menu" /></button>
-          {pagesIndex ? <div className="adminContextTitle"><strong>Páginas</strong><small>Gerencie páginas e configure cada seção com edição e preview em tempo real.</small></div> : <nav aria-label="Breadcrumb" className="adminBreadcrumb"><ol>{location.breadcrumbs.map((crumb, index) => <li key={`${crumb.label}-${index}`}>{crumb.href ? <Link href={crumb.href}>{crumb.label}</Link> : <span aria-current="page">{crumb.label}</span>}</li>)}</ol></nav>}
+          {contextualHeader ? <div className="adminContextTitle"><strong>{contextualHeader.title}</strong><small>{contextualHeader.description}</small></div> : <nav aria-label="Breadcrumb" className="adminBreadcrumb"><ol>{location.breadcrumbs.map((crumb, index) => <li key={`${crumb.label}-${index}`}>{crumb.href ? <Link href={crumb.href}>{crumb.label}</Link> : <span aria-current="page">{crumb.label}</span>}</li>)}</ol></nav>}
         </div>
         <div className="adminTopbarActions">
-          {pagesIndex ? <><Link className="adminTopbarPrimary" href={preview ? "/cms-preview/pages" : "/admin/pages/new"}><span aria-hidden="true">+</span><span>Criar página</span></Link><button aria-label="Notificações" className="adminNotificationButton" type="button"><AdminIcon name="bell" size={18} /></button></> : <Link aria-label="Ver site público (abre em nova aba)" className="adminPublicLink" href="/" rel="noopener noreferrer" target="_blank"><span>Ver site público</span><AdminIcon name="external" size={15} /></Link>}
+          {contextualHeader ? <>{contextualHeader.action ? <Link className="adminTopbarPrimary" href={contextualHeader.action.href}><span aria-hidden="true">+</span><span>{contextualHeader.action.label}</span></Link> : null}<button aria-label="Notificações" className="adminNotificationButton" type="button"><AdminIcon name="bell" size={18} /></button></> : <Link aria-label="Ver site público (abre em nova aba)" className="adminPublicLink" href="/" rel="noopener noreferrer" target="_blank"><span>Ver site público</span><AdminIcon name="external" size={15} /></Link>}
           <span className="adminTopbarUser"><span className="adminAvatar">{initials}</span><span><strong>{name}</strong><small>{email || role}</small></span></span>
         </div>
       </header>
