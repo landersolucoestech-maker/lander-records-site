@@ -38,6 +38,7 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/lander_records_preview
       NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
       CONTACT_IP_HASH_SALT: preview-contact-ip-salt-not-for-production
+      DEV_PREVIEW_PUBLIC_ACCESS: "true"
 
     steps:
       - uses: actions/checkout@v5
@@ -62,7 +63,7 @@ jobs:
         run: npm run db:migrate
 
       - name: Dashboard regression tests
-        run: node --test tests/unit/admin-dashboard-refactor.test.mjs tests/unit/admin-navigation.test.mjs tests/unit/production-readiness.test.mjs
+        run: node --test tests/unit/admin-dashboard-refactor.test.mjs tests/unit/admin-navigation.test.mjs tests/unit/production-readiness.test.mjs tests/auth/development-bypass.test.mjs
 
       - name: Typecheck
         run: npm run typecheck
@@ -84,7 +85,7 @@ jobs:
           echo "APP_PID=$APP_PID" >> "$GITHUB_ENV"
           READY=0
           for attempt in $(seq 1 30); do
-            if curl --fail --silent --show-error http://127.0.0.1:3000/cms-preview/dashboard > /tmp/dashboard-preview.html; then
+            if curl --fail --silent --show-error http://127.0.0.1:3000/admin > /tmp/admin-preview.html; then
               READY=1
               break
             fi
@@ -129,14 +130,15 @@ jobs:
           printf '%s\n' "$PREVIEW_URL" > preview-url.txt
 
           curl --fail --silent --show-error --retry 20 --retry-delay 2 \
-            "$PREVIEW_URL/cms-preview/dashboard" > /dev/null
+            "$PREVIEW_URL/admin" > /dev/null
 
           {
             echo "### Dev Preview"
             echo ""
-            echo "- Dashboard: $PREVIEW_URL/cms-preview/dashboard"
+            echo "- Admin sem login: $PREVIEW_URL/admin"
             echo "- Site público: $PREVIEW_URL/"
             echo "- Ambiente descartável: PostgreSQL temporário, sem secrets de produção."
+            echo "- Autenticação do portal desativada apenas neste preview descartável do GitHub Actions."
             echo "- O endereço expira quando este job termina ou é substituído por um novo push em dev."
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -149,7 +151,7 @@ jobs:
 
       - name: Keep preview online
         run: |
-          echo "Preview: $PREVIEW_URL/cms-preview/dashboard"
+          echo "Preview admin: $PREVIEW_URL/admin"
           for minute in $(seq 1 75); do
             if ! kill -0 "$APP_PID" 2>/dev/null; then
               cat /tmp/lander-preview.log
