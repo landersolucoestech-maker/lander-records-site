@@ -1,0 +1,328 @@
+/*
+ * Dashboard visual contract.
+ *
+ * The Dashboard is the final source of truth for every protected admin module.
+ * Feature styles may control feature-specific grids and responsive behavior, but
+ * palette, type scale, density, surfaces, controls, tables and vertical rhythm
+ * must resolve to the same language used by DashboardView.
+ */
+.adminShell {
+  --ui-bg: #f5f5f4;
+  --ui-surface: #fff;
+  --ui-surface-subtle: #f5f6f7;
+  --ui-text: #303a48;
+  --ui-text-strong: #202630;
+  --ui-muted: #687385;
+  --ui-muted-soft: #8a94a3;
+  --ui-border: #e1e6eb;
+  --ui-border-strong: #d4dae1;
+  --ui-radius-sm: 6px;
+  --ui-radius-md: 8px;
+  --ui-radius-lg: 10px;
+  --ui-page-gap: 18px;
+  --ui-page-gap-mobile: 14px;
+  --ui-card-gap: 12px;
+  --ui-card-padding: 14px;
+  --ui-card-header-block: 12px;
+  --ui-card-header-inline: 14px;
+  --ui-card-header-min-height: 54px;
+  --ui-control-sm: 32px;
+  --ui-control-md: 36px;
+  --ui-control-inline: 11px;
+  --ui-type-micro: 10px;
+  --ui-type-label: 11px;
+  --ui-type-body: 12px;
+  --ui-type-control: 11px;
+  --ui-type-card-title: 13px;
+  --ui-type-section-title: 17px;
+  --ui-type-kpi-value: 20px;
+  --ui-page-block-start: 20px;
+  --ui-page-block-start-mobile: 15px;
+  --ui-page-block-end: 32px;
+  --ui-page-block-end-mobile: 24px;
+  --ui-table-head-height: 38px;
+  --ui-table-row-height: 50px;
+  --ui-table-cell-inline: 12px;
+  --ui-badge-min-height: 22px;
+  --ui-pagination-min-height: 46px;
+}
+
+/* One workspace rhythm: identical to the Dashboard content area. */
+.adminShell .adminMain {
+  box-sizing: border-box;
+  display: grid;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: var(--ui-page-block-start) 24px var(--ui-page-block-end);
+  gap: 18px;
+  background: #f5f5f4;
+  color: #303a48;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.adminShell .adminMain > * { min-width: 0; max-width: none; }
+.adminShell .adminMain :is([data-testid$="-manager"], [data-testid="page-section-workbench"], .adminPage, .adminStack) {
+  gap: 18px !important;
+}
+
+/* Contextual chrome keeps the same Dashboard typography and Lander accent. */
+.adminShell .adminContextTitle strong {
+  font-size: clamp(25px, 2.1vw, 33px) !important;
+  font-weight: 850 !important;
+  letter-spacing: -.036em !important;
+  line-height: 1.1 !important;
+}
+.adminShell .adminContextTitle small {
+  color: #969ca6 !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+}
+.adminShell .adminTopbarPrimary {
+  min-height: 36px !important;
+  border: 1px solid #e30613 !important;
+  border-radius: 8px !important;
+  background: #e30613 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+}
+.adminShell .adminTopbarPrimary:hover {
+  border-color: #bd0010 !important;
+  background: #bd0010 !important;
+}
+
+/* Dashboard card language for every module surface. */
+.adminShell .adminMain :is(
+  .adminPanel,
+  .adminSectionCard,
+  .adminMetricCard,
+  .adminMediaCard,
+  .tableview-surface,
+  .table-card,
+  [class*="_tableSurface__"],
+  [class*="_selectionCard__"],
+  [class*="_structureCard__"],
+  [class*="_sourceBlock__"],
+  [class*="_securityBox__"],
+  [class*="_portalCard__"],
+  [class*="_card__"]
+) {
+  border: 1px solid #e1e6eb !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+.adminShell .adminMain :is(.adminPanel, .adminSectionCard) { padding: 14px !important; }
+.adminShell .adminMain :is(.adminPanel, [class*="_cardHeader__"], [class*="_structureHeading__"]) h2,
+.adminShell .adminMain [class*="_structureHeading__"] strong {
+  color: #202630 !important;
+  font-size: 17px !important;
+  font-weight: 850 !important;
+  letter-spacing: -.025em !important;
+  line-height: 1.2 !important;
+}
+.adminShell .adminMain :is(.adminPanel, [class*="_cardHeader__"], [class*="_structureHeading__"]) p,
+.adminShell .adminMain [class*="_structureHeading__"] small {
+  color: #687385 !important;
+  font-size: 10.5px !important;
+  line-height: 1.45 !important;
+}
+
+/* Dashboard controls: compact, neutral and consistent across feature CSS modules. */
+.adminShell .adminMain :is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  select,
+  textarea
+) {
+  box-sizing: border-box;
+  border: 1px solid #d4dae1 !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  color: #202630 !important;
+  box-shadow: none !important;
+  font-family: 'Montserrat', Arial, sans-serif !important;
+  font-size: 11px !important;
+}
+.adminShell .adminMain :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select) {
+  min-height: 36px !important;
+  height: 36px !important;
+}
+.adminShell .adminMain textarea { min-height: 92px; }
+.adminShell .adminMain :is(input, select, textarea):focus {
+  outline: 0 !important;
+  border-color: #aeb7c2 !important;
+  box-shadow: 0 0 0 3px rgba(227, 6, 19, .08) !important;
+}
+.adminShell .adminMain :is(input, textarea)::placeholder { color: #98a0aa !important; }
+.adminShell .adminMain label { color: #344054; }
+
+.adminShell .adminMain .adminButton,
+.adminShell .adminMain :is([class*="_outlineButton__"], [class*="_configureButton__"], [class*="_primaryButton__"], [class*="_modalButton__"], [class*="_modalPrimary__"]) {
+  box-sizing: border-box;
+  min-height: 36px !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  font-family: 'Montserrat', Arial, sans-serif !important;
+  font-size: 10.5px !important;
+  font-weight: 800 !important;
+}
+.adminShell .adminMain .adminButton.primary,
+.adminShell .adminMain :is([class*="_primaryButton__"], [class*="_modalPrimary__"]) {
+  border-color: #e30613 !important;
+  background: #e30613 !important;
+  color: #fff !important;
+}
+.adminShell .adminMain .adminButton.primary:hover,
+.adminShell .adminMain :is([class*="_primaryButton__"], [class*="_modalPrimary__"]):hover {
+  border-color: #bd0010 !important;
+  background: #bd0010 !important;
+}
+
+/* Every filter bar follows the compact Dashboard panel geometry. */
+.adminShell .adminMain :is(.admin-toolbar, [class*="_toolbar__"]) {
+  box-sizing: border-box;
+  min-height: 52px !important;
+  padding: 8px !important;
+  gap: 8px !important;
+  border: 1px solid #e1e6eb !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+/* Secondary navigation is always a quiet Dashboard-style underline, never pills. */
+.adminShell .adminMain :is(.adminTabs, [class*="_tabs__"], [class*="_viewTabs__"]) {
+  box-sizing: border-box;
+  min-height: 40px;
+  border: 0 !important;
+  border-bottom: 1px solid #e1e6eb !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.adminShell .adminMain :is(.adminTabs, [class*="_tabs__"], [class*="_viewTabs__"]) :is(a, button, span) {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-family: 'Montserrat', Arial, sans-serif !important;
+  font-size: 11px !important;
+}
+
+/* One TableView: Dashboard density, typography, borders and hover state. */
+.adminShell .adminMain table:not(.tableview-freeform) {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  font-family: 'Montserrat', Arial, sans-serif !important;
+  font-size: 12px !important;
+}
+.adminShell .adminMain table:not(.tableview-freeform) th {
+  height: 38px !important;
+  padding: 0 12px !important;
+  border-bottom: 1px solid #e1e6eb !important;
+  background: #f5f6f7 !important;
+  color: #687385 !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.2 !important;
+  text-transform: none !important;
+  vertical-align: middle !important;
+}
+.adminShell .adminMain table:not(.tableview-freeform) td {
+  height: 50px !important;
+  padding: 6px 12px !important;
+  border-bottom: 1px solid #e7eaee !important;
+  background: #fff;
+  color: #4d5868 !important;
+  font-size: 11px !important;
+  line-height: 1.35 !important;
+  vertical-align: middle !important;
+}
+.adminShell .adminMain table:not(.tableview-freeform) tbody tr:last-child td { border-bottom: 0 !important; }
+.adminShell .adminMain table:not(.tableview-freeform) tbody tr:hover td { background: #fafafa !important; }
+.adminShell .adminMain table:not(.tableview-freeform) strong {
+  color: #202630;
+  font-size: 11px;
+  font-weight: 800;
+}
+.adminShell .adminMain table:not(.tableview-freeform) small {
+  color: #7d8795;
+  font-size: 10px;
+}
+
+/* Status and taxonomy chips inherit one restrained dashboard scale. */
+.adminShell .adminMain :is(.adminBadge, [class*="_statusBadge__"], [class*="_typeBadge__"], [class*="_taxonomy__"] > span) {
+  min-height: 22px !important;
+  padding: 0 8px !important;
+  border-radius: 999px !important;
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+}
+.adminShell .adminMain .adminBadge.live {
+  border-color: #c7ead3 !important;
+  background: #eaf8ef !important;
+  color: #08753f !important;
+}
+.adminShell .adminMain .adminBadge.draft {
+  border-color: #f2dfab !important;
+  background: #fff8e7 !important;
+  color: #9a6404 !important;
+}
+.adminShell .adminMain .adminBadge.archived {
+  border-color: #e0e3e7 !important;
+  background: #f3f4f5 !important;
+  color: #667085 !important;
+}
+
+/* Menus, pagination and empty states share the same quiet surface treatment. */
+.adminShell .adminMain :is([class*="_actionMenu__"], .adminAccountPopover) {
+  border: 1px solid #dfe3e8 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, .12) !important;
+}
+.adminShell .adminMain :is([class*="_pagination__"], [class*="_resultCount__"]) {
+  min-height: 46px !important;
+  border-top: 1px solid #e1e6eb !important;
+  background: #fff !important;
+  color: #687385 !important;
+  font-size: 10px !important;
+}
+.adminShell .adminMain :is(.adminEmpty, [class*="_empty__"]) {
+  border-color: #d4dae1 !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  color: #687385 !important;
+}
+
+/* Dashboard heading scale for feature-owned headings that remain inside content. */
+.adminShell .adminMain .adminPageHeader h1,
+.adminShell .adminMain [class*="_heading__"] h1 {
+  margin: 0;
+  color: #202630 !important;
+  font-size: clamp(25px, 2.1vw, 33px) !important;
+  font-weight: 850 !important;
+  letter-spacing: -.036em !important;
+  line-height: 1.1 !important;
+}
+.adminShell .adminMain .adminPageHeader p,
+.adminShell .adminMain [class*="_heading__"] p {
+  color: #687385 !important;
+  font-size: 12.5px !important;
+  line-height: 1.45 !important;
+}
+
+@media (max-width: 1100px) {
+  .adminShell .adminMain { padding: 18px 18px 28px; gap: 16px; }
+}
+@media (max-width: 760px) {
+  .adminShell .adminMain { gap: 14px; }
+}
+@media (max-width: 520px) {
+  .adminShell .adminMain { padding: 15px 11px 24px; }
+  .adminShell .adminContextTitle strong { font-size: 20px !important; }
+}
