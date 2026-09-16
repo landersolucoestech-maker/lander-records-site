@@ -3,7 +3,6 @@ import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
 import { postLinks, postProfiles } from "../../../../lib/db/news-management-schema";
 import { mediaAssets, postCategories, posts, postTags, tags } from "../../../../lib/db/schema";
-import NewContentModalOpener from "./NewContentModalOpener";
 import PostManager, { type PostRecord } from "./PostManager";
 
 export const dynamic = "force-dynamic";
@@ -44,7 +43,7 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
   if (filters.category && filters.category !== "all") conditions.push(eq(postCategories.name, filters.category));
   if (filters.tag && filters.tag !== "all") conditions.push(sql`EXISTS (SELECT 1 FROM ${postTags} INNER JOIN ${tags} ON ${postTags.tagId} = ${tags.id} WHERE ${postTags.postId} = ${posts.id} AND ${tags.name} = ${filters.tag})`);
 
-  const [rows, tagRows, categoryRows, mediaRows, profileRows, linkRows] = await Promise.all([
+  const [rows, tagRows, categoryRows, mediaRows, profileRows, linkRows, tagOptionRows] = await Promise.all([
     db.select({
       id: posts.id,
       title: posts.title,
@@ -85,6 +84,7 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
       .orderBy(asc(mediaAssets.originalFilename)),
     db.select().from(postProfiles),
     db.select().from(postLinks),
+    db.select({ id: tags.id, name: tags.name }).from(tags).orderBy(asc(tags.name)),
   ]);
 
   const profileMap = new Map(profileRows.map((profile) => [profile.postId, profile]));
@@ -128,20 +128,17 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
   const initialMode = filters.create === "1" ? "create" : filters.edit ? "edit" : filters.view ? "view" : undefined;
   const initialId = filters.edit || filters.view || undefined;
 
-  return <>
-    <PostManager
-      canDelete={session.source === "session" && (session.user.role === "admin" || session.user.role === "owner")}
-      canEdit={session.source === "session" && session.user.role !== "viewer"}
-      categories={categoryRows}
-      deleted={filters.deleted === "1"}
-      developmentMode={session.source === "development-auth-bypass"}
-      initialId={initialId}
-      initialMode={initialMode}
-      media={mediaRows}
-      posts={records}
-      saved={filters.saved === "1"}
-      tags={tagRows.reduce<{ id: string; name: string }[]>((all, row) => all.some((item) => item.id === row.id) ? all : [...all, { id: row.id, name: row.name }], [])}
-    />
-    {filters.create === "1" ? <NewContentModalOpener /> : null}
-  </>;
+  return <PostManager
+    canDelete={session.source === "session" && (session.user.role === "admin" || session.user.role === "owner")}
+    canEdit={session.source === "session" && session.user.role !== "viewer"}
+    categories={categoryRows}
+    deleted={filters.deleted === "1"}
+    developmentMode={session.source === "development-auth-bypass"}
+    initialId={initialId}
+    initialMode={initialMode}
+    media={mediaRows}
+    posts={records}
+    saved={filters.saved === "1"}
+    tags={tagOptionRows}
+  />;
 }
