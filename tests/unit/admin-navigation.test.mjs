@@ -1,11 +1,19 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import path from "node:path";
 import test from "node:test";
 import ts from "typescript";
 
 const source = fs.readFileSync("app/admin/components/admin-navigation.ts", "utf8");
 const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText;
 const { resolveAdminLocation, visibleAdminNavigation } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`);
+
+function walk(root) {
+  return fs.readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
+    const target = path.join(root, entry.name);
+    return entry.isDirectory() ? walk(target) : [target.replaceAll("\\", "/")];
+  });
+}
 
 test("admin navigation exposes settings as one sidebar module", () => {
   const groups = visibleAdminNavigation("owner");
@@ -63,5 +71,14 @@ test("synthetic admin loaders do not expose persistent edit permissions", () => 
   for (const route of ["artists", "posts", "pages", "home", "navigation"]) {
     const page = fs.readFileSync(`app/admin/(protected)/${route}/page.tsx`, "utf8");
     assert.match(page, /canEdit=\{session\.source === "session" && session\.user\.role !== "viewer"\}/, route);
+  }
+});
+
+test("protected admin routes render resolved modules without route loading boundaries or lazy module imports", () => {
+  const files = walk("app/admin/(protected)");
+  assert.deepEqual(files.filter((file) => file.endsWith("/loading.tsx")), []);
+  for (const file of files.filter((item) => /\.(?:ts|tsx)$/.test(item))) {
+    const contents = fs.readFileSync(file, "utf8");
+    assert.doesNotMatch(contents, /from\s+["']next\/dynamic["']|React\.lazy\s*\(|\blazy\s*\(\s*\(\)\s*=>|<Suspense\b/, file);
   }
 });
