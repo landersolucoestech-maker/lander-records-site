@@ -60,7 +60,7 @@ export function MediaLibrary({ archiveAction, items, uploadAction }: { archiveAc
     {uploadOpen ? <section className={styles.uploadCard} aria-label="Adicionar mídia">
       <div className={styles.uploadHeader}>
         <div><span>Nova mídia</span><h2>Adicionar arquivo à biblioteca</h2><p>Envie uma imagem para a biblioteca central usando exatamente o fluxo de armazenamento já existente no projeto.</p></div>
-        <button className={styles.outlineButton} onClick={() => setUploadOpen(false)} type="button"><AdminIcon name="close" size={15} />Fechar</button>
+        <button className={styles.outlineButton} onClick={() => setUploadOpen(false)} type="button"><AdminIcon name="x" size={15} />Fechar</button>
       </div>
       <form action={uploadAction} className={styles.uploadForm} onSubmit={() => setUploadOpen(false)}>
         <label><span>Arquivo</span><input accept="image/*" name="file" required type="file" /></label>
