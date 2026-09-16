@@ -149,8 +149,8 @@ export default function PostManager({
             <td><time className={styles.date}>{post.updatedAt}</time></td>
             <td className={styles.actions}><details><summary aria-label={`Ações de ${post.title}`}><AdminIcon name="more" size={17}/></summary><div className={styles.actionMenu}>
               <Link href={preview ? "/cms-preview/posts" : `/admin/posts/${post.id}/view`}><AdminIcon name="eye" size={14}/>Ver</Link>
-              {canEdit && !preview ? <Link href={`/admin/posts/${post.id}`}><AdminIcon name="edit" size={14}/>Editar</Link> : null}
-              {canDelete && !preview ? <form action={deletePostAction} onSubmit={(event) => { if (!window.confirm(`Excluir definitivamente “${post.title}”?`)) event.preventDefault(); }}><input name="id" type="hidden" value={post.id}/><button className={styles.deleteAction} type="submit"><AdminIcon name="trash" size={14}/>Excluir</button></form> : null}
+              {canEdit && !preview ? <Link href={`/admin/posts/${post.id}`}><AdminIcon name="edit" size={14}/>Editar</Link> : <button aria-disabled="true" className={styles.disabledAction} disabled type="button"><AdminIcon name="edit" size={14}/>Editar</button>}
+              {canDelete && !preview ? <form action={deletePostAction} onSubmit={(event) => { if (!window.confirm(`Excluir definitivamente “${post.title}”?`)) event.preventDefault(); }}><input name="id" type="hidden" value={post.id}/><button className={styles.deleteAction} type="submit"><AdminIcon name="trash" size={14}/>Excluir</button></form> : <button aria-disabled="true" className={`${styles.deleteAction} ${styles.disabledAction}`} disabled type="button"><AdminIcon name="trash" size={14}/>Excluir</button>}
             </div></details></td>
           </tr>)}</tbody>
         </table></div>
