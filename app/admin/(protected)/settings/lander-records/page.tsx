@@ -55,7 +55,7 @@ export default async function LanderRecordsIntegrationSettingsPage({ searchParam
       <div className={styles.cardBody}><form action={saveLanderRecordsIntegrationSettings} className={styles.form}><div className={styles.grid}>
         <label><span>Instagram da Lander Records</span><input name="instagramUrl" type="url" defaultValue={settings.instagramUrl} placeholder="https://instagram.com/..." /></label>
         <label><span>YouTube da Lander Records</span><input name="youtubeUrl" type="url" defaultValue={settings.youtubeUrl} placeholder="https://youtube.com/@..." /></label>
-        <label className={styles.wide}><span>Playlist Spotify — 5 últimos lançamentos</span><input name="spotifyPlaylistUrl" type="url" defaultValue={settings.spotifyPlaylistUrl} placeholder="https://open.spotify.com/playlist/..." /></label>
+        <label className={styles.wide}><span>Playlist da seção “Últimos Lançamentos”</span><input name="spotifyPlaylistUrl" type="url" defaultValue={settings.spotifyPlaylistUrl} placeholder="https://open.spotify.com/playlist/..." /><small>Fonte única da seção da página inicial. O site lê automaticamente a playlist e exibe no máximo 5 faixas, usando capa, título, artista, data de lançamento e link oficial do Spotify. Não cadastre lançamentos manualmente.</small></label>
       </div><div className={styles.actions}><button className={styles.primaryButton} type="submit">Salvar configurações</button></div></form></div>
     </section>
 
@@ -63,7 +63,7 @@ export default async function LanderRecordsIntegrationSettingsPage({ searchParam
       <header><div><h2>Integrações</h2><p>Conecte serviços externos e acompanhe o estado real de sincronização do projeto.</p></div></header>
       <div className={styles.cardBody}><div className={styles.integrationGroups}>
         <section><h3>Streaming & audiência</h3><div className={styles.integrationList}>
-          <article><div className={styles.logo}>SP</div><div className={styles.integrationCopy}><strong>Spotify</strong><p>Conta autorizada e playlist oficial usada para sincronização dos lançamentos.</p><div className={styles.meta}><span>Última sincronização: {dateLabel(settings.spotifyLastSyncedAt)}</span><span>Playlist: {settings.spotifyPlaylistId || "não resolvida"}</span></div></div><Status ready={spotifyConnected} label={spotifyConnected ? "Conectado" : spotifyReady ? "Aguardando conexão" : "Credenciais pendentes"}/>{spotifyReady ? <a className={styles.outlineButton} href="/api/integrations/spotify/connect">{settings.spotifyConnectedAt ? "Reconectar" : "Conectar"}</a> : <span />}</article>
+          <article><div className={styles.logo}>SP</div><div className={styles.integrationCopy}><strong>Spotify · Últimos Lançamentos</strong><p>A playlist configurada acima alimenta automaticamente a seção logo abaixo de Artistas na Home. A sincronização é renovada quando o cache expira e também pode ser forçada manualmente.</p><div className={styles.meta}><span>Última sincronização: {dateLabel(settings.spotifyLastSyncedAt)}</span><span>Playlist: {settings.spotifyPlaylistId || "não resolvida"}</span></div></div><Status ready={spotifyConnected} label={spotifyConnected ? "Conectado" : spotifyReady ? "Aguardando conexão" : "Credenciais pendentes"}/>{spotifyReady ? <a className={styles.outlineButton} href="/api/integrations/spotify/connect">{settings.spotifyConnectedAt ? "Reconectar" : "Conectar"}</a> : <span />}</article>
           <article><div className={styles.logo}>SC</div><div className={styles.integrationCopy}><strong>Soundcharts</strong><p>Matching determinístico por URL/ID oficial, mantendo IDs de provider separados do artista interno.</p><div className={styles.meta}><span>Última sincronização: {dateLabel(settings.soundchartsLastSyncedAt)}</span><span>UUID: {settings.soundchartsArtistUuid || "não resolvido"}</span></div></div><Status ready={soundchartsConnected} label={soundchartsReady ? soundchartsConnected ? "Resolvido" : "Pendente" : "Credenciais pendentes"}/><span className={styles.metricPair}>{metrics["instagram:followers"]?.toLocaleString("pt-BR") || "—"}<small>seguidores</small></span></article>
         </div></section>
       </div>
@@ -72,7 +72,7 @@ export default async function LanderRecordsIntegrationSettingsPage({ searchParam
     </div></section>
 
     <section className={styles.card}>
-      <header><div><h2>Sincronização</h2><p>Execute a atualização das fontes conectadas usando a lógica atual do backend.</p></div></header>
+      <header><div><h2>Sincronização</h2><p>A Home atualiza automaticamente o feed quando necessário. Use esta ação somente para forçar uma atualização imediata das fontes conectadas.</p></div></header>
       <div className={styles.cardBody}><form action={syncLanderRecordsIntegrationsAction}><button className={styles.primaryButton} type="submit"><AdminIcon name="activity" size={15}/>Sincronizar integrações agora</button></form></div>
     </section>
   </div>;
