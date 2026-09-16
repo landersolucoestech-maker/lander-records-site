@@ -22,6 +22,10 @@ const privacy = read("app/(public)/politica-de-privacidade/page.tsx");
 const terms = read("app/(public)/termos-e-condicoes/page.tsx");
 const repository = read("modules/pages/repository.ts");
 const migration = read("migrations/0012_lander_site_cms_alignment.sql");
+const releaseMigration = read("migrations/0013_home_latest_releases_playlist.sql");
+const integrationSettings = read("app/admin/(protected)/settings/lander-records/page.tsx");
+const sync = read("lib/integrations/sync.ts");
+const spotify = read("lib/integrations/spotify.ts");
 
 test("Pages overview is data-driven and no longer injects Portal Lander content", () => {
   for (const copy of ["Página selecionada", "Estrutura da página", "Ver página pública", "Editar", "Excluir", "Seção", "Status", "Ações", "Configurar"]) {
@@ -57,12 +61,41 @@ test("Every Home CMS section maps to a real Lander Records consumer", () => {
   assert.match(home, /hero\.items\.map/);
   assert.match(home, /shortcuts\.items\.map/);
   assert.match(home, /getPublishedArtists\(true\)/);
-  assert.match(home, /getCachedSpotifyReleases/);
+  assert.match(home, /getHomeSpotifyReleaseFeed\(\)/);
   assert.match(home, /getPublishedPosts\(true\)/);
   assert.match(home, /advertiseBanner\?\.mediaUrl/);
   assert.match(repository, /mediaUrl:/);
   assert.match(repository, /mediaAltText:/);
   assert.doesNotMatch(home, /src="\/lander-records-anuncie-banner\.webp"/);
+});
+
+test("Últimos Lançamentos is directly below Artistas and is exclusively playlist driven", () => {
+  assert.match(siteContract, /sectionOrder: \["hero", "intro", "shortcuts", "artists", "releases", "advertise_banner", "news"\]/);
+  assert.match(siteContract, /releases: section\([\s\S]*"Últimos Lançamentos"[\s\S]*\["title", "subtitle"\],[\s\S]*\[\],[\s\S]*Spotify playlist/);
+  assert.match(siteContract, /nenhum lançamento é cadastrado manualmente no CMS/i);
+  assert.match(releaseMigration, /section_key = 'artists'[\s\S]*position = 5[\s\S]*section_key = 'releases'/);
+  assert.match(releaseMigration, /title = 'Últimos Lançamentos'/);
+  assert.match(releaseMigration, /DELETE FROM page_section_items[\s\S]*section_key = 'releases'/);
+  assert.match(integrationSettings, /Playlist da seção “Últimos Lançamentos”/);
+  assert.match(integrationSettings, /exibe no máximo 5 faixas/);
+  assert.match(home, /spotifyFeed\.releases\.slice\(0, 5\)/);
+  assert.match(home, /release\.coverUrl/);
+  assert.match(home, /release\.title/);
+  assert.match(home, /release\.artistName/);
+  assert.match(home, /releaseDateLabel\(release\.releaseDate\)/);
+  assert.match(home, /spotifyFeed\.playlistUrl/);
+});
+
+test("Spotify feed accepts fewer than five tracks and refreshes the Home automatically", () => {
+  assert.match(spotify, /\.slice\(0, 5\)/);
+  assert.match(spotify, /title = track\.name\?\.trim\(\)/);
+  assert.match(spotify, /safePublicSpotifyUrl\(track\.external_urls\?\.spotify, "track"\)/);
+  assert.doesNotMatch(sync, /são necessários pelo menos 5/);
+  assert.match(sync, /if \(result\.releases\.length\)/);
+  assert.match(sync, /getHomeSpotifyReleaseFeed/);
+  assert.match(sync, /refreshDue/);
+  assert.match(sync, /syncSpotifyReleases\(false\)/);
+  assert.match(sync, /limit\(5\)/);
 });
 
 test("Other public pages and domain sections match the CMS contract", () => {
