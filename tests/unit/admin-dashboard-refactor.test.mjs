@@ -3,6 +3,7 @@ import fs from "node:fs";
 import test from "node:test";
 
 const dashboard = fs.readFileSync("app/admin/components/DashboardView.tsx", "utf8");
+const dashboardPage = fs.readFileSync("app/admin/(protected)/page.tsx", "utf8");
 const shell = fs.readFileSync("app/admin/components/AdminShell.tsx", "utf8");
 
 test("dashboard keeps the approved analytics-first sections", () => {
@@ -12,16 +13,32 @@ test("dashboard keeps the approved analytics-first sections", () => {
   assert.match(dashboard, /Conteúdo &(?:amp;)? Publicações/);
 });
 
-test("dashboard does not reintroduce rejected legacy sections or mock analytics", () => {
-  for (const rejected of ["Ações rápidas", "Pendências editoriais", "Status do conteúdo da Home", "Integrações de conteúdo", "Links úteis", "12.842", "38.421", "4,8%", ">284<"]) {
+test("dashboard reproduces the approved reference only in disposable development preview", () => {
+  for (const rejected of ["Ações rápidas", "Pendências editoriais", "Status do conteúdo da Home", "Integrações de conteúdo", "Links úteis"]) {
     assert.ok(!dashboard.includes(rejected), rejected);
   }
+  for (const referenceValue of ["12842", "38421", "4.8", "284", "54.2", "38.7", "7.1"]) {
+    assert.ok(dashboard.includes(referenceValue), referenceValue);
+  }
+  assert.match(dashboard, /const dashboardData = demoMode \? referenceDashboard : data/);
+  assert.match(dashboardPage, /analytics: null/);
+  assert.match(dashboardPage, /demoMode=\{session\.source === "development-auth-bypass"\}/);
   assert.match(dashboard, /Analytics não conectado/);
 });
 
-test("public-site action lives in the topbar and not the sidebar footer", () => {
+test("approved dashboard uses line chart, contextual activities, thumbnails and overflow actions", () => {
+  assert.match(dashboard, /adminChartVisitorsLine/);
+  assert.match(dashboard, /adminChartViewsLine/);
+  assert.match(dashboard, /adminActivityIcon/);
+  assert.match(dashboard, /adminPublicationTitle/);
+  assert.match(dashboard, /name="more"/);
+});
+
+test("public-site action lives in the topbar and development preview does not add reference-breaking chrome", () => {
   const footer = shell.slice(shell.indexOf('<div className="adminSidebarFooter">'), shell.indexOf("</aside>"));
   assert.ok(!footer.includes("Ver site público"));
   assert.match(shell, /adminPublicLink/);
   assert.match(shell, /adminSidebarCollapse/);
+  assert.match(shell, /const showReadOnlyChrome = preview/);
+  assert.match(shell, /<small>\{email \|\| role\}<\/small>/);
 });
