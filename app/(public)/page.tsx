@@ -139,25 +139,29 @@ export default async function Home() {
           </section>
         ) : null}
 
-        {releasesSection && spotifyFeed.releases.length > 0 ? (
+        {releasesSection ? (
           <section className="homeBlock homeReleasesBlock" aria-labelledby="home-releases-title">
             <div className="homeBlockHeader">
               <h2 className="homeEditorialTitle" id="home-releases-title">{editorialTitle(releasesSection.title || "Últimos Lançamentos")}</h2>
               {spotifyFeed.playlistUrl ? <a href={spotifyFeed.playlistUrl} target="_blank" rel="noreferrer">Abrir playlist no Spotify →</a> : null}
             </div>
             {releasesSection.subtitle ? <p className="homeBlockSubtitle">{releasesSection.subtitle}</p> : null}
-            <div className="releaseGrid">
-              {spotifyFeed.releases.slice(0, 5).map((release) => (
-                <a className="releaseCard" href={release.spotifyUrl} target="_blank" rel="noreferrer" key={`${release.position}-${release.albumId}-${release.title}`}>
-                  <div className="releaseCover" style={release.coverUrl ? { backgroundImage: `url(${release.coverUrl})` } : undefined}><span>Spotify</span></div>
-                  <div className="releaseCardBody">
-                    <strong>{release.title}</strong>
-                    <p>{release.artistName}</p>
-                    <div className="releaseMeta"><span>{releaseDateLabel(release.releaseDate)}</span><b>OUVIR ↗</b></div>
-                  </div>
-                </a>
-              ))}
-            </div>
+            {spotifyFeed.releases.length > 0 ? (
+              <div className="releaseGrid">
+                {spotifyFeed.releases.slice(0, 5).map((release) => (
+                  <a className="releaseCard" href={release.spotifyUrl} target="_blank" rel="noreferrer" key={`${release.position}-${release.albumId}-${release.title}`}>
+                    <div className="releaseCover" style={release.coverUrl ? { backgroundImage: `url(${release.coverUrl})` } : undefined}><span>Spotify</span></div>
+                    <div className="releaseCardBody">
+                      <strong>{release.title}</strong>
+                      <p>{release.artistName}</p>
+                      <div className="releaseMeta"><span>{releaseDateLabel(release.releaseDate)}</span><b>OUVIR ↗</b></div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <p className="homeBlockSubtitle">Os lançamentos aparecerão automaticamente aqui assim que a playlist oficial do Spotify for configurada e sincronizada.</p>
+            )}
           </section>
         ) : null}
 
