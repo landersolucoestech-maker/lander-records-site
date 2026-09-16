@@ -78,7 +78,7 @@ export default function PostManager({
     </section> : null}
 
     <section className={styles.catalog} aria-label="Publicações">
-      {posts.length ? <div className={`tableview-surface cms-tableview-surface ${styles.tableSurface}`} aria-label="Publicações cadastradas">
+      {posts.length ? <div className={`tableview-surface cms-tableview-surface ${styles.tableSurface}`} aria-label="Tabela de publicações">
         <div className={styles.scrollArea}>
           <table className={styles.contentTable}>
             <thead><tr>
