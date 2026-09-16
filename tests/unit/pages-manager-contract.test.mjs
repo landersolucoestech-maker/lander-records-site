@@ -27,25 +27,28 @@ const integrationSettings = read("app/admin/(protected)/settings/lander-records/
 const sync = read("lib/integrations/sync.ts");
 const spotify = read("lib/integrations/spotify.ts");
 
-test("Pages overview is data-driven and no longer injects Portal Lander content", () => {
-  for (const copy of ["Página selecionada", "Estrutura da página", "Ver página pública", "Editar", "Excluir", "Seção", "Status", "Ações", "Configurar"]) {
+test("Pages overview mirrors the Portal Lander composition while keeping Lander Records data", () => {
+  for (const copy of ["Página selecionada", "Estrutura da página", "Criar página", "Criar seção", "Ver página pública", "Editar", "Excluir", "Seção", "Status", "Ações", "Configurar"]) {
     assert.match(manager, new RegExp(copy, "i"));
   }
   assert.match(manager, /sitePageContract/);
   assert.match(manager, /siteSectionContract/);
   assert.match(manager, /\?section=\$\{encodeURIComponent\(section\.id\)\}/);
-  assert.match(manager, /Estrutura vinculada ao site/);
+  assert.doesNotMatch(manager, /Estrutura vinculada ao site/);
+  assert.doesNotMatch(manager, /moreButton|AdminIcon name="more"/);
   assert.doesNotMatch(manager, /referencePages|referenceSections|demoMode \|\| preview \?/);
   assert.doesNotMatch(manager, /Mais Lidas|Publicidade Lateral|Em Alta|Newsletter|Sobre o Portal/);
   assert.match(page, /sections: pageStructure/);
   assert.match(manager, /<table>/);
-  assert.match(styles, /\.tableWrap\{width:100%;min-width:0;overflow-x:hidden;overflow-y:visible\}/);
+  assert.match(styles, /\.selectionCard\{display:grid;grid-template-columns:160px 300px minmax\(0,1fr\)/);
+  assert.match(styles, /\.tableWrap\{width:100%;min-width:0;overflow:hidden\}/);
   assert.match(styles, /\.tableWrap table\{width:100%!important;min-width:0!important;border-collapse:collapse;table-layout:fixed!important\}/);
-  assert.match(styles, /\.structureCard\{--ui-table-action-width:200px;overflow:hidden\}/);
-  assert.match(styles, /\.tableWrap th:nth-child\(2\)\{width:96px\}/);
-  assert.match(styles, /\.tableWrap th:nth-child\(3\)\{width:200px\}/);
-  assert.match(styles, /\.configureButton\{box-sizing:border-box;width:116px;min-width:116px;padding:0 8px\}/);
-  assert.match(styles, /@media\(max-width:800px\)[\s\S]*\.tableWrap\{overflow-x:auto;overflow-y:visible\}[\s\S]*\.tableWrap table\{min-width:690px!important\}/);
+  assert.match(styles, /\.structureCard\{--ui-table-action-width:140px;overflow:hidden\}/);
+  assert.match(styles, /\.tableWrap th:nth-child\(2\),\.tableWrap td:nth-child\(2\)\{width:110px\}/);
+  assert.match(styles, /\.tableWrap th:nth-child\(3\),\.tableWrap td:nth-child\(3\)\{width:140px\}/);
+  assert.match(styles, /\.configureButton\{width:104px;min-width:104px;height:32px;padding:0 9px\}/);
+  assert.match(styles, /adminTopbarPrimary\)\{display:none!important\}/);
+  assert.match(styles, /@media\(max-width:800px\)[\s\S]*\.tableWrap\{overflow-x:auto;overflow-y:visible\}[\s\S]*\.tableWrap table\{min-width:620px!important\}/);
 });
 
 test("Canonical page and section map comes from the Lander Records public implementation", () => {
