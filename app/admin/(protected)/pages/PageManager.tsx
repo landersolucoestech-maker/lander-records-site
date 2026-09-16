@@ -102,26 +102,28 @@ export default function PageManager({ canEdit = true, demoMode = false, pages, p
 
   return <div className={styles.manager} data-testid="pages-manager">
     <section className={styles.selectionCard} aria-label="Página selecionada">
-      <div className={styles.selectedSummary}>
-        <span className={styles.eyebrow}>Página selecionada</span>
-        <strong>{title}</strong>
-        <small>{selected.enabled ? "Publicada" : "Não publicada"} · {kind}</small>
+      <div className={styles.selectionMain}>
+        <div className={styles.selectedSummary}>
+          <span className={styles.eyebrow}>Página selecionada</span>
+          <strong>{title}</strong>
+          <small>{selected.enabled ? "Publicada" : "Não publicada"} · {kind}</small>
+        </div>
+        <label className={styles.pageSelector}>
+          <span>Página</span>
+          <select aria-label="Selecionar página" onChange={(event) => { setSelectedId(event.target.value); setCreateSectionOpen(false); setDeleteOpen(false); }} value={selected.id}>
+            {pages.map((page) => <option key={page.id} value={page.id}>{displayTitle(page)} · {pageKind(page)} · {page.enabled ? "publicada" : "não publicada"}</option>)}
+          </select>
+        </label>
       </div>
-      <label className={styles.pageSelector}>
-        <span>Página</span>
-        <select aria-label="Selecionar página" onChange={(event) => { setSelectedId(event.target.value); setCreateSectionOpen(false); setDeleteOpen(false); }} value={selected.id}>
-          {pages.map((page) => <option key={page.id} value={page.id}>{displayTitle(page)} · {pageKind(page)} · {page.enabled ? "publicada" : "não publicada"}</option>)}
-        </select>
-      </label>
       <div className={styles.pageActions}>
         <button className={styles.primaryButton} onClick={openCreate} type="button"><span aria-hidden="true">+</span><span>Criar página</span></button>
-        {selected.publicRoute ? <Link className={styles.outlineButton} href={selected.publicRoute} rel="noopener noreferrer" target="_blank"><AdminIcon name="eye" size={17} /><span>Ver página pública</span></Link> : <button className={styles.outlineButton} disabled type="button"><AdminIcon name="eye" size={17} /><span>Ver página pública</span></button>}
-        <Link className={styles.outlineButton} href={editHref}><AdminIcon name="edit" size={16} /><span>Editar</span></Link>
-        {allowDelete ? <button className={`${styles.outlineButton} ${styles.dangerButton}`} onClick={() => setDeleteOpen(true)} type="button"><AdminIcon name="trash" size={16} /><span>Excluir</span></button> : <button aria-disabled="true" className={`${styles.outlineButton} ${styles.dangerButton}`} title={canonicalPage ? "Página estrutural do site público" : "Ação indisponível neste acesso"} type="button"><AdminIcon name="trash" size={16} /><span>Excluir</span></button>}
+        {selected.publicRoute ? <Link className={styles.outlineButton} href={selected.publicRoute} rel="noopener noreferrer" target="_blank"><AdminIcon name="eye" size={15} /><span>Ver página pública</span></Link> : <button className={styles.outlineButton} disabled type="button"><AdminIcon name="eye" size={15} /><span>Ver página pública</span></button>}
+        <Link className={styles.outlineButton} href={editHref}><AdminIcon name="edit" size={15} /><span>Editar</span></Link>
+        {allowDelete ? <button className={`${styles.outlineButton} ${styles.dangerButton}`} onClick={() => setDeleteOpen(true)} type="button"><AdminIcon name="trash" size={15} /><span>Excluir</span></button> : <button aria-disabled="true" className={`${styles.outlineButton} ${styles.dangerButton}`} title={canonicalPage ? "Página estrutural do site público" : "Ação indisponível neste acesso"} type="button"><AdminIcon name="trash" size={15} /><span>Excluir</span></button>}
       </div>
     </section>
 
-    <section className={`tableview-surface ${styles.structureCard}`} aria-label="Estrutura da página">
+    <section className={styles.structureCard} aria-label="Estrutura da página">
       <div className={styles.structureHeading}>
         <div>
           <span className={styles.eyebrow}>Estrutura da página</span>
@@ -130,17 +132,21 @@ export default function PageManager({ canEdit = true, demoMode = false, pages, p
         </div>
         <button className={styles.primaryButton} onClick={openCreateSection} type="button"><span aria-hidden="true">+</span><span>Criar seção</span></button>
       </div>
-      {sections.length ? <div className={styles.tableWrap}><table>
-        <thead><tr><th>Seção</th><th>Status</th><th className={styles.actionsColumn}>Ações</th></tr></thead>
-        <tbody>{sections.map((section, index) => {
+      {sections.length ? <div className={styles.sectionsList} role="table" aria-label={`Estrutura de ${title}`}>
+        <div className={styles.sectionsHead} role="row">
+          <span role="columnheader">Seção</span>
+          <span role="columnheader">Status</span>
+          <span role="columnheader">Ações</span>
+        </div>
+        {sections.map((section, index) => {
           const configureHref = preview ? editHref : `${editHref}?section=${encodeURIComponent(section.id)}`;
-          return <tr key={section.id}>
-            <td><div className={`table-primary ${styles.sectionIdentity}`}><span className={styles.position}>{String(index + 1).padStart(2, "0")}</span><span><strong>{sectionTitle(selected, section)}</strong><small>{sectionDescription(selected, section)}</small></span></div></td>
-            <td><span className={`${styles.statusBadge} ${section.enabled ? styles.active : styles.inactive}`}><i aria-hidden="true" />{section.enabled ? "Ativo" : "Inativo"}</span></td>
-            <td className={styles.actionsColumn}><div className={styles.sectionActions}><Link className={styles.configureButton} href={configureHref}><AdminIcon name="sliders" size={16} /><span>Configurar</span></Link></div></td>
-          </tr>;
-        })}</tbody>
-      </table></div> : <div className={styles.noSections}>Nenhuma seção cadastrada nesta página.</div>}
+          return <div className={styles.sectionsRow} key={section.id} role="row">
+            <div className={styles.sectionName} role="cell"><strong>{String(index + 1).padStart(2, "0")}</strong><span><b>{sectionTitle(selected, section)}</b><small>{sectionDescription(selected, section)}</small></span></div>
+            <span className={`${styles.statusBadge} ${section.enabled ? styles.active : styles.inactive}`} role="cell"><i aria-hidden="true" />{section.enabled ? "Ativo" : "Inativo"}</span>
+            <div className={styles.sectionActions} role="cell"><Link className={styles.configureButton} href={configureHref}><AdminIcon name="sliders" size={15} /><span>Configurar</span></Link></div>
+          </div>;
+        })}
+      </div> : <div className={styles.noSections}>Nenhuma seção cadastrada nesta página.</div>}
     </section>
 
     {createOpen ? <AdminDialog
