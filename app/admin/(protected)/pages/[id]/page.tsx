@@ -2,46 +2,28 @@ import { asc, eq, inArray } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "../../../../../lib/auth";
 import { getDb } from "../../../../../lib/db";
-import { pageSectionItems, pageSections, pages } from "../../../../../lib/db/schema";
+import { mediaAssets, pageSectionItems, pageSections, pages } from "../../../../../lib/db/schema";
 import { AdminContextHeaderSync } from "../../../components/AdminContextHeaderSync";
-import type { PageEditorItem, PageEditorSection } from "./PageContentWorkbench";
-import PortalLanderPageWorkbench from "./PortalLanderPageWorkbench";
+import PageContentWorkbench, { type PageEditorItem, type PageEditorSection, type PageMediaOption } from "./PageContentWorkbench";
 import { pageContract } from "../page-contract";
+import { siteSectionContract } from "../site-page-contract";
 
 export const dynamic = "force-dynamic";
-
-const sectionNames: Record<string, string> = {
-  hero: "Hero Section",
-  featured: "Em Destaque",
-  most_read: "Mais Lidas",
-  latest_news: "Últimas Notícias",
-  side_ad: "Publicidade Lateral",
-  trending: "Em Alta",
-  advertise: "Anuncie Aqui",
-  releases: "Lançamentos",
-  agenda: "Agenda",
-  newsletter: "Newsletter",
-  intro: "Apresentação",
-  shortcuts: "Atalhos",
-  artists: "Artistas em destaque",
-  news: "Últimas notícias",
-  history: "História",
-  identity: "Identidade",
-  companies: "Empresas do grupo",
-  methodology: "Metodologia",
-  artist_filters: "Filtros de artistas",
-  artist_list: "Lista de artistas",
-  news_categories: "Categorias de notícias",
-  news_list: "Lista de notícias",
-};
 
 export default async function PageContentEditor({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ section?: string }> }) {
   await requireAdmin("editor");
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const db = getDb();
-  const [pageRows, sections] = await Promise.all([
+  const [pageRows, sections, mediaRows] = await Promise.all([
     db.select().from(pages).where(eq(pages.id, id)).limit(1),
     db.select().from(pageSections).where(eq(pageSections.pageId, id)).orderBy(asc(pageSections.position)),
+    db.select({
+      id: mediaAssets.id,
+      url: mediaAssets.url,
+      altText: mediaAssets.altText,
+      mimeType: mediaAssets.mimeType,
+      originalFilename: mediaAssets.originalFilename,
+    }).from(mediaAssets).where(eq(mediaAssets.status, "active")).orderBy(asc(mediaAssets.originalFilename)),
   ]);
   const page = pageRows[0];
   if (!page) notFound();
@@ -75,18 +57,22 @@ export default async function PageContentEditor({ params, searchParams }: { para
     label: item.label,
     url: item.url,
   }));
+  const mediaOptions: PageMediaOption[] = mediaRows;
 
   const initialSection = editorSections.find((section) => section.id === query.section) || editorSections[0];
-  const initialLabel = initialSection ? sectionNames[initialSection.sectionKey] || initialSection.sectionKey.replaceAll("_", " ") : "Página";
-  const headerDescription = `Configure ${initialLabel} no painel rolável à esquerda e acompanhe a página completa no preview fixo à direita.`;
+  const initialLabel = initialSection
+    ? siteSectionContract(page.key, initialSection.sectionKey)?.label || initialSection.sectionKey.replaceAll("_", " ")
+    : page.title;
+  const headerDescription = `Edite os campos realmente consumidos por ${initialLabel} no site da Lander Records e valide o resultado no preview público.`;
 
   return <>
     <AdminContextHeaderSync title={`Configurar seção: ${initialLabel}`} description={headerDescription} />
-    <PortalLanderPageWorkbench
+    <PageContentWorkbench
       page={{ id: page.id, key: page.key, title: page.title }}
       publicRoute={pageContract(page.key).route}
       sections={editorSections}
       items={editorItems}
+      mediaOptions={mediaOptions}
       initialSectionId={query.section}
     />
   </>;
