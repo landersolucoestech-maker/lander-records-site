@@ -29,12 +29,12 @@ As rotas dinâmicas `/artistas/[slug]` e `/noticias/[slug]` são templates de en
 
 | Seção | Campos de seção | Itens | Consumidor / observação |
 | --- | --- | --- | --- |
-| Hero Section | `title`, `subtitle` | CTA: `label`, `url`, ordem, ativo | `.homeHero`; não existe imagem/vídeo de Hero persistido atualmente. O fundo é CSS do site. |
+| Hero Section | `title`, `subtitle`, mídia de seção (imagem ou vídeo) | CTA: `label`, `url`, ordem, ativo | `.homeHero`; a mídia persistida no CMS é renderizada como imagem ou vídeo de fundo no site público. |
 | Apresentação institucional | `title`, `body` | um link `label`, `url` | `.homeIntroCard`; métricas de Instagram/YouTube vêm das integrações sociais. |
 | Atalhos de serviços | — | `label`, `url`, ordem, ativo | `.homeShortcutRow` |
 | Artistas em destaque | `title`, `subtitle` | — | cards vêm de `getPublishedArtists(true)`; conteúdo individual pertence ao módulo Artistas. |
-| Últimos lançamentos | `title` | um link Spotify `label`, `url` | cards vêm de `getCachedSpotifyReleases()`. |
-| Anuncie com a Lander | — | asset de imagem | o banner público existente foi registrado em `media_assets` e passa a ser consumido pelo CMS. |
+| Últimos lançamentos | `title`, `subtitle` | — | cards e URL da playlist vêm de `getHomeSpotifyReleaseFeed()`, limitado a 5 faixas da playlist Spotify configurada. |
+| Anuncie com a Lander | — | asset de imagem | o banner público é registrado em `media_assets`, editado no CMS e consumido pelo renderer público. |
 | Últimas novidades | `eyebrow`, `title` | — | cards vêm de `getPublishedPosts(true)`; matérias pertencem ao módulo Conteúdos. |
 
 ### Sobre Nós
@@ -67,19 +67,23 @@ A Política de Privacidade e os Termos e Condições já eram páginas públicas
 | --- | --- | --- |
 | CMS-LR-01 | Preview e conteúdo do editor de páginas reproduziam Hero/editorial do Portal Lander. | Preview sintético removido. O painel agora usa `iframe` da rota pública real da Lander Records. |
 | CMS-LR-02 | Home no preview administrativo era substituída por 10 seções do Portal (`Mais Lidas`, `Publicidade Lateral`, `Em Alta`, `Agenda`, `Newsletter` etc.). | Overlay de referência removido. O módulo lista somente a estrutura Lander Records persistida/contratada. |
-| CMS-LR-03 | Editor exibia “Imagem de Fundo” na Hero sem consumidor correspondente no site Lander Records. | Mídia só é exibida em contratos com consumidor real. A Hero atual expõe título, subtítulo e CTAs. |
+| CMS-LR-03 | O editor chegou a expor mídia de Hero sem um consumidor público correspondente. | O contrato e o renderer público foram reconciliados: a Hero aceita `section-image-video` e `app/(public)/page.tsx` consome a mesma mídia persistida como imagem ou vídeo de fundo. |
 | CMS-LR-04 | Banner “Anuncie com a gente” existia no frontend como asset hardcoded, fora do CMS. | Criada seção `advertise_banner`, asset registrado em `media_assets` e renderer alterado para consumir a mídia do CMS. |
 | CMS-LR-05 | `pillars` existia no banco da página Sobre Nós sem ser renderizado. | Seção removida/desativada e ordem real reconciliada. |
 | CMS-LR-06 | Política de Privacidade e Termos eram páginas reais, mas ausentes do registro Páginas. | Ambas adicionadas ao CMS e textos migrados para seções/itens persistidos. |
 | CMS-LR-07 | Seções ligadas a Artistas/Conteúdos podiam sugerir campos editoriais de página sem consumidor. | Contrato marca essas seções como fontes de domínio e não inventa campos. |
-| CMS-LR-08 | Página canônica podia ser tratada como estrutura arbitrária. | Estruturas conhecidas são vinculadas ao contrato público; exclusão/criação arbitrária de seção não é oferecida no overview canônico. |
+| CMS-LR-08 | Página canônica podia ser tratada como estrutura arbitrária. | Overview não oferece criação arbitrária de seção em páginas canônicas; server actions também bloqueiam exclusão, criação, anexação e remoção estrutural nesses contratos. |
 | CMS-LR-09 | Ordem exibida pelo CMS podia divergir da ordem codificada no renderer. | Overview usa `sectionOrder` do contrato canônico; migração alinha posições persistidas. |
+| CMS-LR-10 | Home administrativa confundia edição editorial da seção com gerenciamento da fonte de domínio e tratava o banner comercial como estrutural. | Edição da seção agora abre diretamente o contrato da Home; Artistas, Spotify e Conteúdos permanecem como ações de fonte separadas; o banner usa a mídia real do CMS. |
+| CMS-LR-11 | Home administrativa lia o cache Spotify genérico, enquanto o site público usava a playlist configurada da seção. | Admin e site público passam a usar `getHomeSpotifyReleaseFeed()`, preservando escopo da playlist, limite e política de refresh. |
 
 ## Preview e persistência
 
 O painel usa a rota pública real como preview. Campos não salvos não são falsamente simulados em uma réplica administrativa; após persistência e revalidação, o preview mostra o mesmo renderer utilizado pelos visitantes.
 
 Ações de escrita continuam protegidas por `requirePersistentAdmin`. O principal sintético usado no Dev Preview não recebe permissão de mutação persistente.
+
+Páginas canônicas (`home`, `about`, `artists`, `news`, `contact`, `privacy` e `terms`) permitem edição do conteúdo contratado, mas não mutação arbitrária da estrutura. Essa regra existe tanto no overview quanto nas server actions, evitando bypass por chamada direta.
 
 ## Escopo global fora de Páginas
 
