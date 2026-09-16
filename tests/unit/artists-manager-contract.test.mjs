@@ -19,7 +19,7 @@ test("Artists manager matches the approved table-first reference structure", () 
   assert.match(manager, />Ordenar por</);
   assert.match(manager, /Mais recentes/);
   assert.match(manager, /Lançamentos/);
-  assert.match(manager, /Audiência/);
+  assert.match(manager, /Visualizações/);
   assert.match(manager, /Última atualização/);
   assert.match(manager, /Por página/);
   assert.match(manager, /Selecionar artistas desta página/);
@@ -29,7 +29,7 @@ test("Artists manager matches the approved table-first reference structure", () 
   assert.doesNotMatch(manager, /Importar CSV|Configurar módulo|Mais filtros|deleteArtistAction/);
 });
 
-test("Artists catalog surfaces real roles, release counts and integration audience", () => {
+test("Artists catalog surfaces real roles, release counts and real view metrics", () => {
   assert.match(page, /artistRoleRelations/);
   assert.match(page, /artistRoles/);
   assert.match(page, /artistMetrics/);
@@ -39,11 +39,15 @@ test("Artists catalog surfaces real roles, release counts and integration audien
   assert.match(page, /eq\(releases\.active, true\)/);
   assert.match(page, /releasesByArtistName/);
   assert.match(page, /releaseCount:/);
-  assert.match(page, /audience/);
+  assert.match(page, /integrationMetricCache/);
+  assert.match(page, /VIEW_METRICS/);
+  assert.match(page, /viewsByArtist/);
+  assert.match(page, /views,/);
   assert.match(page, /updatedAt: artist\.updatedAt\.toISOString\(\)/);
   assert.match(manager, /artist\.roles/);
   assert.match(manager, /artist\.releaseCount/);
-  assert.match(manager, /artist\.audience/);
+  assert.match(manager, /artist\.views/);
+  assert.doesNotMatch(manager, /artist\.audience/);
 });
 
 test("Artists table reproduces the approved reference density and pagination", () => {
