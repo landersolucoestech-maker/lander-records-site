@@ -32,7 +32,7 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
   if (filters.category && filters.category !== "all") conditions.push(eq(postCategories.name, filters.category));
   if (filters.tag && filters.tag !== "all") conditions.push(sql`EXISTS (SELECT 1 FROM ${postTags} INNER JOIN ${tags} ON ${postTags.tagId} = ${tags.id} WHERE ${postTags.postId} = ${posts.id} AND ${tags.name} = ${filters.tag})`);
 
-  const [rows, tagRows] = await Promise.all([
+  const [rows, tagRows, categoryRows] = await Promise.all([
     db.select({
       id: posts.id,
       title: posts.title,
@@ -56,6 +56,10 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
       .from(postTags)
       .innerJoin(tags, eq(postTags.tagId, tags.id))
       .orderBy(asc(tags.name)),
+    db.select({ id: postCategories.id, name: postCategories.name })
+      .from(postCategories)
+      .where(eq(postCategories.active, true))
+      .orderBy(asc(postCategories.position), asc(postCategories.name)),
   ]);
 
   const dateFormatter = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -75,8 +79,14 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
     updatedAt: dateFormatter.format(post.updatedAt),
   }));
 
+  const persistent = session.source === "session";
+  const canEdit = persistent && session.user.role !== "viewer";
+  const canDelete = persistent && (session.user.role === "admin" || session.user.role === "owner");
+
   return <PostManager
-    canEdit={session.source === "session" && session.user.role !== "viewer"}
+    canDelete={canDelete}
+    canEdit={canEdit}
+    createCategories={categoryRows}
     deleted={filters.deleted === "1"}
     developmentMode={session.source === "development-auth-bypass"}
     posts={summary}
