@@ -12,6 +12,7 @@ const portalContract = read("styles/admin/portal-lander-contract.css");
 const artists = read("app/admin/(protected)/artists/ArtistManager.module.css");
 const artistManager = read("app/admin/(protected)/artists/ArtistManager.tsx");
 const posts = read("app/admin/(protected)/posts/NewsManager.module.css");
+const postManager = read("app/admin/(protected)/posts/PostManager.tsx");
 const pages = read("app/admin/(protected)/pages/PagesManager.module.css");
 
 test("Dashboard contracts load after the shared protected-admin styles", () => {
@@ -78,11 +79,29 @@ test("Artists uses the approved table-first reference rather than Dashboard KPI 
   assert.match(artists, /\.identity img,\.avatarFallback\{[\s\S]*width:42px;height:42px[\s\S]*border-radius:6px/);
   assert.match(artists, /\.statusBadge\{[\s\S]*min-height:22px[\s\S]*border-radius:7px/);
   assert.match(artists, /approved Artists reference/);
+});
 
-  assert.match(posts, /\.tableSurface\{[\s\S]*border-radius:10px[\s\S]*#10182808/);
+test("Contents matches the approved publication-list reference rather than KPI panels", () => {
+  assert.match(postManager, /data-testid="news-manager"/);
+  assert.match(postManager, /Publicações/);
+  assert.match(postManager, /Modo de desenvolvimento liberado/);
+  assert.match(postManager, /<th>Página<\/th>/);
+  assert.match(postManager, /<span className=\{styles\.pageLabel\}>Notícias<\/span>/);
+  assert.match(postManager, /<th>Slug<\/th>/);
+  assert.match(postManager, /Página <strong>\{safePage\}<\/strong> de/);
+  assert.match(postManager, /Por página/);
+  assert.doesNotMatch(postManager, /adminMetricGrid|adminMetricCard|Publicações cadastradas|Colaborações recebidas|adminAnalyticsPanelHeading/);
+  assert.match(posts, /\.viewTabs\{[\s\S]*min-height:46px[\s\S]*background:#fff/);
+  assert.match(posts, /\.notice\{[\s\S]*min-height:64px[\s\S]*border-left:3px solid #ff2733/);
+  assert.match(posts, /\.tableSurface\{[\s\S]*border-radius:8px[\s\S]*background:#fff/);
+  assert.match(posts, /\.contentTable th\{height:34px/);
+  assert.match(posts, /\.contentTable td\{height:44px/);
+  assert.match(posts, /\.pagination\{[\s\S]*min-height:60px/);
   assert.match(posts, /\.published\{background:#dcf7e7;color:#078847\}/);
-  assert.doesNotMatch(posts, /adminTopbarPrimary/);
+  assert.match(posts, /Approved Contents reference/);
+});
 
+test("Pages keep the shared table geometry", () => {
   assert.match(pages, /\.selectionCard,\.structureCard\{[\s\S]*border-radius:10px/);
   assert.match(pages, /\.sectionsRow\{min-height:50px/);
   assert.match(pages, /\.statusBadge\{[\s\S]*border-radius:5px/);
