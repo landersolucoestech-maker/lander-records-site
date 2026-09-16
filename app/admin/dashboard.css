@@ -2,6 +2,8 @@
 @import "../../styles/admin/shell.css";
 @import "../../styles/admin/dashboard.css";
 @import "../../styles/admin/home.css";
+/* Final authority: every protected module resolves to the Dashboard design language. */
+@import "../../styles/admin/dashboard-module-contract.css";
 
 /*
  * The Pages workbench left rail must be a real scroll container.
@@ -30,6 +32,3 @@
     flex-shrink: 0 !important;
   }
 }
-
-/* Final authority: every protected module resolves to the Dashboard design language. */
-@import "../../styles/admin/dashboard-module-contract.css";
