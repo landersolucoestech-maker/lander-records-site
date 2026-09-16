@@ -12,6 +12,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: absoluteUrl("/artistas"), changeFrequency: "weekly", priority: 0.8 },
     { url: absoluteUrl("/noticias"), changeFrequency: "daily", priority: 0.8 },
     { url: absoluteUrl("/contato"), changeFrequency: "monthly", priority: 0.5 },
+    { url: absoluteUrl("/politica-de-privacidade"), changeFrequency: "yearly", priority: 0.3 },
+    { url: absoluteUrl("/termos-e-condicoes"), changeFrequency: "yearly", priority: 0.3 },
     ...artists.map((artist) => ({ url: absoluteUrl(`/artistas/${artist.slug}`), changeFrequency: "weekly" as const, priority: 0.8 })),
     ...posts.map((post) => ({ url: absoluteUrl(`/noticias/${post.slug}`), lastModified: post.updatedAt, changeFrequency: "weekly" as const, priority: 0.7 })),
   ];
