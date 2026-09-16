@@ -14,12 +14,12 @@ export const adminNavigation: AdminNavGroup[] = [
     module: { label: "Site", icon: "home" },
     items: [
       { label: "Conteúdos", href: "/admin/posts", previewHref: "/cms-preview/posts", icon: "posts" },
+      { label: "Artistas", href: "/admin/artists", previewHref: "/cms-preview/artists", icon: "artists" },
       { label: "Mídias", href: "/admin/media", previewHref: "/cms-preview/media", icon: "media" },
       { label: "Páginas", href: "/admin/pages", previewHref: "/cms-preview/pages", icon: "pages" },
       { label: "Mídia Kit", href: "/admin/media-kit", previewHref: "/cms-preview/media-kit", icon: "media" },
     ],
   },
-  { key: "artists", label: "", items: [{ label: "Artistas", href: "/admin/artists", previewHref: "/cms-preview/artists", icon: "artists" }] },
   { key: "settings", label: "Configurações", items: [
     { label: "Empresa", href: "/admin/settings", previewHref: "/cms-preview/settings", icon: "home" },
     { label: "Identidade do Site", href: "/admin/settings#identity", previewHref: "/cms-preview/settings#identity", icon: "media" },
