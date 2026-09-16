@@ -117,16 +117,9 @@ export default function PostManager({
   const changePageSize = (value: number) => { setPageSize(value); setPage(1); };
 
   useEffect(() => {
-    const trigger = document.querySelector<HTMLAnchorElement>('a.adminTopbarPrimary[href="/admin/posts/new"]');
-    if (!trigger) return;
-    trigger.setAttribute("aria-haspopup", "dialog");
-    trigger.setAttribute("aria-controls", "new-content-modal");
-    const openModal = (event: MouseEvent) => {
-      event.preventDefault();
-      setCreateOpen(true);
-    };
-    trigger.addEventListener("click", openModal);
-    return () => trigger.removeEventListener("click", openModal);
+    const openModal = () => setCreateOpen(true);
+    window.addEventListener("admin:new-content", openModal);
+    return () => window.removeEventListener("admin:new-content", openModal);
   }, []);
 
   return <div className={styles.manager} data-testid="news-manager">
