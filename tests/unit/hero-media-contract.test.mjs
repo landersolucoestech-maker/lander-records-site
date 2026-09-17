@@ -61,6 +61,6 @@ test("Public Home resolves and renders the configured hero image or video", () =
   assert.match(home, /hero\.mediaMimeType\.startsWith\("video\/"\)/);
   assert.match(home, /className="homeHeroMedia"/);
   assert.match(home, /autoPlay loop muted playsInline/);
-  assert.match(homeStyles, /\.homeHeroMedia\{[^}]*object-fit:cover/);
+  assert.match(homeStyles, /\.homeHeroMedia\s*\{[^}]*object-fit:\s*cover/);
   assert.match(homeStyles, /\.homeHeroHasMedia \.homeHeroBackdrop/);
 });
