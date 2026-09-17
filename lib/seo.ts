@@ -6,6 +6,20 @@ export function absoluteUrl(pathname: string) {
   return `${base}${pathname.startsWith("/") ? pathname : `/${pathname}`}`;
 }
 
+export function resolveCanonicalUrl(value: string | null | undefined, fallbackPath: string) {
+  const fallback = absoluteUrl(fallbackPath);
+  const candidate = value?.trim();
+  if (!candidate) return fallback;
+  try {
+    const url = new URL(candidate);
+    if ((url.protocol !== "https:" && url.protocol !== "http:") || url.username || url.password || !url.hostname) return fallback;
+    url.hash = "";
+    return url.toString();
+  } catch {
+    return fallback;
+  }
+}
+
 export async function buildMetadata(input: {
   title?: string;
   description?: string;
