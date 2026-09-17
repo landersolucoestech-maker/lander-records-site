@@ -17,16 +17,17 @@ function Metric({ accent, icon, label, value, hint }: { accent: "red" | "blue" |
   </article>;
 }
 
-function Toggle({ checked, label, name }: { checked: boolean; label: string; name: string }) {
-  return <label className={styles.toggle}><input defaultChecked={checked} name={name} type="checkbox" /><span aria-hidden="true" /><b>{label}</b></label>;
+function Toggle({ checked, disabled, label, name }: { checked: boolean; disabled?: boolean; label: string; name: string }) {
+  return <label className={styles.toggle}><input defaultChecked={checked} disabled={disabled} name={name} type="checkbox" /><span aria-hidden="true" /><b>{label}</b></label>;
 }
 
-export default function CategoryManager({ artistCategories, postCategories }: { artistCategories: ArtistCategory[]; postCategories: PostCategory[] }) {
+export default function CategoryManager({ artistCategories, canDelete, canEdit, postCategories }: { artistCategories: ArtistCategory[]; canDelete: boolean; canEdit: boolean; postCategories: PostCategory[] }) {
   const [tab, setTab] = useState<Tab>("artists");
   const current = tab === "artists" ? artistCategories : postCategories;
   const activeCount = current.filter((category) => category.active).length;
   const filterCount = current.filter((category) => category.showAsFilter).length;
   const tabLabel = tab === "artists" ? "Artistas" : "Notícias";
+  const confirmDelete = (name: string) => window.confirm(`Excluir a categoria “${name}”?`);
 
   return <div className={styles.manager} data-testid="categories-manager">
     <div className={styles.tabs} role="tablist" aria-label="Tipo de categoria">
@@ -53,33 +54,33 @@ export default function CategoryManager({ artistCategories, postCategories }: { 
         {tab === "artists" ? artistCategories.map((category) => <div className={styles.rowWrap} key={category.id} role="row">
           <form action={upsertArtistCategory} className={`${styles.categoryForm} ${styles.artistGrid}`}>
             <input type="hidden" name="id" value={category.id} />
-            <input aria-label={`Nome de ${category.name}`} name="name" defaultValue={category.name} required />
-            <input aria-label={`Slug de ${category.name}`} name="slug" defaultValue={category.slug} required />
-            <input aria-label={`Descrição de ${category.name}`} name="description" defaultValue={category.description} />
-            <input aria-label={`Ordem de ${category.name}`} name="position" type="number" defaultValue={category.position} />
-            <Toggle checked={category.active} label="Ativa" name="active" />
-            <Toggle checked={category.showAsFilter} label="Filtro" name="showAsFilter" />
-            <button className={styles.saveButton} type="submit"><AdminIcon name="check" size={14} />Salvar</button>
+            <input aria-label={`Nome de ${category.name}`} disabled={!canEdit} name="name" defaultValue={category.name} required />
+            <input aria-label={`Slug de ${category.name}`} disabled={!canEdit} name="slug" defaultValue={category.slug} required />
+            <input aria-label={`Descrição de ${category.name}`} disabled={!canEdit} name="description" defaultValue={category.description} />
+            <input aria-label={`Ordem de ${category.name}`} disabled={!canEdit} name="position" type="number" defaultValue={category.position} />
+            <Toggle checked={category.active} disabled={!canEdit} label="Ativa" name="active" />
+            <Toggle checked={category.showAsFilter} disabled={!canEdit} label="Filtro" name="showAsFilter" />
+            {canEdit ? <button className={styles.saveButton} type="submit"><AdminIcon name="check" size={14} />Salvar</button> : <span className="adminBadge">Somente leitura</span>}
             <span />
           </form>
-          <form action={deleteArtistCategory} className={styles.deleteForm}><input type="hidden" name="id" value={category.id} /><button aria-label={`Excluir ${category.name}`} className={styles.deleteButton} type="submit"><AdminIcon name="trash" size={15} /></button></form>
+          {canDelete ? <form action={deleteArtistCategory} className={styles.deleteForm} onSubmit={(event) => { if (!confirmDelete(category.name)) event.preventDefault(); }}><input type="hidden" name="id" value={category.id} /><button aria-label={`Excluir ${category.name}`} className={styles.deleteButton} type="submit"><AdminIcon name="trash" size={15} /></button></form> : null}
         </div>) : postCategories.map((category) => <div className={styles.rowWrap} key={category.id} role="row">
           <form action={upsertPostCategory} className={`${styles.categoryForm} ${styles.newsGrid}`}>
             <input type="hidden" name="id" value={category.id} />
-            <input aria-label={`Nome de ${category.name}`} name="name" defaultValue={category.name} required />
-            <input aria-label={`Slug de ${category.name}`} name="slug" defaultValue={category.slug} required />
-            <input aria-label={`Ordem de ${category.name}`} name="position" type="number" defaultValue={category.position} />
-            <Toggle checked={category.active} label="Ativa" name="active" />
-            <Toggle checked={category.showAsFilter} label="Filtro" name="showAsFilter" />
-            <button className={styles.saveButton} type="submit"><AdminIcon name="check" size={14} />Salvar</button>
+            <input aria-label={`Nome de ${category.name}`} disabled={!canEdit} name="name" defaultValue={category.name} required />
+            <input aria-label={`Slug de ${category.name}`} disabled={!canEdit} name="slug" defaultValue={category.slug} required />
+            <input aria-label={`Ordem de ${category.name}`} disabled={!canEdit} name="position" type="number" defaultValue={category.position} />
+            <Toggle checked={category.active} disabled={!canEdit} label="Ativa" name="active" />
+            <Toggle checked={category.showAsFilter} disabled={!canEdit} label="Filtro" name="showAsFilter" />
+            {canEdit ? <button className={styles.saveButton} type="submit"><AdminIcon name="check" size={14} />Salvar</button> : <span className="adminBadge">Somente leitura</span>}
             <span />
           </form>
-          <form action={deletePostCategory} className={styles.deleteForm}><input type="hidden" name="id" value={category.id} /><button aria-label={`Excluir ${category.name}`} className={styles.deleteButton} type="submit"><AdminIcon name="trash" size={15} /></button></form>
+          {canDelete ? <form action={deletePostCategory} className={styles.deleteForm} onSubmit={(event) => { if (!confirmDelete(category.name)) event.preventDefault(); }}><input type="hidden" name="id" value={category.id} /><button aria-label={`Excluir ${category.name}`} className={styles.deleteButton} type="submit"><AdminIcon name="trash" size={15} /></button></form> : null}
         </div>)}
       </div> : <div className={styles.empty}><span><AdminIcon name="tags" size={20} /></span><strong>Nenhuma categoria cadastrada</strong><p>Crie a primeira categoria para organizar {tabLabel.toLowerCase()}.</p></div>}
     </section>
 
-    <section className={`adminDashboardPanel ${styles.createPanel}`}>
+    {canEdit ? <section className={`adminDashboardPanel ${styles.createPanel}`}>
       <div className="adminAnalyticsPanelHeading">
         <div className="adminPanelHeadingIdentity"><span className="adminPanelHeadingIcon"><AdminIcon name="plus" size={20} /></span><div><h2>Nova categoria de {tab === "artists" ? "artista" : "notícia"}</h2><p>Cadastre somente os campos realmente suportados por esta taxonomia.</p></div></div>
       </div>
@@ -89,6 +90,6 @@ export default function CategoryManager({ artistCategories, postCategories }: { 
         <label>Nome<input name="name" required /></label><label>Slug<input name="slug" /></label><label>Ordem<input name="position" type="number" defaultValue={0} /></label><Toggle checked label="Ativa" name="active" /><Toggle checked label="Filtro público" name="showAsFilter" /><button className="adminPrimaryCompact" type="submit"><AdminIcon name="plus" size={14} />Criar categoria</button>
       </form>}
       <div className={styles.safetyNote}><AdminIcon name="shield" size={16} /><span><strong>Exclusão segura.</strong> Categorias em uso continuam protegidas pelas regras do backend até que suas relações sejam removidas.</span></div>
-    </section>
+    </section> : null}
   </div>;
 }
