@@ -68,6 +68,14 @@ function requiredUuid(formData: FormData, name: string, label: string) {
   return value;
 }
 
+function optionalUuid(formData: FormData, name: string, label: string) {
+  const raw = text(formData, name);
+  if (!raw) return null;
+  const value = uuidOrNull(raw);
+  if (!value) throw new Error(`${label} inválido.`);
+  return value;
+}
+
 function validAdminEmail(value: string) {
   return value.length <= 320 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
@@ -297,23 +305,39 @@ export async function deleteNavigationItem(formData: FormData) {
   redirect("/admin/navigation?saved=deleted");
 }
 
-export async function updateSiteSettings(formData: FormData) {
+export async function updateCompanySettings(formData: FormData) {
   const session = await requirePersistentAdmin("admin");
+  const contactEmail = text(formData, "contactEmail");
+  if (contactEmail && !validAdminEmail(contactEmail)) throw new Error("E-mail de contato inválido.");
   await getDb().update(siteSettings).set({
-    brandName: text(formData, "brandName"),
-    tagline: text(formData, "tagline"),
-    contactEmail: text(formData, "contactEmail"),
+    contactEmail,
     contactPhone: text(formData, "contactPhone"),
     location: text(formData, "location"),
     address: text(formData, "address"),
     hours: text(formData, "hours"),
-    defaultSeoTitle: text(formData, "defaultSeoTitle"),
-    defaultSeoDescription: text(formData, "defaultSeoDescription"),
-    logoMediaId: uuidOrNull(text(formData, "logoMediaId")),
-    socialImageMediaId: uuidOrNull(text(formData, "socialImageMediaId")),
     updatedAt: new Date(),
   }).where(eq(siteSettings.id, "site"));
-  await audit(session.user.id, "site_settings.updated", "site_settings", null);
+  await audit(session.user.id, "site_settings.company_updated", "site_settings", "site");
+  revalidatePublic();
+  revalidatePath("/admin/settings");
+}
+
+export async function updateIdentitySettings(formData: FormData) {
+  const session = await requirePersistentAdmin("admin");
+  const brandName = text(formData, "brandName");
+  const defaultSeoTitle = text(formData, "defaultSeoTitle");
+  if (!brandName || brandName.length > 180) throw new Error("Nome da marca inválido.");
+  if (defaultSeoTitle.length > 180) throw new Error("Título SEO padrão inválido.");
+  await getDb().update(siteSettings).set({
+    brandName,
+    tagline: text(formData, "tagline"),
+    defaultSeoTitle,
+    defaultSeoDescription: text(formData, "defaultSeoDescription"),
+    logoMediaId: optionalUuid(formData, "logoMediaId", "Logo"),
+    socialImageMediaId: optionalUuid(formData, "socialImageMediaId", "Imagem social"),
+    updatedAt: new Date(),
+  }).where(eq(siteSettings.id, "site"));
+  await audit(session.user.id, "site_settings.identity_updated", "site_settings", "site");
   revalidatePublic();
   revalidatePath("/admin/settings");
 }
