@@ -8,7 +8,7 @@ import { audit, requirePersistentAdmin } from "../../lib/auth";
 import { getDb } from "../../lib/db";
 import { deleteMedia as deleteStoredMedia, uploadMedia as uploadStoredMedia } from "@/lib/storage";
 import { postLinks, postProfiles } from "../../lib/db/news-management-schema";
-import { mediaAssets, postTags, posts, slugRedirects } from "../../lib/db/schema";
+import { mediaAssets, posts, slugRedirects } from "../../lib/db/schema";
 import { slugify } from "../../lib/slug";
 
 export type PostActionState = { ok: boolean; error?: string };
@@ -33,8 +33,15 @@ function uuidOrNull(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value) ? value : null;
 }
 
-function uuidList(formData: FormData, name: string) {
-  return formData.getAll(name).map(String).map(uuidOrNull).filter((value): value is string => Boolean(value));
+function httpUrlOrEmpty(value: string, label: string) {
+  if (!value) return "";
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error("unsupported protocol");
+    return url.toString();
+  } catch {
+    throw new Error(`${label} precisa ser uma URL HTTP(S) válida.`);
+  }
 }
 
 function parseDate(value: string) {
@@ -92,10 +99,16 @@ export async function savePostAction(_: PostActionState, formData: FormData): Pr
   if (!contentMarkdown) return { ok: false, error: "Conteúdo é obrigatório." };
 
   let publishedAt: Date | null = null;
+  let canonicalUrl = "";
+  let links: Array<{ platform: (typeof socialPlatforms)[number]; url: string }> = [];
   try {
     publishedAt = parseDate(text(formData, "publishedAt"));
+    canonicalUrl = httpUrlOrEmpty(text(formData, "canonicalUrl"), "A URL canônica");
+    links = socialPlatforms
+      .map((platform) => ({ platform, url: httpUrlOrEmpty(text(formData, `link_${platform}`), `O link de ${platform}`) }))
+      .filter((item) => item.url);
   } catch (error) {
-    return { ok: false, error: error instanceof Error ? error.message : "Data inválida." };
+    return { ok: false, error: error instanceof Error ? error.message : "Dados editoriais inválidos." };
   }
   if (status === "published" && !publishedAt) publishedAt = new Date();
 
@@ -148,7 +161,7 @@ export async function savePostAction(_: PostActionState, formData: FormData): Pr
           archivedAt: status === "archived" ? new Date() : null,
           seoTitle: text(formData, "seoTitle"),
           seoDescription: text(formData, "seoDescription"),
-          canonicalUrl: text(formData, "canonicalUrl"),
+          canonicalUrl,
           updatedBy: session.user.id,
           updatedAt: new Date(),
         }).where(eq(posts.id, resolvedId));
@@ -170,7 +183,7 @@ export async function savePostAction(_: PostActionState, formData: FormData): Pr
           archivedAt: status === "archived" ? new Date() : null,
           seoTitle: text(formData, "seoTitle"),
           seoDescription: text(formData, "seoDescription"),
-          canonicalUrl: text(formData, "canonicalUrl"),
+          canonicalUrl,
           createdBy: session.user.id,
           updatedBy: session.user.id,
         }).returning({ id: posts.id });
@@ -187,20 +200,15 @@ export async function savePostAction(_: PostActionState, formData: FormData): Pr
       await tx.insert(postProfiles).values({
         postId: resolvedId,
         authorMediaId,
-        publicationLink: text(formData, "publicationLink") || `/noticias/${slug}`,
+        publicationLink: `/noticias/${slug}`,
         updatedAt: new Date(),
       }).onConflictDoUpdate({
         target: postProfiles.postId,
-        set: { authorMediaId, publicationLink: text(formData, "publicationLink") || `/noticias/${slug}`, updatedAt: new Date() },
+        set: { authorMediaId, publicationLink: `/noticias/${slug}`, updatedAt: new Date() },
       });
 
       await tx.delete(postLinks).where(and(eq(postLinks.postId, resolvedId), inArray(postLinks.platform, socialPlatforms)));
-      const links = socialPlatforms.map((platform) => ({ platform, url: text(formData, `link_${platform}`) })).filter((item) => item.url);
       if (links.length) await tx.insert(postLinks).values(links.map((item) => ({ postId: resolvedId!, platform: item.platform, url: item.url, updatedAt: new Date() })));
-
-      const tagIds = uuidList(formData, "tagIds");
-      await tx.delete(postTags).where(eq(postTags.postId, resolvedId));
-      if (tagIds.length) await tx.insert(postTags).values(tagIds.map((tagId) => ({ postId: resolvedId!, tagId })));
 
       return resolvedId;
     });
