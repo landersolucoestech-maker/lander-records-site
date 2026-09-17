@@ -30,7 +30,6 @@ type InitialArtist = {
   destinationIds?: string[];
   metrics?: Record<string, number>;
   links?: Record<string, string>;
-  pageLink?: string;
   hireTitle?: string;
   hireText?: string;
   hireButtonLabel?: string;
@@ -99,7 +98,7 @@ export default function ArtistForm({ initial = {}, media, categories, roles, gen
       <div className={styles.editorLayout}>
         <div className={styles.editorMain}>
           <section className={styles.card}>
-            <header><div><span className={styles.kicker}>ARTISTA</span><h2>Identidade</h2><p>Informações principais usadas no CMS e na página pública.</p></div></header>
+            <header><div><span className={styles.kicker}>ARTISTA</span><h2>Identidade</h2><p>Informações principais usadas no Admin e na página pública.</p></div></header>
             <div className={styles.grid}>
               <label><span>Nome do artista</span><input name="name" required maxLength={180} value={name} onChange={(event) => setName(event.target.value)} /></label>
               <label><span>Slug</span><input name="slug" maxLength={200} value={slug} onChange={(event) => setSlug(event.target.value)} placeholder="gerado pelo nome se vazio"/><small>Define a rota pública /artistas/slug.</small></label>
@@ -110,7 +109,7 @@ export default function ArtistForm({ initial = {}, media, categories, roles, gen
           </section>
 
           <section className={styles.card}>
-            <header><div><h2>Imagem principal</h2><p>Thumbnail usada em cards, listagens e outras áreas do site.</p></div><button className={styles.outlineButton} onClick={() => setMediaTarget("card")} type="button"><AdminIcon name="media" size={15}/>Escolher da biblioteca</button></header>
+            <header><div><h2>Imagem principal</h2><p>Miniatura usada em cards, listagens e outras áreas do site.</p></div><button className={styles.outlineButton} onClick={() => setMediaTarget("card")} type="button"><AdminIcon name="media" size={15}/>Escolher da biblioteca</button></header>
             <div className={styles.grid}>
               {cardImage ? <div className={`${styles.mediaCurrent} ${styles.span2}`}><Image alt="" height={800} src={cardImage} unoptimized width={800}/><div><span>IMAGEM PRINCIPAL</span><strong>{media.find((item) => item.id === cardMediaId)?.name || "Imagem atual"}</strong><small>{cardImage}</small><button className={styles.outlineButton} onClick={() => { setCardMediaId(""); setCardImage(""); }} type="button">Remover imagem</button></div></div> : <button className={`${styles.emptyMedia} ${styles.span2}`} onClick={() => setMediaTarget("card")} type="button"><AdminIcon name="image" size={24}/><strong>Selecionar imagem principal</strong><span>Abrir biblioteca de mídia</span></button>}
               <label className={styles.span2}><span>Ou enviar nova imagem</span><input name="cardMediaUpload" type="file" accept="image/*"/><small>Se enviado, o arquivo substitui a seleção da biblioteca.</small></label>
@@ -127,7 +126,7 @@ export default function ArtistForm({ initial = {}, media, categories, roles, gen
           </section>
 
           <section className={styles.card}>
-            <header><div><h2>Métricas das plataformas</h2><p>Somente leitura. A sincronização real continua sendo feita pelo Soundcharts.</p></div><span className={styles.statusPill}><i/>AUTOMÁTICO</span></header>
+            <header><div><h2>Métricas das plataformas</h2><p>Somente leitura. A sincronização real é feita pelo Soundcharts.</p></div><span className={styles.statusPill}><i/>AUTOMÁTICO</span></header>
             <div className={styles.metricGrid}>
               <label><span>Instagram · seguidores</span><input readOnly aria-readonly="true" value={metricValue(initial.metrics?.instagram)} /></label>
               <label><span>YouTube · inscritos</span><input readOnly aria-readonly="true" value={metricValue(initial.metrics?.youtube)} /></label>
@@ -138,7 +137,7 @@ export default function ArtistForm({ initial = {}, media, categories, roles, gen
           </section>
 
           <section className={styles.card}>
-            <header><div><h2>Redes sociais e plataformas</h2><p>URLs oficiais usadas nos links públicos e no matching determinístico com o Soundcharts.</p></div></header>
+            <header><div><h2>Redes sociais e plataformas</h2><p>URLs oficiais usadas nos links públicos e na resolução de identidade com o Soundcharts.</p></div></header>
             <div className={styles.grid}>
               <label><span>Facebook</span><input name="link_facebook" type="url" defaultValue={initial.links?.facebook || ""} placeholder="https://facebook.com/..." /></label>
               <label><span>Instagram</span><input name="link_instagram" type="url" defaultValue={initial.links?.instagram || ""} placeholder="https://instagram.com/..." /></label>
@@ -150,9 +149,8 @@ export default function ArtistForm({ initial = {}, media, categories, roles, gen
           </section>
 
           <section className={styles.card}>
-            <header><div><h2>Página pública do artista</h2><p>URL pública e chamada comercial de contratação.</p></div></header>
+            <header><div><h2>Página pública do artista</h2><p>A rota é derivada do slug; configure apenas a chamada comercial de contratação.</p></div></header>
             <div className={styles.grid}>
-              <label className={styles.span2}><span>Page Link</span><input name="pageLink" defaultValue={initial.pageLink || ""} placeholder="/artistas/nome-do-artista" /></label>
               <label><span>Texto “Contrate”</span><input name="hireTitle" value={hireTitle} onChange={(event) => setHireTitle(event.target.value)} /></label>
               <label><span>Botão contratar</span><input name="hireButtonLabel" value={hireButtonLabel} onChange={(event) => setHireButtonLabel(event.target.value)} /></label>
               <label className={styles.span2}><span>Texto de contratação</span><textarea name="hireText" rows={4} value={hireText} onChange={(event) => setHireText(event.target.value)} /></label>
@@ -160,12 +158,12 @@ export default function ArtistForm({ initial = {}, media, categories, roles, gen
           </section>
 
           <section className={styles.card}>
-            <header><div><h2>Mídia da página do artista</h2><p>Banner do Hero, vídeo principal, Spotify e imagem social.</p></div><button className={styles.outlineButton} onClick={() => setMediaTarget("hero")} type="button"><AdminIcon name="media" size={15}/>Escolher banner</button></header>
+            <header><div><h2>Mídia da página do artista</h2><p>Banner principal, vídeo, Spotify e imagem social.</p></div><button className={styles.outlineButton} onClick={() => setMediaTarget("hero")} type="button"><AdminIcon name="media" size={15}/>Escolher banner</button></header>
             <div className={styles.grid}>
-              {heroImage ? <div className={`${styles.heroCurrent} ${styles.span2}`}><Image alt="" height={675} src={heroImage} unoptimized width={1200}/><div><span>BANNER DO HERO</span><strong>{media.find((item) => item.id === heroMediaId)?.name || "Banner atual"}</strong><small>{heroImage}</small><button className={styles.outlineButton} onClick={() => { setHeroMediaId(""); setHeroImage(""); }} type="button">Remover banner</button></div></div> : <button className={`${styles.emptyMedia} ${styles.span2}`} onClick={() => setMediaTarget("hero")} type="button"><AdminIcon name="image" size={24}/><strong>Selecionar banner do Hero</strong><span>Abrir biblioteca de mídia</span></button>}
-              <label className={styles.span2}><span>Ou enviar novo banner</span><input name="heroMediaUpload" type="file" accept="image/*"/><small>Imagem horizontal usada no Hero da página individual.</small></label>
-              <label><span>Vídeo YouTube</span><input name="youtubeVideo" type="url" defaultValue={initial.youtubeVideo || ""} placeholder="https://youtube.com/watch?v=..." /></label>
-              <label><span>Embed Spotify</span><input name="spotifyEmbed" defaultValue={initial.spotifyEmbed || ""} placeholder="URL do embed Spotify" /></label>
+              {heroImage ? <div className={`${styles.heroCurrent} ${styles.span2}`}><Image alt="" height={675} src={heroImage} unoptimized width={1200}/><div><span>BANNER PRINCIPAL</span><strong>{media.find((item) => item.id === heroMediaId)?.name || "Banner atual"}</strong><small>{heroImage}</small><button className={styles.outlineButton} onClick={() => { setHeroMediaId(""); setHeroImage(""); }} type="button">Remover banner</button></div></div> : <button className={`${styles.emptyMedia} ${styles.span2}`} onClick={() => setMediaTarget("hero")} type="button"><AdminIcon name="image" size={24}/><strong>Selecionar banner principal</strong><span>Abrir biblioteca de mídia</span></button>}
+              <label className={styles.span2}><span>Ou enviar novo banner</span><input name="heroMediaUpload" type="file" accept="image/*"/><small>Imagem horizontal usada no topo da página individual.</small></label>
+              <label><span>Vídeo do YouTube</span><input name="youtubeVideo" type="url" defaultValue={initial.youtubeVideo || ""} placeholder="https://youtube.com/watch?v=..." /></label>
+              <label><span>Spotify</span><input name="spotifyEmbed" defaultValue={initial.spotifyEmbed || ""} placeholder="URL do Spotify" /></label>
               <label><span>Imagem social / OG</span><select name="ogMediaId" defaultValue={initial.ogMediaId || ""}><option value="">Usar banner/imagem principal</option>{media.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
             </div>
           </section>
@@ -178,15 +176,15 @@ export default function ArtistForm({ initial = {}, media, categories, roles, gen
 
           <section className={styles.card}>
             <header><div><h2>SEO</h2><p>Metadados da página individual do artista.</p></div></header>
-            <div className={styles.grid}><label><span>Título SEO</span><input name="seoTitle" maxLength={180} defaultValue={initial.seoTitle || ""} /></label><label><span>Canonical</span><input name="canonicalUrl" type="url" defaultValue={initial.canonicalUrl || ""} /></label><label className={styles.span2}><span>Meta description</span><textarea rows={3} name="seoDescription" defaultValue={initial.seoDescription || ""} /></label></div>
+            <div className={styles.grid}><label><span>Título SEO</span><input name="seoTitle" maxLength={180} defaultValue={initial.seoTitle || ""} /></label><label><span>URL canônica</span><input name="canonicalUrl" type="url" defaultValue={initial.canonicalUrl || ""} /></label><label className={styles.span2}><span>Meta description</span><textarea rows={3} name="seoDescription" defaultValue={initial.seoDescription || ""} /></label></div>
           </section>
         </div>
 
-        <aside className={styles.previewPanel} aria-label="Preview do artista">
+        <aside className={styles.previewPanel} aria-label="Prévia do artista">
           <div className={styles.previewSticky}>
-            <header><span>PREVIEW DO ARTISTA</span><h2>{name || "Artista sem nome"}</h2><p>/artistas/{previewSlug}</p></header>
+            <header><span>PRÉVIA DO ARTISTA</span><h2>{name || "Artista sem nome"}</h2><p>/artistas/{previewSlug}</p></header>
             <div className={styles.previewHero}>{previewImage ? <Image alt="" fill sizes="480px" src={previewImage} unoptimized /> : <div className={styles.previewPlaceholder}><AdminIcon name="artists" size={32}/></div>}<div className={styles.previewOverlay}/><div className={styles.previewHeroCopy}><span>LANDER RECORDS</span><h3>{name || "Nome do artista"}</h3><p>{shortBio || "O resumo curto do artista aparecerá aqui."}</p></div></div>
-            <div className={styles.previewBody}><span className={`${styles.previewStatus} ${styles[status]}`}>{status === "published" ? "Publicado" : status === "inactive" ? "Inativo" : "Rascunho"}</span><h4>Sobre</h4><p>{biography || "A biografia completa aparecerá nesta área do preview."}</p><div className={styles.previewCta}><strong>{hireTitle || "Contrate"}</strong><p>{hireText || "Texto comercial de contratação."}</p><span>{hireButtonLabel || "Quero contratar"}</span></div></div>
+            <div className={styles.previewBody}><span className={`${styles.previewStatus} ${styles[status]}`}>{status === "published" ? "Publicado" : status === "inactive" ? "Inativo" : "Rascunho"}</span><h4>Sobre</h4><p>{biography || "A biografia completa aparecerá nesta área da prévia."}</p><div className={styles.previewCta}><strong>{hireTitle || "Contrate"}</strong><p>{hireText || "Texto comercial de contratação."}</p><span>{hireButtonLabel || "Quero contratar"}</span></div></div>
           </div>
         </aside>
       </div>
