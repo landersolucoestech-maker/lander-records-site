@@ -1,8 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { useActionState, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal, useFormStatus } from "react-dom";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { trustedExternalUrl } from "@/lib/media-embed";
 import { deletePostAction, savePostAction, type PostActionState } from "../../post-actions";
 import { AdminIcon } from "../../components/AdminIcon";
 import { AdminMediaPicker, type AdminMediaPickerItem } from "../../components/AdminMediaPicker";
@@ -42,7 +45,8 @@ type Option = { id: string; name: string };
 type MediaOption = AdminMediaPickerItem;
 type ModalMode = "create" | "edit" | "view";
 type ModalState = { mode: ModalMode; postId?: string } | null;
-type ActionMenuState = { postId: string; top: number; left: number } | null;
+type ActionMenuState = { postId: string } | null;
+type ActionMenuPosition = { top: number; left: number } | null;
 
 const statusLabel: Record<PostRecord["status"], string> = {
   published: "Publicado",
@@ -71,15 +75,13 @@ function slugifyClient(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }
 
-function getActionMenuPosition(element: HTMLElement) {
-  const rect = element.getBoundingClientRect();
+function positionFloatingMenu(anchor: DOMRect, menu: DOMRect) {
   const gap = 6;
-  const padding = 10;
-  const menuWidth = 168;
-  const menuHeight = 122;
-  const maxLeft = Math.max(padding, window.innerWidth - menuWidth - padding);
-  const left = Math.min(Math.max(padding, rect.right - menuWidth), maxLeft);
-  const top = rect.bottom + gap + menuHeight <= window.innerHeight - padding ? rect.bottom + gap : Math.max(padding, rect.top - menuHeight - gap);
+  const viewportPadding = 10;
+  const maxLeft = Math.max(viewportPadding, window.innerWidth - menu.width - viewportPadding);
+  const left = Math.min(Math.max(viewportPadding, anchor.right - menu.width), maxLeft);
+  const hasRoomBelow = anchor.bottom + gap + menu.height <= window.innerHeight - viewportPadding;
+  const top = hasRoomBelow ? anchor.bottom + gap : Math.max(viewportPadding, anchor.top - menu.height - gap);
   return { top, left };
 }
 
@@ -88,69 +90,124 @@ function SaveButton({ mode, disabled }: { mode: "create" | "edit"; disabled: boo
   return <button className={styles.modalPrimary} disabled={disabled || pending} type="submit"><AdminIcon name="check" size={14}/>{pending ? "Salvando..." : mode === "create" ? "Criar conteúdo" : "Salvar alterações"}</button>;
 }
 
-function ViewFact({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div className={styles.viewFact}><span>{label}</span><strong>{children || "—"}</strong></div>;
+function ViewInfo({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div className={styles.viewInfo}><span>{label}</span><strong>{children || "—"}</strong></div>;
 }
 
 function ContentView({ post }: { post: PostRecord }) {
-  const socialLinks = Object.entries(post.links || {}).filter(([, url]) => Boolean(url));
-  return <div className={styles.viewBody}>
-    <section className={styles.viewHero}>
-      <div className={styles.viewHeroMedia}>
-        {post.coverImage ? <Image alt={`Capa de ${post.title}`} fill sizes="(max-width: 760px) 100vw, 380px" src={post.coverImage} unoptimized /> : <div className={styles.viewHeroFallback}><AdminIcon name="document" size={34}/><span>Sem imagem de capa</span></div>}
-      </div>
-      <div className={styles.viewHeroContent}>
-        <div className={styles.viewHeroTop}><StatusBadge status={post.status}/><span className={styles.viewCategory}>{post.category || "Sem categoria"}</span></div>
-        <h3>{post.title}</h3>
-        <p>{post.excerpt || "Esta publicação ainda não possui um resumo editorial."}</p>
-        <div className={styles.viewMetaStrip}>
-          <ViewFact label="Autor">{post.authorName || "—"}</ViewFact>
-          <ViewFact label="Publicação">{post.publishedAt || "Não definida"}</ViewFact>
-          <ViewFact label="Slug">/{post.slug}</ViewFact>
-        </div>
-      </div>
-    </section>
+  const socialLinks = Object.entries(post.links || {})
+    .map(([platform, url]) => [platform, trustedExternalUrl(url)] as const)
+    .filter((entry): entry is readonly [string, string] => Boolean(entry[1]));
 
-    <div className={styles.viewLayout}>
-      <section className={`${styles.viewCard} ${styles.viewMainCard}`}>
-        <header className={styles.viewCardHeader}><div><span>CONTEÚDO</span><h4>Corpo da publicação</h4></div><small>Somente leitura</small></header>
-        <div className={styles.viewArticle}>{post.contentMarkdown || "Nenhum conteúdo foi cadastrado para esta publicação."}</div>
+  return <div className={styles.viewPreview}>
+    <main className={styles.viewArticlePreview}>
+      <div className={styles.viewArticleCover}>
+        {post.coverImage ? <Image alt={`Capa de ${post.title}`} fill sizes="(max-width: 760px) 100vw, 760px" src={post.coverImage} unoptimized /> : <div className={styles.viewArticleCoverEmpty}><AdminIcon name="media" size={30}/><span>Sem imagem de capa</span></div>}
+        <span className={styles.viewArticleCategory}>{post.category || "Notícia"}</span>
+      </div>
+      <article className={styles.viewArticleSheet}>
+        <div className={styles.viewArticleStatus}><StatusBadge status={post.status}/><span>Somente leitura</span></div>
+        <h1>{post.title}</h1>
+        <p className={styles.viewArticleExcerpt}>{post.excerpt || "Esta publicação ainda não possui um resumo editorial."}</p>
+        <div className={styles.viewArticleByline}>
+          <span className={styles.viewAuthor}>{post.authorImage ? <Image alt="" height={30} src={post.authorImage} unoptimized width={30}/> : <i aria-hidden="true"><AdminIcon name="document" size={14}/></i>}<strong>{post.authorName || "Não informado"}</strong></span>
+          <span>{post.publishedAt || "Data não definida"}</span>
+        </div>
+        <div className={styles.viewMarkdown}>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.contentMarkdown || "Nenhum conteúdo foi cadastrado para esta publicação."}</ReactMarkdown>
+        </div>
+      </article>
+    </main>
+
+    <aside className={styles.viewInspector} aria-label="Detalhes da publicação">
+      <section className={styles.viewInspectorSection}>
+        <header><span>PUBLICAÇÃO</span><h3>Detalhes</h3></header>
+        <div className={styles.viewInfoList}>
+          <ViewInfo label="Status">{statusLabel[post.status]}</ViewInfo>
+          <ViewInfo label="Slug">/{post.slug}</ViewInfo>
+          <ViewInfo label="Visível no site">{post.isPubliclyVisible ? "Sim" : "Não"}</ViewInfo>
+          <ViewInfo label="Exibir na Home">{post.featuredOnHome ? "Sim" : "Não"}</ViewInfo>
+          <ViewInfo label="Posição na Home">{post.homePosition || "—"}</ViewInfo>
+          <ViewInfo label="Atualização">{post.updatedAt || "—"}</ViewInfo>
+        </div>
       </section>
 
-      <aside className={styles.viewSidebar}>
-        <section className={styles.viewCard}>
-          <header className={styles.viewCardHeader}><div><span>PUBLICAÇÃO</span><h4>Distribuição</h4></div></header>
-          <div className={styles.viewInfoList}>
-            <div className={styles.viewInfoRow}><span>Visível no site</span><strong>{post.isPubliclyVisible ? "Sim" : "Não"}</strong></div>
-            <div className={styles.viewInfoRow}><span>Exibir na Home</span><strong>{post.featuredOnHome ? "Sim" : "Não"}</strong></div>
-            <div className={styles.viewInfoRow}><span>Posição na Home</span><strong>{post.homePosition || "—"}</strong></div>
-            <div className={styles.viewInfoRow}><span>Última atualização</span><strong>{post.updatedAt || "—"}</strong></div>
-          </div>
-        </section>
+      <section className={styles.viewInspectorSection}>
+        <header><span>ORGANIZAÇÃO</span><h3>Tags</h3></header>
+        {post.tags.length ? <div className={styles.viewChipList}>{post.tags.map((tag) => <span className={styles.viewChip} key={tag}>{tag}</span>)}</div> : <p className={styles.viewEmptyCopy}>Nenhuma tag vinculada.</p>}
+      </section>
 
-        <section className={styles.viewCard}>
-          <header className={styles.viewCardHeader}><div><span>ORGANIZAÇÃO</span><h4>Tags</h4></div></header>
-          {post.tags.length ? <div className={styles.viewChipList}>{post.tags.map((tag) => <span className={styles.viewChip} key={tag}>{tag}</span>)}</div> : <p className={styles.viewEmptyCopy}>Nenhuma tag vinculada.</p>}
-        </section>
-      </aside>
-    </div>
-
-    <div className={styles.viewLowerGrid}>
-      <section className={styles.viewCard}>
-        <header className={styles.viewCardHeader}><div><span>LINKS</span><h4>Redes relacionadas</h4></div></header>
+      <section className={styles.viewInspectorSection}>
+        <header><span>LINKS</span><h3>Redes relacionadas</h3></header>
         {socialLinks.length ? <div className={styles.viewLinkList}>{socialLinks.map(([platform, url]) => <a className={styles.viewLinkItem} href={url} key={platform} rel="noreferrer" target="_blank"><span>{platform}</span><strong>Abrir ↗</strong></a>)}</div> : <p className={styles.viewEmptyCopy}>Nenhum link relacionado cadastrado.</p>}
       </section>
 
-      <section className={styles.viewCard}>
-        <header className={styles.viewCardHeader}><div><span>SEO</span><h4>Metadados</h4></div></header>
+      <section className={styles.viewInspectorSection}>
+        <header><span>SEO</span><h3>Metadados</h3></header>
         <div className={styles.viewInfoList}>
-          <div className={styles.viewInfoRow}><span>Meta title</span><strong>{post.seoTitle || "Não definido"}</strong></div>
-          <div className={styles.viewInfoRow}><span>Canonical</span><strong>{post.canonicalUrl || "Não definido"}</strong></div>
+          <ViewInfo label="Meta title">{post.seoTitle || "Não definido"}</ViewInfo>
+          <ViewInfo label="Canonical">{post.canonicalUrl || "Não definido"}</ViewInfo>
         </div>
         <div className={styles.viewSeoText}><span>Meta description</span><p>{post.seoDescription || "Não definida"}</p></div>
       </section>
-    </div>
+    </aside>
   </div>;
+}
+
+function ContentViewDialog({
+  canEdit,
+  onClose,
+  onEdit,
+  post,
+}: {
+  canEdit: boolean;
+  onClose: () => void;
+  onEdit: () => void;
+  post: PostRecord;
+}) {
+  const [mounted, setMounted] = useState(false);
+  const dialogRef = useRef<HTMLElement>(null);
+
+  useEffect(() => { setMounted(true); }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const dialog = dialogRef.current;
+    const focusable = () => Array.from(dialog?.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],[tabindex="0"]') || []).filter((node) => node.getClientRects().length);
+    window.setTimeout(() => (focusable()[0] || dialog)?.focus(), 0);
+    const keydown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { event.preventDefault(); onClose(); return; }
+      if (event.key !== "Tab") return;
+      const nodes = focusable();
+      if (!nodes.length) { event.preventDefault(); dialog?.focus(); return; }
+      const first = nodes[0], last = nodes[nodes.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener("keydown", keydown);
+    return () => {
+      document.removeEventListener("keydown", keydown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mounted, onClose]);
+
+  if (!mounted) return null;
+
+  return createPortal(<div className={styles.viewBackdrop} onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }} role="presentation">
+    <section aria-labelledby="content-view-title" aria-modal="true" className={styles.viewDialog} ref={dialogRef} role="dialog" tabIndex={-1}>
+      <header className={styles.viewDialogHeader}>
+        <div><span>VISUALIZAÇÃO</span><h2 id="content-view-title">Prévia da publicação</h2><p>Confira o conteúdo como leitura, separado dos controles de criação e edição.</p></div>
+        <button aria-label="Fechar visualização" className={styles.modalClose} onClick={onClose} type="button">×</button>
+      </header>
+      <ContentView post={post}/>
+      <footer className={styles.viewDialogFooter}>
+        <div>{post.isPubliclyVisible ? <a className={styles.modalSecondary} href={`/noticias/${post.slug}`} rel="noreferrer" target="_blank"><AdminIcon name="eye" size={14}/>Abrir no site</a> : <span className={styles.viewPrivateHint}>Conteúdo ainda não está público.</span>}</div>
+        <div><button className={styles.modalSecondary} onClick={onClose} type="button">Fechar</button>{canEdit ? <button className={styles.modalPrimary} onClick={onEdit} type="button"><AdminIcon name="edit" size={14}/>Editar conteúdo</button> : null}</div>
+      </footer>
+    </section>
+  </div>, document.body);
 }
 
 function ContentEditorForm({
@@ -266,22 +323,20 @@ function ContentEditorForm({
   </>;
 }
 
-function ContentModal({
+function ContentEditorModal({
   canEdit,
   categories,
   media,
   mode,
   onClose,
-  onEdit,
   post,
   tags,
 }: {
   canEdit: boolean;
   categories: Option[];
   media: MediaOption[];
-  mode: ModalMode;
+  mode: "create" | "edit";
   onClose: () => void;
-  onEdit: () => void;
   post?: PostRecord;
   tags: Option[];
 }) {
@@ -293,15 +348,14 @@ function ContentModal({
     return () => { document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", keydown); };
   }, [onClose]);
 
-  if ((mode === "edit" || mode === "view") && !post) return null;
-  const title = mode === "create" ? "Criar conteúdo" : mode === "edit" ? "Editar conteúdo" : "Detalhes do conteúdo";
-  const eyebrow = mode === "create" ? "NOVO CONTEÚDO" : mode === "edit" ? "EDIÇÃO DE CONTEÚDO" : "VISUALIZAÇÃO";
-  const description = mode === "view" ? "Consulta consolidada da publicação. Nenhum campo pode ser alterado nesta visualização." : "Preencha todas as informações da publicação em um único fluxo contínuo.";
+  if (mode === "edit" && !post) return null;
+  const title = mode === "create" ? "Criar conteúdo" : "Editar conteúdo";
+  const eyebrow = mode === "create" ? "NOVO CONTEÚDO" : "EDIÇÃO DE CONTEÚDO";
 
   return <div className={styles.modalBackdrop} onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}>
-    <section aria-labelledby="content-modal-title" aria-modal="true" className={`${styles.modal} ${mode === "view" ? styles.viewModal : ""}`} role="dialog">
-      <header className={`${styles.modalHeader} ${mode === "view" ? styles.viewModalHeader : ""}`}><div><span>{eyebrow}</span><h2 id="content-modal-title">{title}</h2><p>{description}</p></div><button aria-label="Fechar modal" className={styles.modalClose} onClick={onClose} type="button">×</button></header>
-      {mode === "view" && post ? <><ContentView post={post}/><footer className={styles.modalFooter}>{post.isPubliclyVisible ? <a className={styles.modalSecondary} href={`/noticias/${post.slug}`} rel="noreferrer" target="_blank"><AdminIcon name="eye" size={14}/>Abrir no site</a> : null}<button className={styles.modalSecondary} onClick={onClose} type="button">Fechar</button>{canEdit ? <button className={styles.modalPrimary} onClick={onEdit} type="button"><AdminIcon name="edit" size={14}/>Editar conteúdo</button> : null}</footer></> : <ContentEditorForm canEdit={canEdit} categories={categories} initial={mode === "edit" ? post : undefined} media={media} mode={mode as "create" | "edit"} onClose={onClose} tags={tags}/>} 
+    <section aria-labelledby="content-modal-title" aria-modal="true" className={styles.modal} role="dialog">
+      <header className={styles.modalHeader}><div><span>{eyebrow}</span><h2 id="content-modal-title">{title}</h2><p>Preencha todas as informações da publicação em um único fluxo contínuo.</p></div><button aria-label="Fechar modal" className={styles.modalClose} onClick={onClose} type="button">×</button></header>
+      <ContentEditorForm canEdit={canEdit} categories={categories} initial={mode === "edit" ? post : undefined} media={media} mode={mode} onClose={onClose} tags={tags}/>
     </section>
   </div>;
 }
@@ -335,6 +389,9 @@ export default function PostManager({
 }) {
   const [modal, setModal] = useState<ModalState>(() => initialMode ? { mode: initialMode, postId: initialId } : null);
   const [actionMenu, setActionMenu] = useState<ActionMenuState>(null);
+  const [actionMenuPosition, setActionMenuPosition] = useState<ActionMenuPosition>(null);
+  const actionTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const actionMenuRef = useRef<HTMLDivElement | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const totalPages = Math.max(1, Math.ceil(posts.length / pageSize));
@@ -345,23 +402,37 @@ export default function PostManager({
   const actionPost = actionMenu ? posts.find((post) => post.id === actionMenu.postId) : undefined;
   const firstShown = posts.length ? startIndex + 1 : 0;
   const lastShown = Math.min(startIndex + visiblePosts.length, posts.length);
-  const changePageSize = (value: number) => { setActionMenu(null); setPageSize(value); setPage(1); };
+  const closeActionMenu = () => { setActionMenu(null); setActionMenuPosition(null); };
+  const changePageSize = (value: number) => { closeActionMenu(); setPageSize(value); setPage(1); };
 
   useEffect(() => {
-    const openModal = () => { setActionMenu(null); setModal({ mode: "create" }); };
+    const openModal = () => { closeActionMenu(); setModal({ mode: "create" }); };
     window.addEventListener("admin:new-content", openModal);
     return () => window.removeEventListener("admin:new-content", openModal);
   }, []);
 
+  useLayoutEffect(() => {
+    if (!actionMenu) return;
+    const trigger = actionTriggerRef.current;
+    const menu = actionMenuRef.current;
+    if (!trigger || !menu) return;
+    const position = positionFloatingMenu(trigger.getBoundingClientRect(), menu.getBoundingClientRect());
+    setActionMenuPosition(position);
+  }, [actionMenu]);
+
   useEffect(() => {
     if (!actionMenu) return;
-    const close = () => setActionMenu(null);
+    const close = () => closeActionMenu();
     const pointerDown = (event: PointerEvent) => {
       const target = event.target as Element | null;
       if (target?.closest("[data-content-action-menu], [data-content-action-trigger]")) return;
       close();
     };
-    const keydown = (event: KeyboardEvent) => { if (event.key === "Escape") close(); };
+    const keydown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      close();
+      window.setTimeout(() => actionTriggerRef.current?.focus(), 0);
+    };
     document.addEventListener("pointerdown", pointerDown);
     document.addEventListener("keydown", keydown);
     window.addEventListener("resize", close);
@@ -373,6 +444,18 @@ export default function PostManager({
       window.removeEventListener("scroll", close, true);
     };
   }, [actionMenu]);
+
+  const toggleActionMenu = (postId: string, trigger: HTMLButtonElement) => {
+    if (actionMenu?.postId === postId) { closeActionMenu(); return; }
+    actionTriggerRef.current = trigger;
+    setActionMenuPosition(null);
+    setActionMenu({ postId });
+  };
+
+  const closeViewModal = () => {
+    setModal(null);
+    window.setTimeout(() => actionTriggerRef.current?.focus(), 0);
+  };
 
   return <div className={styles.manager} data-testid="news-manager">
     {deleted ? <div className={styles.successNotice}>Conteúdo excluído com sucesso.</div> : null}
@@ -393,19 +476,19 @@ export default function PostManager({
             <td><StatusBadge status={post.status} /></td>
             <td><span className={styles.author}>{post.authorName || "—"}</span></td>
             <td><time className={styles.date}>{post.updatedAt}</time></td>
-            <td className={styles.actions}><button aria-controls={actionMenu?.postId === post.id ? "content-row-action-menu" : undefined} aria-expanded={actionMenu?.postId === post.id} aria-haspopup="menu" aria-label={`Ações de ${post.title}`} className={styles.actionTrigger} data-content-action-trigger onClick={(event) => { setActionMenu((current) => current?.postId === post.id ? null : { postId: post.id, ...getActionMenuPosition(event.currentTarget) }); }} type="button"><AdminIcon name="more" size={17}/></button></td>
+            <td className={styles.actions}><button aria-controls={actionMenu?.postId === post.id ? "content-row-action-menu" : undefined} aria-expanded={actionMenu?.postId === post.id} aria-haspopup="menu" aria-label={`Ações de ${post.title}`} className={styles.actionTrigger} data-content-action-trigger onClick={(event) => toggleActionMenu(post.id, event.currentTarget)} type="button"><AdminIcon name="more" size={17}/></button></td>
           </tr>)}</tbody>
         </table></div>
-        <footer className={styles.pagination}><div className={styles.paginationSummary}><strong>{posts.length}</strong><span>registros</span><i aria-hidden="true" /><span>{firstShown}–{lastShown} exibidos</span></div><div className={styles.paginationNav} aria-label="Paginação"><button aria-label="Primeira página" disabled={safePage === 1} onClick={() => { setActionMenu(null); setPage(1); }} type="button">«</button><button aria-label="Página anterior" disabled={safePage === 1} onClick={() => { setActionMenu(null); setPage((current) => clampPage(current - 1, totalPages)); }} type="button">‹</button><span>Página <strong>{safePage}</strong> de <strong>{totalPages}</strong></span><button aria-label="Próxima página" disabled={safePage === totalPages} onClick={() => { setActionMenu(null); setPage((current) => clampPage(current + 1, totalPages)); }} type="button">›</button><button aria-label="Última página" disabled={safePage === totalPages} onClick={() => { setActionMenu(null); setPage(totalPages); }} type="button">»</button></div><label className={styles.pageSize}><span>Por página</span><select aria-label="Registros por página" onChange={(event) => changePageSize(Number(event.target.value))} value={pageSize}><option value={10}>10</option><option value={20}>20</option><option value={50}>50</option></select></label></footer>
+        <footer className={styles.pagination}><div className={styles.paginationSummary}><strong>{posts.length}</strong><span>registros</span><i aria-hidden="true" /><span>{firstShown}–{lastShown} exibidos</span></div><div className={styles.paginationNav} aria-label="Paginação"><button aria-label="Primeira página" disabled={safePage === 1} onClick={() => { closeActionMenu(); setPage(1); }} type="button">«</button><button aria-label="Página anterior" disabled={safePage === 1} onClick={() => { closeActionMenu(); setPage((current) => clampPage(current - 1, totalPages)); }} type="button">‹</button><span>Página <strong>{safePage}</strong> de <strong>{totalPages}</strong></span><button aria-label="Próxima página" disabled={safePage === totalPages} onClick={() => { closeActionMenu(); setPage((current) => clampPage(current + 1, totalPages)); }} type="button">›</button><button aria-label="Última página" disabled={safePage === totalPages} onClick={() => { closeActionMenu(); setPage(totalPages); }} type="button">»</button></div><label className={styles.pageSize}><span>Por página</span><select aria-label="Registros por página" onChange={(event) => changePageSize(Number(event.target.value))} value={pageSize}><option value={10}>10</option><option value={20}>20</option><option value={50}>50</option></select></label></footer>
       </div> : <div className={styles.empty}><span className={styles.emptyIcon}><AdminIcon name="document" size={20} /></span><strong>Nenhum conteúdo cadastrado.</strong><span>As publicações editoriais aparecerão aqui assim que forem criadas.</span><button className="adminPrimaryCompact" onClick={() => setModal({ mode: "create" })} type="button">Criar primeiro conteúdo</button></div>}
     </section>
 
-    {actionMenu && actionPost && typeof document !== "undefined" ? createPortal(<div aria-label={`Ações de ${actionPost.title}`} className={styles.actionMenu} data-content-action-menu id="content-row-action-menu" role="menu" style={{ position: "fixed", top: actionMenu.top, left: actionMenu.left, right: "auto", zIndex: 900 }}>
-      <button onClick={() => { setActionMenu(null); setModal({ mode: "view", postId: actionPost.id }); }} role="menuitem" type="button"><AdminIcon name="eye" size={14}/>Ver</button>
-      {canEdit && !preview ? <button onClick={() => { setActionMenu(null); setModal({ mode: "edit", postId: actionPost.id }); }} role="menuitem" type="button"><AdminIcon name="edit" size={14}/>Editar</button> : <button aria-disabled="true" className={styles.disabledAction} disabled role="menuitem" type="button"><AdminIcon name="edit" size={14}/>Editar</button>}
-      {canDelete && !preview ? <form action={deletePostAction} onSubmit={(event) => { const confirmed = window.confirm(`Excluir definitivamente “${actionPost.title}”?`); if (!confirmed) { event.preventDefault(); return; } setActionMenu(null); }}><input name="id" type="hidden" value={actionPost.id}/><button className={styles.deleteAction} role="menuitem" type="submit"><AdminIcon name="trash" size={14}/>Excluir</button></form> : <button aria-disabled="true" className={`${styles.deleteAction} ${styles.disabledAction}`} disabled role="menuitem" type="button"><AdminIcon name="trash" size={14}/>Excluir</button>}
+    {actionMenu && actionPost && typeof document !== "undefined" ? createPortal(<div aria-label={`Ações de ${actionPost.title}`} className={styles.actionMenu} data-content-action-menu id="content-row-action-menu" ref={actionMenuRef} role="menu" style={{ position: "fixed", top: actionMenuPosition?.top ?? 0, left: actionMenuPosition?.left ?? 0, visibility: actionMenuPosition ? "visible" : "hidden", zIndex: 900 }}>
+      <button onClick={() => { closeActionMenu(); setModal({ mode: "view", postId: actionPost.id }); }} role="menuitem" type="button"><AdminIcon name="eye" size={14}/>Ver</button>
+      {canEdit && !preview ? <button onClick={() => { closeActionMenu(); setModal({ mode: "edit", postId: actionPost.id }); }} role="menuitem" type="button"><AdminIcon name="edit" size={14}/>Editar</button> : <button aria-disabled="true" className={styles.disabledAction} disabled role="menuitem" type="button"><AdminIcon name="edit" size={14}/>Editar</button>}
+      {canDelete && !preview ? <form action={deletePostAction} onSubmit={(event) => { const confirmed = window.confirm(`Excluir definitivamente “${actionPost.title}”?`); if (!confirmed) { event.preventDefault(); return; } closeActionMenu(); }}><input name="id" type="hidden" value={actionPost.id}/><button className={styles.deleteAction} role="menuitem" type="submit"><AdminIcon name="trash" size={14}/>Excluir</button></form> : <button aria-disabled="true" className={`${styles.deleteAction} ${styles.disabledAction}`} disabled role="menuitem" type="button"><AdminIcon name="trash" size={14}/>Excluir</button>}
     </div>, document.body) : null}
 
-    {modal ? <ContentModal canEdit={canEdit && !preview} categories={categories} key={`${modal.mode}-${modal.postId || "new"}`} media={media} mode={modal.mode} onClose={() => setModal(null)} onEdit={() => selectedPost && setModal({ mode: "edit", postId: selectedPost.id })} post={selectedPost} tags={tags}/> : null}
+    {modal?.mode === "view" && selectedPost ? <ContentViewDialog canEdit={canEdit && !preview} key={`view-${selectedPost.id}`} onClose={closeViewModal} onEdit={() => setModal({ mode: "edit", postId: selectedPost.id })} post={selectedPost}/> : modal ? <ContentEditorModal canEdit={canEdit && !preview} categories={categories} key={`${modal.mode}-${modal.postId || "new"}`} media={media} mode={modal.mode as "create" | "edit"} onClose={() => setModal(null)} post={selectedPost} tags={tags}/> : null}
   </div>;
 }
