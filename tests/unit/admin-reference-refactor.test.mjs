@@ -18,6 +18,7 @@ const mediaPage = read("app/admin/(protected)/media/page.tsx");
 const mediaKit = read("app/admin/(protected)/media-kit/page.tsx");
 const mediaKitStyles = read("app/admin/(protected)/media-kit/MediaKit.module.css");
 const settings = read("app/admin/(protected)/settings/page.tsx");
+const settingsTabs = read("app/admin/(protected)/settings/SettingsTabs.tsx");
 const settingsStyles = read("app/admin/(protected)/settings/Settings.module.css");
 const users = read("app/admin/(protected)/users/page.tsx");
 const integrations = read("app/admin/(protected)/settings/lander-records/page.tsx");
@@ -28,7 +29,7 @@ test("shared admin chrome matches the Portal Lander visual contract", () => {
   assert.match(primitives, /\.adminTabs/);
   assert.match(portalContract, /\.adminMain \.admin-toolbar/);
   assert.match(portalContract, /table:not\(\.tableview-freeform\)/);
-  assert.match(portalContract, /--ui-table-row-height:64px/);
+  assert.match(portalContract, /--ui-table-row-height:48px/);
   assert.match(portalContract, /#e30613/);
 });
 
@@ -36,7 +37,7 @@ test("sidebar exposes Configurações once while its six areas stay internal tab
   assert.equal((navigation.match(/label: "Configurações"/g) || []).length, 1);
   assert.match(navigation, /activePrefixes: \["\/admin\/settings", "\/admin\/users"\]/);
   assert.doesNotMatch(navigation, /label: "Empresa"|label: "Identidade do Site"|label: "Automações"|label: "Segurança"|label: "Integrações"|label: "Usuários"/);
-  for (const tab of ["Empresa", "Identidade do Site", "Automações", "Segurança", "Integrações", "Usuários"]) assert.match(settings, new RegExp(tab));
+  for (const tab of ["Empresa", "Identidade do site", "Automações", "Segurança", "Integrações", "Usuários"]) assert.match(settingsTabs, new RegExp(tab));
 });
 
 test("major modules retain one contextual shell without fake global capabilities", () => {
@@ -68,13 +69,12 @@ test("content uses the canonical modal workflow, floating actions and Lander Rec
 test("artists keep real routes while sharing the Portal catalog geometry", () => {
   assert.match(artists, /<details>/);
   assert.match(artists, /name="more"/);
-  assert.match(artists, /admin-toolbar/);
-  assert.match(artists, /tableview-surface/);
-  assert.match(artists, /table-card/);
-  assert.match(artists, /<table>/);
+  assert.match(artists, /styles\.toolbar/);
+  assert.match(artists, /styles\.tableSurface/);
+  assert.match(artists, /<table className=\{styles\.artistTable\}/);
   assert.match(artists, /\/admin\/artists\/\$\{artist\.id\}/);
   assert.match(artists, /\/artistas\/\$\{artist\.slug\}/);
-  assert.match(artistStyles, /height:64px/);
+  assert.match(artistStyles, /\.artistTable th\{height:38px/);
   assert.match(artistFormStyles, /grid-template-columns:minmax\(360px,420px\) minmax\(0,1fr\)/);
   assert.match(artistFormStyles, /position:sticky;top:78px/);
 });
@@ -98,10 +98,11 @@ test("media library keeps real server actions, permission-aware controls and pag
 test("media kit keeps editor plus sticky live preview while reading existing project data", () => {
   assert.match(mediaKit, /getDb\(\)/);
   assert.match(mediaKit, /Identidade e apresentação/);
-  assert.match(mediaKit, /Inventário publicitário/);
-  assert.match(mediaKit, /Newsletter e presença digital/);
+  assert.match(mediaKit, /Audiência/);
+  assert.match(mediaKit, /Inventário editorial/);
   assert.match(mediaKit, /Contato comercial/);
-  assert.match(mediaKit, /LIVE PREVIEW/);
+  assert.match(mediaKit, /aria-label="Prévia visual do Mídia Kit"/);
+  assert.match(mediaKit, /Dados reais disponíveis/);
   assert.match(mediaKit, /Nenhum dado real de audiência disponível/);
   assert.match(mediaKitStyles, /position:sticky/);
 });
@@ -112,8 +113,8 @@ test("settings internal tabs use scoped mutations and preserve RBAC", () => {
   assert.match(settings, /upsertSocialLink/);
   assert.match(settings, /upsertContactTopic/);
   assert.doesNotMatch(settings, /updateSiteSettings/);
-  assert.match(settingsStyles, /gap:24px/);
-  assert.match(settingsStyles, /min-height:66px/);
+  assert.match(settingsStyles, /\.page,\.settingsWorkspace\{display:grid;gap:14px/);
+  assert.match(settingsStyles, /\.cardHeader\{[^}]*min-height:54px/);
   assert.match(users, /requireAdmin\("owner"\)/);
   assert.match(users, /createAdminUser/);
   assert.match(users, /updateAdminUser/);
