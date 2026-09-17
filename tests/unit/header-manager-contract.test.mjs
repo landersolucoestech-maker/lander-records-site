@@ -27,7 +27,9 @@ test("Header and Footer consume the configured CMS logo with a structural fallba
 test("Header CTA remains an explicit structural frontend contract", () => {
   assert.match(publicHeader, /href="\/contato">Quero Contratar/);
   assert.match(mobileHeader, /href="\/contato">Quero Contratar/);
-  assert.match(manager, /HEADER CTA CONFIGURATION — BACKEND DEFERRED/);
+  assert.match(manager, /CTA principal/);
+  assert.match(manager, /Definido no frontend/);
+  assert.match(manager, /A configuração do CTA ainda não possui persistência no CMS/);
 });
 
 test("Header primary menu is automatic, ordered upstream and root-only in public consumers", () => {
