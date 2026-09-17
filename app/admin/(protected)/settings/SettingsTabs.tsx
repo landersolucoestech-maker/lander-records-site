@@ -10,7 +10,7 @@ type Tab = { key: TabKey; label: string; icon: IconName };
 
 const tabs: Tab[] = [
   { key: "company", label: "Empresa", icon: "home" },
-  { key: "identity", label: "Identidade do Site", icon: "media" },
+  { key: "identity", label: "Identidade do site", icon: "media" },
   { key: "automations", label: "Automações", icon: "activity" },
   { key: "security", label: "Segurança", icon: "shield" },
   { key: "integrations", label: "Integrações", icon: "integration" },
