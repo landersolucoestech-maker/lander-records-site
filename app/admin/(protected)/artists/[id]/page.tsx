@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { requireAdmin } from "../../../../../../lib/auth";
+import { requireAdmin } from "../../../../../lib/auth";
 import ArtistForm from "../ArtistForm";
 import { loadArtistEditor, loadArtistOptions } from "../editor-data";
 
