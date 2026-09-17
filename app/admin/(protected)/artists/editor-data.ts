@@ -76,7 +76,6 @@ export async function loadArtistEditor(id: string) {
     destinationIds: destinationRows.map((item) => item.destinationId),
     metrics: metricMap,
     links: linkMap,
-    pageLink: profile?.pageLink || `/artistas/${artist.slug}`,
     hireTitle: profile?.hireTitle || "Contrate",
     hireText: profile?.hireText || "",
     hireButtonLabel: profile?.hireButtonLabel || "Quero contratar",
