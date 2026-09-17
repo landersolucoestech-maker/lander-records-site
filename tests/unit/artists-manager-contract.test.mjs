@@ -9,14 +9,14 @@ const formStyles = fs.readFileSync(new URL("../../app/admin/(protected)/artists/
 const preview = fs.readFileSync(new URL("../../app/cms-preview/AdminPreview.tsx", import.meta.url), "utf8");
 
 test("Artists manager matches the approved table-first reference structure", () => {
-  assert.match(manager, /adminDashboardHeading/);
-  assert.match(manager, /Gerencie os artistas do seu selo, edite informações, discografia e conteúdos relacionados/);
-  assert.match(manager, /Novo artista/);
+  assert.doesNotMatch(manager, /adminDashboardHeading/);
+  assert.doesNotMatch(manager, /Gerencie os artistas do seu selo, edite informações, discografia e conteúdos relacionados/);
+  assert.doesNotMatch(manager, /Novo artista/);
   assert.match(manager, /styles\.tableSurface/);
   assert.match(manager, /Buscar artistas\.\.\./);
-  assert.match(manager, />Status</);
-  assert.match(manager, />Gênero</);
-  assert.match(manager, />Ordenar por</);
+  assert.match(manager, /className="srOnly">Status<\/span>/);
+  assert.match(manager, /className="srOnly">Gênero<\/span>/);
+  assert.match(manager, /className="srOnly">Ordenar por<\/span>/);
   assert.match(manager, /Mais recentes/);
   assert.match(manager, /Lançamentos/);
   assert.match(manager, /Visualizações/);
