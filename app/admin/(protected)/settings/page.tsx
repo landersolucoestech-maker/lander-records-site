@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { asc, eq } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
+import { hasMinimumRole } from "../../../../lib/auth/policy";
 import { getDb } from "../../../../lib/db";
 import { contactTopics, mediaAssets, siteSettings, socialLinks } from "../../../../lib/db/schema";
 import { updateCompanySettings, updateIdentitySettings, upsertContactTopic, upsertSocialLink } from "../../actions";
@@ -13,7 +14,10 @@ export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
   const session = await requireAdmin();
-  const canManageUsers = session.user.role === "owner";
+  const persistent = session.source === "session";
+  const canEdit = persistent && hasMinimumRole(session.user.role, "editor");
+  const canAdmin = persistent && hasMinimumRole(session.user.role, "admin");
+  const canManageUsers = persistent && session.user.role === "owner";
   const db = getDb();
   const [settingsRows, socials, topics, media] = await Promise.all([
     db.select().from(siteSettings).limit(1),
@@ -27,22 +31,22 @@ export default async function SettingsPage() {
 
   const company = <div className={styles.tabPanel}>
     <section className={styles.card}>
-      <div className={styles.cardHeader}><div><h2>Informações da empresa</h2><p>Dados institucionais e de contato exibidos pelo site da Lander Records.</p></div></div>
+      <div className={styles.cardHeader}><div><h2>Informações da empresa</h2><p>Dados institucionais e de contato exibidos pelo site da Lander Records.</p></div>{!canAdmin ? <span className="adminBadge">Somente leitura</span> : null}</div>
       <div className={styles.cardBody}><form action={updateCompanySettings} className={styles.form}>
         <div className={styles.grid}>
-          <label className={styles.field}><span>E-mail</span><input name="contactEmail" type="email" defaultValue={settings.contactEmail}/></label>
-          <label className={styles.field}><span>Telefone</span><input name="contactPhone" defaultValue={settings.contactPhone}/></label>
-          <label className={styles.field}><span>Localização</span><input name="location" defaultValue={settings.location}/></label>
-          <label className={styles.field}><span>Horário</span><input name="hours" defaultValue={settings.hours}/></label>
-          <label className={`${styles.field} ${styles.fieldWide}`}><span>Endereço</span><textarea name="address" defaultValue={settings.address}/></label>
-        </div><div className={styles.formActions}><button className="adminButton primary" type="submit">Salvar alterações</button></div>
+          <label className={styles.field}><span>E-mail</span><input disabled={!canAdmin} name="contactEmail" type="email" defaultValue={settings.contactEmail}/></label>
+          <label className={styles.field}><span>Telefone</span><input disabled={!canAdmin} name="contactPhone" defaultValue={settings.contactPhone}/></label>
+          <label className={styles.field}><span>Localização</span><input disabled={!canAdmin} name="location" defaultValue={settings.location}/></label>
+          <label className={styles.field}><span>Horário</span><input disabled={!canAdmin} name="hours" defaultValue={settings.hours}/></label>
+          <label className={`${styles.field} ${styles.fieldWide}`}><span>Endereço</span><textarea disabled={!canAdmin} name="address" defaultValue={settings.address}/></label>
+        </div>{canAdmin ? <div className={styles.formActions}><button className="adminButton primary" type="submit">Salvar alterações</button></div> : null}
       </form></div>
     </section>
 
     <section className={styles.card}>
-      <div className={styles.cardHeader}><div><h2>Assuntos do formulário</h2><p>Os identificadores e destinos seguem o contrato atual do formulário público.</p></div></div>
-      <div className={styles.cardBody}><div className={styles.stack}>{topics.map((topic) => <form action={upsertContactTopic} className={styles.row} key={topic.id}><input type="hidden" name="id" value={topic.id}/><input aria-label="Nome" name="name" defaultValue={topic.name}/><input aria-label="Slug" name="slug" defaultValue={topic.slug}/><input aria-label="Identificador da integração" name="saasType" defaultValue={topic.saasType}/><input aria-label="Posição" name="position" type="number" defaultValue={topic.position}/><label className={styles.check}><input name="active" type="checkbox" defaultChecked={topic.active}/> Ativo</label><button className="adminButton" type="submit">Salvar</button></form>)}
-        <form action={upsertContactTopic} className={`${styles.row} ${styles.newRow}`}><input name="name" placeholder="Novo assunto" required/><input name="slug" placeholder="slug"/><input name="saasType" placeholder="lead.general"/><input name="position" type="number" defaultValue={0}/><label className={styles.check}><input name="active" type="checkbox" defaultChecked/> Ativo</label><button className="adminButton primary" type="submit">Adicionar</button></form></div></div>
+      <div className={styles.cardHeader}><div><h2>Assuntos do formulário</h2><p>Os identificadores e destinos seguem o contrato atual do formulário público.</p></div>{!canEdit ? <span className="adminBadge">Somente leitura</span> : null}</div>
+      <div className={styles.cardBody}><div className={styles.stack}>{topics.map((topic) => <form action={upsertContactTopic} className={styles.row} key={topic.id}><input type="hidden" name="id" value={topic.id}/><input aria-label="Nome" disabled={!canEdit} name="name" defaultValue={topic.name}/><input aria-label="Slug" disabled={!canEdit} name="slug" defaultValue={topic.slug}/><input aria-label="Identificador da integração" disabled={!canEdit} name="saasType" defaultValue={topic.saasType}/><input aria-label="Posição" disabled={!canEdit} name="position" type="number" defaultValue={topic.position}/><label className={styles.check}><input disabled={!canEdit} name="active" type="checkbox" defaultChecked={topic.active}/> Ativo</label>{canEdit ? <button className="adminButton" type="submit">Salvar</button> : <span className="adminBadge">Leitura</span>}</form>)}
+        {canEdit ? <form action={upsertContactTopic} className={`${styles.row} ${styles.newRow}`}><input name="name" placeholder="Novo assunto" required/><input name="slug" placeholder="slug"/><input name="saasType" placeholder="lead.general"/><input name="position" type="number" defaultValue={0}/><label className={styles.check}><input name="active" type="checkbox" defaultChecked/> Ativo</label><button className="adminButton primary" type="submit">Adicionar</button></form> : null}</div></div>
     </section>
   </div>;
 
@@ -58,24 +62,24 @@ export default async function SettingsPage() {
       </section>
 
       <section className={styles.card}>
-        <div className={styles.cardHeader}><div><h2>Marca e SEO padrão</h2><p>Configuração central da identidade do site.</p></div></div>
+        <div className={styles.cardHeader}><div><h2>Marca e SEO padrão</h2><p>Configuração central da identidade do site.</p></div>{!canAdmin ? <span className="adminBadge">Somente leitura</span> : null}</div>
         <div className={styles.cardBody}><form action={updateIdentitySettings} className={styles.form}>
           <div className={styles.grid}>
-            <label className={styles.field}><span>Marca</span><input name="brandName" defaultValue={settings.brandName}/></label>
-            <label className={styles.field}><span>Tagline</span><input name="tagline" defaultValue={settings.tagline}/></label>
-            <label className={styles.field}><span>Logo</span><select name="logoMediaId" defaultValue={settings.logoMediaId || ""}><option value="">Logo estática atual</option>{media.map((item)=><option key={item.id} value={item.id}>{item.originalFilename}</option>)}</select></label>
-            <label className={styles.field}><span>Imagem social padrão</span><select name="socialImageMediaId" defaultValue={settings.socialImageMediaId || ""}><option value="">Nenhuma</option>{media.map((item)=><option key={item.id} value={item.id}>{item.originalFilename}</option>)}</select></label>
-            <label className={styles.field}><span>Título SEO padrão</span><input name="defaultSeoTitle" defaultValue={settings.defaultSeoTitle}/></label>
-            <label className={`${styles.field} ${styles.fieldWide}`}><span>Descrição SEO padrão</span><textarea name="defaultSeoDescription" defaultValue={settings.defaultSeoDescription}/></label>
-          </div><div className={styles.formActions}><button className="adminButton primary" type="submit">Salvar identidade</button></div>
+            <label className={styles.field}><span>Marca</span><input disabled={!canAdmin} name="brandName" defaultValue={settings.brandName}/></label>
+            <label className={styles.field}><span>Tagline</span><input disabled={!canAdmin} name="tagline" defaultValue={settings.tagline}/></label>
+            <label className={styles.field}><span>Logo</span><select disabled={!canAdmin} name="logoMediaId" defaultValue={settings.logoMediaId || ""}><option value="">Logo estática atual</option>{media.map((item)=><option key={item.id} value={item.id}>{item.originalFilename}</option>)}</select></label>
+            <label className={styles.field}><span>Imagem social padrão</span><select disabled={!canAdmin} name="socialImageMediaId" defaultValue={settings.socialImageMediaId || ""}><option value="">Nenhuma</option>{media.map((item)=><option key={item.id} value={item.id}>{item.originalFilename}</option>)}</select></label>
+            <label className={styles.field}><span>Título SEO padrão</span><input disabled={!canAdmin} name="defaultSeoTitle" defaultValue={settings.defaultSeoTitle}/></label>
+            <label className={`${styles.field} ${styles.fieldWide}`}><span>Descrição SEO padrão</span><textarea disabled={!canAdmin} name="defaultSeoDescription" defaultValue={settings.defaultSeoDescription}/></label>
+          </div>{canAdmin ? <div className={styles.formActions}><button className="adminButton primary" type="submit">Salvar identidade</button></div> : null}
         </form></div>
       </section>
     </div>
 
     <section className={styles.card}>
-      <div className={styles.cardHeader}><div><h2>Redes sociais</h2><p>Links públicos mantidos na fonte de dados oficial do site.</p></div></div>
-      <div className={styles.cardBody}><div className={styles.stack}>{socials.map((social) => <form action={upsertSocialLink} className={styles.row} key={social.id}><input type="hidden" name="id" value={social.id}/><input aria-label="Plataforma" name="platform" defaultValue={social.platform}/><input aria-label="Rótulo" name="label" defaultValue={social.label}/><input aria-label="URL" name="url" type="url" defaultValue={social.url}/><input aria-label="Posição" name="position" type="number" defaultValue={social.position}/><label className={styles.check}><input name="active" type="checkbox" defaultChecked={social.active}/> Ativa</label><button className="adminButton" type="submit">Salvar</button></form>)}
-        <form action={upsertSocialLink} className={`${styles.row} ${styles.newRow}`}><input name="platform" placeholder="instagram" required/><input name="label" placeholder="Instagram" required/><input name="url" type="url" placeholder="https://..."/><input name="position" type="number" defaultValue={0}/><label className={styles.check}><input name="active" type="checkbox" defaultChecked/> Ativa</label><button className="adminButton primary" type="submit">Adicionar</button></form></div></div>
+      <div className={styles.cardHeader}><div><h2>Redes sociais</h2><p>Links públicos mantidos na fonte de dados oficial do site.</p></div>{!canEdit ? <span className="adminBadge">Somente leitura</span> : null}</div>
+      <div className={styles.cardBody}><div className={styles.stack}>{socials.map((social) => <form action={upsertSocialLink} className={styles.row} key={social.id}><input type="hidden" name="id" value={social.id}/><input aria-label="Plataforma" disabled={!canEdit} name="platform" defaultValue={social.platform}/><input aria-label="Rótulo" disabled={!canEdit} name="label" defaultValue={social.label}/><input aria-label="URL" disabled={!canEdit} name="url" type="url" defaultValue={social.url}/><input aria-label="Posição" disabled={!canEdit} name="position" type="number" defaultValue={social.position}/><label className={styles.check}><input disabled={!canEdit} name="active" type="checkbox" defaultChecked={social.active}/> Ativa</label>{canEdit ? <button className="adminButton" type="submit">Salvar</button> : <span className="adminBadge">Leitura</span>}</form>)}
+        {canEdit ? <form action={upsertSocialLink} className={`${styles.row} ${styles.newRow}`}><input name="platform" placeholder="instagram" required/><input name="label" placeholder="Instagram" required/><input name="url" type="url" placeholder="https://..."/><input name="position" type="number" defaultValue={0}/><label className={styles.check}><input name="active" type="checkbox" defaultChecked/> Ativa</label><button className="adminButton primary" type="submit">Adicionar</button></form> : null}</div></div>
     </section>
   </div>;
 
@@ -86,7 +90,7 @@ export default async function SettingsPage() {
   </div></div></section>;
 
   const security = <section className={styles.card}><div className={styles.cardHeader}><div><h2>Segurança da conta</h2><p>Autenticação, sessão e permissões protegidas pelos contratos atuais.</p></div></div><div className={styles.cardBody}><div className={styles.securityGrid}>
-    <div className={styles.securityBox}><div><strong>Alterar senha</strong><small>Atualize sua credencial usando o fluxo autenticado existente.</small></div><Link className="adminButton" href="/admin/change-password">Alterar senha</Link></div>
+    <div className={styles.securityBox}><div><strong>Alterar senha</strong><small>Atualize sua credencial usando o fluxo autenticado existente.</small></div>{persistent ? <Link className="adminButton" href="/admin/change-password">Alterar senha</Link> : <span className="adminBadge">Somente leitura</span>}</div>
     <div className={styles.securityBox}><div><strong>Sessão atual</strong><small>{session.user.email} · papel {session.user.role}</small></div><span className={styles.statusConnected}>Ativa</span></div>
     <div className={styles.securityBox}><div><strong>Controle de acesso</strong><small>RBAC aplicado no servidor em todas as mutações administrativas.</small></div><span className="adminBadge live">Protegido</span></div>
     <div className={styles.securityBox}><div><strong>Ambiente</strong><small>A prévia de desenvolvimento permanece isolada das mutações persistentes.</small></div><span className="adminBadge">Bloqueio seguro</span></div>
