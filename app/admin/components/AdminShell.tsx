@@ -23,6 +23,7 @@ type ModuleHeaderAction = {
   event?: "admin:new-content" | "admin:add-media";
   icon?: IconName;
   external?: boolean;
+  requiresEdit?: boolean;
 };
 
 type ModuleHeader = {
@@ -44,14 +45,13 @@ function moduleHeader(pathname: string, preview: boolean): ModuleHeader | null {
   }
 
   if (starts("posts")) {
-    if (path === `${root}/posts`) return { title: "Conteúdos", description: "Gerencie publicações e rascunhos editoriais da Lander Records em um único fluxo.", action: { label: "Novo conteúdo", event: "admin:new-content", icon: "plus" } };
-    if (path.endsWith("/new")) return { title: "Novo conteúdo", description: "Crie uma publicação usando a estrutura editorial e a prévia visual da Lander Records.", back: { label: "Conteúdos", href: preview ? `${root}/posts` : "/admin/posts" } };
+    if (path === `${root}/posts`) return { title: "Conteúdos", description: "Gerencie publicações e rascunhos editoriais da Lander Records em um único fluxo.", action: { label: "Novo conteúdo", event: "admin:new-content", icon: "plus", requiresEdit: true } };
     if (path.endsWith("/view")) return { title: "Visualizar conteúdo", description: "Consulte a publicação preservando o mesmo contexto visual do módulo editorial.", back: { label: "Conteúdos", href: preview ? `${root}/posts` : "/admin/posts" } };
     return { title: "Editar conteúdo", description: "Edite publicação, mídia, autoria, organização e SEO com prévia em tempo real.", back: { label: "Conteúdos", href: preview ? `${root}/posts` : "/admin/posts" } };
   }
 
   if (starts("artists")) {
-    if (path === `${root}/artists`) return { title: "Artistas", description: "Gerencie artistas, perfis, publicação e conteúdos relacionados em uma única área.", action: { label: "Novo artista", href: preview ? `${root}/artists` : "/admin/artists/new", icon: "plus" } };
+    if (path === `${root}/artists`) return { title: "Artistas", description: "Gerencie artistas, perfis, publicação e conteúdos relacionados em uma única área.", action: { label: "Novo artista", href: preview ? `${root}/artists` : "/admin/artists/new", icon: "plus", requiresEdit: true } };
     if (path.endsWith("/new")) return { title: "Novo artista", description: "Cadastre identidade, mídias, plataformas, destinos e metadados do artista.", back: { label: "Artistas", href: preview ? `${root}/artists` : "/admin/artists" } };
     if (path.endsWith("/view")) return { title: "Visualizar artista", description: "Consulte o perfil administrativo e a presença pública do artista.", back: { label: "Artistas", href: preview ? `${root}/artists` : "/admin/artists" } };
     return { title: "Editar artista", description: "Configure identidade, publicação, integrações, mídia e conteúdo público com prévia em tempo real.", back: { label: "Artistas", href: preview ? `${root}/artists` : "/admin/artists" } };
@@ -59,13 +59,12 @@ function moduleHeader(pathname: string, preview: boolean): ModuleHeader | null {
 
   if (starts("media")) return {
     title: "Mídias",
-    description: "Organize a biblioteca de arquivos, metadados e ciclo de vida dos assets do site.",
-    action: preview ? undefined : { label: "Adicionar mídia", event: "admin:add-media", icon: "upload" },
+    description: "Organize a biblioteca de arquivos, metadados e ciclo de vida das mídias do site.",
+    action: preview ? undefined : { label: "Adicionar mídia", event: "admin:add-media", icon: "upload", requiresEdit: true },
   };
 
   if (starts("pages")) {
-    if (path === `${root}/pages`) return { title: "Páginas", description: "Gerencie páginas e configure cada seção com edição e prévia em tempo real.", action: { label: "Criar página", href: preview ? `${root}/pages` : "/admin/pages/new", icon: "plus" } };
-    if (path.endsWith("/new")) return { title: "Criar página", description: "Crie uma página usando a estrutura e os contratos atuais do projeto.", back: { label: "Páginas", href: preview ? `${root}/pages` : "/admin/pages" } };
+    if (path === `${root}/pages`) return { title: "Páginas", description: "Gerencie as páginas existentes e configure cada seção com edição e prévia em tempo real." };
     if (path.endsWith("/view")) return { title: "Visualizar página", description: "Consulte a estrutura administrativa e o destino público da página.", back: { label: "Páginas", href: preview ? `${root}/pages` : "/admin/pages" } };
     return { title: "Configurar página", description: "Edite seções e conteúdo usando o workbench visual canônico da Lander Records.", back: { label: "Páginas", href: preview ? `${root}/pages` : "/admin/pages" } };
   }
@@ -73,7 +72,7 @@ function moduleHeader(pathname: string, preview: boolean): ModuleHeader | null {
   if (starts("media-kit")) return {
     title: "Mídia Kit",
     description: "Edite a apresentação comercial e acompanhe as informações que compõem o material institucional.",
-    action: { label: "Editar dados de origem", href: preview ? `${root}/settings` : "/admin/settings", icon: "edit" },
+    action: { label: "Editar dados de origem", href: preview ? `${root}/settings` : "/admin/settings", icon: "edit", requiresEdit: true },
   };
   if (starts("settings/lander-records") || (preview && starts("integrations"))) return { title: "Integrações", description: "Gerencie conexões externas, estado de sincronização e fontes de dados sem expor credenciais no cliente." };
   if (starts("settings")) return { title: "Configurações", description: "Gerencie identidade, preferências, segurança e integrações em uma experiência unificada." };
@@ -83,9 +82,16 @@ function moduleHeader(pathname: string, preview: boolean): ModuleHeader | null {
   if (starts("header")) return { title: "Cabeçalho", description: "Configure os elementos estruturais do cabeçalho público." };
   if (starts("post-categories") || starts("categories")) return { title: "Categorias", description: "Gerencie as categorias usadas na organização editorial." };
   if (starts("artist-categories")) return { title: "Categorias de artistas", description: "Gerencie classificações e filtros usados no catálogo de artistas." };
-  if (starts("releases")) return { title: "Lançamentos", description: "Gerencie lançamentos musicais e seus destinos públicos." };
+  if (starts("releases")) return { title: "Lançamentos", description: "A fonte oficial dos Últimos Lançamentos é a playlist do Spotify configurada em Integrações." };
   if (starts("audit")) return { title: "Auditoria", description: "Consulte eventos administrativos e histórico de alterações." };
   return null;
+}
+
+function roleLabel(role: AdminRole) {
+  if (role === "owner") return "Proprietário";
+  if (role === "admin") return "Administrador";
+  if (role === "editor") return "Editor";
+  return "Leitor";
 }
 
 export function AdminShell({ children, email, footerAction, name, preview = false, role = "viewer", sessionSource = "session" }: ShellProps) {
@@ -106,6 +112,8 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
   const contextualHeader = moduleHeader(pathname, preview);
   const initials = developmentPreview ? "DE" : name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "LR";
   const navigation = useMemo(() => visibleAdminNavigation(role), [role]);
+  const canEdit = !readOnly && role !== "viewer";
+  const headerAction = contextualHeader?.action && (!contextualHeader.action.requiresEdit || canEdit) ? contextualHeader.action : undefined;
 
   useEffect(() => {
     const stored = window.localStorage.getItem("lander-admin-sidebar-collapsed");
@@ -192,7 +200,7 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
         </div>
         <span className="adminAdministrationLabel">ADMINISTRAÇÃO</span>
       </div>
-      {showReadOnlyChrome ? <div className="adminPreviewBadge">Preview local · somente leitura</div> : null}
+      {showReadOnlyChrome ? <div className="adminPreviewBadge">Prévia · somente leitura</div> : null}
       <nav aria-label="Painel administrativo">
         <span className="adminNavigationEyebrow">NAVEGAÇÃO</span>
         {navigation.map((group) => {
@@ -225,7 +233,7 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
           </div>;
         })}
       </nav>
-      {!developmentPreview ? <div className="adminSidebarFooter"><div className="adminUserSummary"><span className="adminAvatar">{initials}</span><span><strong>{name}</strong><small>{readOnly ? "Acesso de leitura" : email || role}</small></span></div></div> : null}
+      {!developmentPreview ? <div className="adminSidebarFooter"><div className="adminUserSummary"><span className="adminAvatar">{initials}</span><span><strong>{name}</strong><small>{readOnly ? "Acesso de leitura" : email || roleLabel(role)}</small></span></div></div> : null}
     </aside>
 
     <div className="adminWorkspace" ref={workspaceRef}>
@@ -236,15 +244,14 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
           {contextualHeader ? <div className="adminPageHeadingRow">{contextualHeader.back ? <Link className="adminHeaderBack" href={contextualHeader.back.href}><span aria-hidden="true">←</span><span>{contextualHeader.back.label}</span></Link> : null}<div className="adminContextTitle"><strong>{contextualHeader.title}</strong><small>{contextualHeader.description}</small></div></div> : <nav aria-label="Breadcrumb" className="adminBreadcrumb"><ol>{location.breadcrumbs.map((crumb, index) => <li key={`${crumb.label}-${index}`}>{crumb.href ? <Link href={crumb.href}>{crumb.label}</Link> : <span aria-current="page">{crumb.label}</span>}</li>)}</ol></nav>}
         </div>
         <div className="adminTopbarActions">
-          {contextualHeader?.action ? contextualHeader.action.event ? <button aria-haspopup="dialog" className="adminTopbarPrimary" onClick={() => window.dispatchEvent(new Event(contextualHeader.action!.event!))} type="button"><AdminIcon name={contextualHeader.action.icon || "plus"} size={14} /><span>{contextualHeader.action.label}</span></button> : <Link className="adminTopbarPrimary" href={contextualHeader.action.href!} rel={contextualHeader.action.external ? "noopener noreferrer" : undefined} target={contextualHeader.action.external ? "_blank" : undefined}><AdminIcon name={contextualHeader.action.icon || "plus"} size={14} /><span>{contextualHeader.action.label}</span></Link> : null}
-          <button aria-label="Notificações" className="adminNotificationButton" type="button"><AdminIcon name="bell" size={17} /></button>
+          {headerAction ? headerAction.event ? <button aria-haspopup="dialog" className="adminTopbarPrimary" onClick={() => window.dispatchEvent(new Event(headerAction.event!))} type="button"><AdminIcon name={headerAction.icon || "plus"} size={14} /><span>{headerAction.label}</span></button> : <Link className="adminTopbarPrimary" href={headerAction.href!} rel={headerAction.external ? "noopener noreferrer" : undefined} target={headerAction.external ? "_blank" : undefined}><AdminIcon name={headerAction.icon || "plus"} size={14} /><span>{headerAction.label}</span></Link> : null}
           <div className="adminAccountWrap" ref={accountRef}>
-            <button aria-expanded={accountOpen} aria-haspopup="menu" className="adminTopbarUser" onClick={() => setAccountOpen((value) => !value)} type="button"><span className="adminAvatar">{initials}</span><span><strong>{name}</strong><small>{developmentPreview ? "Administrador" : role === "owner" ? "Proprietário" : role === "admin" ? "Administrador" : role === "editor" ? "Editor" : "Visualizador"}</small></span><AdminIcon name="chevron" size={13} /></button>
+            <button aria-expanded={accountOpen} aria-haspopup="menu" className="adminTopbarUser" onClick={() => setAccountOpen((value) => !value)} type="button"><span className="adminAvatar">{initials}</span><span><strong>{name}</strong><small>{developmentPreview ? "Administrador" : roleLabel(role)}</small></span><AdminIcon name="chevron" size={13} /></button>
             {accountOpen ? <div className="adminAccountPopover" role="menu"><Link href="/admin/settings" role="menuitem" onClick={() => setAccountOpen(false)}><AdminIcon name="settings" size={15}/><span>Configurações</span></Link>{footerAction ? <div className="adminAccountLogout" onClick={() => setAccountOpen(false)}>{footerAction}</div> : null}</div> : null}
           </div>
         </div>
       </header>
-      {showReadOnlyChrome ? <div className="adminReadOnlyNotice" role="status"><strong>Preview local</strong><span>Somente leitura. Para salvar alterações, entre com uma conta administrativa real.</span></div> : null}
+      {showReadOnlyChrome ? <div className="adminReadOnlyNotice" role="status"><strong>Prévia</strong><span>Somente leitura. Para salvar alterações, entre com uma conta administrativa real.</span></div> : null}
       <main className="adminMain" id="admin-main" tabIndex={-1}>{children}</main>
     </div>
   </div>;
