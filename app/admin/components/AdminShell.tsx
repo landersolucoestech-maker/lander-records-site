@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AdminIcon } from "./AdminIcon";
+import { AdminIcon, type IconName } from "./AdminIcon";
 import { resolveAdminLocation, visibleAdminNavigation, type AdminRole } from "./admin-navigation";
 
 type ShellProps = {
@@ -17,10 +17,18 @@ type ShellProps = {
   sessionSource?: "session" | "development-auth-bypass";
 };
 
+type ModuleHeaderAction = {
+  label: string;
+  href?: string;
+  event?: "admin:new-content" | "admin:add-media";
+  icon?: IconName;
+  external?: boolean;
+};
+
 type ModuleHeader = {
   title: string;
   description: string;
-  action?: { label: string; href?: string; event?: "admin:new-content" };
+  action?: ModuleHeaderAction;
   back?: { label: string; href: string };
 };
 
@@ -32,42 +40,49 @@ function moduleHeader(pathname: string, preview: boolean): ModuleHeader | null {
   const starts = (segment: string) => path === `${root}/${segment}` || path.startsWith(`${root}/${segment}/`);
 
   if (path === "/admin" || path === "/cms-preview/dashboard") {
-    return { title: "Dashboard", description: "Visão geral da operação, conteúdo e desempenho do portal." };
+    return { title: "Dashboard", description: "Visão geral da operação, conteúdo e desempenho do site da Lander Records." };
   }
 
   if (starts("posts")) {
-    if (path === `${root}/posts`) return { title: "Conteúdos", description: "Gerencie publicações, rascunhos editoriais e materiais enviados pelo público sem misturar os fluxos.", action: { label: "Novo conteúdo", event: "admin:new-content" } };
-    if (path.endsWith("/new")) return { title: "Novo conteúdo", description: "Crie uma publicação usando a estrutura editorial e o preview visual do Portal.", back: { label: "Conteúdos", href: preview ? `${root}/posts` : "/admin/posts" } };
+    if (path === `${root}/posts`) return { title: "Conteúdos", description: "Gerencie publicações e rascunhos editoriais da Lander Records em um único fluxo.", action: { label: "Novo conteúdo", event: "admin:new-content", icon: "plus" } };
+    if (path.endsWith("/new")) return { title: "Novo conteúdo", description: "Crie uma publicação usando a estrutura editorial e a prévia visual da Lander Records.", back: { label: "Conteúdos", href: preview ? `${root}/posts` : "/admin/posts" } };
     if (path.endsWith("/view")) return { title: "Visualizar conteúdo", description: "Consulte a publicação preservando o mesmo contexto visual do módulo editorial.", back: { label: "Conteúdos", href: preview ? `${root}/posts` : "/admin/posts" } };
-    return { title: "Editar conteúdo", description: "Edite publicação, mídia, autoria, organização e SEO com preview em tempo real.", back: { label: "Conteúdos", href: preview ? `${root}/posts` : "/admin/posts" } };
+    return { title: "Editar conteúdo", description: "Edite publicação, mídia, autoria, organização e SEO com prévia em tempo real.", back: { label: "Conteúdos", href: preview ? `${root}/posts` : "/admin/posts" } };
   }
 
   if (starts("artists")) {
-    if (path === `${root}/artists`) return { title: "Artistas", description: "Gerencie artistas, perfis, publicação e conteúdos relacionados em uma única área.", action: { label: "Novo artista", href: preview ? `${root}/artists` : "/admin/artists/new" } };
+    if (path === `${root}/artists`) return { title: "Artistas", description: "Gerencie artistas, perfis, publicação e conteúdos relacionados em uma única área.", action: { label: "Novo artista", href: preview ? `${root}/artists` : "/admin/artists/new", icon: "plus" } };
     if (path.endsWith("/new")) return { title: "Novo artista", description: "Cadastre identidade, mídias, plataformas, destinos e metadados do artista.", back: { label: "Artistas", href: preview ? `${root}/artists` : "/admin/artists" } };
     if (path.endsWith("/view")) return { title: "Visualizar artista", description: "Consulte o perfil administrativo e a presença pública do artista.", back: { label: "Artistas", href: preview ? `${root}/artists` : "/admin/artists" } };
-    return { title: "Editar artista", description: "Configure identidade, publicação, integrações, mídia e conteúdo público com preview em tempo real.", back: { label: "Artistas", href: preview ? `${root}/artists` : "/admin/artists" } };
+    return { title: "Editar artista", description: "Configure identidade, publicação, integrações, mídia e conteúdo público com prévia em tempo real.", back: { label: "Artistas", href: preview ? `${root}/artists` : "/admin/artists" } };
   }
 
-  if (starts("media")) return { title: "Mídias", description: "Organize a biblioteca de arquivos, metadados e ciclo de vida dos assets do site." };
+  if (starts("media")) return {
+    title: "Mídias",
+    description: "Organize a biblioteca de arquivos, metadados e ciclo de vida dos assets do site.",
+    action: preview ? undefined : { label: "Adicionar mídia", event: "admin:add-media", icon: "upload" },
+  };
 
   if (starts("pages")) {
-    if (path === `${root}/pages`) return { title: "Páginas", description: "Gerencie páginas e configure cada seção com edição e preview em tempo real.", action: { label: "Criar página", href: preview ? `${root}/pages` : "/admin/pages/new" } };
+    if (path === `${root}/pages`) return { title: "Páginas", description: "Gerencie páginas e configure cada seção com edição e prévia em tempo real.", action: { label: "Criar página", href: preview ? `${root}/pages` : "/admin/pages/new", icon: "plus" } };
     if (path.endsWith("/new")) return { title: "Criar página", description: "Crie uma página usando a estrutura e os contratos atuais do projeto.", back: { label: "Páginas", href: preview ? `${root}/pages` : "/admin/pages" } };
     if (path.endsWith("/view")) return { title: "Visualizar página", description: "Consulte a estrutura administrativa e o destino público da página.", back: { label: "Páginas", href: preview ? `${root}/pages` : "/admin/pages" } };
-    return { title: "Configurar página", description: "Edite seções e conteúdo usando o mesmo workbench visual do Portal Lander.", back: { label: "Páginas", href: preview ? `${root}/pages` : "/admin/pages" } };
+    return { title: "Configurar página", description: "Edite seções e conteúdo usando o workbench visual canônico da Lander Records.", back: { label: "Páginas", href: preview ? `${root}/pages` : "/admin/pages" } };
   }
 
-  if (starts("media-kit")) return { title: "Mídia Kit", description: "Edite a apresentação comercial e acompanhe as informações que compõem o material institucional." };
+  if (starts("media-kit")) return {
+    title: "Mídia Kit",
+    description: "Edite a apresentação comercial e acompanhe as informações que compõem o material institucional.",
+    action: { label: "Editar dados de origem", href: preview ? `${root}/settings` : "/admin/settings", icon: "edit" },
+  };
   if (starts("settings/lander-records") || (preview && starts("integrations"))) return { title: "Integrações", description: "Gerencie conexões externas, estado de sincronização e fontes de dados sem expor credenciais no cliente." };
   if (starts("settings")) return { title: "Configurações", description: "Gerencie identidade, preferências, segurança e integrações em uma experiência unificada." };
-  if (starts("users")) return { title: "Usuários", description: "Gerencie contas administrativas, papéis e controles de acesso do Portal." };
-  if (starts("home")) return { title: "Home", description: "Configure as áreas editoriais e a composição da página inicial." };
+  if (starts("users")) return { title: "Usuários", description: "Gerencie contas administrativas, papéis e controles de acesso da Lander Records." };
+  if (starts("home")) return { title: "Home", description: "Configure as áreas editoriais e a composição da página inicial.", action: { label: "Ver site público", href: "/", icon: "external", external: true } };
   if (starts("navigation")) return { title: "Navegação", description: "Gerencie menus, destinos e hierarquia da navegação pública." };
   if (starts("header")) return { title: "Cabeçalho", description: "Configure os elementos estruturais do cabeçalho público." };
-  if (starts("post-categories") || starts("categories")) return { title: "Categorias", description: "Gerencie as taxonomias usadas na organização editorial." };
+  if (starts("post-categories") || starts("categories")) return { title: "Categorias", description: "Gerencie as categorias usadas na organização editorial." };
   if (starts("artist-categories")) return { title: "Categorias de artistas", description: "Gerencie classificações e filtros usados no catálogo de artistas." };
-  if (starts("tags")) return { title: "Tags", description: "Gerencie marcadores editoriais usados pelas publicações." };
   if (starts("releases")) return { title: "Lançamentos", description: "Gerencie lançamentos musicais e seus destinos públicos." };
   if (starts("audit")) return { title: "Auditoria", description: "Consulte eventos administrativos e histórico de alterações." };
   return null;
@@ -221,7 +236,7 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
           {contextualHeader ? <div className="adminPageHeadingRow">{contextualHeader.back ? <Link className="adminHeaderBack" href={contextualHeader.back.href}><span aria-hidden="true">←</span><span>{contextualHeader.back.label}</span></Link> : null}<div className="adminContextTitle"><strong>{contextualHeader.title}</strong><small>{contextualHeader.description}</small></div></div> : <nav aria-label="Breadcrumb" className="adminBreadcrumb"><ol>{location.breadcrumbs.map((crumb, index) => <li key={`${crumb.label}-${index}`}>{crumb.href ? <Link href={crumb.href}>{crumb.label}</Link> : <span aria-current="page">{crumb.label}</span>}</li>)}</ol></nav>}
         </div>
         <div className="adminTopbarActions">
-          {contextualHeader?.action ? contextualHeader.action.event ? <button aria-haspopup="dialog" className="adminTopbarPrimary" onClick={() => window.dispatchEvent(new Event(contextualHeader.action!.event!))} type="button"><AdminIcon name="plus" size={14} /><span>{contextualHeader.action.label}</span></button> : <Link className="adminTopbarPrimary" href={contextualHeader.action.href!}><AdminIcon name="plus" size={14} /><span>{contextualHeader.action.label}</span></Link> : null}
+          {contextualHeader?.action ? contextualHeader.action.event ? <button aria-haspopup="dialog" className="adminTopbarPrimary" onClick={() => window.dispatchEvent(new Event(contextualHeader.action!.event!))} type="button"><AdminIcon name={contextualHeader.action.icon || "plus"} size={14} /><span>{contextualHeader.action.label}</span></button> : <Link className="adminTopbarPrimary" href={contextualHeader.action.href!} rel={contextualHeader.action.external ? "noopener noreferrer" : undefined} target={contextualHeader.action.external ? "_blank" : undefined}><AdminIcon name={contextualHeader.action.icon || "plus"} size={14} /><span>{contextualHeader.action.label}</span></Link> : null}
           <button aria-label="Notificações" className="adminNotificationButton" type="button"><AdminIcon name="bell" size={17} /></button>
           <div className="adminAccountWrap" ref={accountRef}>
             <button aria-expanded={accountOpen} aria-haspopup="menu" className="adminTopbarUser" onClick={() => setAccountOpen((value) => !value)} type="button"><span className="adminAvatar">{initials}</span><span><strong>{name}</strong><small>{developmentPreview ? "Administrador" : role === "owner" ? "Proprietário" : role === "admin" ? "Administrador" : role === "editor" ? "Editor" : "Visualizador"}</small></span><AdminIcon name="chevron" size={13} /></button>
