@@ -91,7 +91,8 @@ test("Contents uses category as its sole active taxonomy and no redundant public
 });
 
 test("Content create, edit, view and row actions share accessible interaction contracts", () => {
-  assert.match(adminShell, /action: \{ label: "Novo conteúdo", event: "admin:new-content", icon: "plus" \}/);
+  assert.match(adminShell, /action: \{ label: "Novo conteúdo", event: "admin:new-content", icon: "plus", requiresEdit: true \}/);
+  assert.match(adminShell, /const headerAction = contextualHeader\?\.action && \(!contextualHeader\.action\.requiresEdit \|\| canEdit\)/);
   assert.match(postManager, /type ModalMode = "create" \| "edit" \| "view"/);
   assert.match(postManager, /window\.addEventListener\("admin:new-content", openModal\)/);
   assert.match(postManager, /aria-haspopup="menu"/);
@@ -109,10 +110,10 @@ test("Content create, edit, view and row actions share accessible interaction co
 });
 
 test("canonical URL and external content links are validated on the server", () => {
-  assert.match(postActions, /function httpUrlOrEmpty/);
-  assert.match(postActions, /url\.protocol !== "http:" && url\.protocol !== "https:"/);
-  assert.match(postActions, /canonicalUrl = httpUrlOrEmpty/);
-  assert.match(postActions, /O link de \$\{platform\}/);
+  assert.match(postActions, /normalizeCanonicalOverride/);
+  assert.match(postActions, /canonicalUrl = normalizeCanonicalOverride\(text\(formData, "canonicalUrl"\)\)/);
+  assert.match(postActions, /normalizePlatformUrl\(item\.platform, item\.url\)/);
+  assert.match(postActions, /requirePersistentAdmin\("editor"\)/);
   assert.match(postActions, /publicationLink: `\/noticias\/\$\{slug\}`/);
 });
 
