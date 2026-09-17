@@ -6,6 +6,8 @@ import { redirect } from "next/navigation";
 import sharp from "sharp";
 import { audit, requirePersistentAdmin } from "../../lib/auth";
 import { getDb } from "../../lib/db";
+import { normalizePlatformUrl } from "../../lib/integrations/identity";
+import { normalizeCanonicalOverride } from "../../lib/seo";
 import { deleteMedia as deleteStoredMedia, uploadMedia as uploadStoredMedia } from "@/lib/storage";
 import { postLinks, postProfiles } from "../../lib/db/news-management-schema";
 import { mediaAssets, posts, slugRedirects } from "../../lib/db/schema";
@@ -31,17 +33,6 @@ function integer(formData: FormData, name: string) {
 
 function uuidOrNull(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value) ? value : null;
-}
-
-function httpUrlOrEmpty(value: string, label: string) {
-  if (!value) return "";
-  try {
-    const url = new URL(value);
-    if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error("unsupported protocol");
-    return url.toString();
-  } catch {
-    throw new Error(`${label} precisa ser uma URL HTTP(S) válida.`);
-  }
 }
 
 function parseDate(value: string) {
@@ -103,10 +94,11 @@ export async function savePostAction(_: PostActionState, formData: FormData): Pr
   let links: Array<{ platform: (typeof socialPlatforms)[number]; url: string }> = [];
   try {
     publishedAt = parseDate(text(formData, "publishedAt"));
-    canonicalUrl = httpUrlOrEmpty(text(formData, "canonicalUrl"), "A URL canônica");
+    canonicalUrl = normalizeCanonicalOverride(text(formData, "canonicalUrl"));
     links = socialPlatforms
-      .map((platform) => ({ platform, url: httpUrlOrEmpty(text(formData, `link_${platform}`), `O link de ${platform}`) }))
-      .filter((item) => item.url);
+      .map((platform) => ({ platform, url: text(formData, `link_${platform}`) }))
+      .filter((item) => item.url)
+      .map((item) => ({ ...item, url: normalizePlatformUrl(item.platform, item.url) }));
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Dados editoriais inválidos." };
   }
