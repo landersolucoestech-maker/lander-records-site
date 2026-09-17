@@ -39,33 +39,30 @@ test("sidebar exposes Configurações once while its six areas stay internal tab
   for (const tab of ["Empresa", "Identidade do Site", "Automações", "Segurança", "Integrações", "Usuários"]) assert.match(settings, new RegExp(tab));
 });
 
-test("major modules retain one contextual shell and common Portal header chrome", () => {
+test("major modules retain one contextual shell without fake global capabilities", () => {
   for (const title of ["Conteúdos", "Artistas", "Mídias", "Páginas", "Mídia Kit", "Configurações"]) {
     assert.ok(shell.includes(`title: "${title}"`), `missing contextual header for ${title}`);
   }
   assert.match(shell, /adminTopbarContextual/);
-  assert.match(shell, /name="bell"/);
+  assert.doesNotMatch(shell, /adminNotificationButton/);
+  assert.doesNotMatch(shell, /name="bell"/);
+  assert.match(shell, /const canEdit = !readOnly && role !== "viewer"/);
 });
 
-test("content mirrors the Portal Lander editorial list while preserving Lander Records routes and data", () => {
-  assert.match(posts, /Publicações/);
-  assert.match(posts, /Colaborações recebidas/);
-  assert.match(posts, /Fluxo editorial da Lander Records/);
-  assert.match(posts, /Candidatos editoriais/);
+test("content uses the canonical modal workflow, floating actions and Lander Records public route", () => {
+  assert.match(posts, /Conteúdos cadastrados/);
   assert.match(posts, /Por página/);
   assert.match(posts, /Página <strong>\{safePage\}<\/strong> de/);
-  assert.match(posts, /<details>/);
-  assert.match(posts, /name="more"/);
-  assert.match(posts, /tableview-surface/);
-  assert.match(posts, /table-card/);
-  assert.match(posts, /<table>/);
-  assert.doesNotMatch(posts, /admin-toolbar/);
-  assert.match(posts, /\/admin\/posts\/\$\{post\.id\}/);
-  assert.match(posts, /\/noticias\/\$\{post\.slug\}/);
-  assert.match(postStyles, /\.viewTabs/);
-  assert.match(postStyles, /\.notice/);
+  assert.match(posts, /data-content-action-trigger/);
+  assert.match(posts, /data-content-action-menu/);
+  assert.match(posts, /positionFloatingMenu\(trigger\.getBoundingClientRect\(\), menu\.getBoundingClientRect\(\)\)/);
+  assert.match(posts, /createPortal\(/);
+  assert.match(posts, /function ContentViewDialog/);
+  assert.match(posts, /<ReactMarkdown remarkPlugins=\{\[remarkGfm\]\}>/);
+  assert.match(posts, /href=\{`\/noticias\/\$\{post\.slug\}`\}/);
+  assert.doesNotMatch(posts, /<details>/);
+  assert.match(postStyles, /\.viewDialog/);
   assert.match(postStyles, /\.pagination/);
-  assert.match(postStyles, /adminTopbarPrimary\[href=/);
 });
 
 test("artists keep real routes while sharing the Portal catalog geometry", () => {
@@ -82,17 +79,18 @@ test("artists keep real routes while sharing the Portal catalog geometry", () =>
   assert.match(artistFormStyles, /position:sticky;top:78px/);
 });
 
-test("media library mirrors the reference inline upload, table and pagination without replacing server actions", () => {
-  assert.match(media, /Adicionar arquivo à biblioteca/);
+test("media library keeps real server actions, permission-aware controls and pagination", () => {
   assert.match(media, /Adicionar mídia/);
   assert.match(media, /Linhas por página/);
   assert.match(media, /<table>/);
-  assert.match(media, /archiveAction/);
-  assert.match(media, /uploadAction/);
+  assert.match(media, /canArchive/);
+  assert.match(media, /canUpload/);
   assert.match(mediaPage, /archiveMedia/);
   assert.match(mediaPage, /uploadMedia/);
+  assert.match(mediaPage, /hasMinimumRole/);
   assert.match(mediaStyles, /\.tableSurface/);
   assert.match(mediaStyles, /\.pagination/);
+  assert.doesNotMatch(media, /moreAction/);
 });
 
 test("media kit keeps editor plus sticky live preview while reading existing project data", () => {
@@ -106,10 +104,12 @@ test("media kit keeps editor plus sticky live preview while reading existing pro
   assert.match(mediaKitStyles, /position:sticky/);
 });
 
-test("settings internal tabs preserve actual mutations and RBAC", () => {
-  assert.match(settings, /updateSiteSettings/);
+test("settings internal tabs use scoped mutations and preserve RBAC", () => {
+  assert.match(settings, /updateCompanySettings/);
+  assert.match(settings, /updateIdentitySettings/);
   assert.match(settings, /upsertSocialLink/);
   assert.match(settings, /upsertContactTopic/);
+  assert.doesNotMatch(settings, /updateSiteSettings/);
   assert.match(settingsStyles, /gap:24px/);
   assert.match(settingsStyles, /min-height:66px/);
   assert.match(users, /requireAdmin\("owner"\)/);
