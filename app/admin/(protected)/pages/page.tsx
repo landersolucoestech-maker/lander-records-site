@@ -36,7 +36,6 @@ export default async function PagesAdminPage() {
   const enabledSections = summary.reduce((total, page) => total + page.enabledSectionCount, 0);
 
   return <div className="adminDashboard">
-    <header className="adminDashboardHeading"><div><h1>Páginas</h1><p>Gerencie a estrutura pública da Lander Records usando o mesmo sistema visual e hierarquia do Dashboard.</p></div></header>
     <section className="adminMetricGrid" aria-label="Resumo das páginas">
       <Metric accent="red" icon="pages" label="Páginas" value={summary.length} hint="estruturas administráveis" />
       <Metric accent="green" icon="check" label="Publicadas" value={enabledPages} hint="habilitadas no CMS" />
