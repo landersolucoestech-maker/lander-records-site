@@ -29,9 +29,8 @@ export default async function MediaKitPage() {
   const location = settings?.address || settings?.location || "Não configurado";
   const pagesTotal = pageCount?.value || 0, postsTotal = postCount?.value || 0, mediaTotal = mediaCount?.value || 0;
 
-  return <div className="adminDashboard">
-    <header className="adminDashboardHeading"><div><h1>Media Kit</h1><p>Composição comercial da Lander Records baseada somente em dados reais disponíveis no CMS.</p></div><Link className="adminPrimaryCompact" href="/admin/settings"><AdminIcon name="edit" size={14}/>Editar dados de origem</Link></header>
-    <section className="adminMetricGrid" aria-label="Resumo do Media Kit">
+  return <div className="adminDashboard" data-testid="media-kit-manager">
+    <section className="adminMetricGrid" aria-label="Resumo do Mídia Kit">
       <Metric accent="red" icon="pages" label="Páginas ativas" value={pagesTotal} hint="estrutura pública atual" />
       <Metric accent="green" icon="posts" label="Publicações" value={postsTotal} hint="conteúdos publicados" />
       <Metric accent="blue" icon="media" label="Mídias" value={mediaTotal} hint="arquivos ativos" />
@@ -49,7 +48,7 @@ export default async function MediaKitPage() {
         <section className="adminDashboardPanel"><PanelTitle icon="mail" title="Contato comercial" description="Informações apresentadas ao anunciante a partir das configurações reais." action={<Link className="adminTextButton" href="/admin/settings">Editar contato</Link>} /><div className={styles.cardBody}><div className={styles.formGrid}><label><span>Responsável / equipe</span><input value={brand} disabled readOnly/></label><label><span>E-mail</span><input value={contact} disabled readOnly/></label><label><span>Telefone / WhatsApp</span><input value={phone} disabled readOnly/></label><label><span>Localização</span><input value={location} disabled readOnly/></label></div></div></section>
       </div>
 
-      <aside className={styles.preview} aria-label="Prévia visual do Media Kit"><header><div><span>LIVE PREVIEW</span><strong>{brand}</strong></div><small>Dados reais disponíveis</small></header><div className={styles.sheet}><div className={styles.sheetBrand}><span>MÍDIA · PUBLICAÇÕES · PRESENÇA</span><h3>{brand}</h3><p>{tagline}</p></div><div className={styles.sheetStats}><div><strong>{pagesTotal}</strong><small>PÁGINAS ATIVAS</small></div><div><strong>{postsTotal}</strong><small>PUBLICAÇÕES</small></div><div><strong>{mediaTotal}</strong><small>ARQUIVOS</small></div></div><div className={styles.sheetContact}><strong>Contato comercial</strong><span>{contact}</span><span>{phone}</span></div><div className={styles.sheetFooter}><span>{location}</span><span>LANDER RECORDS · MEDIA KIT</span></div></div></aside>
+      <aside className={styles.preview} aria-label="Prévia visual do Mídia Kit"><header><div><span>PRÉVIA</span><strong>{brand}</strong></div><small>Dados reais disponíveis</small></header><div className={styles.sheet}><div className={styles.sheetBrand}><span>MÍDIA · PUBLICAÇÕES · PRESENÇA</span><h3>{brand}</h3><p>{tagline}</p></div><div className={styles.sheetStats}><div><strong>{pagesTotal}</strong><small>PÁGINAS ATIVAS</small></div><div><strong>{postsTotal}</strong><small>PUBLICAÇÕES</small></div><div><strong>{mediaTotal}</strong><small>ARQUIVOS</small></div></div><div className={styles.sheetContact}><strong>Contato comercial</strong><span>{contact}</span><span>{phone}</span></div><div className={styles.sheetFooter}><span>{location}</span><span>LANDER RECORDS · MÍDIA KIT</span></div></div></aside>
     </div>
   </div>;
 }
