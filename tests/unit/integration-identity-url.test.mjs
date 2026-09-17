@@ -10,6 +10,7 @@ import {
 } from "../../lib/integrations/identity.ts";
 
 const artistActions = fs.readFileSync(new URL("../../app/admin/artist-actions.ts", import.meta.url), "utf8");
+const soundcharts = fs.readFileSync(new URL("../../lib/integrations/soundcharts.ts", import.meta.url), "utf8");
 
 test("external identity normalization rejects executable, credentialed and ambiguous inputs", () => {
   assert.equal(normalizeExternalUrl("http://www.instagram.com/lander/?utm_source=test#bio"), "https://instagram.com/lander");
@@ -45,4 +46,10 @@ test("artist save path uses platform-owned URLs and validates embeds before pers
   assert.match(artistActions, /trustedEmbedUrl\("youtube", youtubeVideo\)/);
   assert.match(artistActions, /trustedEmbedUrl\("spotify", spotifyEmbed\)/);
   assert.ok(artistActions.indexOf("trustedEmbedUrl(\"youtube\", youtubeVideo)") < artistActions.indexOf("prepareArtistImage(formData"));
+});
+
+test("Soundcharts identity resolution fails closed when identifier ownership cannot be verified", () => {
+  assert.match(soundcharts, /if \(error instanceof Error && error\.message\.includes\("respondeu 403"\)\) return false;/);
+  assert.doesNotMatch(soundcharts, /respondeu 403"\)\) return true/);
+  assert.match(soundcharts, /if \(verified\) return \{ uuid, matchedViaPlatform:/);
 });
