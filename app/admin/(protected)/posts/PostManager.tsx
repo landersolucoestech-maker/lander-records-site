@@ -28,12 +28,9 @@ export type PostRecord = {
   coverMediaId: string;
   authorMediaId: string;
   authorImage: string;
-  publicationLink: string;
   links: Record<string, string>;
   featuredOnHome: boolean;
   homePosition: number;
-  tags: string[];
-  tagIds: string[];
   isPubliclyVisible: boolean;
   seoTitle: string;
   seoDescription: string;
@@ -48,6 +45,7 @@ type ModalState = { mode: ModalMode; postId?: string } | null;
 type ActionMenuState = { postId: string } | null;
 type ActionMenuPosition = { top: number; left: number } | null;
 
+const focusableSelector = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex="0"]';
 const statusLabel: Record<PostRecord["status"], string> = {
   published: "Publicado",
   draft: "Rascunho",
@@ -124,6 +122,7 @@ function ContentView({ post }: { post: PostRecord }) {
         <header><span>PUBLICAÇÃO</span><h3>Detalhes</h3></header>
         <div className={styles.viewInfoList}>
           <ViewInfo label="Status">{statusLabel[post.status]}</ViewInfo>
+          <ViewInfo label="Categoria">{post.category || "Sem categoria"}</ViewInfo>
           <ViewInfo label="Slug">/{post.slug}</ViewInfo>
           <ViewInfo label="Visível no site">{post.isPubliclyVisible ? "Sim" : "Não"}</ViewInfo>
           <ViewInfo label="Exibir na Home">{post.featuredOnHome ? "Sim" : "Não"}</ViewInfo>
@@ -134,7 +133,7 @@ function ContentView({ post }: { post: PostRecord }) {
 
       <section className={styles.viewInspectorSection}>
         <header><span>LINKS</span><h3>Redes relacionadas</h3></header>
-        {socialLinks.length ? <div className={styles.viewLinkList}>{socialLinks.map(([platform, url]) => <a className={styles.viewLinkItem} href={url} key={platform} rel="noreferrer" target="_blank"><span>{platform}</span><strong>Abrir ↗</strong></a>)}</div> : <p className={styles.viewEmptyCopy}>Nenhum link relacionado cadastrado.</p>}
+        {socialLinks.length ? <div className={styles.viewLinkList}>{socialLinks.map(([platform, url]) => <a className={styles.viewLinkItem} href={url} key={platform} rel="noopener noreferrer" target="_blank"><span>{platform}</span><strong>Abrir ↗</strong></a>)}</div> : <p className={styles.viewEmptyCopy}>Nenhum link relacionado cadastrado.</p>}
       </section>
 
       <section className={styles.viewInspectorSection}>
@@ -149,45 +148,40 @@ function ContentView({ post }: { post: PostRecord }) {
   </div>;
 }
 
-function ContentViewDialog({
-  canEdit,
-  onClose,
-  onEdit,
-  post,
-}: {
-  canEdit: boolean;
-  onClose: () => void;
-  onEdit: () => void;
-  post: PostRecord;
-}) {
-  const [mounted, setMounted] = useState(false);
-  const dialogRef = useRef<HTMLElement>(null);
-
-  useEffect(() => { setMounted(true); }, []);
-
+function useDialogLifecycle(open: boolean, onClose: () => void, dialogRef: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
-    if (!mounted) return;
+    if (!open) return;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    const dialog = dialogRef.current;
-    const focusable = () => Array.from(dialog?.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],[tabindex="0"]') || []).filter((node) => node.getClientRects().length);
-    window.setTimeout(() => (focusable()[0] || dialog)?.focus(), 0);
+    const focusables = () => Array.from(dialog.querySelectorAll<HTMLElement>(focusableSelector)).filter((node) => node.getClientRects().length);
+    window.setTimeout(() => (focusables()[0] || dialog).focus(), 0);
     const keydown = (event: KeyboardEvent) => {
       if (event.key === "Escape") { event.preventDefault(); onClose(); return; }
       if (event.key !== "Tab") return;
-      const nodes = focusable();
-      if (!nodes.length) { event.preventDefault(); dialog?.focus(); return; }
-      const first = nodes[0], last = nodes[nodes.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      const nodes = focusables();
+      const first = nodes[0];
+      const last = nodes.at(-1);
+      if (!first || !last) { event.preventDefault(); dialog.focus(); return; }
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     };
     document.addEventListener("keydown", keydown);
     return () => {
       document.removeEventListener("keydown", keydown);
       document.body.style.overflow = previousOverflow;
+      opener?.focus();
     };
-  }, [mounted, onClose]);
+  }, [dialogRef, onClose, open]);
+}
 
+function ContentViewDialog({ canEdit, onClose, onEdit, post }: { canEdit: boolean; onClose: () => void; onEdit: () => void; post: PostRecord }) {
+  const [mounted, setMounted] = useState(false);
+  const dialogRef = useRef<HTMLElement>(null);
+  useEffect(() => { setMounted(true); }, []);
+  useDialogLifecycle(mounted, onClose, dialogRef);
   if (!mounted) return null;
 
   return createPortal(<div className={styles.viewBackdrop} onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }} role="presentation">
@@ -198,30 +192,14 @@ function ContentViewDialog({
       </header>
       <ContentView post={post}/>
       <footer className={styles.viewDialogFooter}>
-        <div>{post.isPubliclyVisible ? <a className={styles.modalSecondary} href={`/noticias/${post.slug}`} rel="noreferrer" target="_blank"><AdminIcon name="eye" size={14}/>Abrir no site</a> : <span className={styles.viewPrivateHint}>Conteúdo ainda não está público.</span>}</div>
+        <div>{post.isPubliclyVisible ? <a className={styles.modalSecondary} href={`/noticias/${post.slug}`} rel="noopener noreferrer" target="_blank"><AdminIcon name="eye" size={14}/>Abrir no site</a> : <span className={styles.viewPrivateHint}>Conteúdo ainda não está público.</span>}</div>
         <div><button className={styles.modalSecondary} onClick={onClose} type="button">Fechar</button>{canEdit ? <button className={styles.modalPrimary} onClick={onEdit} type="button"><AdminIcon name="edit" size={14}/>Editar conteúdo</button> : null}</div>
       </footer>
     </section>
   </div>, document.body);
 }
 
-function ContentEditorForm({
-  canEdit,
-  categories,
-  initial,
-  media,
-  mode,
-  onClose,
-  tags,
-}: {
-  canEdit: boolean;
-  categories: Option[];
-  initial?: PostRecord;
-  media: MediaOption[];
-  mode: "create" | "edit";
-  onClose: () => void;
-  tags: Option[];
-}) {
+function ContentEditorForm({ canEdit, categories, initial, media, mode, onClose }: { canEdit: boolean; categories: Option[]; initial?: PostRecord; media: MediaOption[]; mode: "create" | "edit"; onClose: () => void }) {
   const [state, action] = useActionState<PostActionState, FormData>(savePostAction, { ok: false });
   const [title, setTitle] = useState(initial?.title || "");
   const [slug, setSlug] = useState(initial?.slug || "");
@@ -235,17 +213,8 @@ function ContentEditorForm({
   const titleRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { window.setTimeout(() => titleRef.current?.focus(), 0); }, []);
-
-  const chooseCover = (item: MediaOption) => {
-    setCoverMediaId(item.id);
-    setCoverImage(item.url);
-    setCoverPickerOpen(false);
-  };
-
-  const changeTitle = (value: string) => {
-    setTitle(value);
-    if (!slugTouched) setSlug(slugifyClient(value));
-  };
+  const chooseCover = (item: MediaOption) => { setCoverMediaId(item.id); setCoverImage(item.url); setCoverPickerOpen(false); };
+  const changeTitle = (value: string) => { setTitle(value); if (!slugTouched) setSlug(slugifyClient(value)); };
 
   return <>
     <form action={action} className={styles.modalForm} encType="multipart/form-data">
@@ -305,7 +274,7 @@ function ContentEditorForm({
           <header><div><span>SEO</span><h3>Metadados da publicação</h3><p>Configure título, descrição e URL canônica para mecanismos de busca.</p></div></header>
           <div className={styles.formGrid}>
             <label><span>Meta title</span><input defaultValue={initial?.seoTitle || ""} maxLength={180} name="seoTitle" placeholder={title || "Título para mecanismos de busca"}/></label>
-            <label><span>Canonical URL</span><input defaultValue={initial?.canonicalUrl || ""} name="canonicalUrl" placeholder="https://..." type="url"/></label>
+            <label><span>URL canônica</span><input defaultValue={initial?.canonicalUrl || ""} name="canonicalUrl" placeholder="https://..." type="url"/></label>
             <label className={styles.formSpan2}><span>Meta description</span><textarea defaultValue={initial?.seoDescription || ""} maxLength={320} name="seoDescription" placeholder={excerpt || "Descrição exibida em resultados de busca."} rows={4}/></label>
           </div>
         </section>
@@ -317,70 +286,22 @@ function ContentEditorForm({
   </>;
 }
 
-function ContentEditorModal({
-  canEdit,
-  categories,
-  media,
-  mode,
-  onClose,
-  post,
-  tags,
-}: {
-  canEdit: boolean;
-  categories: Option[];
-  media: MediaOption[];
-  mode: "create" | "edit";
-  onClose: () => void;
-  post?: PostRecord;
-  tags: Option[];
-}) {
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const keydown = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
-    document.addEventListener("keydown", keydown);
-    return () => { document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", keydown); };
-  }, [onClose]);
-
+function ContentEditorModal({ canEdit, categories, media, mode, onClose, post }: { canEdit: boolean; categories: Option[]; media: MediaOption[]; mode: "create" | "edit"; onClose: () => void; post?: PostRecord }) {
+  const dialogRef = useRef<HTMLElement>(null);
+  useDialogLifecycle(true, onClose, dialogRef);
   if (mode === "edit" && !post) return null;
   const title = mode === "create" ? "Criar conteúdo" : "Editar conteúdo";
   const eyebrow = mode === "create" ? "NOVO CONTEÚDO" : "EDIÇÃO DE CONTEÚDO";
 
-  return <div className={styles.modalBackdrop} onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}>
-    <section aria-labelledby="content-modal-title" aria-modal="true" className={styles.modal} role="dialog">
-      <header className={styles.modalHeader}><div><span>{eyebrow}</span><h2 id="content-modal-title">{title}</h2><p>Preencha todas as informações da publicação em um único fluxo contínuo.</p></div><button aria-label="Fechar modal" className={styles.modalClose} onClick={onClose} type="button">×</button></header>
-      <ContentEditorForm canEdit={canEdit} categories={categories} initial={mode === "edit" ? post : undefined} media={media} mode={mode} onClose={onClose} tags={tags}/>
+  return <div className={styles.modalBackdrop} onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }} role="presentation">
+    <section aria-labelledby="content-modal-title" aria-modal="true" className={styles.modal} ref={dialogRef} role="dialog" tabIndex={-1}>
+      <header className={styles.modalHeader}><div><span>{eyebrow}</span><h2 id="content-modal-title">{title}</h2><p>Preencha as informações editoriais da publicação em um único fluxo.</p></div><button aria-label="Fechar modal" className={styles.modalClose} onClick={onClose} type="button">×</button></header>
+      <ContentEditorForm canEdit={canEdit} categories={categories} initial={mode === "edit" ? post : undefined} media={media} mode={mode} onClose={onClose}/>
     </section>
   </div>;
 }
 
-export default function PostManager({
-  canDelete = false,
-  canEdit = true,
-  categories = [],
-  deleted,
-  developmentMode = false,
-  initialId,
-  initialMode,
-  media = [],
-  posts,
-  preview = false,
-  saved,
-  tags = [],
-}: {
-  canDelete?: boolean;
-  canEdit?: boolean;
-  categories?: Option[];
-  deleted?: boolean;
-  developmentMode?: boolean;
-  initialId?: string;
-  initialMode?: ModalMode;
-  media?: MediaOption[];
-  posts: PostRecord[];
-  preview?: boolean;
-  saved?: boolean;
-  tags?: Option[];
-}) {
+export default function PostManager({ canDelete = false, canEdit = true, categories = [], deleted, developmentMode = false, initialId, initialMode, media = [], posts, preview = false, saved }: { canDelete?: boolean; canEdit?: boolean; categories?: Option[]; deleted?: boolean; developmentMode?: boolean; initialId?: string; initialMode?: ModalMode; media?: MediaOption[]; posts: PostRecord[]; preview?: boolean; saved?: boolean }) {
   const [modal, setModal] = useState<ModalState>(() => initialMode ? { mode: initialMode, postId: initialId } : null);
   const [actionMenu, setActionMenu] = useState<ActionMenuState>(null);
   const [actionMenuPosition, setActionMenuPosition] = useState<ActionMenuPosition>(null);
@@ -410,8 +331,7 @@ export default function PostManager({
     const trigger = actionTriggerRef.current;
     const menu = actionMenuRef.current;
     if (!trigger || !menu) return;
-    const position = positionFloatingMenu(trigger.getBoundingClientRect(), menu.getBoundingClientRect());
-    setActionMenuPosition(position);
+    setActionMenuPosition(positionFloatingMenu(trigger.getBoundingClientRect(), menu.getBoundingClientRect()));
   }, [actionMenu]);
 
   useEffect(() => {
@@ -445,25 +365,18 @@ export default function PostManager({
     setActionMenuPosition(null);
     setActionMenu({ postId });
   };
+  const closeViewModal = () => { setModal(null); window.setTimeout(() => actionTriggerRef.current?.focus(), 0); };
 
-  const closeViewModal = () => {
-    setModal(null);
-    window.setTimeout(() => actionTriggerRef.current?.focus(), 0);
-  };
-
-  return <div className={styles.manager} data-testid="news-manager">
+  return <div className={styles.manager} data-testid="posts-manager">
     {deleted ? <div className={styles.successNotice}>Conteúdo excluído com sucesso.</div> : null}
     {saved ? <div className={styles.successNotice}>Conteúdo salvo com sucesso.</div> : null}
-
-    <nav aria-label="Seção de conteúdos" className={styles.viewTabs}><span aria-current="page" className={styles.activeTab}>Publicações</span></nav>
-
     {developmentMode && !preview ? <section className={styles.notice} role="status"><span aria-hidden="true" className={styles.noticeIcon}>i</span><div><strong>Modo de desenvolvimento liberado</strong><p>Você pode navegar pelos conteúdos usando o banco descartável do preview. Alterações persistentes continuam protegidas pelas regras administrativas do projeto.</p></div></section> : null}
 
-    <section className={styles.catalog} aria-label="Publicações">
-      {posts.length ? <div className={`tableview-surface cms-tableview-surface ${styles.tableSurface}`} aria-label="Lista de publicações">
+    <section className={styles.catalog} aria-label="Conteúdos cadastrados">
+      {posts.length ? <div className={`tableview-surface cms-tableview-surface ${styles.tableSurface}`} aria-label="Lista de conteúdos">
         <div className={styles.scrollArea}><table className={styles.contentTable}>
           <thead><tr><th>Conteúdo</th><th>Página</th><th>Slug</th><th>Status</th><th>Autor</th><th>Atualização</th><th className={styles.actions}>Ações</th></tr></thead>
-          <tbody>{visiblePosts.map((post) => <tr data-testid="news-row" key={post.id}>
+          <tbody>{visiblePosts.map((post) => <tr data-testid="content-row" key={post.id}>
             <td><div className={styles.identity}><span className={styles.documentIcon} aria-hidden="true"><AdminIcon name="document" size={15} /></span><span><strong>{post.title}</strong><small>{post.excerpt || "Sem resumo"}</small></span></div></td>
             <td><span className={styles.pageLabel}>Notícias</span></td>
             <td><span className={styles.slug}>/{post.slug}</span></td>
@@ -483,6 +396,6 @@ export default function PostManager({
       {canDelete && !preview ? <form action={deletePostAction} onSubmit={(event) => { const confirmed = window.confirm(`Excluir definitivamente “${actionPost.title}”?`); if (!confirmed) { event.preventDefault(); return; } closeActionMenu(); }}><input name="id" type="hidden" value={actionPost.id}/><button className={styles.deleteAction} role="menuitem" type="submit"><AdminIcon name="trash" size={14}/>Excluir</button></form> : <button aria-disabled="true" className={`${styles.deleteAction} ${styles.disabledAction}`} disabled role="menuitem" type="button"><AdminIcon name="trash" size={14}/>Excluir</button>}
     </div>, document.body) : null}
 
-    {modal?.mode === "view" && selectedPost ? <ContentViewDialog canEdit={canEdit && !preview} key={`view-${selectedPost.id}`} onClose={closeViewModal} onEdit={() => setModal({ mode: "edit", postId: selectedPost.id })} post={selectedPost}/> : modal ? <ContentEditorModal canEdit={canEdit && !preview} categories={categories} key={`${modal.mode}-${modal.postId || "new"}`} media={media} mode={modal.mode as "create" | "edit"} onClose={() => setModal(null)} post={selectedPost} tags={tags}/> : null}
+    {modal?.mode === "view" && selectedPost ? <ContentViewDialog canEdit={canEdit && !preview} key={`view-${selectedPost.id}`} onClose={closeViewModal} onEdit={() => setModal({ mode: "edit", postId: selectedPost.id })} post={selectedPost}/> : modal ? <ContentEditorModal canEdit={canEdit && !preview} categories={categories} key={`${modal.mode}-${modal.postId || "new"}`} media={media} mode={modal.mode as "create" | "edit"} onClose={() => setModal(null)} post={selectedPost}/> : null}
   </div>;
 }
