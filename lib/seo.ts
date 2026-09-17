@@ -6,15 +6,26 @@ export function absoluteUrl(pathname: string) {
   return `${base}${pathname.startsWith("/") ? pathname : `/${pathname}`}`;
 }
 
+export function normalizeCanonicalOverride(value: string | null | undefined) {
+  const candidate = value?.trim();
+  if (!candidate) return "";
+  let url: URL;
+  try {
+    url = new URL(candidate);
+  } catch {
+    throw new Error("URL canônica inválida.");
+  }
+  if ((url.protocol !== "https:" && url.protocol !== "http:") || url.username || url.password || !url.hostname) {
+    throw new Error("URL canônica inválida.");
+  }
+  url.hash = "";
+  return url.toString();
+}
+
 export function resolveCanonicalUrl(value: string | null | undefined, fallbackPath: string) {
   const fallback = absoluteUrl(fallbackPath);
-  const candidate = value?.trim();
-  if (!candidate) return fallback;
   try {
-    const url = new URL(candidate);
-    if ((url.protocol !== "https:" && url.protocol !== "http:") || url.username || url.password || !url.hostname) return fallback;
-    url.hash = "";
-    return url.toString();
+    return normalizeCanonicalOverride(value) || fallback;
   } catch {
     return fallback;
   }
