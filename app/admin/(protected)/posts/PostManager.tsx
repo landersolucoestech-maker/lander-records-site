@@ -188,7 +188,6 @@ function ContentEditorForm({
             <label><span>Status</span><select defaultValue={initial?.editorStatus || "draft"} name="status"><option value="draft">Rascunho</option><option value="published">Publicado</option><option value="archived">Arquivado</option></select></label>
             <label><span>Data de publicação</span><input defaultValue={localDateTime(initial?.publishedAtInput)} name="publishedAt" type="datetime-local"/></label>
             <label><span>Autor</span><input maxLength={180} name="authorName" onChange={(event) => setAuthor(event.target.value)} required value={author}/></label>
-            <label><span>Link público</span><input defaultValue={initial?.publicationLink || ""} name="publicationLink" placeholder={slug ? `/noticias/${slug}` : "/noticias/slug-da-publicacao"}/></label>
           </div>
         </section>
 
