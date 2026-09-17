@@ -26,13 +26,11 @@ export default async function AuditPage() {
   const missingHero = countValue(missingHeroRows);
   const draftPosts = countValue(draftPostRows);
 
-  return <div className="adminDashboard">
-    <header className="adminDashboardHeading"><div><h1>Auditoria</h1><p>Pendências editoriais e rastreabilidade administrativa no mesmo sistema visual do Dashboard.</p></div></header>
-
+  return <div className="adminDashboard" data-testid="audit-manager">
     <section className="adminMetricGrid" aria-label="Resumo da auditoria">
       <Metric accent="red" icon="image" label="Sem imagem principal" value={missingCard} hint="artistas para revisar" />
       <Metric accent="orange" icon="media" label="Sem banner" value={missingHero} hint="páginas de artista" />
-      <Metric accent="blue" icon="document" label="Rascunhos" value={draftPosts} hint="notícias pendentes" />
+      <Metric accent="blue" icon="document" label="Rascunhos" value={draftPosts} hint="conteúdos pendentes" />
       <Metric accent="green" icon="audit" label="Eventos registrados" value={rows.length} hint="últimos registros carregados" />
     </section>
 
@@ -41,8 +39,8 @@ export default async function AuditPage() {
         <div className="adminAnalyticsPanelHeading"><div className="adminPanelHeadingIdentity"><span className="adminPanelHeadingIcon"><AdminIcon name="activity" size={20} /></span><div><h2>Conteúdos que precisam de manutenção</h2><p>Acesso direto às pendências que exigem intervenção editorial.</p></div></div></div>
         {missingCard || missingHero || draftPosts ? <div className={styles.maintenanceGrid}>
           {missingCard ? <Link className={styles.maintenanceCard} href="/admin/artists"><strong>{missingCard} artista{missingCard > 1 ? "s" : ""} sem imagem principal</strong><span>Revisar cards e listagens →</span></Link> : null}
-          {missingHero ? <Link className={styles.maintenanceCard} href="/admin/artists"><strong>{missingHero} artista{missingHero > 1 ? "s" : ""} sem imagem banner</strong><span>Revisar páginas individuais →</span></Link> : null}
-          {draftPosts ? <Link className={styles.maintenanceCard} href="/admin/posts"><strong>{draftPosts} notícia{draftPosts > 1 ? "s" : ""} em rascunho</strong><span>Revisar publicação →</span></Link> : null}
+          {missingHero ? <Link className={styles.maintenanceCard} href="/admin/artists"><strong>{missingHero} artista{missingHero > 1 ? "s" : ""} sem imagem de banner</strong><span>Revisar páginas individuais →</span></Link> : null}
+          {draftPosts ? <Link className={styles.maintenanceCard} href="/admin/posts"><strong>{draftPosts} conteúdo{draftPosts > 1 ? "s" : ""} em rascunho</strong><span>Revisar publicação →</span></Link> : null}
         </div> : <div className={styles.empty}>Nenhuma pendência editorial crítica identificada.</div>}
       </section>
 
