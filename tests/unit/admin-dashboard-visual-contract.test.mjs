@@ -22,6 +22,9 @@ const mediaManager = read("app/admin/(protected)/media/MediaLibrary.tsx");
 const headerManager = read("app/admin/(protected)/header/HeaderManagerView.tsx");
 const mediaKit = read("app/admin/(protected)/media-kit/page.tsx");
 const settingsPage = read("app/admin/(protected)/settings/page.tsx");
+const integrationsPage = read("app/admin/(protected)/settings/lander-records/page.tsx");
+const integrationActions = read("app/admin/integration-actions.ts");
+const spotifyConnectRoute = read("app/api/integrations/spotify/connect/route.ts");
 const adminActions = read("app/admin/actions.ts");
 
 test("protected admin has one final shared visual authority", () => {
@@ -131,6 +134,19 @@ test("Settings mirrors persistent server RBAC instead of presenting fake write c
   assert.match(adminActions, /export async function updateIdentitySettings[\s\S]*requirePersistentAdmin\("admin"\)/);
   assert.match(adminActions, /export async function upsertSocialLink[\s\S]*requirePersistentAdmin\("editor"\)/);
   assert.match(adminActions, /export async function upsertContactTopic[\s\S]*requirePersistentAdmin\("editor"\)/);
+});
+
+test("Integrations exposes mutating controls only to persistent editors", () => {
+  assert.match(integrationsPage, /const persistent = session\.source === "session"/);
+  assert.match(integrationsPage, /const canEdit = persistent && hasMinimumRole\(session\.user\.role, "editor"\)/);
+  assert.match(integrationsPage, /disabled=\{!canEdit\}/);
+  assert.match(integrationsPage, /canEdit && spotifyReady/);
+  assert.match(integrationsPage, /canEdit \? <form action=\{syncLanderRecordsIntegrationsAction\}/);
+  assert.match(integrationsPage, /Integrações em modo somente leitura/);
+  assert.match(integrationActions, /export async function saveLanderRecordsIntegrationSettings[\s\S]*requirePersistentAdmin\("editor"\)/);
+  assert.match(integrationActions, /export async function syncLanderRecordsIntegrationsAction[\s\S]*requirePersistentAdmin\("editor"\)/);
+  assert.match(spotifyConnectRoute, /requireAdmin\("editor"\)/);
+  assert.match(spotifyConnectRoute, /session\.source === "development-auth-bypass"/);
 });
 
 test("Home, Media, Header and Media Kit rely on the shared contextual heading", () => {
