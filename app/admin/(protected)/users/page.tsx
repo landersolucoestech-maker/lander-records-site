@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { asc } from "drizzle-orm";
+import { redirect } from "next/navigation";
 import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
 import { adminUsers } from "../../../../lib/db/schema";
@@ -23,7 +24,8 @@ const roleLabel = {
 } as const;
 
 export default async function UsersPage() {
-  await requireAdmin("owner");
+  const session = await requireAdmin("owner");
+  if (session.source !== "session") redirect("/admin/settings");
   const rows = await getDb().select().from(adminUsers).orderBy(asc(adminUsers.name));
   const active = rows.filter((user) => user.isActive).length;
   const owners = rows.filter((user) => user.role === "owner").length;
