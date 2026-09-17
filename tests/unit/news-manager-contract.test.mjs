@@ -26,7 +26,7 @@ test("News manager exposes the supported modal, actions and pagination workflow"
   assert.match(manager, /const \[pageSize, setPageSize\] = useState\(10\)/);
   assert.match(manager, /Por página/);
   assert.match(manager, /Página <strong>\{safePage\}<\/strong> de/);
-  assert.match(manager, /status === "unpublished" \? "Não publicada"/);
+  assert.match(manager, /unpublished: "Não publicado"/);
   assert.doesNotMatch(manager, /Agendad[ao]|Analytics|Mais filtros/);
 });
 
