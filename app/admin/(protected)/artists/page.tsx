@@ -12,7 +12,7 @@ import {
   musicGenres,
 } from "../../../../lib/db/artist-management-schema";
 import { integrationMetricCache } from "../../../../lib/db/integration-schema";
-import { artists, mediaAssets, releases } from "../../../../lib/db/schema";
+import { artists, mediaAssets } from "../../../../lib/db/schema";
 import ArtistManager, { type ArtistSummary } from "./ArtistManager";
 
 export const dynamic = "force-dynamic";
@@ -20,14 +20,10 @@ type ArtistFilters = { deleted?: string; genre?: string; q?: string; status?: st
 
 const VIEW_METRICS = new Set(["views", "view_count", "video_views", "video_view_count", "total_views"]);
 
-function catalogArtistKey(value: string) {
-  return value.trim().toLocaleLowerCase("pt-BR");
-}
-
 export default async function AdminArtistsPage({ searchParams }: { searchParams: Promise<ArtistFilters> }) {
   const session = await requireAdmin();
   const db = getDb();
-  const [filters, baseRows, profiles, genreRows, roleRows, placementRows, metricRows, releaseRows, cachedMetricRows] = await Promise.all([
+  const [filters, baseRows, profiles, genreRows, roleRows, placementRows, metricRows, cachedMetricRows] = await Promise.all([
     searchParams,
     db.select({ artist: artists, cardImage: mediaAssets.url }).from(artists).leftJoin(mediaAssets, eq(artists.cardMediaId, mediaAssets.id)).orderBy(desc(artists.updatedAt), asc(artists.name)),
     db.select().from(artistProfiles),
@@ -35,7 +31,6 @@ export default async function AdminArtistsPage({ searchParams }: { searchParams:
     db.select({ artistId: artistRoleRelations.artistId, name: artistRoles.name }).from(artistRoleRelations).innerJoin(artistRoles, eq(artistRoleRelations.roleId, artistRoles.id)).orderBy(asc(artistRoleRelations.position)),
     db.select({ artistId: artistPublicationPlacements.artistId, key: artistPublicationDestinations.key, position: artistPublicationPlacements.position }).from(artistPublicationPlacements).innerJoin(artistPublicationDestinations, eq(artistPublicationPlacements.destinationId, artistPublicationDestinations.id)).where(and(eq(artistPublicationPlacements.enabled, true), eq(artistPublicationDestinations.active, true))).orderBy(asc(artistPublicationPlacements.position)),
     db.select({ artistId: artistMetrics.artistId, platform: artistMetrics.platform, value: artistMetrics.value }).from(artistMetrics),
-    db.select({ artistName: releases.artistName }).from(releases).where(eq(releases.active, true)),
     db.select({ artistId: integrationMetricCache.entityId, platform: integrationMetricCache.platform, metric: integrationMetricCache.metric, value: integrationMetricCache.value }).from(integrationMetricCache).where(eq(integrationMetricCache.entityType, "artist")),
   ]);
 
@@ -43,7 +38,6 @@ export default async function AdminArtistsPage({ searchParams }: { searchParams:
   const genresByArtist = new Map<string, string[]>();
   const rolesByArtist = new Map<string, string[]>();
   const metricsByArtist = new Map<string, Map<string, number>>();
-  const releasesByArtistName = new Map<string, number>();
   const viewsByArtist = new Map<string, Map<string, number>>();
 
   for (const row of genreRows) {
@@ -60,10 +54,6 @@ export default async function AdminArtistsPage({ searchParams }: { searchParams:
     const metrics = metricsByArtist.get(row.artistId) || new Map<string, number>();
     metrics.set(row.platform, Math.max(metrics.get(row.platform) || 0, row.value || 0));
     metricsByArtist.set(row.artistId, metrics);
-  }
-  for (const row of releaseRows) {
-    const key = catalogArtistKey(row.artistName);
-    releasesByArtistName.set(key, (releasesByArtistName.get(key) || 0) + 1);
   }
   for (const row of cachedMetricRows) {
     if (!VIEW_METRICS.has(row.metric.toLowerCase())) continue;
@@ -88,7 +78,6 @@ export default async function AdminArtistsPage({ searchParams }: { searchParams:
       cardImage: cardImage || "",
       genres: genresByArtist.get(artist.id) || [],
       roles: rolesByArtist.get(artist.id) || [],
-      releaseCount: releasesByArtistName.get(catalogArtistKey(artist.name)) || 0,
       views,
       audience,
       homePosition: homePlacement?.position,
