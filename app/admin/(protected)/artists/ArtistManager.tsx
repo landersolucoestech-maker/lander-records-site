@@ -15,7 +15,6 @@ export type ArtistSummary = {
   cardImage: string;
   genres: string[];
   roles?: string[];
-  releaseCount?: number;
   views?: number;
   audience?: number;
   homePosition?: number;
@@ -70,7 +69,6 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
   const [sort, setSort] = useState<SortMode>("updated-desc");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
   const genres = useMemo(() => Array.from(new Set(artists.flatMap((artist) => artist.genres))).sort((a, b) => a.localeCompare(b, "pt-BR")), [artists]);
 
   useEffect(() => {
@@ -105,7 +103,6 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
   const pageRows = filtered.slice(startIndex, startIndex + pageSize);
   const endIndex = filtered.length ? startIndex + pageRows.length : 0;
   const hasFilters = Boolean(query.trim() || status !== "all" || genre !== "all");
-  const allCurrentSelected = pageRows.length > 0 && pageRows.every((artist) => selected.has(artist.id));
 
   const clearFilters = () => {
     setQuery("");
@@ -114,22 +111,9 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
     setSort("updated-desc");
   };
 
-  const toggleArtist = (id: string) => setSelected((current) => {
-    const next = new Set(current);
-    if (next.has(id)) next.delete(id); else next.add(id);
-    return next;
-  });
-
-  const toggleCurrentPage = () => setSelected((current) => {
-    const next = new Set(current);
-    if (allCurrentSelected) pageRows.forEach((artist) => next.delete(artist.id));
-    else pageRows.forEach((artist) => next.add(artist.id));
-    return next;
-  });
-
   return <div className={`adminDashboard ${styles.manager}`} data-testid="artist-manager">
     {deleted ? <div className="adminNotice">Artista excluído com sucesso.</div> : null}
-    {preview ? <div className="adminNotice">Os dados deste preview são isolados e não alteram a persistência do ambiente real.</div> : null}
+    {preview ? <div className="adminNotice">Os dados desta prévia são isolados e não alteram a persistência do ambiente real.</div> : null}
 
     <section className={styles.tableSurface} aria-label="Artistas cadastrados">
       <div className={styles.toolbar} role="search">
@@ -146,17 +130,12 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
       {filtered.length ? <>
         <div className={styles.scrollArea}>
           <table className={styles.artistTable} aria-label="Artistas cadastrados">
-            <thead><tr>
-              <th className={styles.checkboxColumn}><input aria-label="Selecionar artistas desta página" checked={allCurrentSelected} onChange={toggleCurrentPage} type="checkbox" /></th>
-              <th>Artista</th><th>Gênero</th><th>Lançamentos</th><th>Visualizações</th><th>Status</th><th>Última atualização</th><th className={styles.actions}>Ações</th>
-            </tr></thead>
+            <thead><tr><th>Artista</th><th>Gênero</th><th>Visualizações</th><th>Status</th><th>Última atualização</th><th className={styles.actions}>Ações</th></tr></thead>
             <tbody>{pageRows.map((artist) => {
               const roleLine = artist.roles?.length ? artist.roles.slice(0, 2).join(" · ") : `/artistas/${artist.slug}`;
               return <tr data-testid="artist-row" key={artist.id}>
-                <td className={styles.checkboxColumn}><input aria-label={`Selecionar ${artist.name}`} checked={selected.has(artist.id)} onChange={() => toggleArtist(artist.id)} type="checkbox" /></td>
                 <td><div className={styles.identity}>{artist.cardImage ? <Image alt="" height={42} src={artist.cardImage} unoptimized width={42} /> : <span className={styles.avatarFallback} aria-hidden="true"><AdminIcon name="artists" size={17} /></span>}<span><strong>{artist.name}</strong><small>{roleLine}</small></span></div></td>
                 <td><div className={styles.taxonomy}><span>{artist.genres[0] || "Não informado"}</span>{artist.genres.length > 1 ? <small>+{artist.genres.length - 1}</small> : null}</div></td>
-                <td><span className={styles.numericValue}>{numberLabel(artist.releaseCount)}</span></td>
                 <td><span className={styles.numericValue}>{numberLabel(artist.views)}</span></td>
                 <td><StatusBadge status={artist.status} /></td>
                 <td><time dateTime={dateValue(artist.updatedAt) ? artist.updatedAt : undefined}>{dateLabel(artist.updatedAt)}</time></td>
