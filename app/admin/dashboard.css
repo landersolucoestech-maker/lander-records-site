@@ -2,8 +2,7 @@
 @import "../../styles/admin/shell.css";
 @import "../../styles/admin/dashboard.css";
 @import "../../styles/admin/home.css";
-/* Final authority: every protected module resolves to the Dashboard design language. */
-@import "../../styles/admin/dashboard-module-contract.css";
+/* Feature geometry stays local; the runtime contract is the single final visual authority. */
 @import "../../styles/admin/dashboard-feature-overrides.css";
 @import "../../styles/admin/dashboard-runtime-contract.css";
 
