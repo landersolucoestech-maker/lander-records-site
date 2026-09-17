@@ -133,11 +133,6 @@ function ContentView({ post }: { post: PostRecord }) {
       </section>
 
       <section className={styles.viewInspectorSection}>
-        <header><span>ORGANIZAÇÃO</span><h3>Tags</h3></header>
-        {post.tags.length ? <div className={styles.viewChipList}>{post.tags.map((tag) => <span className={styles.viewChip} key={tag}>{tag}</span>)}</div> : <p className={styles.viewEmptyCopy}>Nenhuma tag vinculada.</p>}
-      </section>
-
-      <section className={styles.viewInspectorSection}>
         <header><span>LINKS</span><h3>Redes relacionadas</h3></header>
         {socialLinks.length ? <div className={styles.viewLinkList}>{socialLinks.map(([platform, url]) => <a className={styles.viewLinkItem} href={url} key={platform} rel="noreferrer" target="_blank"><span>{platform}</span><strong>Abrir ↗</strong></a>)}</div> : <p className={styles.viewEmptyCopy}>Nenhum link relacionado cadastrado.</p>}
       </section>
@@ -287,14 +282,13 @@ function ContentEditorForm({
         </section>
 
         <section className={styles.modalSection}>
-          <header><div><span>AUTORIA E ORGANIZAÇÃO</span><h3>Home, tags e imagem do autor</h3><p>Controle a distribuição e os elementos editoriais complementares.</p></div></header>
+          <header><div><span>AUTORIA E ORGANIZAÇÃO</span><h3>Home e imagem do autor</h3><p>Controle a distribuição e os elementos editoriais complementares.</p></div></header>
           <div className={styles.formGrid}>
             <label><span>Imagem existente do autor</span><select defaultValue={initial?.authorMediaId || ""} name="authorMediaId"><option value="">Sem imagem</option>{media.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
             <label><span>Ou enviar imagem do autor</span><input accept="image/*" name="authorMediaUpload" type="file"/></label>
             <label><span>Posição na Home</span><input defaultValue={initial?.homePosition || 0} min={0} name="homePosition" type="number"/></label>
             <label className={styles.checkboxField}><input defaultChecked={initial?.featuredOnHome ?? true} name="featuredOnHome" type="checkbox"/><span>Exibir na seção Notícias da Home</span></label>
           </div>
-          <div className={styles.tagChoices}><span>Tags</span>{tags.length ? <div>{tags.map((tag) => <label key={tag.id}><input defaultChecked={Boolean(initial?.tagIds.includes(tag.id))} name="tagIds" type="checkbox" value={tag.id}/><span>{tag.name}</span></label>)}</div> : <small>Nenhuma tag cadastrada.</small>}</div>
         </section>
 
         <section className={styles.modalSection}>
