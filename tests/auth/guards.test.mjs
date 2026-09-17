@@ -23,7 +23,7 @@ test("every exported admin editor loader revalidates editor authorization", asyn
 
 test("password change denies a missing or invalid session before database access", async () => {
   const contents = await source("app/admin/actions.ts");
-  const match = contents.match(/export async function changeOwnPassword\([^)]*\)\s*\{([\s\S]*?)\n}\n\nexport async function createArtist/);
+  const match = contents.match(/export async function changeOwnPassword\([^)]*\)\s*\{([\s\S]*?)\n}\n\nexport async function upsertArtistCategory/);
   assert.ok(match, "changeOwnPassword action must exist");
   const body = match[1];
   assert.match(body, /const session = await getAdminSession\(\);\s*if \(!session\) redirect\("\/admin\/login"\);/);
@@ -154,4 +154,52 @@ test("Navigation mutations preserve editor/admin RBAC and validate before writes
   assert.ok(removal.indexOf("pg_advisory_xact_lock") < removal.indexOf("tx.delete"));
   assert.ok(removal.indexOf("navigationDeletionError") < removal.indexOf("tx.delete"));
   assert.doesNotMatch(removal, /confirmCascade/);
+});
+
+test("admin user mutations validate role and identifiers at the authoritative boundary", async () => {
+  const contents = await source("app/admin/actions.ts");
+  const create = contents.match(/export async function createAdminUser[\s\S]*?(?=\nexport async function updateAdminUser)/)?.[0] || "";
+  const update = contents.match(/export async function updateAdminUser[\s\S]*?(?=\nexport async function resetAdminPassword)/)?.[0] || "";
+  const reset = contents.match(/export async function resetAdminPassword[\s\S]*$/)?.[0] || "";
+  assert.match(create, /requirePersistentAdmin\("owner"\)/);
+  assert.match(create, /isAdminRole\(roleValue\)/);
+  assert.match(create, /assertAdminIdentity\(name, email\)/);
+  assert.match(update, /requirePersistentAdmin\("owner"\)/);
+  assert.match(update, /requiredUuid\(formData, "id", "Usuário"\)/);
+  assert.match(update, /isAdminRole\(roleValue\)/);
+  assert.match(reset, /requirePersistentAdmin\("owner"\)/);
+  assert.match(reset, /requiredUuid\(formData, "id", "Usuário"\)/);
+});
+
+test("social links are normalized inside the privileged server action", async () => {
+  const contents = await source("app/admin/actions.ts");
+  const mutation = contents.match(/export async function upsertSocialLink[\s\S]*?(?=\nexport async function upsertContactTopic)/)?.[0] || "";
+  assert.match(mutation, /requirePersistentAdmin\("editor"\)/);
+  assert.match(mutation, /normalizeExternalUrl\(text\(formData, "url"\)\)/);
+  assert.ok(mutation.indexOf("normalizeExternalUrl") < mutation.indexOf("db.update"), "URL validation must happen before persistence");
+});
+
+test("retired parallel admin mutations cannot reintroduce duplicate write paths", async () => {
+  const contents = await source("app/admin/actions.ts");
+  for (const name of [
+    "createArtist",
+    "updateArtist",
+    "setArtistPublication",
+    "archiveArtist",
+    "addArtistLink",
+    "deleteArtistLink",
+    "addArtistEmbed",
+    "deleteArtistEmbed",
+    "createPost",
+    "updatePost",
+    "setPostPublication",
+    "upsertTag",
+    "deleteTag",
+    "upsertRelease",
+    "updatePage",
+    "updateContactStatus",
+    "retryContactDelivery",
+  ]) {
+    assert.doesNotMatch(contents, new RegExp(`export async function ${name}\\b`), `${name} must stay retired`);
+  }
 });
