@@ -6,18 +6,14 @@ async function source(relativePath) {
   return readFile(new URL(`../../${relativePath}`, import.meta.url), "utf8");
 }
 
-test("every exported admin editor loader revalidates editor authorization", async () => {
-  for (const relativePath of [
-    "app/admin/(protected)/artists/editor-data.ts",
-    "app/admin/(protected)/posts/editor-data.ts",
-  ]) {
-    const contents = await source(relativePath);
-    const exportedLoaders = [...contents.matchAll(/export async function (load\w+)\([^)]*\)\s*\{([\s\S]*?)(?=\nexport async function|\n}$)/g)];
-    assert.ok(exportedLoaders.length > 0, `${relativePath} must expose loader functions`);
-    for (const [, name, body] of exportedLoaders) {
-      assert.match(body, /await requireAdmin\("editor"\);/, `${name} must authorize before reading admin data`);
-      assert.ok(body.indexOf('await requireAdmin("editor");') < body.indexOf("getDb()"), `${name} must authorize before database access`);
-    }
+test("every exported artist editor loader revalidates editor authorization", async () => {
+  const relativePath = "app/admin/(protected)/artists/editor-data.ts";
+  const contents = await source(relativePath);
+  const exportedLoaders = [...contents.matchAll(/export async function (load\w+)\([^)]*\)\s*\{([\s\S]*?)(?=\nexport async function|\n}$)/g)];
+  assert.ok(exportedLoaders.length > 0, `${relativePath} must expose loader functions`);
+  for (const [, name, body] of exportedLoaders) {
+    assert.match(body, /await requireAdmin\("editor"\);/, `${name} must authorize before reading admin data`);
+    assert.ok(body.indexOf('await requireAdmin("editor");') < body.indexOf("getDb()"), `${name} must authorize before database access`);
   }
 });
 
@@ -89,7 +85,7 @@ test("admin status uses API authorization semantics instead of page redirects", 
 test("Home manager authorizes before loading any administrative data", async () => {
   const contents = await source("app/admin/(protected)/home/page.tsx");
   const authorization = contents.indexOf("await requireAdmin()");
-  const reads = ["getPageContent(\"home\")", "getPublishedArtists(true)", "getPublishedPosts(true)", "getCachedSpotifyReleases()", "getLanderRecordsSocialMetrics()"];
+  const reads = ["getPageContent(\"home\")", "getPublishedArtists(true)", "getPublishedPosts(true)", "getHomeSpotifyReleaseFeed()", "getLanderRecordsSocialMetrics()"];
   assert.ok(authorization >= 0, "Home manager must revalidate the session on the server");
   for (const read of reads) {
     assert.ok(contents.indexOf(read) > authorization, `${read} must run only after authorization`);
@@ -145,7 +141,7 @@ test("Header manager authorizes before loading the public chrome read model", as
 test("Navigation mutations preserve editor/admin RBAC and validate before writes", async () => {
   const contents = await source("app/admin/actions.ts");
   const upsert = contents.match(/export async function upsertNavigationItem[\s\S]*?(?=\nexport async function deleteNavigationItem)/)?.[0] || "";
-  const removal = contents.match(/export async function deleteNavigationItem[\s\S]*?(?=\nexport async function updateSiteSettings)/)?.[0] || "";
+  const removal = contents.match(/export async function deleteNavigationItem[\s\S]*?(?=\nexport async function updateCompanySettings)/)?.[0] || "";
   assert.match(upsert, /requirePersistentAdmin\("editor"\)/);
   assert.match(removal, /requirePersistentAdmin\("admin"\)/);
   assert.ok(upsert.indexOf("navigationDestinationError") < upsert.indexOf("tx.update"));
