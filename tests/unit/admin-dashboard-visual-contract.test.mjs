@@ -112,9 +112,14 @@ test("Content create, edit and view stay inside the unified modal workflow", () 
   assert.match(postManager, /type ModalMode = "create" \| "edit" \| "view"/);
   assert.match(postManager, /window\.addEventListener\("admin:new-content", openModal\)/);
   assert.match(postManager, /createPortal\(/);
-  assert.match(postManager, /style=\{\{ position: "fixed", top: actionMenu\.top, right: actionMenu\.right, zIndex: 900 \}\}/);
+  assert.match(postManager, /aria-haspopup="menu"/);
+  assert.match(postManager, /document\.addEventListener\("pointerdown", pointerDown\)/);
+  assert.match(postManager, /style=\{\{ position: "fixed", top: actionMenu\.top, left: actionMenu\.left, right: "auto", zIndex: 900 \}\}/);
   assert.match(postManager, /setModal\(\{ mode: "view", postId: actionPost\.id \}\)/);
   assert.match(postManager, /setModal\(\{ mode: "edit", postId: actionPost\.id \}\)/);
+  assert.match(postManager, /className=\{styles\.viewHero\}/);
+  assert.match(postManager, /className=\{styles\.viewLayout\}/);
+  assert.match(postManager, /Nenhum campo pode ser alterado nesta visualização/);
   assert.match(postsPage, /filters\.create === "1" \? "create" : filters\.edit \? "edit" : filters\.view \? "view"/);
   assert.match(legacyPostRoute, /if \(id === "new"\) redirect\("\/admin\/posts\?create=1"\)/);
   assert.match(legacyPostRoute, /new URLSearchParams\(\{ edit: id \}\)/);
