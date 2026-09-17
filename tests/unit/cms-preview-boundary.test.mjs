@@ -23,3 +23,8 @@ test("CMS preview exposes only inert controls and isolated routes", () => {
   assert.match(component, /BACKEND_ENVIRONMENT_DEFERRED/);
   assert.match(component, /disabled>Editar visual/);
 });
+
+test("CMS preview does not restore the retired manual releases architecture", () => {
+  assert.doesNotMatch(component, /\["releases",\s*"Lançamentos"\]/);
+  assert.doesNotMatch(component, /\breleases\s*:/);
+});
