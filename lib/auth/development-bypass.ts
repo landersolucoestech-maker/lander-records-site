@@ -8,6 +8,7 @@ type DevelopmentAuthEnvironment = Readonly<{
 export type AdminAuthBoundary = "page" | "api" | null;
 
 const LOOPBACK_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1"]);
+const DISPOSABLE_PREVIEW_HOST_SUFFIX = ".trycloudflare.com";
 
 export type DevelopmentAdminSession = {
   source: "development-auth-bypass";
@@ -21,9 +22,16 @@ export type DevelopmentAdminSession = {
   sessionId: null;
 };
 
-/**
- * Local development bypass. This remains restricted to development + loopback.
- */
+function requestHostname(host: string | null | undefined): string | null {
+  if (!host) return null;
+  try {
+    return new URL(`http://${host}`).hostname.replace(/^\[|\]$/g, "").toLowerCase();
+  } catch {
+    return null;
+  }
+}
+
+/** Local development bypass. Restricted to development + loopback. */
 export function isDevelopmentAuthBypassEnabled(
   environment: DevelopmentAuthEnvironment = process.env,
 ): boolean {
@@ -31,10 +39,8 @@ export function isDevelopmentAuthBypassEnabled(
 }
 
 /**
- * Disposable GitHub Actions preview bypass.
- * It is intentionally allowed with NODE_ENV=production because the preview build
- * runs the production Next runtime, but it can only activate inside GitHub Actions
- * when the dedicated preview flag is explicitly enabled by the dev-preview workflow.
+ * Disposable GitHub Actions preview bypass feature flag.
+ * Host authorization is deliberately separate and mandatory at request time.
  */
 export function isDisposablePreviewAuthBypassEnabled(
   environment: DevelopmentAuthEnvironment = process.env,
@@ -47,12 +53,16 @@ export function isDisposablePreviewAuthBypassEnabled(
 }
 
 export function isLoopbackRequestHost(host: string | null | undefined): boolean {
-  if (!host) return false;
-  try {
-    return LOOPBACK_HOSTNAMES.has(new URL(`http://${host}`).hostname.replace(/^\[|\]$/g, "").toLowerCase());
-  } catch {
-    return false;
-  }
+  const hostname = requestHostname(host);
+  return Boolean(hostname && LOOPBACK_HOSTNAMES.has(hostname));
+}
+
+export function isDisposablePreviewRequestHost(host: string | null | undefined): boolean {
+  const hostname = requestHostname(host);
+  return Boolean(
+    hostname &&
+    (LOOPBACK_HOSTNAMES.has(hostname) || hostname.endsWith(DISPOSABLE_PREVIEW_HOST_SUFFIX)),
+  );
 }
 
 export function isDevelopmentAuthBypassAllowed(
@@ -66,7 +76,10 @@ export function isAdminAuthBypassAllowed(
   host: string | null | undefined,
   environment: DevelopmentAuthEnvironment = process.env,
 ): boolean {
-  return isDevelopmentAuthBypassAllowed(host, environment) || isDisposablePreviewAuthBypassEnabled(environment);
+  return (
+    isDevelopmentAuthBypassAllowed(host, environment) ||
+    (isDisposablePreviewAuthBypassEnabled(environment) && isDisposablePreviewRequestHost(host))
+  );
 }
 
 export function classifyAdminAuthBoundary(pathname: string): AdminAuthBoundary {
@@ -74,9 +87,7 @@ export function classifyAdminAuthBoundary(pathname: string): AdminAuthBoundary {
   const isAdminPage = pathname === "/admin" || pathname.startsWith("/admin/");
   const isLogin = pathname === "/admin/login" || pathname.startsWith("/admin/login/");
   const isPasswordChange = pathname === "/admin/change-password" || pathname.startsWith("/admin/change-password/");
-  if (!isAdminPage || isLogin || isPasswordChange) {
-    return null;
-  }
+  if (!isAdminPage || isLogin || isPasswordChange) return null;
   return "page";
 }
 
