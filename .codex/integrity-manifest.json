@@ -1,4 +1,4 @@
-{"schemaVersion":1,"version":"3.0.0-remediation","authority":"versioned-review-boundary","files":[
+{"schemaVersion":1,"version":"3.0.1-remediation","authority":"versioned-review-boundary","files":[
 {"path":".codex/runtime/lib/store.mjs","sha256":"1c19f9c620329d8b76b5c854ea9ab8d480096daf7f3a80e72d9732afc95b45af","bytes":11956},
 {"path":".codex/runtime/lib/errors.mjs","sha256":"a6ffd06f0b08e677ad2440fcd1df989075237de5c8118edcd4f5df19a6a11cc4","bytes":1509},
 {"path":".codex/runtime/lib/schema.mjs","sha256":"9dc2aaa53721542f9f0b00ee2947260fef126feab7b8b06909652b4125475d92","bytes":1404},
@@ -6,14 +6,14 @@
 {"path":".codex/runtime/lib/execution.mjs","sha256":"b6f8110dea914527c03e7fccbb9d1ec547bf2a82b05a7a69f1b2484efd87abbd","bytes":1925},
 {"path":".codex/runtime/evidence.mjs","sha256":"1260a4c494798e16af512cdcd5680b6355245fce52349e957c811f405b2137d0","bytes":5039},
 {"path":".codex/runtime/finding.mjs","sha256":"f7395f7df13864f9471062cd27e166b61a0d0f9213044b02f7ea26befb301736","bytes":6169},
-{"path":".codex/runtime/completion-gate.mjs","sha256":"36dc6251600c97b57d7f834036393f04204046d09b26c18286af048791efe5d0","bytes":3226},
+{"path":".codex/runtime/completion-gate.mjs","sha256":"ce8dfd82e1117a0e3b72651491eb872074b6189b9d52fda3de0e5bc74f384056","bytes":3225},
 {"path":".codex/runtime/preflight.mjs","sha256":"aadbdc08f3a401c3c2cf2deaa3ce760312b3c5febfd93a6fc1caceedd7ed486d","bytes":1592},
 {"path":".codex/runtime/policy-gate.mjs","sha256":"b88f861d0cbfe135b078d77cb006cdec188cef24dc31047809f379cb2cdf9732","bytes":1389},
-{"path":".codex/runtime/execution-graph.mjs","sha256":"3384163d5cea7b2126f2ebc2c4996d7ba9d6f053f10c56e3bb0970077b71dd8c","bytes":2839},
+{"path":".codex/runtime/execution-graph.mjs","sha256":"ab51e172b53eb3d19a7b8c6faf62515d877f0d4e96b811b65d08649f5a4feb36","bytes":2837},
 {"path":".codex/runtime/coverage.mjs","sha256":"523a0cfe2c4edffb82f8bb950e05d366106374d6a4880577660d29bdcbc612cc","bytes":2163},
 {"path":".codex/runtime/workflow.mjs","sha256":"47d14466e02c62f4a708d400ada0361dd6c66a5c0cdd5771d200c4afd222f49b","bytes":3000},
-{"path":".codex/runtime/verify-integrity.mjs","sha256":"59fba424f1405e63e1f35f3d50e9fa7ddfcd5e384c7d61ea15b1f49f05884cc2","bytes":1180},
-{"path":".codex/runtime/self-test.mjs","sha256":"2cdf38eb7a8546ba083511a95d9045001065eff7b08b179f9afcdb2a7e7f80fb","bytes":18037},
+{"path":".codex/runtime/verify-integrity.mjs","sha256":"1c38e1821ee85410f79264f7f5be83ecccad5ca5c806c123f4d1e67b1c5f65d3","bytes":1826},
+{"path":".codex/runtime/self-test.mjs","sha256":"88fbd9b729c99ddd22b53950f1f00f3b40e3c09cf92262d3c11305eecd727e1f","bytes":18002},
 {"path":".codex/runtime/tests/adversarial.test.mjs","sha256":"1c043fe410dc255eefbeb365688ff5e336e172d513d380261e86118cd51b65f1","bytes":13799},
 {"path":".codex/runtime/tests/state-writer.mjs","sha256":"7d8dc4f8f1723635d224c8496f2fe63a5ce188c028299d2bda495c4880e97c97","bytes":459},
 {"path":".codex/runtime/tests/governance-adversarial.test.mjs","sha256":"07c7f46c928e3c7dfef1784dd0f3c9db6412e58d1cb8bb69a969ac8554a8b3ab","bytes":6916},
@@ -23,10 +23,10 @@
 {"path":".codex/contracts/preflight-record.schema.json","sha256":"b87ed2d3353aaffbc644eef2cd65f2ec8705f20801c413f02fc16b2a2ecfea06","bytes":1003},
 {"path":".codex/contracts/coverage-record.schema.json","sha256":"721344160783b989b2ea050a4e1891544e60258ba0b6d904d7109e80bc567cbc","bytes":1084},
 {"path":".codex/contracts/workflow-ledger.schema.json","sha256":"f1a41dccfa2ea687b43c0294ccd5bf5e3f4ea3b457a1441f1bc99026afee3217","bytes":1019},
-{"path":".codex/agents/registry.json","sha256":"78dfe48c1f596833b361ad2f22e5e36df7d10c0bd42207c82fc583a17cc89e80","bytes":8400},
+{"path":".codex/agents/registry.json","sha256":"0d4dcba5c1cd4a7ff795cf657e3601d1c27276704612f98908036713891c246e","bytes":8113},
 {"path":".codex/skills/registry.json","sha256":"e174e224e09b6f1eb2cc9dafbd72a746bb8f19a5fd2cca338b5cf242b3bbeed7","bytes":1483},
 {"path":".codex/governance-classification.json","sha256":"657df2ac20d857c9d85558918b7e97e793b74e68aa418c821cf0e9ca86aedbf6","bytes":591},
 {"path":".codex/workflows/brownfield-change.json","sha256":"5eb3c02f4c6a7ddf8477906f964825ac35594de40b4c9de3f26ba7515f2fc230","bytes":1290},
 {"path":".github/workflows/cms-ci.yml","sha256":"1f50a59b1a00705891efa9e39fb0a5d76117bbfa06f6943788b50a6e1aff48ee","bytes":3841},
-{"path":"package.json","sha256":"1b6853747d5fae0e46a0e0dfac1acd6e218f029cf13b12f5f15f88a8bb478472","bytes":1826}
+{"path":"package.json","sha256":"a70079c00d8041def4190d4eadc34e18645e889d275a2ff1613a0f3ae8b2adea","bytes":1847}
 ]}
