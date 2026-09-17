@@ -42,7 +42,7 @@ type Option = { id: string; name: string };
 type MediaOption = AdminMediaPickerItem;
 type ModalMode = "create" | "edit" | "view";
 type ModalState = { mode: ModalMode; postId?: string } | null;
-type ActionMenuState = { postId: string; top: number; right: number } | null;
+type ActionMenuState = { postId: string; top: number; left: number } | null;
 
 const statusLabel: Record<PostRecord["status"], string> = {
   published: "Publicado",
@@ -74,9 +74,13 @@ function slugifyClient(value: string) {
 function getActionMenuPosition(element: HTMLElement) {
   const rect = element.getBoundingClientRect();
   const gap = 6;
-  const menuHeight = 116;
-  const top = rect.bottom + gap + menuHeight <= window.innerHeight ? rect.bottom + gap : Math.max(gap, rect.top - menuHeight - gap);
-  return { top, right: Math.max(gap, window.innerWidth - rect.right) };
+  const padding = 10;
+  const menuWidth = 168;
+  const menuHeight = 122;
+  const maxLeft = Math.max(padding, window.innerWidth - menuWidth - padding);
+  const left = Math.min(Math.max(padding, rect.right - menuWidth), maxLeft);
+  const top = rect.bottom + gap + menuHeight <= window.innerHeight - padding ? rect.bottom + gap : Math.max(padding, rect.top - menuHeight - gap);
+  return { top, left };
 }
 
 function SaveButton({ mode, disabled }: { mode: "create" | "edit"; disabled: boolean }) {
@@ -84,57 +88,68 @@ function SaveButton({ mode, disabled }: { mode: "create" | "edit"; disabled: boo
   return <button className={styles.modalPrimary} disabled={disabled || pending} type="submit"><AdminIcon name="check" size={14}/>{pending ? "Salvando..." : mode === "create" ? "Criar conteúdo" : "Salvar alterações"}</button>;
 }
 
-function FieldValue({ children }: { children: React.ReactNode }) {
-  return <div className={styles.viewValue}>{children || "—"}</div>;
+function ViewFact({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div className={styles.viewFact}><span>{label}</span><strong>{children || "—"}</strong></div>;
 }
 
 function ContentView({ post }: { post: PostRecord }) {
   const socialLinks = Object.entries(post.links || {}).filter(([, url]) => Boolean(url));
-  return <div className={styles.modalBody}>
-    <section className={styles.modalSection}>
-      <header><div><span>PUBLICAÇÃO</span><h3>Dados editoriais</h3><p>Identidade, URL e estado atual da publicação.</p></div><StatusBadge status={post.status}/></header>
-      <div className={styles.viewGrid}>
-        <div className={styles.viewSpan2}><label>Título</label><FieldValue>{post.title}</FieldValue></div>
-        <div><label>Slug</label><FieldValue>/{post.slug}</FieldValue></div>
-        <div><label>Categoria</label><FieldValue>{post.category}</FieldValue></div>
-        <div><label>Autor</label><FieldValue>{post.authorName}</FieldValue></div>
-        <div><label>Data de publicação</label><FieldValue>{post.publishedAt || "Não definida"}</FieldValue></div>
-        <div className={styles.viewSpan2}><label>Link público</label><FieldValue>{post.publicationLink || `/noticias/${post.slug}`}</FieldValue></div>
+  return <div className={styles.viewBody}>
+    <section className={styles.viewHero}>
+      <div className={styles.viewHeroMedia}>
+        {post.coverImage ? <Image alt={`Capa de ${post.title}`} fill sizes="(max-width: 760px) 100vw, 380px" src={post.coverImage} unoptimized /> : <div className={styles.viewHeroFallback}><AdminIcon name="document" size={34}/><span>Sem imagem de capa</span></div>}
+      </div>
+      <div className={styles.viewHeroContent}>
+        <div className={styles.viewHeroTop}><StatusBadge status={post.status}/><span className={styles.viewCategory}>{post.category || "Sem categoria"}</span></div>
+        <h3>{post.title}</h3>
+        <p>{post.excerpt || "Esta publicação ainda não possui um resumo editorial."}</p>
+        <div className={styles.viewMetaStrip}>
+          <ViewFact label="Autor">{post.authorName || "—"}</ViewFact>
+          <ViewFact label="Publicação">{post.publishedAt || "Não definida"}</ViewFact>
+          <ViewFact label="Slug">/{post.slug}</ViewFact>
+        </div>
       </div>
     </section>
 
-    <section className={styles.modalSection}>
-      <header><div><span>CONTEÚDO</span><h3>Resumo e corpo</h3><p>Texto que compõe a publicação pública.</p></div></header>
-      <div className={styles.viewStack}><div><label>Resumo</label><FieldValue>{post.excerpt || "Sem resumo"}</FieldValue></div><div><label>Conteúdo</label><div className={styles.viewContent}>{post.contentMarkdown || "Sem conteúdo"}</div></div></div>
-    </section>
+    <div className={styles.viewLayout}>
+      <section className={`${styles.viewCard} ${styles.viewMainCard}`}>
+        <header className={styles.viewCardHeader}><div><span>CONTEÚDO</span><h4>Corpo da publicação</h4></div><small>Somente leitura</small></header>
+        <div className={styles.viewArticle}>{post.contentMarkdown || "Nenhum conteúdo foi cadastrado para esta publicação."}</div>
+      </section>
 
-    <section className={styles.modalSection}>
-      <header><div><span>MÍDIA</span><h3>Imagem de capa</h3><p>Imagem principal usada na notícia e superfícies editoriais.</p></div></header>
-      {post.coverImage ? <div className={styles.viewCover}><Image alt={`Capa de ${post.title}`} height={675} src={post.coverImage} unoptimized width={1200}/></div> : <div className={styles.viewEmpty}>Nenhuma imagem de capa cadastrada.</div>}
-    </section>
+      <aside className={styles.viewSidebar}>
+        <section className={styles.viewCard}>
+          <header className={styles.viewCardHeader}><div><span>PUBLICAÇÃO</span><h4>Distribuição</h4></div></header>
+          <div className={styles.viewInfoList}>
+            <div className={styles.viewInfoRow}><span>Visível no site</span><strong>{post.isPubliclyVisible ? "Sim" : "Não"}</strong></div>
+            <div className={styles.viewInfoRow}><span>Exibir na Home</span><strong>{post.featuredOnHome ? "Sim" : "Não"}</strong></div>
+            <div className={styles.viewInfoRow}><span>Posição na Home</span><strong>{post.homePosition || "—"}</strong></div>
+            <div className={styles.viewInfoRow}><span>Última atualização</span><strong>{post.updatedAt || "—"}</strong></div>
+          </div>
+        </section>
 
-    <section className={styles.modalSection}>
-      <header><div><span>ORGANIZAÇÃO</span><h3>Autoria, Home e tags</h3><p>Classificação e posicionamento editorial.</p></div></header>
-      <div className={styles.viewGrid}>
-        <div><label>Exibir na Home</label><FieldValue>{post.featuredOnHome ? "Sim" : "Não"}</FieldValue></div>
-        <div><label>Posição na Home</label><FieldValue>{String(post.homePosition || 0)}</FieldValue></div>
-        <div className={styles.viewSpan2}><label>Tags</label><FieldValue>{post.tags.length ? post.tags.join(", ") : "Nenhuma tag"}</FieldValue></div>
-      </div>
-    </section>
+        <section className={styles.viewCard}>
+          <header className={styles.viewCardHeader}><div><span>ORGANIZAÇÃO</span><h4>Tags</h4></div></header>
+          {post.tags.length ? <div className={styles.viewChipList}>{post.tags.map((tag) => <span className={styles.viewChip} key={tag}>{tag}</span>)}</div> : <p className={styles.viewEmptyCopy}>Nenhuma tag vinculada.</p>}
+        </section>
+      </aside>
+    </div>
 
-    <section className={styles.modalSection}>
-      <header><div><span>LINKS</span><h3>Redes relacionadas</h3><p>Destinos complementares vinculados à publicação.</p></div></header>
-      {socialLinks.length ? <div className={styles.viewGrid}>{socialLinks.map(([platform, url]) => <div key={platform}><label>{platform}</label><a className={styles.viewLink} href={url} rel="noreferrer" target="_blank">{url} ↗</a></div>)}</div> : <div className={styles.viewEmpty}>Nenhum link relacionado cadastrado.</div>}
-    </section>
+    <div className={styles.viewLowerGrid}>
+      <section className={styles.viewCard}>
+        <header className={styles.viewCardHeader}><div><span>LINKS</span><h4>Redes relacionadas</h4></div></header>
+        {socialLinks.length ? <div className={styles.viewLinkList}>{socialLinks.map(([platform, url]) => <a className={styles.viewLinkItem} href={url} key={platform} rel="noreferrer" target="_blank"><span>{platform}</span><strong>Abrir ↗</strong></a>)}</div> : <p className={styles.viewEmptyCopy}>Nenhum link relacionado cadastrado.</p>}
+      </section>
 
-    <section className={styles.modalSection}>
-      <header><div><span>SEO</span><h3>Metadados</h3><p>Informações usadas pelos mecanismos de busca e compartilhamento.</p></div></header>
-      <div className={styles.viewGrid}>
-        <div><label>Meta title</label><FieldValue>{post.seoTitle || "Não definido"}</FieldValue></div>
-        <div><label>Canonical</label><FieldValue>{post.canonicalUrl || "Não definido"}</FieldValue></div>
-        <div className={styles.viewSpan2}><label>Meta description</label><FieldValue>{post.seoDescription || "Não definida"}</FieldValue></div>
-      </div>
-    </section>
+      <section className={styles.viewCard}>
+        <header className={styles.viewCardHeader}><div><span>SEO</span><h4>Metadados</h4></div></header>
+        <div className={styles.viewInfoList}>
+          <div className={styles.viewInfoRow}><span>Meta title</span><strong>{post.seoTitle || "Não definido"}</strong></div>
+          <div className={styles.viewInfoRow}><span>Canonical</span><strong>{post.canonicalUrl || "Não definido"}</strong></div>
+        </div>
+        <div className={styles.viewSeoText}><span>Meta description</span><p>{post.seoDescription || "Não definida"}</p></div>
+      </section>
+    </div>
   </div>;
 }
 
@@ -279,14 +294,14 @@ function ContentModal({
   }, [onClose]);
 
   if ((mode === "edit" || mode === "view") && !post) return null;
-  const title = mode === "create" ? "Criar conteúdo" : mode === "edit" ? "Editar conteúdo" : "Visualizar conteúdo";
-  const eyebrow = mode === "create" ? "NOVO CONTEÚDO" : mode === "edit" ? "EDIÇÃO DE CONTEÚDO" : "CONSULTA DE CONTEÚDO";
-  const description = mode === "view" ? "Consulte todos os dados editoriais sem sair da listagem." : "Preencha todas as informações da publicação em um único fluxo contínuo.";
+  const title = mode === "create" ? "Criar conteúdo" : mode === "edit" ? "Editar conteúdo" : "Detalhes do conteúdo";
+  const eyebrow = mode === "create" ? "NOVO CONTEÚDO" : mode === "edit" ? "EDIÇÃO DE CONTEÚDO" : "VISUALIZAÇÃO";
+  const description = mode === "view" ? "Consulta consolidada da publicação. Nenhum campo pode ser alterado nesta visualização." : "Preencha todas as informações da publicação em um único fluxo contínuo.";
 
   return <div className={styles.modalBackdrop} onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}>
-    <section aria-labelledby="content-modal-title" aria-modal="true" className={styles.modal} role="dialog">
-      <header className={styles.modalHeader}><div><span>{eyebrow}</span><h2 id="content-modal-title">{title}</h2><p>{description}</p></div><button aria-label="Fechar modal" className={styles.modalClose} onClick={onClose} type="button">×</button></header>
-      {mode === "view" && post ? <><ContentView post={post}/><footer className={styles.modalFooter}><button className={styles.modalSecondary} onClick={onClose} type="button">Fechar</button>{canEdit ? <button className={styles.modalPrimary} onClick={onEdit} type="button"><AdminIcon name="edit" size={14}/>Editar conteúdo</button> : null}</footer></> : <ContentEditorForm canEdit={canEdit} categories={categories} initial={mode === "edit" ? post : undefined} media={media} mode={mode as "create" | "edit"} onClose={onClose} tags={tags}/>} 
+    <section aria-labelledby="content-modal-title" aria-modal="true" className={`${styles.modal} ${mode === "view" ? styles.viewModal : ""}`} role="dialog">
+      <header className={`${styles.modalHeader} ${mode === "view" ? styles.viewModalHeader : ""}`}><div><span>{eyebrow}</span><h2 id="content-modal-title">{title}</h2><p>{description}</p></div><button aria-label="Fechar modal" className={styles.modalClose} onClick={onClose} type="button">×</button></header>
+      {mode === "view" && post ? <><ContentView post={post}/><footer className={styles.modalFooter}>{post.isPubliclyVisible ? <a className={styles.modalSecondary} href={`/noticias/${post.slug}`} rel="noreferrer" target="_blank"><AdminIcon name="eye" size={14}/>Abrir no site</a> : null}<button className={styles.modalSecondary} onClick={onClose} type="button">Fechar</button>{canEdit ? <button className={styles.modalPrimary} onClick={onEdit} type="button"><AdminIcon name="edit" size={14}/>Editar conteúdo</button> : null}</footer></> : <ContentEditorForm canEdit={canEdit} categories={categories} initial={mode === "edit" ? post : undefined} media={media} mode={mode as "create" | "edit"} onClose={onClose} tags={tags}/>} 
     </section>
   </div>;
 }
@@ -341,9 +356,19 @@ export default function PostManager({
   useEffect(() => {
     if (!actionMenu) return;
     const close = () => setActionMenu(null);
+    const pointerDown = (event: PointerEvent) => {
+      const target = event.target as Element | null;
+      if (target?.closest("[data-content-action-menu], [data-content-action-trigger]")) return;
+      close();
+    };
+    const keydown = (event: KeyboardEvent) => { if (event.key === "Escape") close(); };
+    document.addEventListener("pointerdown", pointerDown);
+    document.addEventListener("keydown", keydown);
     window.addEventListener("resize", close);
     window.addEventListener("scroll", close, true);
     return () => {
+      document.removeEventListener("pointerdown", pointerDown);
+      document.removeEventListener("keydown", keydown);
       window.removeEventListener("resize", close);
       window.removeEventListener("scroll", close, true);
     };
@@ -368,17 +393,17 @@ export default function PostManager({
             <td><StatusBadge status={post.status} /></td>
             <td><span className={styles.author}>{post.authorName || "—"}</span></td>
             <td><time className={styles.date}>{post.updatedAt}</time></td>
-            <td className={styles.actions}><details open={actionMenu?.postId === post.id}><summary aria-label={`Ações de ${post.title}`} onClick={(event) => { event.preventDefault(); setActionMenu((current) => current?.postId === post.id ? null : { postId: post.id, ...getActionMenuPosition(event.currentTarget) }); }}><AdminIcon name="more" size={17}/></summary></details></td>
+            <td className={styles.actions}><button aria-controls={actionMenu?.postId === post.id ? "content-row-action-menu" : undefined} aria-expanded={actionMenu?.postId === post.id} aria-haspopup="menu" aria-label={`Ações de ${post.title}`} className={styles.actionTrigger} data-content-action-trigger onClick={(event) => { setActionMenu((current) => current?.postId === post.id ? null : { postId: post.id, ...getActionMenuPosition(event.currentTarget) }); }} type="button"><AdminIcon name="more" size={17}/></button></td>
           </tr>)}</tbody>
         </table></div>
         <footer className={styles.pagination}><div className={styles.paginationSummary}><strong>{posts.length}</strong><span>registros</span><i aria-hidden="true" /><span>{firstShown}–{lastShown} exibidos</span></div><div className={styles.paginationNav} aria-label="Paginação"><button aria-label="Primeira página" disabled={safePage === 1} onClick={() => { setActionMenu(null); setPage(1); }} type="button">«</button><button aria-label="Página anterior" disabled={safePage === 1} onClick={() => { setActionMenu(null); setPage((current) => clampPage(current - 1, totalPages)); }} type="button">‹</button><span>Página <strong>{safePage}</strong> de <strong>{totalPages}</strong></span><button aria-label="Próxima página" disabled={safePage === totalPages} onClick={() => { setActionMenu(null); setPage((current) => clampPage(current + 1, totalPages)); }} type="button">›</button><button aria-label="Última página" disabled={safePage === totalPages} onClick={() => { setActionMenu(null); setPage(totalPages); }} type="button">»</button></div><label className={styles.pageSize}><span>Por página</span><select aria-label="Registros por página" onChange={(event) => changePageSize(Number(event.target.value))} value={pageSize}><option value={10}>10</option><option value={20}>20</option><option value={50}>50</option></select></label></footer>
       </div> : <div className={styles.empty}><span className={styles.emptyIcon}><AdminIcon name="document" size={20} /></span><strong>Nenhum conteúdo cadastrado.</strong><span>As publicações editoriais aparecerão aqui assim que forem criadas.</span><button className="adminPrimaryCompact" onClick={() => setModal({ mode: "create" })} type="button">Criar primeiro conteúdo</button></div>}
     </section>
 
-    {actionMenu && actionPost && typeof document !== "undefined" ? createPortal(<div className={styles.actionMenu} style={{ position: "fixed", top: actionMenu.top, right: actionMenu.right, zIndex: 900 }}>
-      <button onClick={() => { setActionMenu(null); setModal({ mode: "view", postId: actionPost.id }); }} type="button"><AdminIcon name="eye" size={14}/>Ver</button>
-      {canEdit && !preview ? <button onClick={() => { setActionMenu(null); setModal({ mode: "edit", postId: actionPost.id }); }} type="button"><AdminIcon name="edit" size={14}/>Editar</button> : <button aria-disabled="true" className={styles.disabledAction} disabled type="button"><AdminIcon name="edit" size={14}/>Editar</button>}
-      {canDelete && !preview ? <form action={deletePostAction} onSubmit={(event) => { if (!window.confirm(`Excluir definitivamente “${actionPost.title}”?`)) event.preventDefault(); }}><input name="id" type="hidden" value={actionPost.id}/><button className={styles.deleteAction} type="submit"><AdminIcon name="trash" size={14}/>Excluir</button></form> : <button aria-disabled="true" className={`${styles.deleteAction} ${styles.disabledAction}`} disabled type="button"><AdminIcon name="trash" size={14}/>Excluir</button>}
+    {actionMenu && actionPost && typeof document !== "undefined" ? createPortal(<div aria-label={`Ações de ${actionPost.title}`} className={styles.actionMenu} data-content-action-menu id="content-row-action-menu" role="menu" style={{ position: "fixed", top: actionMenu.top, left: actionMenu.left, right: "auto", zIndex: 900 }}>
+      <button onClick={() => { setActionMenu(null); setModal({ mode: "view", postId: actionPost.id }); }} role="menuitem" type="button"><AdminIcon name="eye" size={14}/>Ver</button>
+      {canEdit && !preview ? <button onClick={() => { setActionMenu(null); setModal({ mode: "edit", postId: actionPost.id }); }} role="menuitem" type="button"><AdminIcon name="edit" size={14}/>Editar</button> : <button aria-disabled="true" className={styles.disabledAction} disabled role="menuitem" type="button"><AdminIcon name="edit" size={14}/>Editar</button>}
+      {canDelete && !preview ? <form action={deletePostAction} onSubmit={(event) => { const confirmed = window.confirm(`Excluir definitivamente “${actionPost.title}”?`); if (!confirmed) { event.preventDefault(); return; } setActionMenu(null); }}><input name="id" type="hidden" value={actionPost.id}/><button className={styles.deleteAction} role="menuitem" type="submit"><AdminIcon name="trash" size={14}/>Excluir</button></form> : <button aria-disabled="true" className={`${styles.deleteAction} ${styles.disabledAction}`} disabled role="menuitem" type="button"><AdminIcon name="trash" size={14}/>Excluir</button>}
     </div>, document.body) : null}
 
     {modal ? <ContentModal canEdit={canEdit && !preview} categories={categories} key={`${modal.mode}-${modal.postId || "new"}`} media={media} mode={modal.mode} onClose={() => setModal(null)} onEdit={() => selectedPost && setModal({ mode: "edit", postId: selectedPost.id })} post={selectedPost} tags={tags}/> : null}
