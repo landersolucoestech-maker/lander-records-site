@@ -87,7 +87,9 @@ test("media library keeps real server actions, permission-aware controls and pag
   assert.match(media, /canUpload/);
   assert.match(mediaPage, /archiveMedia/);
   assert.match(mediaPage, /uploadMedia/);
-  assert.match(mediaPage, /hasMinimumRole/);
+  assert.match(mediaPage, /const persistent = session\.source === "session"/);
+  assert.match(mediaPage, /const canUpload = persistent && session\.user\.role !== "viewer"/);
+  assert.match(mediaPage, /const canArchive = persistent && \(session\.user\.role === "admin" \|\| session\.user\.role === "owner"\)/);
   assert.match(mediaStyles, /\.tableSurface/);
   assert.match(mediaStyles, /\.pagination/);
   assert.doesNotMatch(media, /moreAction/);
