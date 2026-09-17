@@ -111,8 +111,10 @@ test("Content create, edit and view stay inside the unified modal workflow", () 
   assert.match(adminShell, /aria-haspopup="dialog"/);
   assert.match(postManager, /type ModalMode = "create" \| "edit" \| "view"/);
   assert.match(postManager, /window\.addEventListener\("admin:new-content", openModal\)/);
-  assert.match(postManager, /setModal\(\{ mode: "view", postId: post\.id \}\)/);
-  assert.match(postManager, /setModal\(\{ mode: "edit", postId: post\.id \}\)/);
+  assert.match(postManager, /createPortal\(/);
+  assert.match(postManager, /style=\{\{ position: "fixed", top: actionMenu\.top, right: actionMenu\.right, zIndex: 900 \}\}/);
+  assert.match(postManager, /setModal\(\{ mode: "view", postId: actionPost\.id \}\)/);
+  assert.match(postManager, /setModal\(\{ mode: "edit", postId: actionPost\.id \}\)/);
   assert.match(postsPage, /filters\.create === "1" \? "create" : filters\.edit \? "edit" : filters\.view \? "view"/);
   assert.match(legacyPostRoute, /if \(id === "new"\) redirect\("\/admin\/posts\?create=1"\)/);
   assert.match(legacyPostRoute, /new URLSearchParams\(\{ edit: id \}\)/);
