@@ -6,6 +6,7 @@ import {
   getDevelopmentAdminSession,
   isDevelopmentAuthBypassAllowed,
   isDevelopmentAuthBypassEnabled,
+  isDisposablePreviewRequestHost,
   isLoopbackRequestHost,
   isPersistentAdminSession,
   selectAdminSessionForRequest,
@@ -19,8 +20,6 @@ async function withProcessAuthEnvironment(nodeEnv, bypass, callback) {
   const previousPreviewAccess = process.env.DEV_PREVIEW_PUBLIC_ACCESS;
   process.env.NODE_ENV = nodeEnv;
   process.env.DEV_AUTH_BYPASS = bypass;
-  // Keep the local/prod auth tests isolated from the GitHub Actions preview flag.
-  // The preview behavior has its own explicit regression below.
   delete process.env.DEV_PREVIEW_PUBLIC_ACCESS;
   try {
     return await callback();
@@ -51,14 +50,22 @@ test("development bypass admits admin UI and API boundaries", () => {
   }
 });
 
-test("disposable GitHub Actions preview deliberately opens every admin auth boundary", () => {
+test("disposable GitHub Actions preview only opens loopback and Cloudflare preview hosts", () => {
   const environment = {
     NODE_ENV: "production",
     GITHUB_ACTIONS: "true",
     DEV_PREVIEW_PUBLIC_ACCESS: "true",
   };
-  for (const path of ["/admin", "/admin/posts", "/admin/artists", "/admin/settings", "/admin/users", "/api/admin/status"]) {
-    assert.equal(shouldBypassAdminAuthentication(path, environment, "preview.example"), true);
+  for (const host of ["localhost:3000", "127.0.0.1:3000", "safe-preview.trycloudflare.com"]) {
+    assert.equal(isDisposablePreviewRequestHost(host), true);
+    for (const path of ["/admin", "/admin/posts", "/admin/artists", "/admin/settings", "/admin/users", "/api/admin/status"]) {
+      assert.equal(shouldBypassAdminAuthentication(path, environment, host), true);
+    }
+  }
+  for (const host of [null, "", "preview.example", "trycloudflare.com", "eviltrycloudflare.com", "example.com"]) {
+    assert.equal(isDisposablePreviewRequestHost(host), false);
+    assert.equal(shouldBypassAdminAuthentication("/admin", environment, host), false);
+    assert.equal(shouldBypassAdminAuthentication("/api/admin/status", environment, host), false);
   }
 });
 
@@ -81,7 +88,7 @@ test("disabled development bypass preserves normal authentication", () => {
   assert.equal(shouldBypassAdminAuthentication("/api/admin/status", environment, "localhost"), false);
 });
 
-test("production remains fail-closed even when the local bypass flag is true", () => {
+test("production remains fail-closed when only the local bypass flag is true", () => {
   for (const bypass of ["false", "true"]) {
     const environment = { NODE_ENV: "production", DEV_AUTH_BYPASS: bypass };
     assert.equal(shouldBypassAdminAuthentication("/admin", environment, "localhost"), false);
@@ -148,7 +155,7 @@ test("a synthetic development principal cannot become a persistent mutation prin
   assert.equal(isPersistentAdminSession(realSession), true);
 });
 
-test("a real session takes precedence so development bypass does not disable OAuth", () => {
+test("a real session takes precedence so development bypass does not replace it", () => {
   const realSession = { source: "session", sessionId: "real", user: { id: "real-user" } };
   assert.equal(
     selectAdminSessionForRequest(realSession, { NODE_ENV: "development", DEV_AUTH_BYPASS: "true" }, "localhost"),
