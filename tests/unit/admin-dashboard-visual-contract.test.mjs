@@ -5,10 +5,8 @@ import test from "node:test";
 const read = (path) => fs.readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 const entry = read("app/admin/dashboard.css");
 const dashboard = read("styles/admin/dashboard.css");
-const contract = read("styles/admin/dashboard-module-contract.css");
 const featureOverrides = read("styles/admin/dashboard-feature-overrides.css");
 const runtimeContract = read("styles/admin/dashboard-runtime-contract.css");
-const portalContract = read("styles/admin/portal-lander-contract.css");
 const adminShell = read("app/admin/components/AdminShell.tsx");
 const artists = read("app/admin/(protected)/artists/ArtistManager.module.css");
 const artistManager = read("app/admin/(protected)/artists/ArtistManager.tsx");
@@ -19,144 +17,126 @@ const legacyPostRoute = read("app/admin/(protected)/posts/[id]/page.tsx");
 const legacyPostViewRoute = read("app/admin/(protected)/posts/[id]/view/page.tsx");
 const postActions = read("app/admin/post-actions.ts");
 const pages = read("app/admin/(protected)/pages/PagesManager.module.css");
+const homeManager = read("app/admin/components/HomeManagerView.tsx");
+const mediaManager = read("app/admin/(protected)/media/MediaLibrary.tsx");
+const headerManager = read("app/admin/(protected)/header/HeaderManagerView.tsx");
+const mediaKit = read("app/admin/(protected)/media-kit/page.tsx");
 
-test("Dashboard contracts load after the shared protected-admin styles", () => {
+test("protected admin has one final shared visual authority", () => {
   const dashboardImport = entry.indexOf('@import "../../styles/admin/dashboard.css"');
-  const contractImport = entry.indexOf('@import "../../styles/admin/dashboard-module-contract.css"');
   const featureImport = entry.indexOf('@import "../../styles/admin/dashboard-feature-overrides.css"');
   const runtimeImport = entry.indexOf('@import "../../styles/admin/dashboard-runtime-contract.css"');
   assert.notEqual(dashboardImport, -1);
-  assert.notEqual(contractImport, -1);
   assert.notEqual(featureImport, -1);
   assert.notEqual(runtimeImport, -1);
-  assert.ok(contractImport > dashboardImport, "Dashboard module contract must load after shared admin CSS");
-  assert.ok(featureImport > contractImport, "Feature normalization must load after the shared Dashboard contract");
-  assert.ok(runtimeImport > featureImport, "Runtime contract must be the final protected-admin CSS authority");
-  assert.match(entry, /Final authority: every protected module resolves to the Dashboard design language/);
+  assert.ok(featureImport > dashboardImport);
+  assert.ok(runtimeImport > featureImport, "shared runtime contract must be the final protected-admin visual authority");
+  assert.doesNotMatch(entry, /dashboard-module-contract\.css/);
+  assert.equal(fs.existsSync(new URL("../../styles/admin/dashboard-module-contract.css", import.meta.url)), false);
+  assert.match(entry, /single final visual authority/);
 });
 
-test("shared module tokens are derived from the real Dashboard, not an approximation", () => {
+test("canonical admin density, palette and typography resolve from Dashboard", () => {
   assert.match(dashboard, /\.adminDashboard\s*\{[^}]*gap:\s*14px/);
   assert.match(dashboard, /\.adminDashboardHeading h1\s*\{[^}]*font-size:\s*clamp\(22px,\s*1\.6vw,\s*26px\)/);
-  assert.match(dashboard, /\.adminDashboardHeading h1\s*\{[^}]*color:\s*#101114/);
-  assert.match(dashboard, /\.adminDashboardHeading p\s*\{[^}]*color:\s*#52637a/);
   assert.match(dashboard, /border:\s*1px solid #e1e6eb/);
   assert.match(dashboard, /border-radius:\s*10px/);
-  assert.match(contract, /--ui-page-gap:\s*14px/);
-  assert.match(contract, /--ui-border:\s*#e1e6eb/);
-  assert.match(contract, /--ui-radius-lg:\s*10px/);
-  assert.match(contract, /--ui-text-strong:\s*#101114/);
-  assert.match(contract, /--ui-control-md:\s*34px/);
-  assert.match(contract, /font-family:\s*'Montserrat', Arial, sans-serif/);
-  assert.match(contract, /font-size:\s*clamp\(22px,\s*1\.6vw,\s*26px\) !important/);
+  assert.match(runtimeContract, /--dashboard-bg:#f5f5f4/);
+  assert.match(runtimeContract, /--dashboard-border:#e1e6eb/);
+  assert.match(runtimeContract, /--dashboard-red:#e30613/);
+  assert.match(runtimeContract, /font-family:Montserrat,Arial,sans-serif/);
+  assert.match(runtimeContract, /height:34px!important/);
 });
 
-test("runtime contract does not depend on webpack/turbopack CSS-module hash formatting", () => {
-  assert.match(runtimeContract, /\[class\*="toolbar" i\]/);
-  assert.match(runtimeContract, /\[class\*="tableSurface" i\]/);
-  assert.match(runtimeContract, /\[class\*="catalogFrame" i\]/);
-  assert.match(runtimeContract, /\[class\*="selectionCard" i\]/);
-  assert.match(runtimeContract, /\[class\*="structureCard" i\]/);
-  assert.match(runtimeContract, /\[class\*="statusBadge" i\]/);
+test("canonical contract targets semantic module classes without bundler hash assumptions", () => {
+  for (const selector of ["toolbar", "tableSurface", "catalogFrame", "selectionCard", "structureCard", "statusBadge"]) {
+    assert.match(runtimeContract, new RegExp(`\\[class\\*="${selector}" i\\]`));
+  }
   assert.doesNotMatch(runtimeContract, /_toolbar__/);
   assert.doesNotMatch(runtimeContract, /_card__/);
-});
-
-test("all protected tables, controls, filters and cards resolve through the Dashboard contract", () => {
   assert.match(runtimeContract, /table:not\(\.tableview-freeform\) th/);
   assert.match(runtimeContract, /table:not\(\.tableview-freeform\) td/);
-  assert.match(runtimeContract, /height:\s*34px\s*!important/);
-  assert.match(runtimeContract, /border:\s*1px solid var\(--dashboard-border\)\s*!important/);
-  assert.match(runtimeContract, /border-radius:\s*10px\s*!important/);
-  assert.match(runtimeContract, /font-family:\s*Montserrat,Arial,sans-serif\s*!important/);
 });
 
-test("Artists uses the approved table-first reference rather than Dashboard KPI panels", () => {
-  assert.match(artistManager, /className={`adminDashboard \$\{styles\.manager\}`}/);
-  assert.doesNotMatch(artistManager, /adminDashboardHeading/);
-  assert.match(artistManager, /className="srOnly">Status<\/span>/);
-  assert.match(artistManager, /className="srOnly">Gênero<\/span>/);
-  assert.match(artistManager, /className="srOnly">Ordenar por<\/span>/);
-  assert.match(artistManager, /adminPrimaryCompact/);
-  assert.match(artistManager, /styles\.tableSurface/);
-  assert.doesNotMatch(artistManager, /adminMetricGrid|adminMetricCard|adminMetricSpark|adminDashboardPanel|adminAnalyticsPanelHeading/);
-  assert.match(artists, /\.manager\{width:100%;display:grid;gap:18px\}/);
-  assert.match(artists, /\.toolbar\{display:grid;[\s\S]*min-height:102px[\s\S]*background:#fff/);
-  assert.match(artists, /\.artistTable th\{height:38px/);
-  assert.match(artists, /\.artistTable td\{height:56px/);
-  assert.match(artists, /\.identity img,\.avatarFallback\{[\s\S]*width:42px;height:42px[\s\S]*border-radius:6px/);
-  assert.match(artists, /\.statusBadge\{[\s\S]*min-height:22px[\s\S]*border-radius:7px/);
-  assert.match(artists, /approved Artists reference/);
-});
-
-test("Contents matches the approved publication-list reference rather than KPI panels", () => {
-  assert.match(postManager, /data-testid="news-manager"/);
-  assert.match(postManager, /Publicações/);
-  assert.match(postManager, /Modo de desenvolvimento liberado/);
-  assert.match(postManager, /<th>Página<\/th>/);
-  assert.match(postManager, /<span className=\{styles\.pageLabel\}>Notícias<\/span>/);
-  assert.match(postManager, /<th>Slug<\/th>/);
-  assert.match(postManager, /Página <strong>\{safePage\}<\/strong> de/);
-  assert.match(postManager, /Por página/);
-  assert.doesNotMatch(postManager, /adminMetricGrid|adminMetricCard|Publicações cadastradas|Colaborações recebidas|adminAnalyticsPanelHeading/);
-  assert.match(posts, /\.viewTabs\{[\s\S]*min-height:46px[\s\S]*background:#fff/);
-  assert.match(posts, /\.notice\{[\s\S]*min-height:64px[\s\S]*border-left:3px solid #ff2733/);
-  assert.match(posts, /\.tableSurface\{[\s\S]*border-radius:8px[\s\S]*background:#fff/);
-  assert.match(posts, /\.contentTable th\{height:34px/);
-  assert.match(posts, /\.contentTable td\{height:44px/);
-  assert.match(posts, /\.pagination\{[\s\S]*min-height:60px/);
-  assert.match(posts, /\.published\{background:#dcf7e7;color:#078847\}/);
-  assert.match(posts, /Approved Contents reference/);
-});
-
-test("Content create, edit and view stay inside the unified modal workflow", () => {
-  assert.match(adminShell, /action: \{ label: "Novo conteúdo", event: "admin:new-content" \}/);
-  assert.match(adminShell, /aria-haspopup="dialog"/);
-  assert.match(postManager, /type ModalMode = "create" \| "edit" \| "view"/);
-  assert.match(postManager, /window\.addEventListener\("admin:new-content", openModal\)/);
-  assert.match(postManager, /aria-haspopup="menu"/);
-  assert.match(postManager, /document\.addEventListener\("pointerdown", pointerDown\)/);
-  assert.match(postManager, /positionFloatingMenu\(trigger\.getBoundingClientRect\(\), menu\.getBoundingClientRect\(\)\)/);
-  assert.doesNotMatch(postManager, /menuWidth|menuHeight/);
-  assert.match(postManager, /visibility: actionMenuPosition \? "visible" : "hidden"/);
-  assert.match(postManager, /setModal\(\{ mode: "view", postId: actionPost\.id \}\)/);
-  assert.match(postManager, /setModal\(\{ mode: "edit", postId: actionPost\.id \}\)/);
-  assert.match(postManager, /function ContentViewDialog/);
-  assert.match(postManager, /createPortal\(<div className=\{styles\.viewBackdrop\}/);
-  assert.match(postManager, /className=\{styles\.viewArticlePreview\}/);
-  assert.match(postManager, /<ReactMarkdown remarkPlugins=\{\[remarkGfm\]\}>/);
-  assert.match(postManager, /trustedExternalUrl\(url\)/);
-  assert.doesNotMatch(postManager, /className=\{styles\.viewCard\}/);
-  assert.match(posts, /\.viewDialog\{[\s\S]*grid-template-rows:auto minmax\(0,1fr\) auto/);
-  assert.match(posts, /\.viewArticlePreview\{[\s\S]*background:#fff/);
-  assert.match(postsPage, /filters\.create === "1" \? "create" : filters\.edit \? "edit" : filters\.view \? "view"/);
-  assert.match(legacyPostRoute, /if \(id === "new"\) redirect\("\/admin\/posts\?create=1"\)/);
-  assert.match(legacyPostRoute, /new URLSearchParams\(\{ edit: id \}\)/);
-  assert.match(legacyPostViewRoute, /redirect\(`\/admin\/posts\?view=\$\{encodeURIComponent\(id\)\}`\)/);
-  assert.match(postActions, /redirect\(`\/admin\/posts\?edit=\$\{encodeURIComponent\(postId\)\}&saved=1`\)/);
-  assert.equal(fs.existsSync(new URL("../../app/admin/(protected)/posts/new/page.tsx", import.meta.url)), false);
-});
-
-test("Pages keep the shared table geometry", () => {
-  assert.match(pages, /\.selectionCard,\.structureCard\{[\s\S]*border-radius:10px/);
-  assert.match(pages, /\.sectionsRow\{min-height:50px/);
-  assert.match(pages, /\.statusBadge\{[\s\S]*border-radius:5px/);
-  assert.doesNotMatch(pages, /adminTopbarPrimary\).*display:none/);
-});
-
-test("Artists, Home, Header and Pages workbench cannot keep separate shell systems", () => {
+test("feature overrides are limited to domain geometry while preserving shared colors and density", () => {
   assert.match(featureOverrides, /\[data-testid="artist-manager"\]/);
-  assert.match(featureOverrides, /\.homeManager \{/);
-  assert.match(featureOverrides, /\.homeSectionCard \{/);
+  assert.match(featureOverrides, /\.homeSectionCard/);
   assert.match(featureOverrides, /\[data-testid="header-manager"\]/);
   assert.match(featureOverrides, /\[data-testid="page-section-workbench"\]/);
   assert.match(featureOverrides, /border:\s*1px solid #e1e6eb !important/);
   assert.match(featureOverrides, /border-radius:\s*10px !important/);
 });
 
-test("legacy Portal contract can provide geometry but no longer wins the final visual cascade", () => {
-  assert.match(portalContract, /Portal Lander/);
-  assert.ok(entry.indexOf("dashboard-module-contract.css") > entry.indexOf("dashboard.css"));
-  assert.ok(entry.indexOf("dashboard-feature-overrides.css") > entry.indexOf("dashboard-module-contract.css"));
-  assert.ok(entry.indexOf("dashboard-runtime-contract.css") > entry.indexOf("dashboard-feature-overrides.css"));
+test("Artists keeps the table-first manager and one shared page heading", () => {
+  assert.match(artistManager, /data-testid="artist-manager"/);
+  assert.doesNotMatch(artistManager, /adminDashboardHeading/);
+  assert.match(artistManager, /className="srOnly">Status<\/span>/);
+  assert.match(artistManager, /className="srOnly">Gênero<\/span>/);
+  assert.match(artistManager, /className="srOnly">Ordenar por<\/span>/);
+  assert.match(artistManager, /styles\.tableSurface/);
+  assert.match(artists, /\.artistTable th\{height:38px/);
+  assert.match(adminShell, /title: "Artistas"/);
+  assert.match(adminShell, /action: \{ label: "Novo artista"/);
+});
+
+test("Contents uses category as its sole active taxonomy and no redundant publications tab", () => {
+  assert.match(postManager, /data-testid="posts-manager"/);
+  assert.doesNotMatch(postManager, /aria-label="Seção de conteúdos"/);
+  assert.doesNotMatch(postManager, /tags: string\[\]|tagIds: string\[\]|tags\?: Option\[\]|tags=\{/);
+  assert.doesNotMatch(postsPage, /postTags|\btags\b|filters\.tag|tagOptionRows|tagRows/);
+  assert.doesNotMatch(postActions, /postTags|uuidList|tagIds/);
+  assert.match(postManager, /<span>Categoria<\/span>/);
+  assert.match(postManager, /<ViewInfo label="Categoria">/);
+  assert.match(postActions, /Categoria é obrigatória/);
+});
+
+test("Content create, edit, view and row actions share accessible interaction contracts", () => {
+  assert.match(adminShell, /action: \{ label: "Novo conteúdo", event: "admin:new-content", icon: "plus" \}/);
+  assert.match(postManager, /type ModalMode = "create" \| "edit" \| "view"/);
+  assert.match(postManager, /window\.addEventListener\("admin:new-content", openModal\)/);
+  assert.match(postManager, /aria-haspopup="menu"/);
+  assert.match(postManager, /document\.addEventListener\("pointerdown", pointerDown\)/);
+  assert.match(postManager, /positionFloatingMenu\(trigger\.getBoundingClientRect\(\), menu\.getBoundingClientRect\(\)\)/);
+  assert.match(postManager, /function useDialogLifecycle/);
+  assert.match(postManager, /aria-modal="true"/);
+  assert.match(postManager, /<ReactMarkdown remarkPlugins=\{\[remarkGfm\]\}>/);
+  assert.match(postManager, /trustedExternalUrl\(url\)/);
+  assert.match(posts, /\.viewDialog\{[\s\S]*grid-template-rows:auto minmax\(0,1fr\) auto/);
+  assert.match(postsPage, /filters\.create === "1" \? "create" : filters\.edit \? "edit" : filters\.view \? "view"/);
+  assert.match(legacyPostRoute, /if \(id === "new"\) redirect\("\/admin\/posts\?create=1"\)/);
+  assert.match(legacyPostViewRoute, /redirect\(`\/admin\/posts\?view=\$\{encodeURIComponent\(id\)\}`\)/);
+  assert.match(postActions, /redirect\(`\/admin\/posts\?edit=\$\{encodeURIComponent\(postId\)\}&saved=1`\)/);
+});
+
+test("canonical URL and external content links are validated on the server", () => {
+  assert.match(postActions, /function httpUrlOrEmpty/);
+  assert.match(postActions, /url\.protocol !== "http:" && url\.protocol !== "https:"/);
+  assert.match(postActions, /canonicalUrl = httpUrlOrEmpty/);
+  assert.match(postActions, /O link de \$\{platform\}/);
+  assert.match(postActions, /publicationLink: `\/noticias\/\$\{slug\}`/);
+});
+
+test("Home, Media, Header and Media Kit rely on the shared contextual heading", () => {
+  assert.doesNotMatch(homeManager, /adminDashboardHeading/);
+  assert.doesNotMatch(mediaManager, /adminDashboardHeading/);
+  assert.doesNotMatch(mediaKit, /adminDashboardHeading/);
+  assert.doesNotMatch(headerManager, /<h1>Cabeçalho<\/h1>/);
+  assert.match(adminShell, /title: "Home"/);
+  assert.match(adminShell, /title: "Mídias"/);
+  assert.match(adminShell, /title: "Cabeçalho"/);
+  assert.match(adminShell, /title: "Mídia Kit"/);
+  assert.match(adminShell, /event: "admin:add-media"/);
+  assert.match(mediaManager, /window\.addEventListener\("admin:add-media",open\)/);
+});
+
+test("Admin contextual copy names Lander Records instead of borrowing Portal Lander product language", () => {
+  assert.doesNotMatch(adminShell, /Portal Lander|desempenho do portal|controles de acesso do Portal/);
+  assert.match(adminShell, /site da Lander Records/);
+  assert.match(adminShell, /workbench visual canônico da Lander Records/);
+});
+
+test("Pages keep canonical structure protection and shared table geometry", () => {
+  assert.match(pages, /\.selectionCard,\.structureCard\{[\s\S]*border-radius:10px/);
+  assert.match(pages, /\.sectionsRow\{min-height:50px/);
+  assert.match(pages, /\.statusBadge\{[\s\S]*border-radius:5px/);
 });
