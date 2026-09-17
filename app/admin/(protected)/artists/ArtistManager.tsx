@@ -131,11 +131,6 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
     {deleted ? <div className="adminNotice">Artista excluído com sucesso.</div> : null}
     {preview ? <div className="adminNotice">Os dados deste preview são isolados e não alteram a persistência do ambiente real.</div> : null}
 
-    <header className="adminDashboardHeading">
-      <div><h1>Artistas</h1><p>Gerencie os artistas do seu selo, edite informações, discografia e conteúdos relacionados.</p></div>
-      {canEdit && !preview ? <Link className="adminPrimaryCompact" href="/admin/artists/new"><AdminIcon name="plus" size={15} />Novo artista</Link> : null}
-    </header>
-
     <section className={styles.tableSurface} aria-label="Artistas cadastrados">
       <div className={styles.toolbar} role="search">
         <label className={styles.searchField}>
@@ -143,9 +138,9 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
           <AdminIcon name="search" size={16} />
           <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar artistas..." />
         </label>
-        <label className={styles.filterField}><span>Status</span><select value={status} onChange={(event) => setStatus(event.target.value)}><option value="all">Todos</option><option value="published">Ativos</option><option value="draft">Rascunhos</option><option value="inactive">Inativos</option><option value="archived">Arquivados</option></select></label>
-        <label className={styles.filterField}><span>Gênero</span><select value={genre} onChange={(event) => setGenre(event.target.value)}><option value="all">Todos</option>{genres.map((item) => <option key={item}>{item}</option>)}</select></label>
-        <label className={styles.filterField}><span>Ordenar por</span><select value={sort} onChange={(event) => setSort(event.target.value as SortMode)}><option value="updated-desc">Mais recentes</option><option value="updated-asc">Mais antigos</option><option value="name-asc">Nome A–Z</option><option value="name-desc">Nome Z–A</option></select></label>
+        <label className={styles.filterField}><span className="srOnly">Status</span><select value={status} onChange={(event) => setStatus(event.target.value)}><option value="all">Todos</option><option value="published">Ativos</option><option value="draft">Rascunhos</option><option value="inactive">Inativos</option><option value="archived">Arquivados</option></select></label>
+        <label className={styles.filterField}><span className="srOnly">Gênero</span><select value={genre} onChange={(event) => setGenre(event.target.value)}><option value="all">Todos</option>{genres.map((item) => <option key={item}>{item}</option>)}</select></label>
+        <label className={styles.filterField}><span className="srOnly">Ordenar por</span><select value={sort} onChange={(event) => setSort(event.target.value as SortMode)}><option value="updated-desc">Mais recentes</option><option value="updated-asc">Mais antigos</option><option value="name-asc">Nome A–Z</option><option value="name-desc">Nome Z–A</option></select></label>
       </div>
 
       {filtered.length ? <>
