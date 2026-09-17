@@ -44,7 +44,7 @@ export default async function ArtistViewPage({ params }: { params: Promise<{ id:
       </section>
 
       <div className={styles.grid}>
-        <section className={styles.card}><h2>Informações principais</h2><div className={styles.row}><span>Slug</span><strong>{artist.slug}</strong></div><div className={styles.row}><span>Page Link</span><strong>{artist.pageLink || `/artistas/${artist.slug}`}</strong></div><div className={styles.row}><span>Funções</span><strong>{roles.join(" · ") || "Não informado"}</strong></div><div className={styles.row}><span>Gêneros</span><strong>{genres.join(" · ") || "Não informado"}</strong></div><div className={styles.row}><span>Categorias</span><strong>{categories.join(" · ") || "Não informado"}</strong></div></section>
+        <section className={styles.card}><h2>Informações principais</h2><div className={styles.row}><span>Slug</span><strong>{artist.slug}</strong></div><div className={styles.row}><span>Rota pública</span><strong>{`/artistas/${artist.slug}`}</strong></div><div className={styles.row}><span>Funções</span><strong>{roles.join(" · ") || "Não informado"}</strong></div><div className={styles.row}><span>Gêneros</span><strong>{genres.join(" · ") || "Não informado"}</strong></div><div className={styles.row}><span>Categorias</span><strong>{categories.join(" · ") || "Não informado"}</strong></div></section>
         <section className={styles.card}><h2>Configurações de publicação</h2><div className={styles.publication}>{destinations.length ? destinations.map((destination) => <div className={styles.publicationItem} key={destination.id}><span>{destination.name}</span><strong>Ativo</strong></div>) : <p className={styles.empty}>Nenhum destino de publicação selecionado.</p>}</div></section>
       </div>
 
