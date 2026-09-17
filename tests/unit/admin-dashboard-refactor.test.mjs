@@ -34,14 +34,15 @@ test("approved dashboard uses line chart, contextual activities, thumbnails and 
   assert.match(dashboard, /name="more"/);
 });
 
-test("admin shell uses Portal Lander navigation and account chrome without preview-only noise", () => {
+test("admin shell keeps canonical navigation and account chrome without fake capabilities or preview-only noise", () => {
   const footer = shell.slice(shell.indexOf('<div className="adminSidebarFooter">'), shell.indexOf("</aside>"));
   assert.ok(!footer.includes("Ver site público"));
   assert.match(shell, /adminAdministrationLabel/);
   assert.match(shell, /adminNavigationEyebrow/);
   assert.match(shell, /adminSidebarCollapse/);
-  assert.match(shell, /adminNotificationButton/);
+  assert.doesNotMatch(shell, /adminNotificationButton/);
   assert.match(shell, /adminAccountPopover/);
   assert.match(shell, /const showReadOnlyChrome = preview/);
+  assert.match(shell, /const canEdit = !readOnly && role !== "viewer"/);
   assert.match(shell, /developmentPreview \? "Administrador"/);
 });
