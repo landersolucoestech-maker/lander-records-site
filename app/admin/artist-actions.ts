@@ -52,6 +52,18 @@ function uuidList(formData: FormData, name: string) {
   return formData.getAll(name).map(String).map(uuidOrNull).filter((value): value is string => Boolean(value));
 }
 
+function httpUrlOrEmpty(value: string, label: string) {
+  if (!value) return "";
+  try {
+    const url = new URL(value);
+    if ((url.protocol !== "http:" && url.protocol !== "https:") || url.username || url.password || !url.hostname) throw new Error("invalid URL");
+    url.hash = "";
+    return url.toString();
+  } catch {
+    throw new Error(`${label} precisa ser uma URL HTTP(S) válida.`);
+  }
+}
+
 function revalidateArtistContent(slugs: string[]) {
   for (const path of ["/", "/artistas", "/sitemap.xml", "/admin", "/admin/artists"]) revalidatePath(path);
   for (const slug of new Set(slugs.filter(Boolean))) revalidatePath(`/artistas/${slug}`);
@@ -111,8 +123,10 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
   if (!roleIds.length) return { ok: false, error: "Selecione ao menos uma função do artista." };
   if (!genreIds.length) return { ok: false, error: "Selecione ao menos um gênero musical." };
 
+  let canonicalUrl = "";
   let normalizedLinks: Array<{ platform: typeof socialPlatforms[number]; url: string; position: number }>;
   try {
+    canonicalUrl = httpUrlOrEmpty(text(formData, "canonicalUrl"), "A URL canônica");
     normalizedLinks = socialPlatforms
       .map((platform, position) => ({ platform, url: text(formData, `link_${platform}`), position }))
       .filter((item) => item.url)
@@ -173,7 +187,7 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
           ogMediaId: uuidOrNull(text(formData, "ogMediaId")), isPublished: status === "published",
           publishedAt: status === "published" ? (current.publishedAt || new Date()) : null, featureOnHome: false,
           homePosition: integer(formData, "homePosition"), listPosition: integer(formData, "listPosition"),
-          seoTitle: text(formData, "seoTitle"), seoDescription: text(formData, "seoDescription"), canonicalUrl: text(formData, "canonicalUrl"),
+          seoTitle: text(formData, "seoTitle"), seoDescription: text(formData, "seoDescription"), canonicalUrl,
           updatedBy: session.user.id, updatedAt: new Date(),
         }).where(eq(artists.id, resolvedId));
       } else {
@@ -181,7 +195,7 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
           name, slug, shortBio: text(formData, "shortBio"), biography: text(formData, "biography"), cardMediaId, heroMediaId,
           ogMediaId: uuidOrNull(text(formData, "ogMediaId")), isPublished: status === "published", publishedAt: status === "published" ? new Date() : null,
           featureOnHome: false, homePosition: integer(formData, "homePosition"), listPosition: integer(formData, "listPosition"),
-          seoTitle: text(formData, "seoTitle"), seoDescription: text(formData, "seoDescription"), canonicalUrl: text(formData, "canonicalUrl"),
+          seoTitle: text(formData, "seoTitle"), seoDescription: text(formData, "seoDescription"), canonicalUrl,
           createdBy: session.user.id, updatedBy: session.user.id,
         }).returning({ id: artists.id });
         resolvedId = inserted[0].id;
@@ -192,10 +206,10 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
       }
 
       await tx.insert(artistProfiles).values({
-        artistId: resolvedId, isActive: status !== "inactive", pageLink: text(formData, "pageLink") || `/artistas/${slug}`,
+        artistId: resolvedId, isActive: status !== "inactive", pageLink: `/artistas/${slug}`,
         hireTitle: text(formData, "hireTitle") || "Contrate", hireText: text(formData, "hireText"), hireButtonLabel: text(formData, "hireButtonLabel") || "Quero contratar", updatedAt: new Date(),
       }).onConflictDoUpdate({ target: artistProfiles.artistId, set: {
-        isActive: status !== "inactive", pageLink: text(formData, "pageLink") || `/artistas/${slug}`,
+        isActive: status !== "inactive", pageLink: `/artistas/${slug}`,
         hireTitle: text(formData, "hireTitle") || "Contrate", hireText: text(formData, "hireText"), hireButtonLabel: text(formData, "hireButtonLabel") || "Quero contratar", updatedAt: new Date(),
       }});
 
