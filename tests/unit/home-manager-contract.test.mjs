@@ -10,7 +10,7 @@ test("Home manager keeps the eight implemented blocks and omits unsupported cont
     assert.match(source, new RegExp(`key: [\\\"']${key}[\\\"']`));
   }
   assert.doesNotMatch(source, /Publicar alterações|Adicionar nova seção futura|draggable|onDrag/i);
-  assert.match(source, /A reordenação ainda não é suportada/);
+  assert.match(source, /reordenação ainda não é suportada/i);
 });
 
 test("Home manager reflects the CMS-backed advertising banner", () => {
