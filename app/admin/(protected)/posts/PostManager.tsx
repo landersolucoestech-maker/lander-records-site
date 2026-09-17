@@ -182,7 +182,7 @@ function ContentEditorForm({
         <section className={styles.modalSection}>
           <header><div><span>PUBLICAÇÃO</span><h3>Dados editoriais</h3><p>Defina identidade, categoria, URL, autoria e estado da publicação.</p></div></header>
           <div className={styles.formGrid}>
-            <label className={styles.formSpan2}><span>Título</span><input maxLength={240} name="title" onChange={(event) => changeTitle(event.target.value)} ref={titleRef} required value={title}/></label>
+            <label><span>Título</span><input maxLength={240} name="title" onChange={(event) => changeTitle(event.target.value)} ref={titleRef} required value={title}/></label>
             <label><span>Slug</span><input maxLength={260} name="slug" onChange={(event) => { setSlugTouched(true); setSlug(event.target.value); }} placeholder="slug-da-publicacao" required value={slug}/></label>
             <label><span>Categoria</span><select defaultValue={initial?.categoryId || ""} name="categoryId" required><option value="">Selecione</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></label>
             <label><span>Status</span><select defaultValue={initial?.editorStatus || "draft"} name="status"><option value="draft">Rascunho</option><option value="published">Publicado</option><option value="archived">Arquivado</option></select></label>
