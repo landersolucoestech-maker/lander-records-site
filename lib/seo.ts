@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getSiteChrome } from "./content";
+import { getSiteChrome } from "./content.ts";
 
 export function absoluteUrl(pathname: string) {
   const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://landerrecords.com").replace(/\/$/, "");
