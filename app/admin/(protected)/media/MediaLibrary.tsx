@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AdminDialog } from "../../components/AdminDialog";
 import { AdminIcon } from "../../components/AdminIcon";
 import styles from "./MediaLibrary.module.css";
@@ -22,9 +22,9 @@ export function MediaLibrary({ archiveAction, items, uploadAction }: { archiveAc
   const imageCount=items.filter((item)=>item.mimeType.startsWith("image/")).length;
   const totalBytes=items.reduce((sum,item)=>sum+Math.max(0,item.byteSize||0),0);
 
-  return <div className="adminDashboard" data-testid="media-library">
-    <header className="adminDashboardHeading"><div><h1>Mídias</h1><p>Biblioteca central de assets da Lander Records com a mesma hierarquia visual do Dashboard.</p></div><button className="adminPrimaryCompact" onClick={()=>setUploadOpen(true)} type="button"><AdminIcon name="upload" size={15}/>Adicionar mídia</button></header>
+  useEffect(()=>{const open=()=>setUploadOpen(true);window.addEventListener("admin:add-media",open);return()=>window.removeEventListener("admin:add-media",open);},[]);
 
+  return <div className="adminDashboard" data-testid="media-manager">
     <section className="adminMetricGrid" aria-label="Resumo da biblioteca de mídia">
       <Metric accent="red" icon="media" label="Arquivos" value={items.length.toLocaleString("pt-BR")} hint="total na biblioteca"/>
       <Metric accent="green" icon="check" label="Ativos" value={activeCount.toLocaleString("pt-BR")} hint="disponíveis para uso"/>
