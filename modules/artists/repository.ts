@@ -47,7 +47,7 @@ async function hydrateArtists(baseArtists: Array<typeof artists.$inferSelect>): 
       metrics: Object.fromEntries(metricRows.filter((row) => row.artistId === artist.id).map((row) => [row.platform, row.value])),
       profile: {
         isActive: profile?.isActive ?? true,
-        pageLink: profile?.pageLink || `/artistas/${artist.slug}`,
+        pageLink: `/artistas/${artist.slug}`,
         hireTitle: profile?.hireTitle || "Contrate",
         hireText: profile?.hireText || "",
         hireButtonLabel: profile?.hireButtonLabel || "Quero contratar",
