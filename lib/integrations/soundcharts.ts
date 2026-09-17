@@ -106,11 +106,11 @@ async function verifyIdentifier(uuid: string, originalUrl: string) {
     if (!payload) return false;
     const normalizedTarget = normalizeExternalUrl(originalUrl);
     return allStrings(payload).some((value) => {
-      if (!/^https?:\/\//i.test(value)) return value.includes(uuid) && false;
+      if (!/^https?:\/\//i.test(value)) return false;
       try { return normalizeExternalUrl(value) === normalizedTarget; } catch { return false; }
     });
   } catch (error) {
-    if (error instanceof Error && error.message.includes("respondeu 403")) return true;
+    if (error instanceof Error && error.message.includes("respondeu 403")) return false;
     throw error;
   }
 }
