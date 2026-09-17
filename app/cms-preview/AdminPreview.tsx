@@ -20,7 +20,6 @@ const modules = [
   ["posts", "Conteúdos"],
   ["pages", "Páginas"],
   ["media", "Mídias"],
-  ["releases", "Lançamentos"],
   ["categories", "Categorias"],
   ["navigation", "Navegação"],
   ["header", "Cabeçalho"],
@@ -33,7 +32,6 @@ const modules = [
 const rows: Record<string, Array<[string, string, string]>> = {
   artists: [["DJ Stay", "Publicado", "Eletrônica"], ["Lander", "Rascunho", "Produtor"], ["Aurora", "Inativo", "Pop"]],
   media: [["artist-card.webp", "Ativo", "1200 × 1200"], ["news-cover.webp", "Ativo", "1600 × 900"], ["hero-banner.webp", "Arquivado", "1920 × 800"]],
-  releases: [["Noite Inteira", "Ativo", "Single"], ["Horizonte", "Rascunho", "EP"], ["Ao Vivo", "Ativo", "Álbum"]],
   categories: [["Eletrônica", "Ativa", "Artistas"], ["Notícias", "Ativa", "Conteúdos"], ["Agenda", "Ativa", "Conteúdos"]],
   users: [["Equipe editorial", "Ativo", "Editor"], ["Administrador local", "Ativo", "Administrador"], ["Leitura", "Ativo", "Visualizador"]],
   audit: [["Conteúdo atualizado", "Sucesso", "page_section"], ["Artista publicado", "Sucesso", "artist"], ["Login administrativo", "Sucesso", "admin_user"]],
