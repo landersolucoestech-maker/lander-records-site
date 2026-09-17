@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { count, eq } from "drizzle-orm";
+import { requireAdmin } from "../../../../lib/auth";
+import { hasMinimumRole } from "../../../../lib/auth/policy";
 import { getDb } from "../../../../lib/db";
 import { mediaAssets, pages, posts, siteSettings } from "../../../../lib/db/schema";
 import { AdminIcon, type IconName } from "../../components/AdminIcon";
@@ -15,6 +17,10 @@ function PanelTitle({ icon, title, description, action }: { icon: IconName; titl
 }
 
 export default async function MediaKitPage() {
+  const session = await requireAdmin();
+  const persistent = session.source === "session";
+  const canEditContent = persistent && hasMinimumRole(session.user.role, "editor");
+  const canAdminSettings = persistent && hasMinimumRole(session.user.role, "admin");
   const db = getDb();
   const [[settings], [pageCount], [postCount], [mediaCount]] = await Promise.all([
     db.select().from(siteSettings).limit(1),
@@ -39,13 +45,13 @@ export default async function MediaKitPage() {
 
     <div className={styles.workspace}>
       <div className={styles.editor}>
-        <section className="adminDashboardPanel"><PanelTitle icon="document" title="Identidade e apresentação" description="Dados institucionais usados na apresentação comercial." action={<Link className="adminTextButton" href="/admin/settings">Editar dados</Link>} /><div className={styles.cardBody}><div className={styles.formGrid}><label><span>Título do documento</span><input value={brand} disabled readOnly/></label><label><span>Subtítulo</span><input value={tagline} disabled readOnly/></label><label><span>Versão editorial</span><input value="Não persistida" disabled readOnly/></label><label><span>Status</span><input value="Composição atual" disabled readOnly/></label><label className={styles.span2}><span>Resumo institucional</span><textarea rows={4} value={tagline} disabled readOnly/></label><label className={styles.span2}><span>Posicionamento comercial</span><textarea rows={4} value={location} disabled readOnly/></label></div></div></section>
+        <section className="adminDashboardPanel"><PanelTitle icon="document" title="Identidade e apresentação" description="Dados institucionais usados na apresentação comercial." action={<Link className="adminTextButton" href="/admin/settings">{canAdminSettings ? "Editar dados" : "Consultar dados"}</Link>} /><div className={styles.cardBody}><div className={styles.formGrid}><label><span>Título do documento</span><input value={brand} disabled readOnly/></label><label><span>Subtítulo</span><input value={tagline} disabled readOnly/></label><label><span>Versão editorial</span><input value="Não persistida" disabled readOnly/></label><label><span>Status</span><input value="Composição atual" disabled readOnly/></label><label className={styles.span2}><span>Resumo institucional</span><textarea rows={4} value={tagline} disabled readOnly/></label><label className={styles.span2}><span>Posicionamento comercial</span><textarea rows={4} value={location} disabled readOnly/></label></div></div></section>
 
-        <section className="adminDashboardPanel"><PanelTitle icon="chart" title="Audiência" description="Métricas entram no documento apenas quando houver fonte real elegível conectada." action={<Link className="adminTextButton" href="/admin/settings/lander-records">Integrações</Link>} /><div className={styles.cardBody}><div className={styles.emptyState}><AdminIcon name="chart" size={24}/><strong>Nenhum dado real de audiência disponível</strong><p>Ausência de dado não vira zero, estimativa ou valor manual.</p></div></div></section>
+        <section className="adminDashboardPanel"><PanelTitle icon="chart" title="Audiência" description="Métricas entram no documento apenas quando houver fonte real elegível conectada." action={<Link className="adminTextButton" href="/admin/settings/lander-records">{canEditContent ? "Integrações" : "Consultar integrações"}</Link>} /><div className={styles.cardBody}><div className={styles.emptyState}><AdminIcon name="chart" size={24}/><strong>Nenhum dado real de audiência disponível</strong><p>Ausência de dado não vira zero, estimativa ou valor manual.</p></div></div></section>
 
         <section className="adminDashboardPanel"><PanelTitle icon="media" title="Inventário editorial" description="Recursos reais disponíveis para composição comercial." /><div className={styles.cardBody}><div className={styles.inventoryList}><article><div><strong>Biblioteca de mídia</strong><small>{mediaTotal} arquivos ativos disponíveis.</small></div><Link className="adminTextButton" href="/admin/media">Abrir biblioteca</Link></article><article><div><strong>Conteúdo editorial</strong><small>{postsTotal} publicações atualmente publicadas.</small></div><Link className="adminTextButton" href="/admin/posts">Ver conteúdos</Link></article></div></div></section>
 
-        <section className="adminDashboardPanel"><PanelTitle icon="mail" title="Contato comercial" description="Informações apresentadas ao anunciante a partir das configurações reais." action={<Link className="adminTextButton" href="/admin/settings">Editar contato</Link>} /><div className={styles.cardBody}><div className={styles.formGrid}><label><span>Responsável / equipe</span><input value={brand} disabled readOnly/></label><label><span>E-mail</span><input value={contact} disabled readOnly/></label><label><span>Telefone / WhatsApp</span><input value={phone} disabled readOnly/></label><label><span>Localização</span><input value={location} disabled readOnly/></label></div></div></section>
+        <section className="adminDashboardPanel"><PanelTitle icon="mail" title="Contato comercial" description="Informações apresentadas ao anunciante a partir das configurações reais." action={<Link className="adminTextButton" href="/admin/settings">{canAdminSettings ? "Editar contato" : "Consultar contato"}</Link>} /><div className={styles.cardBody}><div className={styles.formGrid}><label><span>Responsável / equipe</span><input value={brand} disabled readOnly/></label><label><span>E-mail</span><input value={contact} disabled readOnly/></label><label><span>Telefone / WhatsApp</span><input value={phone} disabled readOnly/></label><label><span>Localização</span><input value={location} disabled readOnly/></label></div></div></section>
       </div>
 
       <aside className={styles.preview} aria-label="Prévia visual do Mídia Kit"><header><div><span>PRÉVIA</span><strong>{brand}</strong></div><small>Dados reais disponíveis</small></header><div className={styles.sheet}><div className={styles.sheetBrand}><span>MÍDIA · PUBLICAÇÕES · PRESENÇA</span><h3>{brand}</h3><p>{tagline}</p></div><div className={styles.sheetStats}><div><strong>{pagesTotal}</strong><small>PÁGINAS ATIVAS</small></div><div><strong>{postsTotal}</strong><small>PUBLICAÇÕES</small></div><div><strong>{mediaTotal}</strong><small>ARQUIVOS</small></div></div><div className={styles.sheetContact}><strong>Contato comercial</strong><span>{contact}</span><span>{phone}</span></div><div className={styles.sheetFooter}><span>{location}</span><span>LANDER RECORDS · MÍDIA KIT</span></div></div></aside>
