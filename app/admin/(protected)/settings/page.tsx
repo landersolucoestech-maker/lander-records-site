@@ -4,12 +4,20 @@ import { asc, eq } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
 import { contactTopics, mediaAssets, siteSettings, socialLinks } from "../../../../lib/db/schema";
+import { normalizeExternalUrl } from "../../../../lib/integrations/identity";
 import { updateSiteSettings, upsertContactTopic, upsertSocialLink } from "../../actions";
 import { AdminIcon } from "../../components/AdminIcon";
 import { SettingsTabs } from "./SettingsTabs";
 import styles from "./Settings.module.css";
 
 export const dynamic = "force-dynamic";
+
+async function upsertValidatedSocialLink(formData: FormData) {
+  "use server";
+  const rawUrl = String(formData.get("url") || "").trim();
+  if (rawUrl) formData.set("url", normalizeExternalUrl(rawUrl));
+  await upsertSocialLink(formData);
+}
 
 export default async function SettingsPage() {
   const session = await requireAdmin();
@@ -76,8 +84,8 @@ export default async function SettingsPage() {
 
     <section className={styles.card}>
       <div className={styles.cardHeader}><div><h2>Redes sociais</h2><p>Links públicos mantidos na fonte de dados oficial do site.</p></div></div>
-      <div className={styles.cardBody}><div className={styles.stack}>{socials.map((social) => <form action={upsertSocialLink} className={styles.row} key={social.id}><input type="hidden" name="id" value={social.id}/><input aria-label="Plataforma" name="platform" defaultValue={social.platform}/><input aria-label="Rótulo" name="label" defaultValue={social.label}/><input aria-label="URL" name="url" type="url" defaultValue={social.url}/><input aria-label="Posição" name="position" type="number" defaultValue={social.position}/><label className={styles.check}><input name="active" type="checkbox" defaultChecked={social.active}/> Ativa</label><button className="adminButton" type="submit">Salvar</button></form>)}
-        <form action={upsertSocialLink} className={`${styles.row} ${styles.newRow}`}><input name="platform" placeholder="instagram" required/><input name="label" placeholder="Instagram" required/><input name="url" type="url" placeholder="https://..."/><input name="position" type="number" defaultValue={0}/><label className={styles.check}><input name="active" type="checkbox" defaultChecked/> Ativa</label><button className="adminButton primary" type="submit">Adicionar</button></form></div></div>
+      <div className={styles.cardBody}><div className={styles.stack}>{socials.map((social) => <form action={upsertValidatedSocialLink} className={styles.row} key={social.id}><input type="hidden" name="id" value={social.id}/><input aria-label="Plataforma" name="platform" defaultValue={social.platform}/><input aria-label="Rótulo" name="label" defaultValue={social.label}/><input aria-label="URL" name="url" type="url" defaultValue={social.url}/><input aria-label="Posição" name="position" type="number" defaultValue={social.position}/><label className={styles.check}><input name="active" type="checkbox" defaultChecked={social.active}/> Ativa</label><button className="adminButton" type="submit">Salvar</button></form>)}
+        <form action={upsertValidatedSocialLink} className={`${styles.row} ${styles.newRow}`}><input name="platform" placeholder="instagram" required/><input name="label" placeholder="Instagram" required/><input name="url" type="url" placeholder="https://..."/><input name="position" type="number" defaultValue={0}/><label className={styles.check}><input name="active" type="checkbox" defaultChecked/> Ativa</label><button className="adminButton primary" type="submit">Adicionar</button></form></div></div>
     </section>
   </div>;
 
