@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { audit, requirePersistentAdmin } from "../../lib/auth";
 import { getDb } from "../../lib/db";
 import { landerRecordsIntegrationSettings, spotifyReleaseCache } from "../../lib/db/integration-schema";
-import { normalizeExternalUrl, spotifyPlaylistIdFromUrl } from "../../lib/integrations/identity";
+import { normalizeExternalUrl, normalizePlatformUrl, spotifyPlaylistIdFromUrl } from "../../lib/integrations/identity";
 import { syncAllIntegrations } from "../../lib/integrations/sync";
 
 function text(formData: FormData, name: string) {
@@ -15,9 +15,11 @@ function text(formData: FormData, name: string) {
 
 export async function saveLanderRecordsIntegrationSettings(formData: FormData) {
   const session = await requirePersistentAdmin("editor");
-  const instagramUrl = normalizeExternalUrl(text(formData, "instagramUrl"));
-  const youtubeUrl = normalizeExternalUrl(text(formData, "youtubeUrl"));
+  const instagramRaw = text(formData, "instagramUrl");
+  const youtubeRaw = text(formData, "youtubeUrl");
   const spotifyPlaylistUrl = normalizeExternalUrl(text(formData, "spotifyPlaylistUrl"));
+  const instagramUrl = instagramRaw ? normalizePlatformUrl("instagram", instagramRaw) : "";
+  const youtubeUrl = youtubeRaw ? normalizePlatformUrl("youtube", youtubeRaw) : "";
   const spotifyPlaylistId = spotifyPlaylistUrl ? spotifyPlaylistIdFromUrl(spotifyPlaylistUrl) : "";
   const db = getDb();
   const current = (await db.select().from(landerRecordsIntegrationSettings).where(eq(landerRecordsIntegrationSettings.key, "lander_records")).limit(1))[0];
