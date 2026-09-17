@@ -73,7 +73,10 @@ test("all protected tables, controls, filters and cards resolve through the Dash
 
 test("Artists uses the approved table-first reference rather than Dashboard KPI panels", () => {
   assert.match(artistManager, /className={`adminDashboard \$\{styles\.manager\}`}/);
-  assert.match(artistManager, /adminDashboardHeading/);
+  assert.doesNotMatch(artistManager, /adminDashboardHeading/);
+  assert.match(artistManager, /className="srOnly">Status<\/span>/);
+  assert.match(artistManager, /className="srOnly">Gênero<\/span>/);
+  assert.match(artistManager, /className="srOnly">Ordenar por<\/span>/);
   assert.match(artistManager, /adminPrimaryCompact/);
   assert.match(artistManager, /styles\.tableSurface/);
   assert.doesNotMatch(artistManager, /adminMetricGrid|adminMetricCard|adminMetricSpark|adminDashboardPanel|adminAnalyticsPanelHeading/);
