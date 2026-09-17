@@ -102,7 +102,6 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
       coverMediaId: post.coverMediaId || "",
       authorMediaId: profile?.authorMediaId || "",
       authorImage: profile?.authorMediaId ? mediaMap.get(profile.authorMediaId) || "" : "",
-      publicationLink: profile?.publicationLink || `/noticias/${post.slug}`,
       links: Object.fromEntries(linkRows.filter((row) => row.postId === post.id).map((row) => [row.platform, row.url])),
       featuredOnHome: post.featuredOnHome,
       homePosition: post.homePosition,
