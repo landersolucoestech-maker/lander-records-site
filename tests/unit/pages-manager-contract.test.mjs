@@ -41,6 +41,7 @@ test("Pages overview mirrors the Portal Lander composition while keeping Lander 
   assert.doesNotMatch(manager, /referencePages|referenceSections|demoMode \|\| preview \?/);
   assert.doesNotMatch(manager, /Mais Lidas|Publicidade Lateral|Em Alta|Newsletter|Sobre o Portal/);
   assert.match(page, /sections: pageStructure/);
+  assert.doesNotMatch(page, /adminDashboardHeading/);
   assert.match(manager, /className=\{styles\.selectionMain\}/);
   assert.match(manager, /className=\{styles\.sectionsList\} role="table"/);
   assert.match(manager, /className=\{styles\.sectionsHead\} role="row"/);
@@ -133,6 +134,8 @@ test("Other public pages and domain sections match the CMS contract", () => {
 test("Hero and section editor expose only Lander Records fields and preview the real public route", () => {
   assert.match(editorPage, /siteSectionContract/);
   assert.match(editorPage, /mediaAssets/);
+  assert.match(editorPage, /const session = await requireAdmin\("editor"\)/);
+  assert.match(editorPage, /if \(session\.source !== "session"\) redirect\("\/admin\/pages"\)/);
   assert.match(workbench, /data-site-source="lander-records"/);
   assert.match(workbench, /siteSectionContract\(page\.key, selected\.sectionKey\)/);
   assert.match(workbench, /CTAs do Hero/);
