@@ -4,20 +4,12 @@ import { asc, eq } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
 import { contactTopics, mediaAssets, siteSettings, socialLinks } from "../../../../lib/db/schema";
-import { normalizeExternalUrl } from "../../../../lib/integrations/identity";
-import { updateSiteSettings, upsertContactTopic, upsertSocialLink } from "../../actions";
+import { updateCompanySettings, updateIdentitySettings, upsertContactTopic, upsertSocialLink } from "../../actions";
 import { AdminIcon } from "../../components/AdminIcon";
 import { SettingsTabs } from "./SettingsTabs";
 import styles from "./Settings.module.css";
 
 export const dynamic = "force-dynamic";
-
-async function upsertValidatedSocialLink(formData: FormData) {
-  "use server";
-  const rawUrl = String(formData.get("url") || "").trim();
-  if (rawUrl) formData.set("url", normalizeExternalUrl(rawUrl));
-  await upsertSocialLink(formData);
-}
 
 export default async function SettingsPage() {
   const session = await requireAdmin();
@@ -36,8 +28,7 @@ export default async function SettingsPage() {
   const company = <div className={styles.tabPanel}>
     <section className={styles.card}>
       <div className={styles.cardHeader}><div><h2>Informações da empresa</h2><p>Dados institucionais e de contato exibidos pelo site da Lander Records.</p></div></div>
-      <div className={styles.cardBody}><form action={updateSiteSettings} className={styles.form}>
-        <input name="brandName" type="hidden" value={settings.brandName}/><input name="tagline" type="hidden" value={settings.tagline}/><input name="defaultSeoTitle" type="hidden" value={settings.defaultSeoTitle}/><input name="defaultSeoDescription" type="hidden" value={settings.defaultSeoDescription}/><input name="logoMediaId" type="hidden" value={settings.logoMediaId || ""}/><input name="socialImageMediaId" type="hidden" value={settings.socialImageMediaId || ""}/>
+      <div className={styles.cardBody}><form action={updateCompanySettings} className={styles.form}>
         <div className={styles.grid}>
           <label className={styles.field}><span>E-mail</span><input name="contactEmail" type="email" defaultValue={settings.contactEmail}/></label>
           <label className={styles.field}><span>Telefone</span><input name="contactPhone" defaultValue={settings.contactPhone}/></label>
@@ -68,8 +59,7 @@ export default async function SettingsPage() {
 
       <section className={styles.card}>
         <div className={styles.cardHeader}><div><h2>Marca e SEO padrão</h2><p>Configuração central da identidade do site.</p></div></div>
-        <div className={styles.cardBody}><form action={updateSiteSettings} className={styles.form}>
-          <input name="contactEmail" type="hidden" value={settings.contactEmail}/><input name="contactPhone" type="hidden" value={settings.contactPhone}/><input name="location" type="hidden" value={settings.location}/><input name="hours" type="hidden" value={settings.hours}/><input name="address" type="hidden" value={settings.address}/>
+        <div className={styles.cardBody}><form action={updateIdentitySettings} className={styles.form}>
           <div className={styles.grid}>
             <label className={styles.field}><span>Marca</span><input name="brandName" defaultValue={settings.brandName}/></label>
             <label className={styles.field}><span>Tagline</span><input name="tagline" defaultValue={settings.tagline}/></label>
@@ -84,8 +74,8 @@ export default async function SettingsPage() {
 
     <section className={styles.card}>
       <div className={styles.cardHeader}><div><h2>Redes sociais</h2><p>Links públicos mantidos na fonte de dados oficial do site.</p></div></div>
-      <div className={styles.cardBody}><div className={styles.stack}>{socials.map((social) => <form action={upsertValidatedSocialLink} className={styles.row} key={social.id}><input type="hidden" name="id" value={social.id}/><input aria-label="Plataforma" name="platform" defaultValue={social.platform}/><input aria-label="Rótulo" name="label" defaultValue={social.label}/><input aria-label="URL" name="url" type="url" defaultValue={social.url}/><input aria-label="Posição" name="position" type="number" defaultValue={social.position}/><label className={styles.check}><input name="active" type="checkbox" defaultChecked={social.active}/> Ativa</label><button className="adminButton" type="submit">Salvar</button></form>)}
-        <form action={upsertValidatedSocialLink} className={`${styles.row} ${styles.newRow}`}><input name="platform" placeholder="instagram" required/><input name="label" placeholder="Instagram" required/><input name="url" type="url" placeholder="https://..."/><input name="position" type="number" defaultValue={0}/><label className={styles.check}><input name="active" type="checkbox" defaultChecked/> Ativa</label><button className="adminButton primary" type="submit">Adicionar</button></form></div></div>
+      <div className={styles.cardBody}><div className={styles.stack}>{socials.map((social) => <form action={upsertSocialLink} className={styles.row} key={social.id}><input type="hidden" name="id" value={social.id}/><input aria-label="Plataforma" name="platform" defaultValue={social.platform}/><input aria-label="Rótulo" name="label" defaultValue={social.label}/><input aria-label="URL" name="url" type="url" defaultValue={social.url}/><input aria-label="Posição" name="position" type="number" defaultValue={social.position}/><label className={styles.check}><input name="active" type="checkbox" defaultChecked={social.active}/> Ativa</label><button className="adminButton" type="submit">Salvar</button></form>)}
+        <form action={upsertSocialLink} className={`${styles.row} ${styles.newRow}`}><input name="platform" placeholder="instagram" required/><input name="label" placeholder="Instagram" required/><input name="url" type="url" placeholder="https://..."/><input name="position" type="number" defaultValue={0}/><label className={styles.check}><input name="active" type="checkbox" defaultChecked/> Ativa</label><button className="adminButton primary" type="submit">Adicionar</button></form></div></div>
     </section>
   </div>;
 
