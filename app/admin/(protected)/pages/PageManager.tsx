@@ -91,27 +91,6 @@ export default function PageManager({ canEdit = true, demoMode = false, pages, p
   const allowDelete = canEdit && !demoMode && !preview && !canonicalPage;
 
   return <div className={styles.manager} data-testid="pages-manager">
-    <section className={styles.selectionCard} aria-label="Página selecionada">
-      <div className={styles.selectionMain}>
-        <div className={styles.selectedSummary}>
-          <span className={styles.eyebrow}>Página selecionada</span>
-          <strong>{title}</strong>
-          <small>{selected.enabled ? "Publicada" : "Não publicada"} · {kind}</small>
-        </div>
-        <label className={styles.pageSelector}>
-          <span>Página</span>
-          <select aria-label="Selecionar página" onChange={(event) => { setSelectedId(event.target.value); setCreateSectionOpen(false); setDeleteOpen(false); }} value={selected.id}>
-            {pages.map((page) => <option key={page.id} value={page.id}>{displayTitle(page)} · {pageKind(page)} · {page.enabled ? "publicada" : "não publicada"}</option>)}
-          </select>
-        </label>
-      </div>
-      <div className={styles.pageActions}>
-        {selected.publicRoute ? <Link className={styles.outlineButton} href={selected.publicRoute} rel="noopener noreferrer" target="_blank"><AdminIcon name="eye" size={15} /><span>Ver página pública</span></Link> : <button className={styles.outlineButton} disabled title="Esta estrutura não possui renderer público registrado" type="button"><AdminIcon name="eye" size={15} /><span>Sem rota pública</span></button>}
-        <Link className={styles.outlineButton} href={editHref}><AdminIcon name="edit" size={15} /><span>Editar</span></Link>
-        {allowDelete ? <button className={`${styles.outlineButton} ${styles.dangerButton}`} onClick={() => setDeleteOpen(true)} type="button"><AdminIcon name="trash" size={15} /><span>Excluir</span></button> : <button aria-disabled="true" className={`${styles.outlineButton} ${styles.dangerButton}`} title={canonicalPage ? "Página estrutural do site público" : "Ação indisponível neste acesso"} type="button"><AdminIcon name="trash" size={15} /><span>Excluir</span></button>}
-      </div>
-    </section>
-
     <section className={styles.structureCard} aria-label="Estrutura da página">
       <div className={styles.structureHeading}>
         <div>
@@ -119,7 +98,20 @@ export default function PageManager({ canEdit = true, demoMode = false, pages, p
           <strong>{title}</strong>
           <small>{sections.length} {sections.length === 1 ? "seção" : "seções"} · {kind}</small>
         </div>
-        {allowStructureMutation ? <button className={styles.primaryButton} onClick={openCreateSection} type="button"><span aria-hidden="true">+</span><span>Criar seção</span></button> : canonicalPage ? <span className={`${styles.statusBadge} ${styles.active}`}><i aria-hidden="true" />Estrutura canônica</span> : <button className={styles.primaryButton} disabled type="button"><span aria-hidden="true">+</span><span>Criar seção</span></button>}
+        <div className={styles.pageActions} aria-label="Página selecionada">
+          <div className={styles.selectionMain}>
+            <label className={styles.pageSelector}>
+              <span>Página</span>
+              <select aria-label="Selecionar página" onChange={(event) => { setSelectedId(event.target.value); setCreateSectionOpen(false); setDeleteOpen(false); }} value={selected.id}>
+                {pages.map((page) => <option key={page.id} value={page.id}>{displayTitle(page)} · {pageKind(page)} · {page.enabled ? "publicada" : "não publicada"}</option>)}
+              </select>
+            </label>
+          </div>
+          {selected.publicRoute ? <Link className={styles.outlineButton} href={selected.publicRoute} rel="noopener noreferrer" target="_blank"><AdminIcon name="eye" size={15} /><span>Ver página pública</span></Link> : <button className={styles.outlineButton} disabled title="Esta estrutura não possui renderer público registrado" type="button"><AdminIcon name="eye" size={15} /><span>Sem rota pública</span></button>}
+          <Link className={styles.outlineButton} href={editHref}><AdminIcon name="edit" size={15} /><span>Editar</span></Link>
+          {allowDelete ? <button className={`${styles.outlineButton} ${styles.dangerButton}`} onClick={() => setDeleteOpen(true)} type="button"><AdminIcon name="trash" size={15} /><span>Excluir</span></button> : <button aria-disabled="true" className={`${styles.outlineButton} ${styles.dangerButton}`} title={canonicalPage ? "Página estrutural do site público" : "Ação indisponível neste acesso"} type="button"><AdminIcon name="trash" size={15} /><span>Excluir</span></button>}
+          {allowStructureMutation ? <button className={styles.primaryButton} onClick={openCreateSection} type="button"><span aria-hidden="true">+</span><span>Criar seção</span></button> : canonicalPage ? <span className={`${styles.statusBadge} ${styles.active}`}><i aria-hidden="true" />Estrutura canônica</span> : <button className={styles.primaryButton} disabled type="button"><span aria-hidden="true">+</span><span>Criar seção</span></button>}
+        </div>
       </div>
       {sections.length ? <div className={styles.sectionsList} role="table" aria-label={`Estrutura de ${title}`}>
         <div className={styles.sectionsHead} role="row">
