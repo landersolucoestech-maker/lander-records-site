@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { getDb } from "../../../lib/db";
 import { adminUsers } from "../../../lib/db/schema";
@@ -31,13 +31,16 @@ export async function loginAction(formData: FormData) {
 
   const valid = await verifyPassword(password, user.passwordHash);
   if (!valid) {
-    const failures = user.failedLoginAttempts + 1;
-    await db.update(adminUsers).set({
-      failedLoginAttempts: failures,
-      lockedUntil: failures >= 5 ? new Date(Date.now() + 15 * 60 * 1000) : null,
-      updatedAt: new Date(),
-    }).where(eq(adminUsers.id, user.id));
-    await audit(user.id, "auth.login_failed", "admin_user", user.id, { failures });
+    const [updated] = await db
+      .update(adminUsers)
+      .set({
+        failedLoginAttempts: sql`${adminUsers.failedLoginAttempts} + 1`,
+        lockedUntil: sql`CASE WHEN ${adminUsers.failedLoginAttempts} + 1 >= 5 THEN now() + interval '15 minutes' ELSE NULL END`,
+        updatedAt: new Date(),
+      })
+      .where(eq(adminUsers.id, user.id))
+      .returning({ failures: adminUsers.failedLoginAttempts });
+    await audit(user.id, "auth.login_failed", "admin_user", user.id, { failures: updated?.failures ?? user.failedLoginAttempts + 1 });
     redirect("/admin/login?error=credentials");
   }
 
