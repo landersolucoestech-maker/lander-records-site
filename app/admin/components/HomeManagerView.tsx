@@ -27,7 +27,6 @@ export function HomeManagerView({ canEdit = true, preview = false, sections }: {
 
   return <div className="adminDashboard homeManager" data-testid="home-manager">
     {preview ? <div className="adminPreviewNotice">BACKEND_ENVIRONMENT_DEFERRED · visão estrutural sem leitura ou escrita no banco.</div> : null}
-    <header className="adminDashboardHeading"><div><h1>Home</h1><p>Gerencie as seções da página inicial da Lander Records na mesma hierarquia visual do Dashboard.</p></div><Link className="adminPrimaryCompact" href="/" target="_blank"><AdminIcon name="external" size={14}/>Ver site público</Link></header>
     <section className="adminMetricGrid" aria-label="Resumo da Home">
       <Metric accent="red" icon="home" label="Seções" value={sections.length} hint="na composição atual" />
       <Metric accent="green" icon="edit" label="Editáveis" value={editable} hint="conteúdo controlado no CMS" />
@@ -35,7 +34,7 @@ export function HomeManagerView({ canEdit = true, preview = false, sections }: {
       <Metric accent="orange" icon="eye" label="Com prévia" value={withPreview} hint="conteúdo visual disponível" />
     </section>
     <section className="adminDashboardPanel">
-      <div className="adminAnalyticsPanelHeading"><div className="adminPanelHeadingIdentity"><span className="adminPanelHeadingIcon"><AdminIcon name="home" size={20}/></span><div><h2>Seções da Home</h2><p>A ordem acompanha a composição pública implementada; reordenação ainda não é suportada.</p></div></div></div>
+      <div className="adminAnalyticsPanelHeading"><div className="adminPanelHeadingIdentity"><span className="adminPanelHeadingIcon"><AdminIcon name="home" size={20}/></span><div><h2>Seções da Home</h2><p>A ordem acompanha a composição pública implementada; a reordenação ainda não é suportada.</p></div></div></div>
       <div className="homeManagerList">
         {sections.map((section, index) => <article className="homeSectionCard" data-section-key={section.key} data-testid="home-section-card" key={section.key}>
           <span className="homeSectionPosition" aria-label={`Posição ${index + 1}`}>{index + 1}</span><SectionPreview section={section} />
