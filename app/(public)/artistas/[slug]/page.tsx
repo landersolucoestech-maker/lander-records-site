@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { getPublishedArtistBySlug, getSlugRedirect } from "@/modules/artists";
-import { absoluteUrl, buildMetadata } from "@/lib/seo";
+import { buildMetadata, resolveCanonicalUrl } from "@/lib/seo";
 import { trustedEmbedUrl, trustedExternalUrl } from "@/lib/media-embed";
 
 export const dynamic = "force-dynamic";
@@ -19,10 +19,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const artist = await getPublishedArtistBySlug(slug);
   if (!artist) return {};
+  const canonicalUrl = resolveCanonicalUrl(artist.canonicalUrl, `/artistas/${artist.slug}`);
   return buildMetadata({
     title: artist.seoTitle || artist.name,
     description: artist.seoDescription || artist.shortBio,
-    canonical: artist.canonicalUrl || absoluteUrl(`/artistas/${artist.slug}`),
+    canonical: canonicalUrl,
     image: artist.ogImage || artist.heroImage || artist.cardImage || undefined,
   });
 }
@@ -43,6 +44,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
       : artist.eyebrow || artist.categories.map((category) => category.name).join(" · ");
   const metrics = Object.entries(artist.metrics).filter(([, value]) => value > 0);
   const bookingHref = `/contato?assunto=contratacao-de-artista&artista=${encodeURIComponent(artist.name)}`;
+  const canonicalUrl = resolveCanonicalUrl(artist.canonicalUrl, `/artistas/${artist.slug}`);
   const trustedArtistLinks = artist.links
     .map((link) => ({ ...link, trustedUrl: trustedExternalUrl(link.url) }))
     .filter((link) => Boolean(link.trustedUrl));
@@ -135,7 +137,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
             "@context": "https://schema.org",
             "@type": "MusicGroup",
             name: artist.name,
-            url: absoluteUrl(`/artistas/${artist.slug}`),
+            url: canonicalUrl,
             image: artist.heroImage || artist.cardImage || undefined,
             description: artist.shortBio || artist.biography,
             genre: artist.genres,
