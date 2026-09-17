@@ -21,6 +21,8 @@ const homeManager = read("app/admin/components/HomeManagerView.tsx");
 const mediaManager = read("app/admin/(protected)/media/MediaLibrary.tsx");
 const headerManager = read("app/admin/(protected)/header/HeaderManagerView.tsx");
 const mediaKit = read("app/admin/(protected)/media-kit/page.tsx");
+const settingsPage = read("app/admin/(protected)/settings/page.tsx");
+const adminActions = read("app/admin/actions.ts");
 
 test("protected admin has one final shared visual authority", () => {
   const dashboardImport = entry.indexOf('@import "../../styles/admin/dashboard.css"');
@@ -115,6 +117,20 @@ test("canonical URL and external content links are validated on the server", () 
   assert.match(postActions, /normalizePlatformUrl\(item\.platform, item\.url\)/);
   assert.match(postActions, /requirePersistentAdmin\("editor"\)/);
   assert.match(postActions, /publicationLink: `\/noticias\/\$\{slug\}`/);
+});
+
+test("Settings mirrors persistent server RBAC instead of presenting fake write controls", () => {
+  assert.match(settingsPage, /const persistent = session\.source === "session"/);
+  assert.match(settingsPage, /const canEdit = persistent && hasMinimumRole\(session\.user\.role, "editor"\)/);
+  assert.match(settingsPage, /const canAdmin = persistent && hasMinimumRole\(session\.user\.role, "admin"\)/);
+  assert.match(settingsPage, /const canManageUsers = persistent && session\.user\.role === "owner"/);
+  assert.match(settingsPage, /disabled=\{!canAdmin\}/);
+  assert.match(settingsPage, /disabled=\{!canEdit\}/);
+  assert.match(settingsPage, /Somente leitura/);
+  assert.match(adminActions, /export async function updateCompanySettings[\s\S]*requirePersistentAdmin\("admin"\)/);
+  assert.match(adminActions, /export async function updateIdentitySettings[\s\S]*requirePersistentAdmin\("admin"\)/);
+  assert.match(adminActions, /export async function upsertSocialLink[\s\S]*requirePersistentAdmin\("editor"\)/);
+  assert.match(adminActions, /export async function upsertContactTopic[\s\S]*requirePersistentAdmin\("editor"\)/);
 });
 
 test("Home, Media, Header and Media Kit rely on the shared contextual heading", () => {
