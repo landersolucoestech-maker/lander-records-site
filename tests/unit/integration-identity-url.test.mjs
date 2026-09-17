@@ -45,7 +45,9 @@ test("artist save path uses platform-owned URLs and validates embeds before pers
   assert.match(artistActions, /normalizePlatformUrl\(item\.platform, item\.url\)/);
   assert.match(artistActions, /trustedEmbedUrl\("youtube", youtubeVideo\)/);
   assert.match(artistActions, /trustedEmbedUrl\("spotify", spotifyEmbed\)/);
-  assert.ok(artistActions.indexOf("trustedEmbedUrl(\"youtube\", youtubeVideo)") < artistActions.indexOf("prepareArtistImage(formData"));
+  const youtubeValidation = artistActions.indexOf('trustedEmbedUrl("youtube", youtubeVideo)');
+  const firstUpload = artistActions.indexOf('cardUpload = await prepareArtistImage');
+  assert.ok(youtubeValidation !== -1 && firstUpload !== -1 && youtubeValidation < firstUpload);
 });
 
 test("Soundcharts identity resolution fails closed when identifier ownership cannot be verified", () => {
