@@ -29,7 +29,7 @@ test("Navigation hierarchy is deterministic and fails safely", () => {
   assert.match(page, /Pai não encontrado/);
   assert.match(page, /Ciclo de hierarquia detectado/);
   assert.match(manager, /Subitem de/);
-  assert.match(manager, /Header, menu mobile e Footer exibem atualmente somente itens principais/);
+  assert.match(manager, /Cabeçalho, menu mobile e Rodapé exibem atualmente somente itens principais/);
   assert.doesNotMatch(manager, /drag|Arraste|grip/i);
 });
 
@@ -101,5 +101,6 @@ test("Navigation preview reuses the real manager without persistence", () => {
   assert.match(preview, /<NavigationManager items=\{previewNavigation\} preview/);
   assert.doesNotMatch(preview, /upsertNavigationItem|deleteNavigationItem/);
   assert.match(manager, /BACKEND_ENVIRONMENT_DEFERRED/);
-  assert.match(manager, /disabled type="button">.*Novo item de menu/);
+  assert.match(manager, /canEdit && !preview \? <button className="adminButton primary"/);
+  assert.match(manager, /preview \? <button aria-label=\{`Editar \$\{item\.label\} indisponível no preview`\} disabled/);
 });
