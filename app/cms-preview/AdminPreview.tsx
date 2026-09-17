@@ -17,17 +17,16 @@ const modules = [
   ["dashboard", "Dashboard"],
   ["home", "Home"],
   ["artists", "Artistas"],
-  ["posts", "Notícias / Posts"],
-  ["pages", "Páginas & Seções"],
-  ["media", "Biblioteca de mídia"],
+  ["posts", "Conteúdos"],
+  ["pages", "Páginas"],
+  ["media", "Mídias"],
   ["releases", "Lançamentos"],
   ["categories", "Categorias"],
-  ["tags", "Tags"],
-  ["navigation", "Menus"],
+  ["navigation", "Navegação"],
   ["header", "Cabeçalho"],
-  ["settings", "Configurações do site"],
+  ["settings", "Configurações"],
   ["integrations", "Integrações"],
-  ["users", "Usuários & Roles"],
+  ["users", "Usuários"],
   ["audit", "Auditoria"],
 ] as const;
 
@@ -35,9 +34,8 @@ const rows: Record<string, Array<[string, string, string]>> = {
   artists: [["DJ Stay", "Publicado", "Eletrônica"], ["Lander", "Rascunho", "Produtor"], ["Aurora", "Inativo", "Pop"]],
   media: [["artist-card.webp", "Ativo", "1200 × 1200"], ["news-cover.webp", "Ativo", "1600 × 900"], ["hero-banner.webp", "Arquivado", "1920 × 800"]],
   releases: [["Noite Inteira", "Ativo", "Single"], ["Horizonte", "Rascunho", "EP"], ["Ao Vivo", "Ativo", "Álbum"]],
-  categories: [["Eletrônica", "Ativa", "Artistas"], ["Notícias", "Ativa", "Posts"], ["Agenda", "Ativa", "Posts"]],
-  tags: [["Bastidores", "Ativa", "3 posts"], ["Eventos", "Ativa", "8 posts"], ["Lançamentos", "Ativa", "5 posts"]],
-  users: [["Equipe editorial", "Ativo", "Editor"], ["Administrador local", "Ativo", "Admin"], ["Leitura", "Ativo", "Viewer"]],
+  categories: [["Eletrônica", "Ativa", "Artistas"], ["Notícias", "Ativa", "Conteúdos"], ["Agenda", "Ativa", "Conteúdos"]],
+  users: [["Equipe editorial", "Ativo", "Editor"], ["Administrador local", "Ativo", "Administrador"], ["Leitura", "Ativo", "Visualizador"]],
   audit: [["Conteúdo atualizado", "Sucesso", "page_section"], ["Artista publicado", "Sucesso", "artist"], ["Login administrativo", "Sucesso", "admin_user"]],
 };
 
@@ -66,12 +64,9 @@ const previewPosts: PostRecord[] = [
     coverMediaId: "",
     authorMediaId: "",
     authorImage: "",
-    publicationLink: "/noticias/novidades-lander-records",
     links: {},
     featuredOnHome: true,
     homePosition: 1,
-    tags: ["Destaque"],
-    tagIds: [],
     isPubliclyVisible: true,
     seoTitle: "",
     seoDescription: "",
@@ -95,12 +90,9 @@ const previewPosts: PostRecord[] = [
     coverMediaId: "",
     authorMediaId: "",
     authorImage: "",
-    publicationLink: "/noticias/bastidores-do-estudio",
     links: {},
     featuredOnHome: false,
     homePosition: 0,
-    tags: ["Bastidores"],
-    tagIds: [],
     isPubliclyVisible: false,
     seoTitle: "",
     seoDescription: "",
@@ -124,12 +116,9 @@ const previewPosts: PostRecord[] = [
     coverMediaId: "",
     authorMediaId: "",
     authorImage: "",
-    publicationLink: "/noticias/agenda-cultural",
     links: {},
     featuredOnHome: false,
     homePosition: 0,
-    tags: ["Eventos"],
-    tagIds: [],
     isPubliclyVisible: true,
     seoTitle: "",
     seoDescription: "",
@@ -153,12 +142,9 @@ const previewPosts: PostRecord[] = [
     coverMediaId: "",
     authorMediaId: "",
     authorImage: "",
-    publicationLink: "/noticias/comunicado-anterior",
     links: {},
     featuredOnHome: false,
     homePosition: 0,
-    tags: [],
-    tagIds: [],
     isPubliclyVisible: false,
     seoTitle: "",
     seoDescription: "",
@@ -171,7 +157,7 @@ const previewPages: PageSummary[] = [
   { id: "page-preview-home", key: "home", title: "Home", configuredRoute: "/", publicRoute: "/", classification: "Estrutural", scope: "Composição gerenciada no módulo Home", routeWarning: false, enabled: true, seoConfigured: true, sectionCount: 7, enabledSectionCount: 7, updatedAt: "Não consultado" },
   { id: "page-preview-about", key: "about", title: "Sobre a Lander Records", configuredRoute: "/sobre-nos", publicRoute: "/sobre-nos", classification: "Institucional", scope: "Conteúdo estruturado por seções", routeWarning: false, enabled: true, seoConfigured: false, sectionCount: 6, enabledSectionCount: 6, updatedAt: "Não consultado" },
   { id: "page-preview-artists", key: "artists", title: "Artistas", configuredRoute: "/artistas", publicRoute: "/artistas", classification: "Módulo de domínio", scope: "Apresentação; catálogo no módulo Artistas", routeWarning: false, enabled: true, seoConfigured: true, sectionCount: 3, enabledSectionCount: 3, updatedAt: "Não consultado" },
-  { id: "page-preview-news", key: "news", title: "Portal de Notícias", configuredRoute: "/noticias", publicRoute: "/noticias", classification: "Módulo de domínio", scope: "Apresentação; publicações no módulo Notícias", routeWarning: false, enabled: true, seoConfigured: true, sectionCount: 3, enabledSectionCount: 3, updatedAt: "Não consultado" },
+  { id: "page-preview-news", key: "news", title: "Notícias", configuredRoute: "/noticias", publicRoute: "/noticias", classification: "Módulo de domínio", scope: "Apresentação; publicações no módulo Conteúdos", routeWarning: false, enabled: true, seoConfigured: true, sectionCount: 3, enabledSectionCount: 3, updatedAt: "Não consultado" },
   { id: "page-preview-contact", key: "contact", title: "Contato", configuredRoute: "/contato", publicRoute: "/contato", classification: "Funcional", scope: "Conteúdo editorial; formulário separado", routeWarning: false, enabled: false, seoConfigured: false, sectionCount: 2, enabledSectionCount: 1, updatedAt: "Não consultado" },
   { id: "page-preview-future", key: "future", title: "Estrutura editorial futura com título longo", configuredRoute: "/estrutura-futura", publicRoute: null, classification: "Estrutura administrativa", scope: "Sem renderer público registrado", routeWarning: true, enabled: true, seoConfigured: true, sectionCount: 1, enabledSectionCount: 1, updatedAt: "Não consultado" },
 ];
@@ -181,7 +167,7 @@ const previewNavigation: NavigationSummary[] = [
   { id: "nav-preview-artists", menuKey: "primary", parentId: null, parentLabel: null, label: "Artistas", url: "/artistas", linkType: "internal", position: 2, enabled: true, newTab: false, depth: 0, childCount: 1, issue: null, safeDestination: true },
   { id: "nav-preview-artists-child", menuKey: "primary", parentId: "nav-preview-artists", parentLabel: "Artistas", label: "Todos os artistas", url: "/artistas", linkType: "internal", position: 1, enabled: true, newTab: false, depth: 1, childCount: 0, issue: null, safeDestination: true },
   { id: "nav-preview-news", menuKey: "primary", parentId: null, parentLabel: null, label: "Notícias", url: "/noticias", linkType: "internal", position: 3, enabled: false, newTab: false, depth: 0, childCount: 0, issue: null, safeDestination: true },
-  { id: "nav-preview-partner", menuKey: "primary", parentId: null, parentLabel: null, label: "Portal parceiro", url: "https://example.com/lander", linkType: "external", position: 4, enabled: true, newTab: true, depth: 0, childCount: 0, issue: null, safeDestination: true },
+  { id: "nav-preview-partner", menuKey: "primary", parentId: null, parentLabel: null, label: "Parceiro", url: "https://example.com/lander", linkType: "external", position: 4, enabled: true, newTab: true, depth: 0, childCount: 0, issue: null, safeDestination: true },
   { id: "nav-preview-contact", menuKey: "footer", parentId: null, parentLabel: null, label: "Contato", url: "/contato", linkType: "internal", position: 2, enabled: true, newTab: false, depth: 0, childCount: 0, issue: null, safeDestination: true },
 ];
 
@@ -229,7 +215,7 @@ export function AdminPreview({ section }: { section: string }) {
 
   return <div className="adminPreviewShell" data-preview-only="true"><AdminShell email="preview local" footerAction={<Link href="/admin/login">Abrir login real protegido</Link>} name="Administrador" preview role="owner">
     {validSection === "dashboard" ? <DashboardView data={{ artistDrafts: null, postDrafts: null, recentActivity: [] }} name="Administrador" preview role="owner" /> : validSection === "home" ? <HomeManagerView preview sections={createPreviewHomeSections()} /> : validSection === "artists" ? <ArtistManager artists={previewArtists} preview /> : validSection === "posts" ? <PostManager posts={previewPosts} preview /> : validSection === "pages" ? <PageManager pages={previewPages} preview /> : validSection === "navigation" ? <NavigationManager items={previewNavigation} preview /> : validSection === "header" ? <HeaderManagerView data={previewHeader} preview /> : <div className="adminPage">
-      <header className="adminPageHeader"><div><p className="adminEyebrow">CMS FRONTEND PREVIEW</p><h1>{title}</h1><p>Protótipo visual isolado. Dados de demonstração e ações sem persistência.</p></div><div className="adminActions"><label className="adminPreviewState">Estado visual<select value={state} onChange={(event) => setState(event.target.value as PreviewState)}><option value="filled">Preenchido</option><option value="empty">Vazio</option><option value="loading">Loading</option><option value="error">Erro</option></select></label></div></header>
+      <header className="adminPageHeader"><div><p className="adminEyebrow">CMS FRONTEND PREVIEW</p><h1>{title}</h1><p>Protótipo visual isolado. Dados de demonstração e ações sem persistência.</p></div><div className="adminActions"><label className="adminPreviewState">Estado visual<select value={state} onChange={(event) => setState(event.target.value as PreviewState)}><option value="filled">Preenchido</option><option value="empty">Vazio</option><option value="loading">Carregando</option><option value="error">Erro</option></select></label></div></header>
       <div className="adminAlert">BACKEND_ENVIRONMENT_DEFERRED · nenhuma chamada de API ou banco é feita por esta interface.</div><StateBody section={validSection} state={state} />
     </div>}
   </AdminShell></div>;
