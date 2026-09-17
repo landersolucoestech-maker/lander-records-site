@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
-import { useFormStatus } from "react-dom";
+import { createPortal, useFormStatus } from "react-dom";
 import { deletePostAction, savePostAction, type PostActionState } from "../../post-actions";
 import { AdminIcon } from "../../components/AdminIcon";
 import { AdminMediaPicker, type AdminMediaPickerItem } from "../../components/AdminMediaPicker";
@@ -42,6 +42,7 @@ type Option = { id: string; name: string };
 type MediaOption = AdminMediaPickerItem;
 type ModalMode = "create" | "edit" | "view";
 type ModalState = { mode: ModalMode; postId?: string } | null;
+type ActionMenuState = { postId: string; top: number; right: number } | null;
 
 const statusLabel: Record<PostRecord["status"], string> = {
   published: "Publicado",
@@ -68,6 +69,14 @@ function localDateTime(value?: string) {
 
 function slugifyClient(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+function getActionMenuPosition(element: HTMLElement) {
+  const rect = element.getBoundingClientRect();
+  const gap = 6;
+  const menuHeight = 116;
+  const top = rect.bottom + gap + menuHeight <= window.innerHeight ? rect.bottom + gap : Math.max(gap, rect.top - menuHeight - gap);
+  return { top, right: Math.max(gap, window.innerWidth - rect.right) };
 }
 
 function SaveButton({ mode, disabled }: { mode: "create" | "edit"; disabled: boolean }) {
@@ -310,6 +319,7 @@ export default function PostManager({
   tags?: Option[];
 }) {
   const [modal, setModal] = useState<ModalState>(() => initialMode ? { mode: initialMode, postId: initialId } : null);
+  const [actionMenu, setActionMenu] = useState<ActionMenuState>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const totalPages = Math.max(1, Math.ceil(posts.length / pageSize));
@@ -317,15 +327,27 @@ export default function PostManager({
   const startIndex = (safePage - 1) * pageSize;
   const visiblePosts = useMemo(() => posts.slice(startIndex, startIndex + pageSize), [pageSize, posts, startIndex]);
   const selectedPost = modal?.postId ? posts.find((post) => post.id === modal.postId) : undefined;
+  const actionPost = actionMenu ? posts.find((post) => post.id === actionMenu.postId) : undefined;
   const firstShown = posts.length ? startIndex + 1 : 0;
   const lastShown = Math.min(startIndex + visiblePosts.length, posts.length);
-  const changePageSize = (value: number) => { setPageSize(value); setPage(1); };
+  const changePageSize = (value: number) => { setActionMenu(null); setPageSize(value); setPage(1); };
 
   useEffect(() => {
-    const openModal = () => setModal({ mode: "create" });
+    const openModal = () => { setActionMenu(null); setModal({ mode: "create" }); };
     window.addEventListener("admin:new-content", openModal);
     return () => window.removeEventListener("admin:new-content", openModal);
   }, []);
+
+  useEffect(() => {
+    if (!actionMenu) return;
+    const close = () => setActionMenu(null);
+    window.addEventListener("resize", close);
+    window.addEventListener("scroll", close, true);
+    return () => {
+      window.removeEventListener("resize", close);
+      window.removeEventListener("scroll", close, true);
+    };
+  }, [actionMenu]);
 
   return <div className={styles.manager} data-testid="news-manager">
     {deleted ? <div className={styles.successNotice}>Conteúdo excluído com sucesso.</div> : null}
@@ -346,16 +368,18 @@ export default function PostManager({
             <td><StatusBadge status={post.status} /></td>
             <td><span className={styles.author}>{post.authorName || "—"}</span></td>
             <td><time className={styles.date}>{post.updatedAt}</time></td>
-            <td className={styles.actions}><details><summary aria-label={`Ações de ${post.title}`}><AdminIcon name="more" size={17}/></summary><div className={styles.actionMenu}>
-              <button onClick={() => setModal({ mode: "view", postId: post.id })} type="button"><AdminIcon name="eye" size={14}/>Ver</button>
-              {canEdit && !preview ? <button onClick={() => setModal({ mode: "edit", postId: post.id })} type="button"><AdminIcon name="edit" size={14}/>Editar</button> : <button aria-disabled="true" className={styles.disabledAction} disabled type="button"><AdminIcon name="edit" size={14}/>Editar</button>}
-              {canDelete && !preview ? <form action={deletePostAction} onSubmit={(event) => { if (!window.confirm(`Excluir definitivamente “${post.title}”?`)) event.preventDefault(); }}><input name="id" type="hidden" value={post.id}/><button className={styles.deleteAction} type="submit"><AdminIcon name="trash" size={14}/>Excluir</button></form> : <button aria-disabled="true" className={`${styles.deleteAction} ${styles.disabledAction}`} disabled type="button"><AdminIcon name="trash" size={14}/>Excluir</button>}
-            </div></details></td>
+            <td className={styles.actions}><details open={actionMenu?.postId === post.id}><summary aria-label={`Ações de ${post.title}`} onClick={(event) => { event.preventDefault(); setActionMenu((current) => current?.postId === post.id ? null : { postId: post.id, ...getActionMenuPosition(event.currentTarget) }); }}><AdminIcon name="more" size={17}/></summary></details></td>
           </tr>)}</tbody>
         </table></div>
-        <footer className={styles.pagination}><div className={styles.paginationSummary}><strong>{posts.length}</strong><span>registros</span><i aria-hidden="true" /><span>{firstShown}–{lastShown} exibidos</span></div><div className={styles.paginationNav} aria-label="Paginação"><button aria-label="Primeira página" disabled={safePage === 1} onClick={() => setPage(1)} type="button">«</button><button aria-label="Página anterior" disabled={safePage === 1} onClick={() => setPage((current) => clampPage(current - 1, totalPages))} type="button">‹</button><span>Página <strong>{safePage}</strong> de <strong>{totalPages}</strong></span><button aria-label="Próxima página" disabled={safePage === totalPages} onClick={() => setPage((current) => clampPage(current + 1, totalPages))} type="button">›</button><button aria-label="Última página" disabled={safePage === totalPages} onClick={() => setPage(totalPages)} type="button">»</button></div><label className={styles.pageSize}><span>Por página</span><select aria-label="Registros por página" onChange={(event) => changePageSize(Number(event.target.value))} value={pageSize}><option value={10}>10</option><option value={20}>20</option><option value={50}>50</option></select></label></footer>
+        <footer className={styles.pagination}><div className={styles.paginationSummary}><strong>{posts.length}</strong><span>registros</span><i aria-hidden="true" /><span>{firstShown}–{lastShown} exibidos</span></div><div className={styles.paginationNav} aria-label="Paginação"><button aria-label="Primeira página" disabled={safePage === 1} onClick={() => { setActionMenu(null); setPage(1); }} type="button">«</button><button aria-label="Página anterior" disabled={safePage === 1} onClick={() => { setActionMenu(null); setPage((current) => clampPage(current - 1, totalPages)); }} type="button">‹</button><span>Página <strong>{safePage}</strong> de <strong>{totalPages}</strong></span><button aria-label="Próxima página" disabled={safePage === totalPages} onClick={() => { setActionMenu(null); setPage((current) => clampPage(current + 1, totalPages)); }} type="button">›</button><button aria-label="Última página" disabled={safePage === totalPages} onClick={() => { setActionMenu(null); setPage(totalPages); }} type="button">»</button></div><label className={styles.pageSize}><span>Por página</span><select aria-label="Registros por página" onChange={(event) => changePageSize(Number(event.target.value))} value={pageSize}><option value={10}>10</option><option value={20}>20</option><option value={50}>50</option></select></label></footer>
       </div> : <div className={styles.empty}><span className={styles.emptyIcon}><AdminIcon name="document" size={20} /></span><strong>Nenhum conteúdo cadastrado.</strong><span>As publicações editoriais aparecerão aqui assim que forem criadas.</span><button className="adminPrimaryCompact" onClick={() => setModal({ mode: "create" })} type="button">Criar primeiro conteúdo</button></div>}
     </section>
+
+    {actionMenu && actionPost && typeof document !== "undefined" ? createPortal(<div className={styles.actionMenu} style={{ position: "fixed", top: actionMenu.top, right: actionMenu.right, zIndex: 900 }}>
+      <button onClick={() => { setActionMenu(null); setModal({ mode: "view", postId: actionPost.id }); }} type="button"><AdminIcon name="eye" size={14}/>Ver</button>
+      {canEdit && !preview ? <button onClick={() => { setActionMenu(null); setModal({ mode: "edit", postId: actionPost.id }); }} type="button"><AdminIcon name="edit" size={14}/>Editar</button> : <button aria-disabled="true" className={styles.disabledAction} disabled type="button"><AdminIcon name="edit" size={14}/>Editar</button>}
+      {canDelete && !preview ? <form action={deletePostAction} onSubmit={(event) => { if (!window.confirm(`Excluir definitivamente “${actionPost.title}”?`)) event.preventDefault(); }}><input name="id" type="hidden" value={actionPost.id}/><button className={styles.deleteAction} type="submit"><AdminIcon name="trash" size={14}/>Excluir</button></form> : <button aria-disabled="true" className={`${styles.deleteAction} ${styles.disabledAction}`} disabled type="button"><AdminIcon name="trash" size={14}/>Excluir</button>}
+    </div>, document.body) : null}
 
     {modal ? <ContentModal canEdit={canEdit && !preview} categories={categories} key={`${modal.mode}-${modal.postId || "new"}`} media={media} mode={modal.mode} onClose={() => setModal(null)} onEdit={() => selectedPost && setModal({ mode: "edit", postId: selectedPost.id })} post={selectedPost} tags={tags}/> : null}
   </div>;
