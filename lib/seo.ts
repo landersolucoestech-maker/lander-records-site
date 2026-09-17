@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { getSiteChrome } from "./content.ts";
 
 export function absoluteUrl(pathname: string) {
   const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://landerrecords.com").replace(/\/$/, "");
@@ -38,6 +37,7 @@ export async function buildMetadata(input: {
   image?: string;
   type?: "website" | "article";
 }): Promise<Metadata> {
+  const { getSiteChrome } = await import("./content");
   const { settings, socialImageUrl } = await getSiteChrome();
   const title = input.title || settings.defaultSeoTitle || settings.brandName;
   const description = input.description || settings.defaultSeoDescription || settings.tagline;
