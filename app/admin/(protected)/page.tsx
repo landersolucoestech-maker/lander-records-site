@@ -1,12 +1,12 @@
 import { desc, isNull } from "drizzle-orm";
 import { getDb } from "../../../lib/db";
-import { auditLogs, posts } from "../../../lib/db/schema";
+import { artists, auditLogs, pages, posts } from "../../../lib/db/schema";
 import { requireAdmin } from "../../../lib/auth";
 import { DashboardView } from "../components/DashboardView";
 
 export const dynamic = "force-dynamic";
 type AuditItem = { id: string; action: string; entityType: string; createdAt: Date };
-type PublicationItem = { id: string; title: string; status: "draft" | "published" | "archived"; updatedAt: Date };
+type PublicationItem = { id: string; title: string; type: "Notícia" | "Artista" | "Página"; status: "draft" | "published" | "archived"; updatedAt: Date; href: string };
 
 function activityLabel(action: string) {
   const labels: Record<string, string> = {
@@ -63,18 +63,24 @@ function activityLabel(action: string) {
 export default async function AdminDashboardPage() {
   const session = await requireAdmin();
   let recentAudits: AuditItem[] = [];
-  let recentPosts: PublicationItem[] = [];
+  let recentPublications: PublicationItem[] = [];
   let databaseAvailable = Boolean(process.env.DATABASE_URL);
 
   if (databaseAvailable) {
     try {
       const db = getDb();
-      const [auditRows, postRows] = await Promise.all([
+      const [auditRows, postRows, artistRows, pageRows] = await Promise.all([
         db.select({ id: auditLogs.id, action: auditLogs.action, entityType: auditLogs.entityType, createdAt: auditLogs.createdAt }).from(auditLogs).orderBy(desc(auditLogs.createdAt)).limit(8),
         db.select({ id: posts.id, title: posts.title, status: posts.status, updatedAt: posts.updatedAt }).from(posts).where(isNull(posts.archivedAt)).orderBy(desc(posts.updatedAt)).limit(5),
+        db.select({ id: artists.id, title: artists.name, isPublished: artists.isPublished, updatedAt: artists.updatedAt }).from(artists).where(isNull(artists.archivedAt)).orderBy(desc(artists.updatedAt)).limit(5),
+        db.select({ id: pages.id, title: pages.title, enabled: pages.enabled, updatedAt: pages.updatedAt }).from(pages).orderBy(desc(pages.updatedAt)).limit(5),
       ]);
       recentAudits = auditRows;
-      recentPosts = postRows;
+      recentPublications = [
+        ...postRows.map((item) => ({ ...item, type: "Notícia" as const, href: "/admin/posts" })),
+        ...artistRows.map((item) => ({ id: item.id, title: item.title, type: "Artista" as const, status: item.isPublished ? "published" as const : "draft" as const, updatedAt: item.updatedAt, href: "/admin/artists" })),
+        ...pageRows.map((item) => ({ id: item.id, title: item.title, type: "Página" as const, status: item.enabled ? "published" as const : "draft" as const, updatedAt: item.updatedAt, href: `/admin/pages/${item.id}/view` })),
+      ].sort((left, right) => right.updatedAt.getTime() - left.updatedAt.getTime()).slice(0, 5);
     } catch (error) {
       console.error("CMS dashboard database unavailable; rendering without database-backed summaries.", error);
       databaseAvailable = false;
@@ -88,7 +94,7 @@ export default async function AdminDashboardPage() {
     data={{
       analytics: null,
       recentActivity: databaseAvailable ? recentAudits.map((item) => ({ id: item.id, label: activityLabel(item.action), meta: `${item.entityType} · ${dateTime.format(item.createdAt)}` })) : [],
-      recentPublications: databaseAvailable ? recentPosts.map((item) => ({ id: item.id, title: item.title, type: "Notícia", status: item.status, updatedAt: dateOnly.format(item.updatedAt) })) : [],
+      recentPublications: databaseAvailable ? recentPublications.map((item) => ({ id: item.id, title: item.title, type: item.type, status: item.status, updatedAt: dateOnly.format(item.updatedAt), href: item.href })) : [],
     }}
     demoMode={session.source === "development-auth-bypass"}
     name={session.user.name}

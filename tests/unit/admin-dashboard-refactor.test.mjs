@@ -29,6 +29,16 @@ test("dashboard reproduces the approved reference only in disposable development
   assert.match(dashboard, /Métricas de audiência aparecem quando uma fonte de analytics do site estiver conectada/);
 });
 
+test("real dashboard aggregates recent publications across supported content domains", () => {
+  assert.match(dashboardPage, /artists, auditLogs, pages, posts/);
+  assert.match(dashboardPage, /postRows, artistRows, pageRows/);
+  assert.match(dashboardPage, /type: "Notícia"/);
+  assert.match(dashboardPage, /type: "Artista"/);
+  assert.match(dashboardPage, /type: "Página"/);
+  assert.match(dashboardPage, /sort\(\(left, right\) => right\.updatedAt\.getTime\(\) - left\.updatedAt\.getTime\(\)\)\.slice\(0, 5\)/);
+  assert.match(dashboardPage, /\/admin\/pages\/\$\{item\.id\}\/view/);
+});
+
 test("dashboard translates current audit producers instead of exposing raw action keys", () => {
   for (const action of [
     "artist.created",
