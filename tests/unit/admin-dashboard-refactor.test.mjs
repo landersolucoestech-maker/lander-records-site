@@ -29,6 +29,26 @@ test("dashboard reproduces the approved reference only in disposable development
   assert.match(dashboard, /Métricas de audiência aparecem quando uma fonte de analytics do site estiver conectada/);
 });
 
+test("dashboard translates current audit producers instead of exposing raw action keys", () => {
+  for (const action of [
+    "artist.created",
+    "artist.updated",
+    "artist.deleted",
+    "post.created",
+    "post.updated",
+    "post.deleted",
+    "media.uploaded",
+    "media.archived",
+    "auth.login_success",
+    "auth.login_failed",
+    "integration.sync.requested",
+    "navigation.created",
+    "navigation.updated",
+  ]) {
+    assert.ok(dashboardPage.includes(`"${action}"`), `missing activity label for ${action}`);
+  }
+});
+
 test("approved dashboard uses line chart, contextual activities, thumbnails and overflow actions", () => {
   assert.match(dashboard, /adminChartVisitorsLine/);
   assert.match(dashboard, /adminChartViewsLine/);
