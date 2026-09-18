@@ -13,6 +13,18 @@ test("contact outbox retries claim due work before dispatching", () => {
   assert.match(contact, /lte\(integrationOutbox\.nextAttemptAt, now\)/);
   assert.match(contact, /eq\(integrationOutbox\.status, "pending"\)/);
   assert.match(contact, /lte\(integrationOutbox\.createdAt, stalePendingBefore\)/);
+
+  const pendingBranch = contact.indexOf('eq(integrationOutbox.status, "pending")');
+  const pendingClaimGuard = contact.indexOf(
+    "or(isNull(integrationOutbox.nextAttemptAt), lte(integrationOutbox.nextAttemptAt, now))",
+    pendingBranch,
+  );
+  const pendingBranchEnd = contact.indexOf("      ))", pendingBranch);
+  assert.ok(
+    pendingBranch >= 0 && pendingClaimGuard > pendingBranch && pendingClaimGuard < pendingBranchEnd,
+    "stale pending work must respect nextAttemptAt so an active claim cannot be selected twice",
+  );
+
   const claimUpdate = contact.indexOf("nextAttemptAt: claimUntil");
   const dispatch = contact.indexOf("await dispatchOutboxEvent(id)");
   assert.ok(claimUpdate >= 0 && dispatch > claimUpdate, "retry work must be claimed before network dispatch");
