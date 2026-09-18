@@ -8,6 +8,7 @@ import remarkGfm from "remark-gfm";
 import { trustedExternalUrl } from "@/lib/media-embed";
 import { deletePostAction, savePostAction, type PostActionState } from "../../post-actions";
 import { AdminIcon } from "../../components/AdminIcon";
+import { AdminPagination } from "../../components/AdminPagination";
 import { AdminMediaPicker, type AdminMediaPickerItem } from "../../components/AdminMediaPicker";
 import styles from "./NewsManager.module.css";
 
@@ -386,7 +387,17 @@ export default function PostManager({ canDelete = false, canEdit = true, categor
             <td className={styles.actions}><button aria-controls={actionMenu?.postId === post.id ? "content-row-action-menu" : undefined} aria-expanded={actionMenu?.postId === post.id} aria-haspopup="menu" aria-label={`Ações de ${post.title}`} className={styles.actionTrigger} data-content-action-trigger onClick={(event) => toggleActionMenu(post.id, event.currentTarget)} type="button"><AdminIcon name="more" size={17}/></button></td>
           </tr>)}</tbody>
         </table></div>
-        <footer className={styles.pagination}><div className={styles.paginationSummary}><strong>{posts.length}</strong><span>registros</span><i aria-hidden="true" /><span>{firstShown}–{lastShown} exibidos</span></div><div className={styles.paginationNav} aria-label="Paginação"><button aria-label="Primeira página" disabled={safePage === 1} onClick={() => { closeActionMenu(); setPage(1); }} type="button">«</button><button aria-label="Página anterior" disabled={safePage === 1} onClick={() => { closeActionMenu(); setPage((current) => clampPage(current - 1, totalPages)); }} type="button">‹</button><span>Página <strong>{safePage}</strong> de <strong>{totalPages}</strong></span><button aria-label="Próxima página" disabled={safePage === totalPages} onClick={() => { closeActionMenu(); setPage((current) => clampPage(current + 1, totalPages)); }} type="button">›</button><button aria-label="Última página" disabled={safePage === totalPages} onClick={() => { closeActionMenu(); setPage(totalPages); }} type="button">»</button></div><label className={styles.pageSize}><span>Por página</span><select aria-label="Registros por página" onChange={(event) => changePageSize(Number(event.target.value))} value={pageSize}><option value={10}>10</option><option value={20}>20</option><option value={50}>50</option></select></label></footer>
+        <AdminPagination
+          currentPage={safePage}
+          endItem={lastShown}
+          itemLabel={visiblePosts.length === 1 ? "registro" : "registros"}
+          onPageChange={(nextPage) => { closeActionMenu(); setPage(nextPage); }}
+          onPageSizeChange={changePageSize}
+          pageSize={pageSize}
+          startItem={firstShown}
+          totalItems={posts.length}
+          totalPages={totalPages}
+        />
       </div> : <div className={styles.empty}><span className={styles.emptyIcon}><AdminIcon name="document" size={20} /></span><strong>Nenhum conteúdo cadastrado.</strong><span>As publicações editoriais aparecerão aqui assim que forem criadas.</span><button className="adminPrimaryCompact" onClick={() => setModal({ mode: "create" })} type="button">Criar primeiro conteúdo</button></div>}
     </section>
 
