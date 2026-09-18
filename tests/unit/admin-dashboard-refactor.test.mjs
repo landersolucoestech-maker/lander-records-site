@@ -40,7 +40,10 @@ test("admin shell keeps canonical navigation and account chrome without fake cap
   assert.match(shell, /adminAdministrationLabel/);
   assert.match(shell, /adminNavigationEyebrow/);
   assert.match(shell, /adminSidebarCollapse/);
-  assert.doesNotMatch(shell, /adminNotificationButton/);
+  assert.match(shell, /showContentHeaderTools/);
+  assert.match(shell, /adminNotificationButton/);
+  assert.match(shell, /name="bell"/);
+  assert.match(shell, /A central de notificações ainda não está conectada a uma fonte de eventos/);
   assert.match(shell, /adminAccountPopover/);
   assert.match(shell, /const showReadOnlyChrome = preview/);
   assert.match(shell, /const canEdit = !readOnly && role !== "viewer"/);
