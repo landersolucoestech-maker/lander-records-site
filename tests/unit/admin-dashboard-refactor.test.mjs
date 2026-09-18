@@ -50,6 +50,14 @@ test("real dashboard aggregates recent publications across supported content dom
   assert.match(dashboardPage, /\/admin\/pages\/\$\{item\.id\}\/view/);
 });
 
+test("dashboard translates audit entity storage names for presentation", () => {
+  for (const entityType of ["artist", "post", "page", "media_asset", "integration_settings", "admin_user"]) {
+    assert.match(dashboardPage, new RegExp(`${entityType.replace(/[.*+?^$\{\}()|[\]\\]/g, "\\test("dashboard translates current audit producers instead of exposing raw action keys", () => {")}: `));
+  }
+  assert.match(dashboardPage, /entityLabel\(item\.entityType\)/);
+  assert.doesNotMatch(dashboardPage, /meta: `\$\{item\.entityType\}/);
+});
+
 test("dashboard translates current audit producers instead of exposing raw action keys", () => {
   for (const action of [
     "artist.created",

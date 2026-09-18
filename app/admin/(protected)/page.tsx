@@ -60,6 +60,26 @@ function activityLabel(action: string) {
   return labels[action] || action;
 }
 
+function entityLabel(entityType: string) {
+  const labels: Record<string, string> = {
+    artist: "Artista",
+    artist_category: "Categoria de artista",
+    post: "Notícia",
+    post_category: "Categoria de notícia",
+    page: "Página",
+    page_section: "Seção de página",
+    page_section_item: "Item de seção",
+    navigation_item: "Navegação",
+    site_settings: "Configurações",
+    social_link: "Link social",
+    contact_topic: "Assunto de contato",
+    media_asset: "Mídia",
+    integration_settings: "Integrações",
+    admin_user: "Usuário administrativo",
+  };
+  return labels[entityType] || entityType.replaceAll("_", " ");
+}
+
 export default async function AdminDashboardPage() {
   const session = await requireAdmin();
   let recentAudits: AuditItem[] = [];
@@ -103,7 +123,7 @@ export default async function AdminDashboardPage() {
   return <DashboardView
     data={{
       analytics: databaseAvailable && leadCount !== null ? { visitors: null, views: null, engagementRate: null, conversions: leadCount, previousConversionsChange: previousLeadChange } : null,
-      recentActivity: databaseAvailable ? recentAudits.map((item) => ({ id: item.id, label: activityLabel(item.action), meta: `${item.entityType} · ${dateTime.format(item.createdAt)}` })) : [],
+      recentActivity: databaseAvailable ? recentAudits.map((item) => ({ id: item.id, label: activityLabel(item.action), meta: `${entityLabel(item.entityType)} · ${dateTime.format(item.createdAt)}` })) : [],
       recentPublications: databaseAvailable ? recentPublications.map((item) => ({ id: item.id, title: item.title, type: item.type, status: item.status, updatedAt: dateOnly.format(item.updatedAt), href: item.href })) : [],
     }}
     demoMode={session.source === "development-auth-bypass"}
