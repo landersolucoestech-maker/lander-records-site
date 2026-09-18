@@ -138,7 +138,8 @@ test("media kit keeps KPIs and preview static while only the left editor scrolls
   assert.match(mediaKit, /Nenhum dado real de audiência disponível/);
   assert.match(mediaKit, /styles\.mediaKitLayout/);
   assert.match(mediaKitStyles, /\.mediaKitLayout\{[^}]*height:calc\(100dvh - var\(--ui-header-height,68px\) - 52px\)[^}]*overflow:hidden/);
-  assert.match(mediaKitStyles, /\.editor\{[^}]*overflow-y:auto/);
+  assert.match(mediaKitStyles, /\.editor\{[^}]*display:flex[^}]*flex-direction:column[^}]*height:100%[^}]*overflow-y:scroll/);
+  assert.match(mediaKitStyles, /\.editor>\*\{flex:0 0 auto\}/);
   assert.match(mediaKitStyles, /\.preview\{[^}]*position:static[^}]*height:100%[^}]*grid-template-rows:auto minmax\(0,1fr\)/);
   assert.match(mediaKitStyles, /@media\(max-width:1180px\)\{\.mediaKitLayout\{height:auto/);
 });
