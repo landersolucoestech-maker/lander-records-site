@@ -75,9 +75,12 @@ test("feature overrides are limited to domain geometry while preserving shared c
 test("Artists keeps the table-first manager and one shared page heading", () => {
   assert.match(artistManager, /data-testid="artist-manager"/);
   assert.doesNotMatch(artistManager, /adminDashboardHeading/);
-  assert.match(artistManager, /className="srOnly">Status<\/span>/);
-  assert.match(artistManager, /className="srOnly">Gênero<\/span>/);
-  assert.match(artistManager, /className="srOnly">Ordenar por<\/span>/);
+  assert.match(artistManager, /Filtrar por status/);
+  assert.match(artistManager, /Filtrar por gênero/);
+  assert.match(artistManager, /Filtrar por função/);
+  assert.match(artistManager, /Ordenar artistas/);
+  assert.match(artistManager, /adminMetricGrid/);
+  assert.match(artistManager, /styles\.queryPanel/);
   assert.match(artistManager, /styles\.tableSurface/);
   assert.match(artists, /\.artistTable th\{height:38px/);
   assert.match(adminShell, /title: "Artistas"/);
