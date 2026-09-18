@@ -7,11 +7,23 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AdminIcon, type IconName } from "./AdminIcon";
 import { resolveAdminLocation, visibleAdminNavigation, type AdminRole } from "./admin-navigation";
 
+export type AdminNotificationItem = {
+  id: string;
+  action: string;
+  entityType: string;
+  entityId: string | null;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+  actorName: string;
+};
+
 type ShellProps = {
   children: React.ReactNode;
   email?: string;
   footerAction?: React.ReactNode;
   name: string;
+  notifications?: AdminNotificationItem[];
+  notificationScope?: string;
   preview?: boolean;
   role?: AdminRole;
   sessionSource?: "session" | "development-auth-bypass";
@@ -94,12 +106,53 @@ function roleLabel(role: AdminRole) {
   return "Leitor";
 }
 
-export function AdminShell({ children, email, footerAction, name, preview = false, role = "viewer", sessionSource = "session" }: ShellProps) {
+function notificationLabel(action: string) {
+  const labels: Record<string, string> = {
+    "artist.created": "Artista criado",
+    "artist.updated": "Artista atualizado",
+    "artist.deleted": "Artista excluído",
+    "post.created": "Conteúdo criado",
+    "post.updated": "Conteúdo atualizado",
+    "post.deleted": "Conteúdo excluído",
+    "post.published": "Conteúdo publicado",
+    "media.uploaded": "Mídia adicionada",
+    "media.archived": "Mídia arquivada",
+  };
+  return labels[action] || action.split(".").map((part) => part.replaceAll("_", " ")).join(" · ");
+}
+
+function notificationDetail(item: AdminNotificationItem) {
+  const metadata = item.metadata || {};
+  for (const key of ["name", "title", "originalFilename", "slug"]) {
+    const value = metadata[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  if (item.entityType === "artist") return "Perfil de artista";
+  if (item.entityType === "post") return "Conteúdo editorial";
+  if (item.entityType === "media_asset") return "Arquivo de mídia";
+  return item.entityType.replaceAll("_", " ");
+}
+
+function notificationHref(item: AdminNotificationItem) {
+  if (item.entityType === "artist") return "/admin/artists";
+  if (item.entityType === "post") return "/admin/posts";
+  if (item.entityType === "media_asset") return "/admin/media";
+  return "/admin";
+}
+
+function notificationDate(value: string) {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "";
+  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(date);
+}
+
+export function AdminShell({ children, email, footerAction, name, notifications = [], notificationScope = "default", preview = false, role = "viewer", sessionSource = "session" }: ShellProps) {
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const [accountOpen, setAccountOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notificationSeenAt, setNotificationSeenAt] = useState("");
   const [hash, setHash] = useState("");
   const mobileToggleRef = useRef<HTMLButtonElement>(null);
   const sidebarRef = useRef<HTMLElement>(null);
@@ -125,6 +178,8 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
   const showMediaHeaderTools = normalizedPath === mediaRoot;
   const showNotificationHeaderTools = showContentHeaderTools || showArtistHeaderTools || showMediaHeaderTools;
   const showReadOnlyHeaderAction = (showContentHeaderTools || showArtistHeaderTools) && Boolean(contextualHeader?.action);
+  const unreadNotifications = notifications.filter((item) => !notificationSeenAt || Date.parse(item.createdAt) > Date.parse(notificationSeenAt)).length;
+  const canOpenAudit = role === "owner" || role === "admin";
 
   useEffect(() => {
     const stored = window.localStorage.getItem("lander-admin-sidebar-collapsed");
@@ -138,6 +193,11 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
   useEffect(() => {
     window.localStorage.setItem("lander-admin-sidebar-collapsed", String(collapsed));
   }, [collapsed]);
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(`lander-admin-notifications-seen:${notificationScope}`);
+    setNotificationSeenAt(stored || "");
+  }, [notificationScope]);
 
   useEffect(() => {
     setNotificationOpen(false);
@@ -216,6 +276,19 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
     else setCollapsed((value) => !value);
   };
 
+  const toggleNotifications = () => {
+    setAccountOpen(false);
+    setNotificationOpen((current) => {
+      const next = !current;
+      if (next && notifications[0]) {
+        const seenAt = notifications[0].createdAt;
+        setNotificationSeenAt(seenAt);
+        window.localStorage.setItem(`lander-admin-notifications-seen:${notificationScope}`, seenAt);
+      }
+      return next;
+    });
+  };
+
   return <div className={`adminShell${open ? " sidebarOpen" : ""}${collapsed ? " sidebarCollapsed" : ""}`} data-testid="admin-shell" data-session-source={preview ? "preview" : sessionSource}>
     <button aria-label="Fechar menu pela sobreposição" className="adminSidebarBackdrop" onClick={() => setOpen(false)} tabIndex={-1} type="button" />
     <aside className="adminSidebar" data-testid="admin-sidebar" id="admin-sidebar" ref={sidebarRef} tabIndex={-1}>
@@ -271,7 +344,7 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
         </div>
         <div className="adminTopbarActions">
           {headerAction ? headerAction.event ? <button aria-haspopup="dialog" className="adminTopbarPrimary" onClick={() => window.dispatchEvent(new Event(headerAction.event!))} type="button"><AdminIcon name={headerAction.icon || "plus"} size={14} /><span>{headerAction.label}</span></button> : <Link className="adminTopbarPrimary" href={headerAction.href!} rel={headerAction.external ? "noopener noreferrer" : undefined} target={headerAction.external ? "_blank" : undefined}><AdminIcon name={headerAction.icon || "plus"} size={14} /><span>{headerAction.label}</span></Link> : showReadOnlyHeaderAction && contextualHeader?.action ? <button aria-disabled="true" className="adminTopbarPrimary adminTopbarPrimaryDisabled" disabled title="Disponível para sessões persistentes com permissão de edição" type="button"><AdminIcon name={contextualHeader.action.icon || "plus"} size={14}/><span>{contextualHeader.action.label}</span></button> : null}
-          {showNotificationHeaderTools ? <div className="adminNotificationWrap" ref={notificationRef}><button aria-expanded={notificationOpen} aria-haspopup="true" aria-label="Notificações" className="adminNotificationButton" onClick={() => { setAccountOpen(false); setNotificationOpen((value) => !value); }} title="Notificações" type="button"><AdminIcon name="bell" size={16}/></button>{notificationOpen ? <div className="adminNotificationPopover" role="status"><strong>Notificações</strong><span>A central de notificações ainda não está conectada a uma fonte de eventos.</span></div> : null}</div> : null}
+          {showNotificationHeaderTools ? <div className="adminNotificationWrap" ref={notificationRef}><button aria-expanded={notificationOpen} aria-haspopup="true" aria-label={unreadNotifications ? `Notificações, ${unreadNotifications} não lidas` : "Notificações"} className="adminNotificationButton" onClick={toggleNotifications} title="Notificações" type="button"><AdminIcon name="bell" size={16}/>{unreadNotifications ? <span className="adminNotificationBadge">{Math.min(unreadNotifications, 99)}</span> : null}</button>{notificationOpen ? <div className="adminNotificationPopover" role="status"><div className="adminNotificationHeader"><div><strong>Notificações</strong><span>Atividade editorial recente</span></div>{notifications.length ? <small>{notifications.length} eventos</small> : null}</div>{notifications.length ? <div className="adminNotificationList">{notifications.map((item) => <Link className="adminNotificationItem" href={notificationHref(item)} key={item.id} onClick={() => setNotificationOpen(false)}><span className="adminNotificationItemIcon"><AdminIcon name={item.entityType === "artist" ? "artists" : item.entityType === "media_asset" ? "media" : "posts"} size={14}/></span><span className="adminNotificationItemCopy"><strong>{notificationLabel(item.action)}</strong><span>{notificationDetail(item)}</span><small>{item.actorName} · {notificationDate(item.createdAt)}</small></span></Link>)}</div> : <div className="adminNotificationEmpty"><AdminIcon name="bell" size={18}/><strong>Nenhuma atividade recente</strong><span>Novas alterações editoriais aparecerão aqui.</span></div>}{canOpenAudit ? <Link className="adminNotificationFooter" href="/admin/audit" onClick={() => setNotificationOpen(false)}>Ver auditoria completa <span aria-hidden="true">→</span></Link> : null}</div> : null}</div> : null}
           <div className="adminAccountWrap" ref={accountRef}>
             <button aria-expanded={accountOpen} aria-haspopup="menu" className="adminTopbarUser" onClick={() => setAccountOpen((value) => !value)} type="button"><span className="adminAvatar">{initials}</span><span><strong>{name}</strong><small>{developmentPreview ? "Administrador" : roleLabel(role)}</small></span><AdminIcon name="chevron" size={13} /></button>
             {accountOpen ? <div className="adminAccountPopover" role="menu"><Link href="/admin/settings" role="menuitem" onClick={() => setAccountOpen(false)}><AdminIcon name="settings" size={15}/><span>Configurações</span></Link>{footerAction ? <div className="adminAccountLogout" onClick={() => setAccountOpen(false)}>{footerAction}</div> : null}</div> : null}
