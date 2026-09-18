@@ -23,7 +23,7 @@ export type ArtistSummary = {
   updatedAt: string;
 };
 
-type Filters = { genre?: string; q?: string; status?: string };
+type Filters = { genre?: string; q?: string; role?: string; status?: string };
 type SortMode = "updated-desc" | "updated-asc" | "name-asc" | "name-desc";
 
 function StatusBadge({ status }: { status: ArtistSummary["status"] }) {
@@ -54,10 +54,18 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
   const [query, setQuery] = useState(initialFilters.q || "");
   const [status, setStatus] = useState(initialFilters.status || "all");
   const [genre, setGenre] = useState(initialFilters.genre || "all");
+  const [role, setRole] = useState(initialFilters.role || "all");
   const [sort, setSort] = useState<SortMode>("updated-desc");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const genres = useMemo(() => Array.from(new Set(artists.flatMap((artist) => artist.genres))).sort((a, b) => a.localeCompare(b, "pt-BR")), [artists]);
+  const roles = useMemo(() => Array.from(new Set(artists.flatMap((artist) => artist.roles || []))).sort((a, b) => a.localeCompare(b, "pt-BR")), [artists]);
+  const metrics = useMemo(() => ({
+    total: artists.length,
+    published: artists.filter((artist) => artist.status === "published").length,
+    draft: artists.filter((artist) => artist.status === "draft").length,
+    views: artists.reduce((total, artist) => total + Math.max(0, artist.views || 0), 0),
+  }), [artists]);
 
   useEffect(() => {
     if (preview) return;
@@ -65,15 +73,19 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
     if (query.trim()) params.set("q", query.trim());
     if (status !== "all") params.set("status", status);
     if (genre !== "all") params.set("genre", genre);
+    if (role !== "all") params.set("role", role);
     const timer = window.setTimeout(() => router.replace(`${pathname}${params.size ? `?${params}` : ""}`, { scroll: false }), 180);
     return () => window.clearTimeout(timer);
-  }, [genre, pathname, preview, query, router, status]);
+  }, [genre, pathname, preview, query, role, router, status]);
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase("pt-BR");
     const next = artists.filter((artist) => {
       const searchable = [artist.name, artist.slug, ...(artist.roles || []), ...artist.genres].join(" ").toLocaleLowerCase("pt-BR");
-      return (!needle || searchable.includes(needle)) && (status === "all" || artist.status === status) && (genre === "all" || artist.genres.includes(genre));
+      return (!needle || searchable.includes(needle))
+        && (status === "all" || artist.status === status)
+        && (genre === "all" || artist.genres.includes(genre))
+        && (role === "all" || (artist.roles || []).includes(role));
     });
     return [...next].sort((a, b) => {
       if (sort === "name-asc") return a.name.localeCompare(b.name, "pt-BR");
@@ -81,40 +93,54 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
       if (sort === "updated-asc") return dateValue(a.updatedAt) - dateValue(b.updatedAt);
       return dateValue(b.updatedAt) - dateValue(a.updatedAt);
     });
-  }, [artists, genre, query, sort, status]);
+  }, [artists, genre, query, role, sort, status]);
 
-  useEffect(() => { setPage(1); }, [genre, pageSize, query, sort, status]);
+  useEffect(() => { setPage(1); }, [genre, pageSize, query, role, sort, status]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   useEffect(() => { if (page > pageCount) setPage(pageCount); }, [page, pageCount]);
   const startIndex = filtered.length ? (page - 1) * pageSize : 0;
   const pageRows = filtered.slice(startIndex, startIndex + pageSize);
   const endIndex = filtered.length ? startIndex + pageRows.length : 0;
-  const hasFilters = Boolean(query.trim() || status !== "all" || genre !== "all");
+  const hasFilters = Boolean(query.trim() || status !== "all" || genre !== "all" || role !== "all" || sort !== "updated-desc");
 
   const clearFilters = () => {
     setQuery("");
     setStatus("all");
     setGenre("all");
+    setRole("all");
     setSort("updated-desc");
+    setPage(1);
   };
 
   return <div className={`adminDashboard ${styles.manager}`} data-testid="artist-manager">
     {deleted ? <div className="adminNotice">Artista excluído com sucesso.</div> : null}
+
+    <section className="adminMetricGrid" aria-label="Resumo dos artistas">
+      <article className="adminMetricCard is-red"><span className="adminMetricIcon"><AdminIcon name="artists" size={24}/></span><div className="adminMetricCopy"><span>Artistas</span><strong>{metrics.total.toLocaleString("pt-BR")}</strong><small>total cadastrado</small></div></article>
+      <article className="adminMetricCard is-green"><span className="adminMetricIcon"><AdminIcon name="check" size={24}/></span><div className="adminMetricCopy"><span>Ativos</span><strong>{metrics.published.toLocaleString("pt-BR")}</strong><small>publicados no site</small></div></article>
+      <article className="adminMetricCard is-orange"><span className="adminMetricIcon"><AdminIcon name="edit" size={24}/></span><div className="adminMetricCopy"><span>Rascunhos</span><strong>{metrics.draft.toLocaleString("pt-BR")}</strong><small>aguardando publicação</small></div></article>
+      <article className="adminMetricCard is-blue"><span className="adminMetricIcon"><AdminIcon name="eye" size={24}/></span><div className="adminMetricCopy"><span>Visualizações</span><strong>{metrics.views.toLocaleString("pt-BR")}</strong><small>métricas integradas</small></div></article>
+    </section>
+
     {preview ? <div className="adminNotice">Os dados desta prévia são isolados e não alteram a persistência do ambiente real.</div> : null}
 
-    <section className={styles.tableSurface} aria-label="Artistas cadastrados">
-      <div className={styles.toolbar} role="search">
-        <label className={styles.searchField}>
-          <span className="srOnly">Buscar artistas</span>
-          <AdminIcon name="search" size={16} />
-          <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar artistas..." />
-        </label>
-        <label className={styles.filterField}><span className="srOnly">Status</span><select value={status} onChange={(event) => setStatus(event.target.value)}><option value="all">Todos</option><option value="published">Ativos</option><option value="draft">Rascunhos</option><option value="inactive">Inativos</option><option value="archived">Arquivados</option></select></label>
-        <label className={styles.filterField}><span className="srOnly">Gênero</span><select value={genre} onChange={(event) => setGenre(event.target.value)}><option value="all">Todos</option>{genres.map((item) => <option key={item}>{item}</option>)}</select></label>
-        <label className={styles.filterField}><span className="srOnly">Ordenar por</span><select value={sort} onChange={(event) => setSort(event.target.value as SortMode)}><option value="updated-desc">Mais recentes</option><option value="updated-asc">Mais antigos</option><option value="name-asc">Nome A–Z</option><option value="name-desc">Nome Z–A</option></select></label>
+    <section className={styles.queryPanel} aria-label="Busca e filtros de artistas">
+      <label className={styles.searchField}>
+        <span className="srOnly">Buscar artistas</span>
+        <AdminIcon name="search" size={16} />
+        <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por nome, slug, função ou gênero..." />
+      </label>
+      <div className={styles.queryControls}>
+        <label><span className="srOnly">Status</span><select aria-label="Filtrar por status" value={status} onChange={(event) => setStatus(event.target.value)}><option value="all">Todos os status</option><option value="published">Ativos</option><option value="draft">Rascunhos</option><option value="inactive">Inativos</option><option value="archived">Arquivados</option></select></label>
+        <label><span className="srOnly">Gênero</span><select aria-label="Filtrar por gênero" value={genre} onChange={(event) => setGenre(event.target.value)}><option value="all">Todos os gêneros</option>{genres.map((item) => <option key={item}>{item}</option>)}</select></label>
+        <label><span className="srOnly">Função</span><select aria-label="Filtrar por função" value={role} onChange={(event) => setRole(event.target.value)}><option value="all">Todas as funções</option>{roles.map((item) => <option key={item}>{item}</option>)}</select></label>
+        <label><span className="srOnly">Ordenar por</span><select aria-label="Ordenar artistas" value={sort} onChange={(event) => setSort(event.target.value as SortMode)}><option value="updated-desc">Mais recentes</option><option value="updated-asc">Mais antigos</option><option value="name-asc">Nome A–Z</option><option value="name-desc">Nome Z–A</option></select></label>
+        {hasFilters ? <button className={styles.queryReset} onClick={clearFilters} type="button"><AdminIcon name="x" size={13}/>Limpar</button> : null}
       </div>
+    </section>
 
+    <section className={styles.tableSurface} aria-label="Artistas cadastrados">
       {filtered.length ? <>
         <div className={styles.scrollArea}>
           <table className={styles.artistTable} aria-label="Artistas cadastrados">
