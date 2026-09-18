@@ -119,8 +119,8 @@ export default async function AdminArtistsPage({ searchParams }: { searchParams:
         name: artist.name,
         slug: artist.slug,
         status: artist.archivedAt || profile?.isActive === false ? "inactive" : artist.isPublished ? "published" : "draft",
-        shortBio: artist.shortBio,
-        biography: artist.biography,
+        shortBio: artist.shortBio || "",
+        biography: artist.biography || "",
         cardMediaId: artist.cardMediaId || "",
         heroMediaId: artist.heroMediaId || "",
         ogMediaId: artist.ogMediaId || "",
@@ -136,11 +136,11 @@ export default async function AdminArtistsPage({ searchParams }: { searchParams:
         hireButtonLabel: profile?.hireButtonLabel || "Quero contratar",
         youtubeVideo: embeds.youtube || "",
         spotifyEmbed: embeds.spotify || "",
-        homePosition: artist.homePosition,
-        listPosition: artist.listPosition,
-        seoTitle: artist.seoTitle,
-        seoDescription: artist.seoDescription,
-        canonicalUrl: artist.canonicalUrl,
+        homePosition: artist.homePosition ?? 0,
+        listPosition: artist.listPosition ?? 0,
+        seoTitle: artist.seoTitle || "",
+        seoDescription: artist.seoDescription || "",
+        canonicalUrl: artist.canonicalUrl || "",
       };
     }
     return {
