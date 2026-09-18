@@ -28,6 +28,18 @@ test("News manager exposes the supported modal, actions and pagination workflow"
   assert.match(manager, /AdminPagination/);
   assert.match(pagination, /Por página/);
   assert.match(pagination, /paginationItems/);
+  assert.match(manager, /adminMetricGrid/);
+  assert.match(manager, /Conteúdos<\/span><strong>\{metrics\.total/);
+  assert.match(manager, /Publicados<\/span><strong>\{metrics\.published/);
+  assert.match(manager, /Rascunhos<\/span><strong>\{metrics\.draft/);
+  assert.match(manager, /Arquivados<\/span><strong>\{metrics\.archived/);
+  assert.match(manager, /Buscar por título, slug ou autor/);
+  assert.match(manager, /Filtrar por status/);
+  assert.match(manager, /Filtrar por categoria/);
+  assert.match(manager, /Filtrar por autor/);
+  assert.match(manager, /Ordenar conteúdos/);
+  assert.match(manager, /const filteredPosts = useMemo/);
+  assert.match(manager, /totalItems=\{filteredPosts\.length\}/);
   assert.match(manager, /unpublished: "Não publicado"/);
   assert.doesNotMatch(manager, /Agendad[ao]|Analytics|Mais filtros/);
 });
