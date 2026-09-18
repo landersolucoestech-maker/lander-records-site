@@ -47,8 +47,10 @@ test("major modules retain one contextual shell without fake global capabilities
     assert.ok(shell.includes(`title: "${title}"`), `missing contextual header for ${title}`);
   }
   assert.match(shell, /adminTopbarContextual/);
-  assert.doesNotMatch(shell, /adminNotificationButton/);
-  assert.doesNotMatch(shell, /name="bell"/);
+  assert.match(shell, /const showContentHeaderTools = normalizedPath === contentRoot/);
+  assert.match(shell, /adminNotificationButton/);
+  assert.match(shell, /name="bell"/);
+  assert.match(shell, /adminTopbarPrimaryDisabled/);
   assert.match(shell, /const canEdit = !readOnly && role !== "viewer"/);
 });
 
