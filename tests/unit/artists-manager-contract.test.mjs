@@ -8,6 +8,8 @@ const page = read("app/admin/(protected)/artists/page.tsx");
 const editPage = read("app/admin/(protected)/artists/[id]/page.tsx");
 const newPage = read("app/admin/(protected)/artists/new/page.tsx");
 const managerStyles = read("app/admin/(protected)/artists/ArtistManager.module.css");
+const pagination = read("app/admin/components/AdminPagination.tsx");
+const paginationStyles = read("app/admin/components/AdminPagination.module.css");
 const formStyles = read("app/admin/(protected)/artists/ArtistForm.module.css");
 const preview = read("app/cms-preview/AdminPreview.tsx");
 
@@ -23,9 +25,10 @@ test("Artists manager matches the approved table-first reference structure witho
   assert.match(manager, /Mais recentes/);
   assert.match(manager, /Visualizações/);
   assert.match(manager, /Última atualização/);
-  assert.match(manager, /Por página/);
-  assert.match(manager, /paginationItems/);
+  assert.match(manager, /AdminPagination/);
   assert.match(manager, /pageSize/);
+  assert.match(pagination, /Por página/);
+  assert.match(pagination, /paginationItems/);
   assert.doesNotMatch(manager, /Selecionar artistas desta página|Selecionar \$\{artist\.name\}|selected|toggleCurrentPage|toggleArtist/);
   assert.doesNotMatch(manager, /adminMetricGrid|adminMetricCard|adminMetricSpark|adminDashboardPanel|adminAnalyticsPanelHeading|Catálogo de artistas|Destaques na Home/);
   assert.doesNotMatch(manager, /Importar CSV|Configurar módulo|Mais filtros|deleteArtistAction/);
@@ -65,8 +68,8 @@ test("Artists table reproduces the approved reference density and pagination", (
   assert.match(managerStyles, /\.artistTable th\{height:38px/);
   assert.match(managerStyles, /\.artistTable td\{height:56px/);
   assert.match(managerStyles, /\.identity img,\.avatarFallback\{[\s\S]*width:42px;height:42px[\s\S]*border-radius:6px/);
-  assert.match(managerStyles, /grid-template-columns:minmax\(210px,1fr\) auto minmax\(210px,1fr\)/);
-  assert.match(managerStyles, /\.paginationControls \.activePage\{border-color:#ef2731/);
+  assert.match(paginationStyles, /grid-template-columns:minmax\(210px,1fr\) auto minmax\(210px,1fr\)/);
+  assert.match(paginationStyles, /\.controls \.active\{border-color:#ef2731/);
   assert.match(managerStyles, /min-width:980px/);
   assert.match(managerStyles, /\.statusBadge\{[\s\S]*min-height:22px[\s\S]*border-radius:7px/);
   assert.doesNotMatch(managerStyles, /checkboxColumn/);
