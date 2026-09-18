@@ -20,7 +20,7 @@ type ShellProps = {
 type ModuleHeaderAction = {
   label: string;
   href?: string;
-  event?: "admin:new-content" | "admin:add-media";
+  event?: "admin:new-content" | "admin:new-artist" | "admin:add-media";
   icon?: IconName;
   external?: boolean;
   requiresEdit?: boolean;
@@ -51,7 +51,7 @@ function moduleHeader(pathname: string, preview: boolean): ModuleHeader | null {
   }
 
   if (starts("artists")) {
-    if (path === `${root}/artists`) return { title: "Artistas", description: "Gerencie artistas, perfis, publicação e conteúdos relacionados em uma única área.", action: { label: "Novo artista", href: preview ? `${root}/artists` : "/admin/artists/new", icon: "plus", requiresEdit: true } };
+    if (path === `${root}/artists`) return { title: "Artistas", description: "Gerencie artistas, perfis, publicação e conteúdos relacionados em uma única área.", action: { label: "Novo artista", event: "admin:new-artist", icon: "plus", requiresEdit: true } };
     if (path.endsWith("/new")) return { title: "Novo artista", description: "Cadastre identidade, mídias, plataformas, destinos e metadados do artista.", back: { label: "Artistas", href: preview ? `${root}/artists` : "/admin/artists" } };
     if (path.endsWith("/view")) return { title: "Visualizar artista", description: "Consulte o perfil administrativo e a presença pública do artista.", back: { label: "Artistas", href: preview ? `${root}/artists` : "/admin/artists" } };
     return { title: "Editar artista", description: "Configure identidade, publicação, integrações, mídia e conteúdo público com prévia em tempo real.", back: { label: "Artistas", href: preview ? `${root}/artists` : "/admin/artists" } };
