@@ -41,7 +41,7 @@ test("dashboard uses first-party contact submissions only for the conversion KPI
 });
 
 test("real dashboard aggregates recent publications across supported content domains", () => {
-  assert.match(dashboardPage, /artists, auditLogs, pages, posts/);
+  assert.match(dashboardPage, /artists, auditLogs, contactSubmissions, pages, posts/);
   assert.match(dashboardPage, /postRows, artistRows, pageRows/);
   assert.match(dashboardPage, /type: "Notícia"/);
   assert.match(dashboardPage, /type: "Artista"/);
