@@ -86,6 +86,13 @@ test("artists keep real routes while sharing the Portal catalog geometry", () =>
 
 test("media library keeps real server actions, permission-aware controls and pagination", () => {
   assert.match(media, /Adicionar mídia/);
+  assert.match(media, /adminMetricGrid/);
+  assert.match(media, /styles\.queryPanel/);
+  assert.match(media, /Buscar por arquivo, URL ou texto alternativo/);
+  assert.match(media, /Filtrar por tipo/);
+  assert.match(media, /Filtrar por status/);
+  assert.match(media, /Filtrar por origem/);
+  assert.match(media, /Ordenar mídias/);
   assert.match(media, /AdminPagination/);
   assert.match(paginationStyles, /grid-template-columns:minmax\(210px,1fr\) auto minmax\(210px,1fr\)/);
   assert.match(media, /<table>/);
@@ -96,7 +103,9 @@ test("media library keeps real server actions, permission-aware controls and pag
   assert.match(mediaPage, /const persistent = session\.source === "session"/);
   assert.match(mediaPage, /const canUpload = persistent && session\.user\.role !== "viewer"/);
   assert.match(mediaPage, /const canArchive = persistent && \(session\.user\.role === "admin" \|\| session\.user\.role === "owner"\)/);
+  assert.match(mediaStyles, /\.queryPanel\{display:grid/);
   assert.match(mediaStyles, /\.tableSurface/);
+  assert.doesNotMatch(mediaStyles, /\.toolbar\{/);
   assert.match(paginationStyles, /\.pagination/);
   assert.doesNotMatch(media, /moreAction/);
 });
