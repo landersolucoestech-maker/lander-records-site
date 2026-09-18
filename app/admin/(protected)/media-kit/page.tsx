@@ -35,7 +35,7 @@ export default async function MediaKitPage() {
   const location = settings?.address || settings?.location || "Não configurado";
   const pagesTotal = pageCount?.value || 0, postsTotal = postCount?.value || 0, mediaTotal = mediaCount?.value || 0;
 
-  return <div className="adminDashboard" data-testid="media-kit-manager">
+  return <div className={`adminDashboard ${styles.mediaKitLayout}`} data-testid="media-kit-manager">
     <section className="adminMetricGrid" aria-label="Resumo do Mídia Kit">
       <Metric accent="red" icon="pages" label="Páginas ativas" value={pagesTotal} hint="estrutura pública atual" />
       <Metric accent="green" icon="posts" label="Publicações" value={postsTotal} hint="conteúdos publicados" />

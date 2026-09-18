@@ -127,7 +127,7 @@ test("media library keeps real server actions, permission-aware controls and pag
   assert.doesNotMatch(media, /moreAction/);
 });
 
-test("media kit keeps editor plus sticky live preview while reading existing project data", () => {
+test("media kit keeps KPIs and preview static while only the left editor scrolls", () => {
   assert.match(mediaKit, /getDb\(\)/);
   assert.match(mediaKit, /Identidade e apresentação/);
   assert.match(mediaKit, /Audiência/);
@@ -136,7 +136,11 @@ test("media kit keeps editor plus sticky live preview while reading existing pro
   assert.match(mediaKit, /aria-label="Prévia visual do Mídia Kit"/);
   assert.match(mediaKit, /Dados reais disponíveis/);
   assert.match(mediaKit, /Nenhum dado real de audiência disponível/);
-  assert.match(mediaKitStyles, /position:sticky/);
+  assert.match(mediaKit, /styles\.mediaKitLayout/);
+  assert.match(mediaKitStyles, /\.mediaKitLayout\{[^}]*height:calc\(100dvh - var\(--ui-header-height,68px\) - 52px\)[^}]*overflow:hidden/);
+  assert.match(mediaKitStyles, /\.editor\{[^}]*overflow-y:auto/);
+  assert.match(mediaKitStyles, /\.preview\{[^}]*position:static[^}]*height:100%[^}]*grid-template-rows:auto minmax\(0,1fr\)/);
+  assert.match(mediaKitStyles, /@media\(max-width:1180px\)\{\.mediaKitLayout\{height:auto/);
 });
 
 test("settings internal tabs use scoped mutations and preserve RBAC", () => {
