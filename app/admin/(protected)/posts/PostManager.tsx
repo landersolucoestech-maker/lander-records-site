@@ -45,6 +45,7 @@ type ModalMode = "create" | "edit" | "view";
 type ModalState = { mode: ModalMode; postId?: string } | null;
 type ActionMenuState = { postId: string } | null;
 type ActionMenuPosition = { top: number; left: number } | null;
+type SortMode = "updated-desc" | "updated-asc" | "title-asc" | "title-desc";
 
 const focusableSelector = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex="0"]';
 const statusLabel: Record<PostRecord["status"], string> = {
@@ -60,6 +61,13 @@ function StatusBadge({ status }: { status: PostRecord["status"] }) {
 
 function clampPage(page: number, totalPages: number) {
   return Math.min(Math.max(page, 1), Math.max(totalPages, 1));
+}
+
+function postDateValue(value: string) {
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value.trim());
+  if (match) return Date.UTC(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 function localDateTime(value?: string) {
@@ -310,16 +318,60 @@ export default function PostManager({ canDelete = false, canEdit = true, categor
   const actionMenuRef = useRef<HTMLDivElement | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const totalPages = Math.max(1, Math.ceil(posts.length / pageSize));
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [authorFilter, setAuthorFilter] = useState("all");
+  const [sortMode, setSortMode] = useState<SortMode>("updated-desc");
+
+  const authors = useMemo(() => Array.from(new Set(posts.map((post) => post.authorName).filter(Boolean))).sort((a, b) => a.localeCompare(b, "pt-BR")), [posts]);
+  const postCategories = useMemo(() => Array.from(new Set(posts.map((post) => post.category).filter(Boolean))).sort((a, b) => a.localeCompare(b, "pt-BR")), [posts]);
+  const metrics = useMemo(() => ({
+    total: posts.length,
+    published: posts.filter((post) => post.status === "published").length,
+    draft: posts.filter((post) => post.status === "draft").length,
+    archived: posts.filter((post) => post.status === "archived").length,
+  }), [posts]);
+
+  const filteredPosts = useMemo(() => {
+    const needle = query.trim().toLocaleLowerCase("pt-BR");
+    const filtered = posts.filter((post) => {
+      const searchable = [post.title, post.slug, post.authorName, post.category, post.excerpt].join(" ").toLocaleLowerCase("pt-BR");
+      return (!needle || searchable.includes(needle))
+        && (statusFilter === "all" || post.status === statusFilter)
+        && (categoryFilter === "all" || post.category === categoryFilter)
+        && (authorFilter === "all" || post.authorName === authorFilter);
+    });
+    return [...filtered].sort((a, b) => {
+      if (sortMode === "title-asc") return a.title.localeCompare(b.title, "pt-BR");
+      if (sortMode === "title-desc") return b.title.localeCompare(a.title, "pt-BR");
+      if (sortMode === "updated-asc") return postDateValue(a.updatedAt) - postDateValue(b.updatedAt);
+      return postDateValue(b.updatedAt) - postDateValue(a.updatedAt);
+    });
+  }, [authorFilter, categoryFilter, posts, query, sortMode, statusFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / pageSize));
   const safePage = clampPage(page, totalPages);
   const startIndex = (safePage - 1) * pageSize;
-  const visiblePosts = useMemo(() => posts.slice(startIndex, startIndex + pageSize), [pageSize, posts, startIndex]);
+  const visiblePosts = useMemo(() => filteredPosts.slice(startIndex, startIndex + pageSize), [filteredPosts, pageSize, startIndex]);
   const selectedPost = modal?.postId ? posts.find((post) => post.id === modal.postId) : undefined;
   const actionPost = actionMenu ? posts.find((post) => post.id === actionMenu.postId) : undefined;
-  const firstShown = posts.length ? startIndex + 1 : 0;
-  const lastShown = Math.min(startIndex + visiblePosts.length, posts.length);
+  const firstShown = filteredPosts.length ? startIndex + 1 : 0;
+  const lastShown = Math.min(startIndex + visiblePosts.length, filteredPosts.length);
+  const hasQuery = Boolean(query.trim() || statusFilter !== "all" || categoryFilter !== "all" || authorFilter !== "all" || sortMode !== "updated-desc");
   const closeActionMenu = () => { setActionMenu(null); setActionMenuPosition(null); };
   const changePageSize = (value: number) => { closeActionMenu(); setPageSize(value); setPage(1); };
+  const clearQuery = () => {
+    closeActionMenu();
+    setQuery("");
+    setStatusFilter("all");
+    setCategoryFilter("all");
+    setAuthorFilter("all");
+    setSortMode("updated-desc");
+    setPage(1);
+  };
+
+  useEffect(() => { setPage(1); closeActionMenu(); }, [authorFilter, categoryFilter, query, sortMode, statusFilter]);
 
   useEffect(() => {
     const openModal = () => { closeActionMenu(); setModal({ mode: "create" }); };
@@ -371,10 +423,33 @@ export default function PostManager({ canDelete = false, canEdit = true, categor
   return <div className={styles.manager} data-testid="posts-manager">
     {deleted ? <div className={styles.successNotice}>Conteúdo excluído com sucesso.</div> : null}
     {saved ? <div className={styles.successNotice}>Conteúdo salvo com sucesso.</div> : null}
+
+    <section className="adminMetricGrid" aria-label="Resumo dos conteúdos">
+      <article className="adminMetricCard is-red"><span className="adminMetricIcon"><AdminIcon name="posts" size={24}/></span><div className="adminMetricCopy"><span>Conteúdos</span><strong>{metrics.total.toLocaleString("pt-BR")}</strong><small>total cadastrado</small></div></article>
+      <article className="adminMetricCard is-green"><span className="adminMetricIcon"><AdminIcon name="check" size={24}/></span><div className="adminMetricCopy"><span>Publicados</span><strong>{metrics.published.toLocaleString("pt-BR")}</strong><small>visíveis no site</small></div></article>
+      <article className="adminMetricCard is-orange"><span className="adminMetricIcon"><AdminIcon name="edit" size={24}/></span><div className="adminMetricCopy"><span>Rascunhos</span><strong>{metrics.draft.toLocaleString("pt-BR")}</strong><small>aguardando publicação</small></div></article>
+      <article className="adminMetricCard is-blue"><span className="adminMetricIcon"><AdminIcon name="document" size={24}/></span><div className="adminMetricCopy"><span>Arquivados</span><strong>{metrics.archived.toLocaleString("pt-BR")}</strong><small>fora de circulação</small></div></article>
+    </section>
+
     {developmentMode && !preview ? <section className={styles.notice} role="status"><span aria-hidden="true" className={styles.noticeIcon}>i</span><div><strong>Modo de desenvolvimento liberado</strong><p>Você pode navegar pelos conteúdos usando o banco descartável do preview. Alterações persistentes continuam protegidas pelas regras administrativas do projeto.</p></div></section> : null}
 
+    <section className={styles.queryPanel} aria-label="Busca e filtros de conteúdos">
+      <label className={styles.queryField}>
+        <span className="srOnly">Buscar conteúdos</span>
+        <AdminIcon name="search" size={16}/>
+        <input aria-label="Buscar conteúdos" onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por título, slug ou autor..." type="search" value={query}/>
+      </label>
+      <div className={styles.queryControls}>
+        <label><span className="srOnly">Status</span><select aria-label="Filtrar por status" onChange={(event) => setStatusFilter(event.target.value)} value={statusFilter}><option value="all">Todos os status</option><option value="published">Publicados</option><option value="draft">Rascunhos</option><option value="unpublished">Não publicados</option><option value="archived">Arquivados</option></select></label>
+        <label><span className="srOnly">Categoria</span><select aria-label="Filtrar por categoria" onChange={(event) => setCategoryFilter(event.target.value)} value={categoryFilter}><option value="all">Todas as categorias</option>{postCategories.map((category) => <option key={category} value={category}>{category}</option>)}</select></label>
+        <label><span className="srOnly">Autor</span><select aria-label="Filtrar por autor" onChange={(event) => setAuthorFilter(event.target.value)} value={authorFilter}><option value="all">Todos os autores</option>{authors.map((author) => <option key={author} value={author}>{author}</option>)}</select></label>
+        <label><span className="srOnly">Ordenar por</span><select aria-label="Ordenar conteúdos" onChange={(event) => setSortMode(event.target.value as SortMode)} value={sortMode}><option value="updated-desc">Mais recentes</option><option value="updated-asc">Mais antigos</option><option value="title-asc">Título A–Z</option><option value="title-desc">Título Z–A</option></select></label>
+        {hasQuery ? <button className={styles.queryReset} onClick={clearQuery} type="button"><AdminIcon name="x" size={13}/>Limpar</button> : null}
+      </div>
+    </section>
+
     <section className={styles.catalog} aria-label="Conteúdos cadastrados">
-      {posts.length ? <div className={`tableview-surface cms-tableview-surface ${styles.tableSurface}`} aria-label="Lista de conteúdos">
+      {posts.length && filteredPosts.length ? <div className={`tableview-surface cms-tableview-surface ${styles.tableSurface}`} aria-label="Lista de conteúdos">
         <div className={styles.scrollArea}><table className={styles.contentTable}>
           <thead><tr><th>Conteúdo</th><th>Página</th><th>Slug</th><th>Status</th><th>Autor</th><th>Atualização</th><th className={styles.actions}>Ações</th></tr></thead>
           <tbody>{visiblePosts.map((post) => <tr data-testid="content-row" key={post.id}>
@@ -395,10 +470,10 @@ export default function PostManager({ canDelete = false, canEdit = true, categor
           onPageSizeChange={changePageSize}
           pageSize={pageSize}
           startItem={firstShown}
-          totalItems={posts.length}
+          totalItems={filteredPosts.length}
           totalPages={totalPages}
         />
-      </div> : <div className={styles.empty}><span className={styles.emptyIcon}><AdminIcon name="document" size={20} /></span><strong>Nenhum conteúdo cadastrado.</strong><span>As publicações editoriais aparecerão aqui assim que forem criadas.</span><button className="adminPrimaryCompact" onClick={() => setModal({ mode: "create" })} type="button">Criar primeiro conteúdo</button></div>}
+      </div> : posts.length ? <div className={styles.empty}><span className={styles.emptyIcon}><AdminIcon name="search" size={20} /></span><strong>Nenhum conteúdo encontrado.</strong><span>Ajuste a busca ou os filtros para voltar a exibir as publicações.</span><button className="adminButton" onClick={clearQuery} type="button">Limpar filtros</button></div> : <div className={styles.empty}><span className={styles.emptyIcon}><AdminIcon name="document" size={20} /></span><strong>Nenhum conteúdo cadastrado.</strong><span>As publicações editoriais aparecerão aqui assim que forem criadas.</span><button className="adminPrimaryCompact" onClick={() => setModal({ mode: "create" })} type="button">Criar primeiro conteúdo</button></div>}
     </section>
 
     {actionMenu && actionPost && typeof document !== "undefined" ? createPortal(<div aria-label={`Ações de ${actionPost.title}`} className={styles.actionMenu} data-content-action-menu id="content-row-action-menu" ref={actionMenuRef} role="menu" style={{ position: "fixed", top: actionMenuPosition?.top ?? 0, left: actionMenuPosition?.left ?? 0, visibility: actionMenuPosition ? "visible" : "hidden", zIndex: 900 }}>
