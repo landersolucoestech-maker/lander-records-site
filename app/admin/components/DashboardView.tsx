@@ -239,7 +239,7 @@ export function DashboardView({ data, demoMode = false, name, preview = false, r
 
     <div className="adminPerformanceGrid">
       <section className="adminDashboardPanel adminPerformancePanel" data-testid="site-performance">
-        <PanelHeading icon="chart" description="Evolução de visitantes e visualizações ao longo do tempo." action={<select aria-label="Período de desempenho" className="adminPeriodSelect" defaultValue="30" disabled={!analytics}><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="90">Últimos 90 dias</option></select>}>Desempenho do site</PanelHeading>
+        <PanelHeading icon="chart" description="Evolução de visitantes e visualizações ao longo do tempo." action={<select aria-label="Período de desempenho" className="adminPeriodSelect" defaultValue="30" disabled={!analytics?.series?.length}><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="90">Últimos 90 dias</option></select>}>Desempenho do site</PanelHeading>
         {analytics?.series?.length ? <PerformanceChart analytics={analytics} /> : <AnalyticsEmpty message="Conecte uma fonte elegível para acompanhar visitantes e visualizações por período." />}
       </section>
 
