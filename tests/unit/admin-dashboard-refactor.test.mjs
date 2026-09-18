@@ -25,6 +25,8 @@ test("dashboard reproduces the approved reference only in disposable development
   assert.match(dashboardPage, /analytics: null/);
   assert.match(dashboardPage, /demoMode=\{session\.source === "development-auth-bypass"\}/);
   assert.match(dashboard, /Analytics não conectado/);
+  assert.doesNotMatch(dashboard, /desempenho do seu site em tempo real/);
+  assert.match(dashboard, /Métricas de audiência aparecem quando uma fonte de analytics do site estiver conectada/);
 });
 
 test("approved dashboard uses line chart, contextual activities, thumbnails and overflow actions", () => {

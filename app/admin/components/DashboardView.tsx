@@ -216,6 +216,9 @@ function typeClass(type: string) {
 export function DashboardView({ data, demoMode = false, name, preview = false, readOnly = false, role = "viewer" }: { data: DashboardData; demoMode?: boolean; name: string; preview?: boolean; readOnly?: boolean; role?: "viewer" | "editor" | "admin" | "owner" }) {
   const dashboardData = demoMode ? referenceDashboard : data;
   const analytics = dashboardData.analytics ?? null;
+  const dashboardSummary = analytics
+    ? "Acompanhe os indicadores conectados do site e o resumo operacional."
+    : "Resumo operacional do CMS. Métricas de audiência aparecem quando uma fonte de analytics do site estiver conectada.";
   const canEdit = !readOnly && role !== "viewer";
   const publications = dashboardData.recentPublications ?? [];
   const activities = dashboardData.recentActivity;
@@ -224,7 +227,7 @@ export function DashboardView({ data, demoMode = false, name, preview = false, r
   return <div className="adminDashboard" data-testid="dashboard">
     {preview ? <div className="adminPreviewNotice">BACKEND_ENVIRONMENT_DEFERRED · estrutura visual sem leitura ou escrita no banco.</div> : null}
 
-    <header className="adminDashboardHeading"><div><h1>{name ? `Olá, ${name}!` : "Olá!"}</h1><p>Aqui está o desempenho do seu site em tempo real e um resumo geral.</p></div></header>
+    <header className="adminDashboardHeading"><div><h1>{name ? `Olá, ${name}!` : "Olá!"}</h1><p>{dashboardSummary}</p></div></header>
 
     <section aria-label="Indicadores de performance digital" className="adminMetricGrid" data-testid="dashboard-metrics">
       <MetricCard accent="red" change={analytics?.previousVisitorsChange} icon="users" label="Visitantes" value={analytics?.visitors} />
