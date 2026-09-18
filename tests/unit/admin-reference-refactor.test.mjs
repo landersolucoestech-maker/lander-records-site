@@ -72,8 +72,10 @@ test("content uses the canonical modal workflow, floating actions and Lander Rec
 test("artists keep real routes while sharing the Portal catalog geometry", () => {
   assert.match(artists, /<details>/);
   assert.match(artists, /name="more"/);
-  assert.match(artists, /styles\.toolbar/);
+  assert.match(artists, /styles\.queryPanel/);
   assert.match(artists, /styles\.tableSurface/);
+  assert.match(artists, /adminMetricGrid/);
+  assert.match(artists, /Filtrar por função/);
   assert.match(artists, /<table className=\{styles\.artistTable\}/);
   assert.match(artists, /\/admin\/artists\/\$\{artist\.id\}/);
   assert.match(artists, /\/artistas\/\$\{artist\.slug\}/);
