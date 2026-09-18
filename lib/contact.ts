@@ -46,6 +46,7 @@ export async function retryDueOutboxEvents(limit = OUTBOX_RETRY_BATCH_SIZE) {
         and(
           eq(integrationOutbox.status, "pending"),
           lte(integrationOutbox.createdAt, stalePendingBefore),
+          or(isNull(integrationOutbox.nextAttemptAt), lte(integrationOutbox.nextAttemptAt, now)),
         ),
       ))
       .orderBy(asc(integrationOutbox.createdAt))
