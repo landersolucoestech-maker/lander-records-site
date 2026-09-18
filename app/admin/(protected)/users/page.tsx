@@ -30,7 +30,7 @@ export default async function UsersPage() {
   const active = rows.filter((user) => user.isActive).length;
   const owners = rows.filter((user) => user.role === "owner").length;
 
-  return <div className={styles.page}>
+  return <div className={styles.page} data-testid="users-manager">
     <nav aria-label="Seções de configurações" className={settingsStyles.tabs}>
       <Link href="/admin/settings"><AdminIcon name="home" size={15}/>Empresa</Link>
       <Link href="/admin/settings#identity"><AdminIcon name="media" size={15}/>Identidade do site</Link>
