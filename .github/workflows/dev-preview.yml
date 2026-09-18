@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: lander-records-dev-preview
+  group: lander-records-dev-preview-v2
   cancel-in-progress: true
 
 jobs:
