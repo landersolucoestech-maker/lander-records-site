@@ -16,7 +16,7 @@ import { artists, mediaAssets } from "../../../../lib/db/schema";
 import ArtistManager, { type ArtistSummary } from "./ArtistManager";
 
 export const dynamic = "force-dynamic";
-type ArtistFilters = { deleted?: string; genre?: string; q?: string; status?: string };
+type ArtistFilters = { deleted?: string; genre?: string; q?: string; role?: string; status?: string };
 
 const VIEW_METRICS = new Set(["views", "view_count", "video_views", "video_view_count", "total_views"]);
 
@@ -86,5 +86,5 @@ export default async function AdminArtistsPage({ searchParams }: { searchParams:
     };
   });
 
-  return <ArtistManager artists={summary} canEdit={session.source === "session" && session.user.role !== "viewer"} deleted={filters.deleted === "1"} initialFilters={{ genre: filters.genre, q: filters.q, status: filters.status }} />;
+  return <ArtistManager artists={summary} canEdit={session.source === "session" && session.user.role !== "viewer"} deleted={filters.deleted === "1"} initialFilters={{ genre: filters.genre, q: filters.q, role: filters.role, status: filters.status }} />;
 }
