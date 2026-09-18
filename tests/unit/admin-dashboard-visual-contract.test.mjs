@@ -136,7 +136,7 @@ test("Settings mirrors persistent server RBAC instead of presenting fake write c
   assert.match(adminActions, /export async function updateCompanySettings[\s\S]*requirePersistentAdmin\("admin"\)/);
   assert.match(adminActions, /export async function updateIdentitySettings[\s\S]*requirePersistentAdmin\("admin"\)/);
   assert.match(adminActions, /export async function upsertSocialLink[\s\S]*requirePersistentAdmin\("editor"\)/);
-  assert.match(adminActions, /export async function upsertContactTopic[\s\S]*requirePersistentAdmin\("editor"\)/);
+  assert.doesNotMatch(settingsPage, /Assuntos do formulário|upsertContactTopic|contactTopics/);\n  assert.doesNotMatch(adminActions, /export async function upsertContactTopic/);
 });
 
 test("Integrations exposes mutating controls only to persistent editors", () => {

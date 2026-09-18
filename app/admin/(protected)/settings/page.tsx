@@ -4,8 +4,8 @@ import { asc, eq } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
 import { hasMinimumRole } from "../../../../lib/auth/policy";
 import { getDb } from "../../../../lib/db";
-import { contactTopics, mediaAssets, siteSettings, socialLinks } from "../../../../lib/db/schema";
-import { updateCompanySettings, updateIdentitySettings, upsertContactTopic, upsertSocialLink } from "../../actions";
+import { mediaAssets, siteSettings, socialLinks } from "../../../../lib/db/schema";
+import { updateCompanySettings, updateIdentitySettings, upsertSocialLink } from "../../actions";
 import { AdminIcon } from "../../components/AdminIcon";
 import { SettingsTabs } from "./SettingsTabs";
 import styles from "./Settings.module.css";
@@ -19,10 +19,9 @@ export default async function SettingsPage() {
   const canAdmin = persistent && hasMinimumRole(session.user.role, "admin");
   const canManageUsers = persistent && session.user.role === "owner";
   const db = getDb();
-  const [settingsRows, socials, topics, media] = await Promise.all([
+  const [settingsRows, socials, media] = await Promise.all([
     db.select().from(siteSettings).limit(1),
     db.select().from(socialLinks).orderBy(asc(socialLinks.position)),
-    db.select().from(contactTopics).orderBy(asc(contactTopics.position)),
     db.select().from(mediaAssets).where(eq(mediaAssets.status, "active")).orderBy(asc(mediaAssets.originalFilename)),
   ]);
   const settings = settingsRows[0];
@@ -43,11 +42,6 @@ export default async function SettingsPage() {
       </form></div>
     </section>
 
-    <section className={styles.card}>
-      <div className={styles.cardHeader}><div><h2>Assuntos do formulário</h2><p>Os identificadores e destinos seguem o contrato atual do formulário público.</p></div>{!canEdit ? <span className="adminBadge">Somente leitura</span> : null}</div>
-      <div className={styles.cardBody}><div className={styles.stack}>{topics.map((topic) => <form action={upsertContactTopic} className={styles.row} key={topic.id}><input type="hidden" name="id" value={topic.id}/><input aria-label="Nome" disabled={!canEdit} name="name" defaultValue={topic.name}/><input aria-label="Slug" disabled={!canEdit} name="slug" defaultValue={topic.slug}/><input aria-label="Identificador da integração" disabled={!canEdit} name="saasType" defaultValue={topic.saasType}/><input aria-label="Posição" disabled={!canEdit} name="position" type="number" defaultValue={topic.position}/><label className={styles.check}><input disabled={!canEdit} name="active" type="checkbox" defaultChecked={topic.active}/> Ativo</label>{canEdit ? <button className="adminButton" type="submit">Salvar</button> : <span className="adminBadge">Leitura</span>}</form>)}
-        {canEdit ? <form action={upsertContactTopic} className={`${styles.row} ${styles.newRow}`}><input name="name" placeholder="Novo assunto" required/><input name="slug" placeholder="slug"/><input name="saasType" placeholder="lead.general"/><input name="position" type="number" defaultValue={0}/><label className={styles.check}><input name="active" type="checkbox" defaultChecked/> Ativo</label><button className="adminButton primary" type="submit">Adicionar</button></form> : null}</div></div>
-    </section>
   </div>;
 
   const identity = <div className={styles.tabPanel}>

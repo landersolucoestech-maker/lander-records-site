@@ -19,7 +19,6 @@ import {
   adminUsers,
   artistCategories,
   artistCategoryRelations,
-  contactTopics,
   mediaAssets,
   navigationItems,
   postCategories,
@@ -360,30 +359,6 @@ export async function upsertSocialLink(formData: FormData) {
   if (id) await db.update(socialLinks).set(values).where(eq(socialLinks.id, id));
   else await db.insert(socialLinks).values(values);
   await audit(session.user.id, id ? "social_link.updated" : "social_link.created", "social_link", id || null, values);
-  revalidatePublic();
-  revalidatePath("/admin/settings");
-}
-
-export async function upsertContactTopic(formData: FormData) {
-  const session = await requirePersistentAdmin("editor");
-  const idValue = text(formData, "id");
-  const id = idValue ? uuidOrNull(idValue) : null;
-  if (idValue && !id) throw new Error("Assunto de contato inválido.");
-  const name = text(formData, "name");
-  const slug = slugify(text(formData, "slug") || name);
-  if (!name || !slug) throw new Error("Nome e slug do assunto são obrigatórios.");
-  const values = {
-    name,
-    slug,
-    saasType: text(formData, "saasType"),
-    position: integer(formData, "position"),
-    active: checked(formData, "active"),
-    updatedAt: new Date(),
-  };
-  const db = getDb();
-  if (id) await db.update(contactTopics).set(values).where(eq(contactTopics.id, id));
-  else await db.insert(contactTopics).values(values);
-  await audit(session.user.id, id ? "contact_topic.updated" : "contact_topic.created", "contact_topic", id || null, values);
   revalidatePublic();
   revalidatePath("/admin/settings");
 }

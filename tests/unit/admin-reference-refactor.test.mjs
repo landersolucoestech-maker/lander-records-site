@@ -144,7 +144,7 @@ test("settings internal tabs use scoped mutations and preserve RBAC", () => {
   assert.match(settings, /updateCompanySettings/);
   assert.match(settings, /updateIdentitySettings/);
   assert.match(settings, /upsertSocialLink/);
-  assert.match(settings, /upsertContactTopic/);
+  assert.doesNotMatch(settings, /Assuntos do formulário|upsertContactTopic|contactTopics/);
   assert.doesNotMatch(settings, /updateSiteSettings/);
   assert.match(settingsStyles, /\.page,\.settingsWorkspace\{display:grid;gap:14px/);
   assert.match(settingsStyles, /\.cardHeader\{[^}]*min-height:54px/);
