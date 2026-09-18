@@ -1,7 +1,13 @@
 import { createHmac, createHash } from "node:crypto";
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import { getDb } from "./db";
 import { contactSubmissions, integrationOutbox } from "./db/schema";
+
+const OUTBOX_RETRY_BATCH_SIZE = 25;
+const OUTBOX_RETRY_MAX_BATCH_SIZE = 100;
+const OUTBOX_PENDING_RECOVERY_MS = 5 * 60 * 1000;
+const OUTBOX_RETRY_CLAIM_MS = 15 * 60 * 1000;
+const OUTBOX_RETRY_LOCK_KEY = 1735289204;
 
 export function hashIp(ip: string) {
   const salt = process.env.CONTACT_IP_HASH_SALT;
@@ -18,6 +24,54 @@ export async function isContactRateLimited(ipHash: string) {
     .from(contactSubmissions)
     .where(and(eq(contactSubmissions.ipHash, ipHash), gte(contactSubmissions.createdAt, since)));
   return (rows[0]?.count ?? 0) >= 5;
+}
+
+export async function retryDueOutboxEvents(limit = OUTBOX_RETRY_BATCH_SIZE) {
+  const batchSize = Math.max(1, Math.min(Math.trunc(limit), OUTBOX_RETRY_MAX_BATCH_SIZE));
+  const db = getDb();
+  const now = new Date();
+  const stalePendingBefore = new Date(now.getTime() - OUTBOX_PENDING_RECOVERY_MS);
+  const claimUntil = new Date(now.getTime() + OUTBOX_RETRY_CLAIM_MS);
+
+  const claimedIds = await db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(${OUTBOX_RETRY_LOCK_KEY})`);
+    const rows = await tx
+      .select({ id: integrationOutbox.id })
+      .from(integrationOutbox)
+      .where(or(
+        and(
+          eq(integrationOutbox.status, "failed"),
+          or(isNull(integrationOutbox.nextAttemptAt), lte(integrationOutbox.nextAttemptAt, now)),
+        ),
+        and(
+          eq(integrationOutbox.status, "pending"),
+          lte(integrationOutbox.createdAt, stalePendingBefore),
+        ),
+      ))
+      .orderBy(asc(integrationOutbox.createdAt))
+      .limit(batchSize);
+
+    const ids = rows.map((row) => row.id);
+    if (!ids.length) return ids;
+
+    await tx
+      .update(integrationOutbox)
+      .set({ nextAttemptAt: claimUntil, updatedAt: now })
+      .where(inArray(integrationOutbox.id, ids));
+    return ids;
+  });
+
+  let delivered = 0;
+  let failed = 0;
+  let disabled = 0;
+  for (const id of claimedIds) {
+    const result = await dispatchOutboxEvent(id);
+    if (result.delivered) delivered += 1;
+    else if (result.reason === "integration_not_configured") disabled += 1;
+    else failed += 1;
+  }
+
+  return { claimed: claimedIds.length, delivered, failed, disabled };
 }
 
 export async function dispatchOutboxEvent(outboxId: string) {
