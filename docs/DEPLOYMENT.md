@@ -83,3 +83,5 @@ Variáveis de integrações externas permanecem opcionais até os respectivos se
 ## SaaS webhook
 
 Não configure URL fictícia. Quando o endpoint SaaS existir, configure URL e segredo reais, envie uma submissão controlada, valide HMAC/idempotência e confirme a transição do evento de outbox para `delivered`.
+
+O envio inicial ocorre na própria submissão de contato. Falhas ficam no `integration_outbox` com `next_attempt_at`, e `/api/cron/integrations` recupera eventos `failed` vencidos e eventos `pending` abandonados. Essa recuperação só é automática quando o runtime real tiver um scheduler autenticado chamando o endpoint com `Authorization: Bearer <CRON_SECRET>`. Como o alvo de produção ainda não foi inventariado, este repositório não cria nem presume esse scheduler; ele deve ser validado como parte do cutover antes de considerar a entrega SaaS resiliente.
