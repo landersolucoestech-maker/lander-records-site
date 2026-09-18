@@ -22,6 +22,8 @@ const settingsTabs = read("app/admin/(protected)/settings/SettingsTabs.tsx");
 const settingsStyles = read("app/admin/(protected)/settings/Settings.module.css");
 const users = read("app/admin/(protected)/users/page.tsx");
 const integrations = read("app/admin/(protected)/settings/lander-records/page.tsx");
+const pagination = read("app/admin/components/AdminPagination.tsx");
+const paginationStyles = read("app/admin/components/AdminPagination.module.css");
 
 test("shared admin chrome matches the Portal Lander visual contract", () => {
   assert.match(primitives, /\.adminButton\.primary \{ background: #111827/);
@@ -52,8 +54,9 @@ test("major modules retain one contextual shell without fake global capabilities
 
 test("content uses the canonical modal workflow, floating actions and Lander Records public route", () => {
   assert.match(posts, /Conteúdos cadastrados/);
-  assert.match(posts, /Por página/);
-  assert.match(posts, /Página <strong>\{safePage\}<\/strong> de/);
+  assert.match(posts, /AdminPagination/);
+  assert.match(pagination, /Por página/);
+  assert.match(pagination, /paginationItems/);
   assert.match(posts, /data-content-action-trigger/);
   assert.match(posts, /data-content-action-menu/);
   assert.match(posts, /positionFloatingMenu\(trigger\.getBoundingClientRect\(\), menu\.getBoundingClientRect\(\)\)/);
@@ -81,7 +84,8 @@ test("artists keep real routes while sharing the Portal catalog geometry", () =>
 
 test("media library keeps real server actions, permission-aware controls and pagination", () => {
   assert.match(media, /Adicionar mídia/);
-  assert.match(media, /Linhas por página/);
+  assert.match(media, /AdminPagination/);
+  assert.match(paginationStyles, /grid-template-columns:minmax\(210px,1fr\) auto minmax\(210px,1fr\)/);
   assert.match(media, /<table>/);
   assert.match(media, /canArchive/);
   assert.match(media, /canUpload/);
