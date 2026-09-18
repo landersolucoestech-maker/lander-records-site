@@ -58,12 +58,6 @@ test("dashboard translates audit entity storage names for presentation", () => {
   assert.doesNotMatch(dashboardPage, /meta: `\$\{item\.entityType\}/);
 });
 
-test("dashboard translates current audit producers instead of exposing raw action keys", () => {")}: `));
-  }
-  assert.match(dashboardPage, /entityLabel\(item\.entityType\)/);
-  assert.doesNotMatch(dashboardPage, /meta: `\$\{item\.entityType\}/);
-});
-
 test("dashboard translates current audit producers instead of exposing raw action keys", () => {
   for (const action of [
     "artist.created",
