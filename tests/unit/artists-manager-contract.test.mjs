@@ -35,7 +35,7 @@ test("Artists manager matches the approved table-first reference structure witho
   assert.match(manager, /pageSize/);
   assert.match(pagination, /Por página/);
   assert.match(pagination, /paginationItems/);
-  assert.doesNotMatch(manager, /Selecionar artistas desta página|Selecionar \$\{artist\.name\}|selected|toggleCurrentPage|toggleArtist/);
+  assert.doesNotMatch(manager, /Selecionar artistas desta página|Selecionar \$\{artist\.name\}|toggleCurrentPage|toggleArtist|selectedArtistIds|selectedIds/);
   assert.doesNotMatch(manager, /adminMetricSpark|adminDashboardPanel|adminAnalyticsPanelHeading|Catálogo de artistas|Destaques na Home/);
   assert.doesNotMatch(manager, /Importar CSV|Configurar módulo|Mais filtros/);
   assert.match(manager, /deleteArtistAction/);
