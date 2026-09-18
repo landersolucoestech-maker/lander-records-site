@@ -1,6 +1,6 @@
-import { desc, isNull } from "drizzle-orm";
+import { and, desc, gte, isNull, lt, ne, sql } from "drizzle-orm";
 import { getDb } from "../../../lib/db";
-import { artists, auditLogs, pages, posts } from "../../../lib/db/schema";
+import { artists, auditLogs, contactSubmissions, pages, posts } from "../../../lib/db/schema";
 import { requireAdmin } from "../../../lib/auth";
 import { DashboardView } from "../components/DashboardView";
 
@@ -64,18 +64,28 @@ export default async function AdminDashboardPage() {
   const session = await requireAdmin();
   let recentAudits: AuditItem[] = [];
   let recentPublications: PublicationItem[] = [];
+  let leadCount: number | null = null;
+  let previousLeadChange: number | null = null;
   let databaseAvailable = Boolean(process.env.DATABASE_URL);
 
   if (databaseAvailable) {
     try {
       const db = getDb();
-      const [auditRows, postRows, artistRows, pageRows] = await Promise.all([
+      const now = new Date();
+      const currentLeadPeriodStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const previousLeadPeriodStart = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+      const [auditRows, postRows, artistRows, pageRows, currentLeadRows, previousLeadRows] = await Promise.all([
         db.select({ id: auditLogs.id, action: auditLogs.action, entityType: auditLogs.entityType, createdAt: auditLogs.createdAt }).from(auditLogs).orderBy(desc(auditLogs.createdAt)).limit(8),
         db.select({ id: posts.id, title: posts.title, status: posts.status, updatedAt: posts.updatedAt }).from(posts).where(isNull(posts.archivedAt)).orderBy(desc(posts.updatedAt)).limit(5),
         db.select({ id: artists.id, title: artists.name, isPublished: artists.isPublished, updatedAt: artists.updatedAt }).from(artists).where(isNull(artists.archivedAt)).orderBy(desc(artists.updatedAt)).limit(5),
         db.select({ id: pages.id, title: pages.title, enabled: pages.enabled, updatedAt: pages.updatedAt }).from(pages).orderBy(desc(pages.updatedAt)).limit(5),
+        db.select({ count: sql<number>`count(*)::int` }).from(contactSubmissions).where(and(gte(contactSubmissions.createdAt, currentLeadPeriodStart), ne(contactSubmissions.status, "spam"))),
+        db.select({ count: sql<number>`count(*)::int` }).from(contactSubmissions).where(and(gte(contactSubmissions.createdAt, previousLeadPeriodStart), lt(contactSubmissions.createdAt, currentLeadPeriodStart), ne(contactSubmissions.status, "spam"))),
       ]);
       recentAudits = auditRows;
+      leadCount = currentLeadRows[0]?.count ?? 0;
+      const previousLeadCount = previousLeadRows[0]?.count ?? 0;
+      previousLeadChange = previousLeadCount > 0 ? ((leadCount - previousLeadCount) / previousLeadCount) * 100 : null;
       recentPublications = [
         ...postRows.map((item) => ({ ...item, type: "Notícia" as const, href: "/admin/posts" })),
         ...artistRows.map((item) => ({ id: item.id, title: item.title, type: "Artista" as const, status: item.isPublished ? "published" as const : "draft" as const, updatedAt: item.updatedAt, href: "/admin/artists" })),
@@ -92,7 +102,7 @@ export default async function AdminDashboardPage() {
 
   return <DashboardView
     data={{
-      analytics: null,
+      analytics: databaseAvailable && leadCount !== null ? { visitors: null, views: null, engagementRate: null, conversions: leadCount, previousConversionsChange: previousLeadChange } : null,
       recentActivity: databaseAvailable ? recentAudits.map((item) => ({ id: item.id, label: activityLabel(item.action), meta: `${item.entityType} · ${dateTime.format(item.createdAt)}` })) : [],
       recentPublications: databaseAvailable ? recentPublications.map((item) => ({ id: item.id, title: item.title, type: item.type, status: item.status, updatedAt: dateOnly.format(item.updatedAt), href: item.href })) : [],
     }}

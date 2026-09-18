@@ -22,11 +22,21 @@ test("dashboard reproduces the approved reference only in disposable development
     assert.ok(dashboard.includes(referenceValue), referenceValue);
   }
   assert.match(dashboard, /const dashboardData = demoMode \? referenceDashboard : data/);
-  assert.match(dashboardPage, /analytics: null/);
+  assert.match(dashboardPage, /visitors: null, views: null, engagementRate: null/);
+  assert.match(dashboardPage, /conversions: leadCount/);
   assert.match(dashboardPage, /demoMode=\{session\.source === "development-auth-bypass"\}/);
   assert.match(dashboard, /Analytics não conectado/);
   assert.doesNotMatch(dashboard, /desempenho do seu site em tempo real/);
   assert.match(dashboard, /Métricas de audiência aparecem quando uma fonte de analytics do site estiver conectada/);
+});
+
+test("dashboard uses first-party contact submissions only for the conversion KPI", () => {
+  assert.match(dashboardPage, /contactSubmissions/);
+  assert.match(dashboardPage, /currentLeadPeriodStart/);
+  assert.match(dashboardPage, /previousLeadPeriodStart/);
+  assert.match(dashboardPage, /ne\(contactSubmissions\.status, "spam"\)/);
+  assert.match(dashboardPage, /previousLeadChange = previousLeadCount > 0/);
+  assert.match(dashboardPage, /visitors: null, views: null, engagementRate: null, conversions: leadCount/);
 });
 
 test("real dashboard aggregates recent publications across supported content domains", () => {

@@ -23,10 +23,10 @@ type Publication = {
 
 type AnalyticsSeriesPoint = { label: string; visitors: number; views: number };
 type DashboardAnalytics = {
-  visitors: number;
-  views: number;
-  engagementRate: number;
-  conversions: number;
+  visitors: number | null;
+  views: number | null;
+  engagementRate: number | null;
+  conversions: number | null;
   previousVisitorsChange?: number | null;
   previousViewsChange?: number | null;
   previousEngagementChange?: number | null;
@@ -199,8 +199,9 @@ function DeviceBreakdown({ analytics }: { analytics: DashboardAnalytics }) {
   const mobile = devices.find((item) => item.label === "Mobile")?.percentage ?? 0;
   const firstStop = desktop;
   const secondStop = desktop + mobile;
+  const visitors = analytics.visitors ?? devices.reduce((total, device) => total + device.count, 0);
   return <div className="adminDeviceBreakdown">
-    <div className="adminDeviceDonut" aria-label={`${formatInteger(analytics.visitors)} visitantes`} role="img" style={{ background: `conic-gradient(#ee111b 0 ${firstStop}%, #252c34 ${firstStop}% ${secondStop}%, #d7dce2 ${secondStop}% 100%)` }}><strong>{formatInteger(analytics.visitors)}</strong><span>visitantes</span></div>
+    <div className="adminDeviceDonut" aria-label={`${formatInteger(visitors)} visitantes`} role="img" style={{ background: `conic-gradient(#ee111b 0 ${firstStop}%, #252c34 ${firstStop}% ${secondStop}%, #d7dce2 ${secondStop}% 100%)` }}><strong>{formatInteger(visitors)}</strong><span>visitantes</span></div>
     <div className="adminDeviceList">{devices.map((device) => <div key={device.label}><span className={`adminDeviceName is-${device.label.toLowerCase()}`}><i />{device.label}</span><strong>{device.percentage.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</strong><small>{formatInteger(device.count)}</small></div>)}</div>
   </div>;
 }
