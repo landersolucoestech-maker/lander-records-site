@@ -68,10 +68,13 @@ test("viewer sidebar still exposes only the Configurações entry, not privilege
 });
 
 test("synthetic admin loaders do not expose persistent edit permissions", () => {
-  for (const route of ["artists", "posts", "pages", "home", "navigation"]) {
+  for (const route of ["posts", "pages", "home", "navigation"]) {
     const page = fs.readFileSync(`app/admin/(protected)/${route}/page.tsx`, "utf8");
     assert.match(page, /canEdit=\{session\.source === "session" && session\.user\.role !== "viewer"\}/, route);
   }
+  const artistsPage = fs.readFileSync("app/admin/(protected)/artists/page.tsx", "utf8");
+  assert.match(artistsPage, /const canEdit = session\.source === "session" && session\.user\.role !== "viewer"/);
+  assert.match(artistsPage, /<ArtistManager[\s\S]*canEdit=\{canEdit\}/);
 });
 
 test("protected admin routes render resolved modules without route loading boundaries or lazy module imports", () => {
