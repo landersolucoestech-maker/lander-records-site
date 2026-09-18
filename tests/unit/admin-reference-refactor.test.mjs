@@ -52,7 +52,10 @@ test("major modules retain one contextual shell without fake global capabilities
   assert.match(shell, /const showMediaHeaderTools = normalizedPath === mediaRoot/);
   assert.match(shell, /const showNotificationHeaderTools = showContentHeaderTools \|\| showArtistHeaderTools \|\| showMediaHeaderTools/);
   assert.match(shell, /adminNotificationButton/);
+  assert.match(shell, /adminNotificationBadge/);
+  assert.match(shell, /adminNotificationList/);
   assert.match(shell, /name="bell"/);
+  assert.match(shell, /admin:new-artist/);
   assert.match(shell, /adminTopbarPrimaryDisabled/);
   assert.match(shell, /const canEdit = !readOnly && role !== "viewer"/);
 });
@@ -81,7 +84,9 @@ test("artists keep the Portal catalog geometry with floating actions and modal v
   assert.match(artists, /data-artist-action-menu/);
   assert.match(artists, /createPortal\(/);
   assert.match(artists, /ArtistViewDialog/);
-  assert.match(artists, /ArtistEditDialog/);
+  assert.match(artists, /ArtistEditorDialog/);
+  assert.match(artists, /admin:new-artist/);
+  assert.match(artists, /mode="create"/);
   assert.match(artists, /styles\.queryPanel/);
   assert.match(artists, /styles\.tableSurface/);
   assert.match(artists, /adminMetricGrid/);
