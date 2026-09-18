@@ -94,6 +94,7 @@ test("artists keep the Portal catalog geometry with floating actions and modal v
   assert.match(artists, /<table className=\{styles\.artistTable\}/);
   assert.match(artists, /\/artistas\/\$\{artist\.slug\}/);
   assert.match(artistStyles, /\.artistTable th\{height:38px/);
+  assert.match(artistStyles, /\.tableSurface\{overflow:hidden;border:1px solid #e1e6eb;border-radius:8px/);
   assert.match(artistStyles, /\.actionMenu\{display:grid;min-width:158px/);
   assert.match(artistFormStyles, /grid-template-columns:minmax\(360px,420px\) minmax\(0,1fr\)/);
   assert.match(artistFormStyles, /position:sticky;top:78px/);
@@ -118,8 +119,9 @@ test("media library keeps real server actions, permission-aware controls and pag
   assert.match(mediaPage, /const persistent = session\.source === "session"/);
   assert.match(mediaPage, /const canUpload = persistent && session\.user\.role !== "viewer"/);
   assert.match(mediaPage, /const canArchive = persistent && \(session\.user\.role === "admin" \|\| session\.user\.role === "owner"\)/);
+  assert.match(mediaStyles, /\.page\{width:100%;display:grid;gap:12px\}/);
   assert.match(mediaStyles, /\.queryPanel\{display:grid/);
-  assert.match(mediaStyles, /\.tableSurface/);
+  assert.match(mediaStyles, /\.tableSurface\{overflow:hidden;border:1px solid #e1e6eb;border-radius:8px/);
   assert.doesNotMatch(mediaStyles, /\.toolbar\{/);
   assert.match(paginationStyles, /\.pagination/);
   assert.doesNotMatch(media, /moreAction/);
