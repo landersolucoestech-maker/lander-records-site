@@ -9,10 +9,10 @@ import { AdminIcon } from "../../components/AdminIcon";
 import { AdminMediaPicker, type AdminMediaPickerItem } from "../../components/AdminMediaPicker";
 import styles from "./ArtistForm.module.css";
 
-type Option = { id: string; name: string };
-type MediaOption = AdminMediaPickerItem;
+export type ArtistOption = { id: string; name: string };
+export type ArtistArtistMediaOption = AdminMediaPickerItem;
 
-type InitialArtist = {
+export type ArtistEditorInitial = {
   id?: string;
   name?: string;
   slug?: string;
@@ -51,13 +51,18 @@ function metricValue(value: number | undefined) {
   return typeof value === "number" && value > 0 ? value.toLocaleString("pt-BR") : "Aguardando sincronização";
 }
 
-export default function ArtistForm({ initial = {}, media, categories, roles, genres, destinations }: {
-  initial?: InitialArtist;
-  media: MediaOption[];
-  categories: Option[];
-  roles: Option[];
-  genres: Option[];
-  destinations: Array<Option & { description: string }>;
+export type ArtistFormOptions = {
+  media: ArtistMediaOption[];
+  categories: ArtistOption[];
+  roles: ArtistOption[];
+  genres: ArtistOption[];
+  destinations: Array<ArtistOption & { description: string }>;
+};
+
+export default function ArtistForm({ initial = {}, media, categories, roles, genres, destinations, embedded = false, onCancel }: ArtistFormOptions & {
+  initial?: ArtistEditorInitial;
+  embedded?: boolean;
+  onCancel?: () => void;
 }) {
   const [state, action] = useActionState<ArtistActionState, FormData>(saveArtistAction, { ok: false });
   const [name, setName] = useState(initial.name || "");
@@ -77,22 +82,23 @@ export default function ArtistForm({ initial = {}, media, categories, roles, gen
   const previewImage = heroImage || cardImage;
   const previewSlug = slug.trim() || name.trim().toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "artista";
 
-  const chooseMedia = (item: MediaOption) => {
+  const chooseMedia = (item: ArtistMediaOption) => {
     if (mediaTarget === "card") { setCardMediaId(item.id); setCardImage(item.url); }
     if (mediaTarget === "hero") { setHeroMediaId(item.id); setHeroImage(item.url); }
     setMediaTarget(null);
   };
 
   return <>
-    <form action={action} className={styles.form} encType="multipart/form-data">
+    <form action={action} className={`${styles.form}${embedded ? ` ${styles.embedded}` : ""}`} encType="multipart/form-data">
       {initial.id ? <input type="hidden" name="id" value={initial.id} /> : null}
+      {embedded ? <input type="hidden" name="returnTo" value="/admin/artists?saved=1" /> : null}
       <input type="hidden" name="cardMediaId" value={cardMediaId}/>
       <input type="hidden" name="heroMediaId" value={heroMediaId}/>
       {state.error ? <div className={styles.error} role="alert">{state.error}</div> : null}
 
-      <div className={styles.editorTop}>
-        <Link className={styles.outlineButton} href="/admin/artists"><span aria-hidden="true">←</span> Artistas</Link>
-        <div className={styles.editorActions}><Link className={styles.outlineButton} href="/admin/artists">Cancelar</Link><SaveButton/></div>
+      <div className={`${styles.editorTop}${embedded ? ` ${styles.embeddedTop}` : ""}`}>
+        {embedded ? <span className={styles.embeddedHint}>Edição completa do perfil</span> : <Link className={styles.outlineButton} href="/admin/artists"><span aria-hidden="true">←</span> Artistas</Link>}
+        <div className={styles.editorActions}>{embedded ? <button className={styles.outlineButton} onClick={onCancel} type="button">Cancelar</button> : <Link className={styles.outlineButton} href="/admin/artists">Cancelar</Link>}<SaveButton/></div>
       </div>
 
       <div className={styles.editorLayout}>
