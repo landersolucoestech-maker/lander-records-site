@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AdminIcon } from "../../components/AdminIcon";
+import { AdminPagination } from "../../components/AdminPagination";
 import styles from "./ArtistManager.module.css";
 
 export type ArtistSummary = {
@@ -45,19 +46,6 @@ function dateLabel(value: string) {
 function numberLabel(value: number | undefined) {
   if (value == null || value < 0) return "—";
   return new Intl.NumberFormat("pt-BR").format(value);
-}
-
-function paginationItems(current: number, total: number) {
-  if (total <= 7) return Array.from({ length: total }, (_, index) => index + 1);
-  const values = new Set([1, total, current - 1, current, current + 1].filter((value) => value >= 1 && value <= total));
-  const sorted = [...values].sort((a, b) => a - b);
-  const result: Array<number | "ellipsis"> = [];
-  sorted.forEach((value, index) => {
-    const previous = sorted[index - 1];
-    if (previous && value - previous > 1) result.push("ellipsis");
-    result.push(value);
-  });
-  return result;
 }
 
 export default function ArtistManager({ artists, canEdit = true, deleted, initialFilters = {}, preview = false }: { artists: ArtistSummary[]; canEdit?: boolean; deleted?: boolean; initialFilters?: Filters; preview?: boolean }) {
@@ -145,17 +133,17 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
           </table>
         </div>
 
-        <footer className={styles.pagination} aria-label="Paginação dos artistas">
-          <div className={styles.paginationSummary}><strong>{pageRows.length} registro{pageRows.length === 1 ? "" : "s"}</strong><span>{filtered.length ? `${startIndex + 1}–${endIndex} de ${filtered.length}` : "0 de 0"}</span></div>
-          <div className={styles.paginationControls}>
-            <button aria-label="Primeira página" disabled={page === 1} onClick={() => setPage(1)} type="button">«</button>
-            <button aria-label="Página anterior" disabled={page === 1} onClick={() => setPage((current) => Math.max(1, current - 1))} type="button">‹</button>
-            {paginationItems(page, pageCount).map((item, index) => item === "ellipsis" ? <span className={styles.ellipsis} key={`ellipsis-${index}`}>…</span> : <button aria-current={page === item ? "page" : undefined} className={page === item ? styles.activePage : ""} key={item} onClick={() => setPage(item)} type="button">{item}</button>)}
-            <button aria-label="Próxima página" disabled={page === pageCount} onClick={() => setPage((current) => Math.min(pageCount, current + 1))} type="button">›</button>
-            <button aria-label="Última página" disabled={page === pageCount} onClick={() => setPage(pageCount)} type="button">»</button>
-          </div>
-          <label className={styles.pageSize}><span>Por página</span><select value={pageSize} onChange={(event) => setPageSize(Number(event.target.value))}><option value={10}>10</option><option value={20}>20</option><option value={50}>50</option></select></label>
-        </footer>
+        <AdminPagination
+          currentPage={page}
+          endItem={endIndex}
+          itemLabel={pageRows.length === 1 ? "registro" : "registros"}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          pageSize={pageSize}
+          startItem={filtered.length ? startIndex + 1 : 0}
+          totalItems={filtered.length}
+          totalPages={pageCount}
+        />
       </> : <div className={styles.empty}><span className={styles.emptyIcon}><AdminIcon name="artists" size={20} /></span><strong>{artists.length ? "Nenhum artista encontrado" : "Nenhum artista cadastrado"}</strong><span>{artists.length ? "Ajuste os filtros para voltar a exibir o catálogo." : "Cadastre o primeiro artista para começar a montar o casting da Lander Records."}</span>{hasFilters ? <button className="adminButton" onClick={clearFilters} type="button">Limpar filtros</button> : canEdit && !preview ? <Link className="adminPrimaryCompact" href="/admin/artists/new"><AdminIcon name="plus" size={14} />Cadastrar primeiro artista</Link> : null}</div>}
     </section>
   </div>;
