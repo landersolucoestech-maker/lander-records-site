@@ -3,9 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { deleteArtistAction } from "../../artist-actions";
 import { AdminIcon } from "../../components/AdminIcon";
 import { AdminPagination } from "../../components/AdminPagination";
+import ArtistForm, { type ArtistEditorInitial, type ArtistFormOptions } from "./ArtistForm";
 import styles from "./ArtistManager.module.css";
 
 export type ArtistSummary = {
@@ -20,11 +23,19 @@ export type ArtistSummary = {
   audience?: number;
   homePosition?: number;
   isPubliclyVisible: boolean;
+  shortBio?: string;
+  biography?: string;
   updatedAt: string;
 };
 
 type Filters = { genre?: string; q?: string; role?: string; status?: string };
 type SortMode = "updated-desc" | "updated-asc" | "name-asc" | "name-desc";
+type ArtistModalState = { mode: "view" | "edit"; artistId: string } | null;
+type ActionMenuState = { artistId: string } | null;
+type ActionMenuPosition = { top: number; left: number } | null;
+
+const focusableSelector = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex="0"]';
+const emptyEditorOptions: ArtistFormOptions = { media: [], categories: [], roles: [], genres: [], destinations: [] };
 
 function StatusBadge({ status }: { status: ArtistSummary["status"] }) {
   const label = status === "published" ? "Ativo" : status === "draft" ? "Rascunho" : status === "inactive" ? "Inativo" : "Arquivado";
@@ -48,7 +59,89 @@ function numberLabel(value: number | undefined) {
   return new Intl.NumberFormat("pt-BR").format(value);
 }
 
-export default function ArtistManager({ artists, canEdit = true, deleted, initialFilters = {}, preview = false }: { artists: ArtistSummary[]; canEdit?: boolean; deleted?: boolean; initialFilters?: Filters; preview?: boolean }) {
+function positionFloatingMenu(anchor: DOMRect, menu: DOMRect) {
+  const gap = 6;
+  const viewportPadding = 10;
+  const maxLeft = Math.max(viewportPadding, window.innerWidth - menu.width - viewportPadding);
+  const left = Math.min(Math.max(viewportPadding, anchor.right - menu.width), maxLeft);
+  const hasRoomBelow = anchor.bottom + gap + menu.height <= window.innerHeight - viewportPadding;
+  const top = hasRoomBelow ? anchor.bottom + gap : Math.max(viewportPadding, anchor.top - menu.height - gap);
+  return { top, left };
+}
+
+function useDialogLifecycle(open: boolean, onClose: () => void, dialogRef: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    if (!open) return;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const focusables = () => Array.from(dialog.querySelectorAll<HTMLElement>(focusableSelector)).filter((node) => node.getClientRects().length);
+    window.setTimeout(() => (focusables()[0] || dialog).focus(), 0);
+    const keydown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { event.preventDefault(); onClose(); return; }
+      if (event.key !== "Tab") return;
+      const nodes = focusables();
+      const first = nodes[0];
+      const last = nodes.at(-1);
+      if (!first || !last) { event.preventDefault(); dialog.focus(); return; }
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener("keydown", keydown);
+    return () => {
+      document.removeEventListener("keydown", keydown);
+      document.body.style.overflow = previousOverflow;
+      opener?.focus();
+    };
+  }, [dialogRef, onClose, open]);
+}
+
+function ArtistViewDialog({ artist, canEdit, onClose, onEdit }: { artist: ArtistSummary; canEdit: boolean; onClose: () => void; onEdit: () => void }) {
+  const [mounted, setMounted] = useState(false);
+  const dialogRef = useRef<HTMLElement>(null);
+  useEffect(() => { setMounted(true); }, []);
+  useDialogLifecycle(mounted, onClose, dialogRef);
+  if (!mounted) return null;
+
+  return createPortal(<div className={styles.modalBackdrop} onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }} role="presentation">
+    <section aria-labelledby="artist-view-title" aria-modal="true" className={styles.viewDialog} ref={dialogRef} role="dialog" tabIndex={-1}>
+      <header className={styles.modalHeader}><div><span>VISUALIZAÇÃO</span><h2 id="artist-view-title">Perfil do artista</h2><p>Consulta consolidada do perfil sem sair do catálogo.</p></div><button aria-label="Fechar visualização" className={styles.modalClose} onClick={onClose} type="button">×</button></header>
+      <div className={styles.viewBody}>
+        <section className={styles.viewHero}>
+          {artist.cardImage ? <Image alt="" height={112} src={artist.cardImage} unoptimized width={112}/> : <span className={styles.viewAvatar}><AdminIcon name="artists" size={28}/></span>}
+          <div><StatusBadge status={artist.status}/><h3>{artist.name}</h3><p>{artist.shortBio || "Sem resumo curto cadastrado."}</p><div className={styles.viewChips}>{[...(artist.roles || []), ...artist.genres].map((item) => <span key={item}>{item}</span>)}</div></div>
+        </section>
+        <section className={styles.viewGrid}>
+          <article><span>Slug</span><strong>/{artist.slug}</strong></article>
+          <article><span>Status</span><strong>{artist.status === "published" ? "Ativo" : artist.status === "draft" ? "Rascunho" : artist.status === "inactive" ? "Inativo" : "Arquivado"}</strong></article>
+          <article><span>Visualizações</span><strong>{numberLabel(artist.views)}</strong></article>
+          <article><span>Atualização</span><strong>{dateLabel(artist.updatedAt)}</strong></article>
+        </section>
+        <section className={styles.viewBio}><span>BIOGRAFIA</span><p>{artist.biography || "Biografia não cadastrada."}</p></section>
+      </div>
+      <footer className={styles.modalFooter}><div>{artist.isPubliclyVisible ? <a className={styles.modalSecondary} href={`/artistas/${artist.slug}`} rel="noopener noreferrer" target="_blank"><AdminIcon name="eye" size={14}/>Abrir no site</a> : <span className={styles.privateHint}>Perfil ainda não está público.</span>}</div><div><button className={styles.modalSecondary} onClick={onClose} type="button">Fechar</button>{canEdit ? <button className={styles.modalPrimary} onClick={onEdit} type="button"><AdminIcon name="edit" size={14}/>Editar</button> : null}</div></footer>
+    </section>
+  </div>, document.body);
+}
+
+function ArtistEditDialog({ initial, onClose, options }: { initial: ArtistEditorInitial; onClose: () => void; options: ArtistFormOptions }) {
+  const [mounted, setMounted] = useState(false);
+  const dialogRef = useRef<HTMLElement>(null);
+  useEffect(() => { setMounted(true); }, []);
+  useDialogLifecycle(mounted, onClose, dialogRef);
+  if (!mounted) return null;
+
+  return createPortal(<div className={styles.modalBackdrop} onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }} role="presentation">
+    <section aria-labelledby="artist-edit-title" aria-modal="true" className={styles.editDialog} ref={dialogRef} role="dialog" tabIndex={-1}>
+      <header className={styles.modalHeader}><div><span>EDIÇÃO</span><h2 id="artist-edit-title">Editar artista</h2><p>Atualize as informações usando o mesmo formulário canônico do módulo.</p></div><button aria-label="Fechar edição" className={styles.modalClose} onClick={onClose} type="button">×</button></header>
+      <div className={styles.editBody}><ArtistForm embedded initial={initial} onCancel={onClose} {...options}/></div>
+    </section>
+  </div>, document.body);
+}
+
+export default function ArtistManager({ artists, canDelete = false, canEdit = true, deleted, editorById = {}, editorOptions = emptyEditorOptions, initialFilters = {}, preview = false, saved }: { artists: ArtistSummary[]; canDelete?: boolean; canEdit?: boolean; deleted?: boolean; editorById?: Record<string, ArtistEditorInitial>; editorOptions?: ArtistFormOptions; initialFilters?: Filters; preview?: boolean; saved?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
   const [query, setQuery] = useState(initialFilters.q || "");
@@ -58,6 +151,11 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
   const [sort, setSort] = useState<SortMode>("updated-desc");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [modal, setModal] = useState<ArtistModalState>(null);
+  const [actionMenu, setActionMenu] = useState<ActionMenuState>(null);
+  const [actionMenuPosition, setActionMenuPosition] = useState<ActionMenuPosition>(null);
+  const actionTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const actionMenuRef = useRef<HTMLDivElement | null>(null);
   const genres = useMemo(() => Array.from(new Set(artists.flatMap((artist) => artist.genres))).sort((a, b) => a.localeCompare(b, "pt-BR")), [artists]);
   const roles = useMemo(() => Array.from(new Set(artists.flatMap((artist) => artist.roles || []))).sort((a, b) => a.localeCompare(b, "pt-BR")), [artists]);
   const metrics = useMemo(() => ({
@@ -95,14 +193,58 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
     });
   }, [artists, genre, query, role, sort, status]);
 
-  useEffect(() => { setPage(1); }, [genre, pageSize, query, role, sort, status]);
+  useEffect(() => { setPage(1); closeActionMenu(); }, [genre, pageSize, query, role, sort, status]);
+
+  useLayoutEffect(() => {
+    if (!actionMenu) return;
+    const trigger = actionTriggerRef.current;
+    const menu = actionMenuRef.current;
+    if (!trigger || !menu) return;
+    setActionMenuPosition(positionFloatingMenu(trigger.getBoundingClientRect(), menu.getBoundingClientRect()));
+  }, [actionMenu]);
+
+  useEffect(() => {
+    if (!actionMenu) return;
+    const close = () => closeActionMenu();
+    const pointerDown = (event: PointerEvent) => {
+      const target = event.target as Element | null;
+      if (target?.closest("[data-artist-action-menu], [data-artist-action-trigger]")) return;
+      close();
+    };
+    const keydown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      close();
+      window.setTimeout(() => actionTriggerRef.current?.focus(), 0);
+    };
+    document.addEventListener("pointerdown", pointerDown);
+    document.addEventListener("keydown", keydown);
+    window.addEventListener("resize", close);
+    window.addEventListener("scroll", close, true);
+    return () => {
+      document.removeEventListener("pointerdown", pointerDown);
+      document.removeEventListener("keydown", keydown);
+      window.removeEventListener("resize", close);
+      window.removeEventListener("scroll", close, true);
+    };
+  }, [actionMenu]);
+
+  const toggleActionMenu = (artistId: string, trigger: HTMLButtonElement) => {
+    if (actionMenu?.artistId === artistId) { closeActionMenu(); return; }
+    actionTriggerRef.current = trigger;
+    setActionMenuPosition(null);
+    setActionMenu({ artistId });
+  };
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   useEffect(() => { if (page > pageCount) setPage(pageCount); }, [page, pageCount]);
   const startIndex = filtered.length ? (page - 1) * pageSize : 0;
   const pageRows = filtered.slice(startIndex, startIndex + pageSize);
   const endIndex = filtered.length ? startIndex + pageRows.length : 0;
+  const selectedArtist = modal ? artists.find((artist) => artist.id === modal.artistId) : undefined;
+  const actionArtist = actionMenu ? artists.find((artist) => artist.id === actionMenu.artistId) : undefined;
+  const selectedEditor = modal?.mode === "edit" ? editorById[modal.artistId] : undefined;
   const hasFilters = Boolean(query.trim() || status !== "all" || genre !== "all" || role !== "all" || sort !== "updated-desc");
+  const closeActionMenu = () => { setActionMenu(null); setActionMenuPosition(null); };
 
   const clearFilters = () => {
     setQuery("");
@@ -115,6 +257,7 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
 
   return <div className={`adminDashboard ${styles.manager}`} data-testid="artist-manager">
     {deleted ? <div className="adminNotice">Artista excluído com sucesso.</div> : null}
+    {saved ? <div className="adminNotice">Artista salvo com sucesso.</div> : null}
 
     <section className="adminMetricGrid" aria-label="Resumo dos artistas">
       <article className="adminMetricCard is-red"><span className="adminMetricIcon"><AdminIcon name="artists" size={24}/></span><div className="adminMetricCopy"><span>Artistas</span><strong>{metrics.total.toLocaleString("pt-BR")}</strong><small>total cadastrado</small></div></article>
@@ -153,7 +296,7 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
                 <td><span className={styles.numericValue}>{numberLabel(artist.views)}</span></td>
                 <td><StatusBadge status={artist.status} /></td>
                 <td><time dateTime={dateValue(artist.updatedAt) ? artist.updatedAt : undefined}>{dateLabel(artist.updatedAt)}</time></td>
-                <td className={styles.actions}><details><summary aria-label={`Ações de ${artist.name}`}><AdminIcon name="more" size={18}/></summary><div className={styles.actionMenu}>{canEdit && !preview ? <Link href={`/admin/artists/${artist.id}`}><AdminIcon name="edit" size={14}/>Editar</Link> : null}{artist.isPubliclyVisible && !preview ? <Link href={`/artistas/${artist.slug}`} target="_blank"><AdminIcon name="eye" size={14}/>Visualizar</Link> : null}<Link href={preview ? "/cms-preview/artists" : `/admin/artists/${artist.id}/view`}><AdminIcon name="document" size={14}/>Consultar</Link></div></details></td>
+                <td className={styles.actions}><button aria-controls={actionMenu?.artistId === artist.id ? "artist-row-action-menu" : undefined} aria-expanded={actionMenu?.artistId === artist.id} aria-haspopup="menu" aria-label={`Ações de ${artist.name}`} className={styles.actionTrigger} data-artist-action-trigger onClick={(event) => toggleActionMenu(artist.id, event.currentTarget)} type="button"><AdminIcon name="more" size={18}/></button></td>
               </tr>;
             })}</tbody>
           </table>
@@ -172,5 +315,14 @@ export default function ArtistManager({ artists, canEdit = true, deleted, initia
         />
       </> : <div className={styles.empty}><span className={styles.emptyIcon}><AdminIcon name="artists" size={20} /></span><strong>{artists.length ? "Nenhum artista encontrado" : "Nenhum artista cadastrado"}</strong><span>{artists.length ? "Ajuste os filtros para voltar a exibir o catálogo." : "Cadastre o primeiro artista para começar a montar o casting da Lander Records."}</span>{hasFilters ? <button className="adminButton" onClick={clearFilters} type="button">Limpar filtros</button> : canEdit && !preview ? <Link className="adminPrimaryCompact" href="/admin/artists/new"><AdminIcon name="plus" size={14} />Cadastrar primeiro artista</Link> : null}</div>}
     </section>
+
+    {actionMenu && actionArtist && typeof document !== "undefined" ? createPortal(<div aria-label={`Ações de ${actionArtist.name}`} className={styles.actionMenu} data-artist-action-menu id="artist-row-action-menu" ref={actionMenuRef} role="menu" style={{ position: "fixed", top: actionMenuPosition?.top ?? 0, left: actionMenuPosition?.left ?? 0, visibility: actionMenuPosition ? "visible" : "hidden", zIndex: 900 }}>
+      <button onClick={() => { closeActionMenu(); setModal({ mode: "view", artistId: actionArtist.id }); }} role="menuitem" type="button"><AdminIcon name="eye" size={14}/>Visualizar</button>
+      {canEdit && !preview && editorById[actionArtist.id] ? <button onClick={() => { closeActionMenu(); setModal({ mode: "edit", artistId: actionArtist.id }); }} role="menuitem" type="button"><AdminIcon name="edit" size={14}/>Editar</button> : <button aria-disabled="true" className={styles.disabledAction} disabled role="menuitem" type="button"><AdminIcon name="edit" size={14}/>Editar</button>}
+      {canDelete && !preview ? <form action={deleteArtistAction} onSubmit={(event) => { const confirmed = window.confirm(`Excluir definitivamente “${actionArtist.name}”?`); if (!confirmed) { event.preventDefault(); return; } closeActionMenu(); }}><input name="id" type="hidden" value={actionArtist.id}/><button className={styles.deleteAction} role="menuitem" type="submit"><AdminIcon name="trash" size={14}/>Excluir</button></form> : <button aria-disabled="true" className={`${styles.deleteAction} ${styles.disabledAction}`} disabled role="menuitem" type="button"><AdminIcon name="trash" size={14}/>Excluir</button>}
+    </div>, document.body) : null}
+
+    {modal?.mode === "view" && selectedArtist ? <ArtistViewDialog artist={selectedArtist} canEdit={canEdit && !preview && Boolean(editorById[selectedArtist.id])} key={`view-${selectedArtist.id}`} onClose={() => setModal(null)} onEdit={() => setModal({ mode: "edit", artistId: selectedArtist.id })}/> : null}
+    {modal?.mode === "edit" && selectedEditor ? <ArtistEditDialog initial={selectedEditor} key={`edit-${modal.artistId}`} onClose={() => setModal(null)} options={editorOptions}/> : null}
   </div>;
 }
