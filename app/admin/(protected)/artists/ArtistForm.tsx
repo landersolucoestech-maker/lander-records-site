@@ -10,7 +10,7 @@ import { AdminMediaPicker, type AdminMediaPickerItem } from "../../components/Ad
 import styles from "./ArtistForm.module.css";
 
 export type ArtistOption = { id: string; name: string };
-export type ArtistArtistMediaOption = AdminMediaPickerItem;
+export type ArtistMediaOption = AdminMediaPickerItem;
 
 export type ArtistEditorInitial = {
   id?: string;
