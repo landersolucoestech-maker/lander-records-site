@@ -5,6 +5,7 @@ import test from "node:test";
 const dashboard = fs.readFileSync("app/admin/components/DashboardView.tsx", "utf8");
 const dashboardPage = fs.readFileSync("app/admin/(protected)/page.tsx", "utf8");
 const shell = fs.readFileSync("app/admin/components/AdminShell.tsx", "utf8");
+const protectedLayout = fs.readFileSync("app/admin/(protected)/layout.tsx", "utf8");
 
 test("dashboard keeps the approved analytics-first sections", () => {
   for (const heading of ["Visitantes", "Visualizações", "Taxa de engajamento", "Leads / Conversões", "Desempenho do site", "Dispositivos", "Atividades recentes"]) {
@@ -42,8 +43,13 @@ test("admin shell keeps canonical navigation and account chrome without fake cap
   assert.match(shell, /adminSidebarCollapse/);
   assert.match(shell, /showContentHeaderTools/);
   assert.match(shell, /adminNotificationButton/);
+  assert.match(shell, /adminNotificationBadge/);
+  assert.match(shell, /adminNotificationList/);
+  assert.match(shell, /notificationLabel/);
   assert.match(shell, /name="bell"/);
-  assert.match(shell, /A central de notificações ainda não está conectada a uma fonte de eventos/);
+  assert.match(protectedLayout, /auditLogs/);
+  assert.match(protectedLayout, /inArray\(auditLogs\.entityType, \["artist", "post", "media_asset"\]\)/);
+  assert.doesNotMatch(protectedLayout, /"admin_user"|"site_settings"/);
   assert.match(shell, /adminAccountPopover/);
   assert.match(shell, /const showReadOnlyChrome = preview/);
   assert.match(shell, /const canEdit = !readOnly && role !== "viewer"/);
