@@ -134,6 +134,10 @@ export function AdminShell({ children, email, footerAction, name, preview = fals
   }, [collapsed]);
 
   useEffect(() => {
+    setNotificationOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
     if (!accountOpen) return;
     const close = (event: PointerEvent) => {
       if (event.target instanceof Node && accountRef.current && !accountRef.current.contains(event.target)) setAccountOpen(false);
