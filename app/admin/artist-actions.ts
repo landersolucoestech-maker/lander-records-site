@@ -112,6 +112,7 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
   const name = text(formData, "name");
   const slug = slugify(text(formData, "slug") || name);
   const status = text(formData, "status") || "draft";
+  const returnTo = text(formData, "returnTo");
 
   if (!name || !slug) return { ok: false, error: "Nome e slug são obrigatórios." };
   if (!["published", "draft", "inactive"].includes(status)) return { ok: false, error: "Status inválido." };
@@ -261,7 +262,7 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
   await audit(session.user.id, id ? "artist.updated" : "artist.created", "artist", artistId, { name, slug, status, destinations: destinationIds.length, soundchartsIdentityInvalidated: soundchartsLinksChanged });
   await syncArtistSoundcharts(artistId, soundchartsLinksChanged).catch(() => null);
   revalidateArtistContent([previousSlug, slug]);
-  redirect(`/admin/artists/${artistId}?saved=1`);
+  redirect(returnTo === "/admin/artists?saved=1" ? returnTo : `/admin/artists/${artistId}?saved=1`);
 }
 
 export async function deleteArtistAction(formData: FormData) {
