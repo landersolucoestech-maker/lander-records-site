@@ -48,6 +48,9 @@ test("major modules retain one contextual shell without fake global capabilities
   }
   assert.match(shell, /adminTopbarContextual/);
   assert.match(shell, /const showContentHeaderTools = normalizedPath === contentRoot/);
+  assert.match(shell, /const showArtistHeaderTools = normalizedPath === artistsRoot/);
+  assert.match(shell, /const showMediaHeaderTools = normalizedPath === mediaRoot/);
+  assert.match(shell, /const showNotificationHeaderTools = showContentHeaderTools \|\| showArtistHeaderTools \|\| showMediaHeaderTools/);
   assert.match(shell, /adminNotificationButton/);
   assert.match(shell, /name="bell"/);
   assert.match(shell, /adminTopbarPrimaryDisabled/);
@@ -71,17 +74,22 @@ test("content uses the canonical modal workflow, floating actions and Lander Rec
   assert.match(paginationStyles, /\.pagination/);
 });
 
-test("artists keep real routes while sharing the Portal catalog geometry", () => {
-  assert.match(artists, /<details>/);
+test("artists keep the Portal catalog geometry with floating actions and modal view/edit", () => {
+  assert.doesNotMatch(artists, /<details>/);
   assert.match(artists, /name="more"/);
+  assert.match(artists, /data-artist-action-trigger/);
+  assert.match(artists, /data-artist-action-menu/);
+  assert.match(artists, /createPortal\(/);
+  assert.match(artists, /ArtistViewDialog/);
+  assert.match(artists, /ArtistEditDialog/);
   assert.match(artists, /styles\.queryPanel/);
   assert.match(artists, /styles\.tableSurface/);
   assert.match(artists, /adminMetricGrid/);
   assert.match(artists, /Filtrar por função/);
   assert.match(artists, /<table className=\{styles\.artistTable\}/);
-  assert.match(artists, /\/admin\/artists\/\$\{artist\.id\}/);
   assert.match(artists, /\/artistas\/\$\{artist\.slug\}/);
   assert.match(artistStyles, /\.artistTable th\{height:38px/);
+  assert.match(artistStyles, /\.actionMenu\{display:grid;min-width:158px/);
   assert.match(artistFormStyles, /grid-template-columns:minmax\(360px,420px\) minmax\(0,1fr\)/);
   assert.match(artistFormStyles, /position:sticky;top:78px/);
 });
