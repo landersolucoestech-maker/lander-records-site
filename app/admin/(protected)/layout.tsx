@@ -44,7 +44,7 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
     footerAction={<form action={logoutAction}><button type="submit">Sair</button></form>}
     name={session.user.name}
     notifications={notifications}
-    notificationScope={session.user.id}
+    notificationScope={session.user.id || session.source}
     role={session.user.role}
     sessionSource={session.source}
   >{children}</AdminShell>;
