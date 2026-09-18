@@ -16,7 +16,6 @@ const preview = read("app/cms-preview/AdminPreview.tsx");
 test("Artists manager matches the approved table-first reference structure without fake bulk actions", () => {
   assert.doesNotMatch(manager, /adminDashboardHeading/);
   assert.doesNotMatch(manager, /Gerencie os artistas do seu selo, edite informações, discografia e conteúdos relacionados/);
-  assert.doesNotMatch(manager, /Novo artista/);
   assert.match(manager, /styles\.tableSurface/);
   assert.match(manager, /adminMetricGrid/);
   assert.match(manager, /Artistas<\/span><strong>\{metrics\.total/);
@@ -74,8 +73,12 @@ test("Artists write routes require a persistent editor while table actions use i
   assert.match(manager, />Editar<\/button>/);
   assert.match(manager, />Excluir<\/button>/);
   assert.match(manager, /ArtistViewDialog/);
-  assert.match(manager, /ArtistEditDialog/);
+  assert.match(manager, /ArtistEditorDialog/);
   assert.match(manager, /<ArtistForm embedded/);
+  assert.match(manager, /admin:new-artist/);
+  assert.match(manager, /setModal\(\{ mode: "create" \}\)/);
+  assert.match(manager, /mode="create"/);
+  assert.match(manager, /mode="edit"/);
   assert.doesNotMatch(manager, /<details>/);
 });
 
