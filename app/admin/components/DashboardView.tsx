@@ -119,7 +119,7 @@ function MetricCard({ accent, change, icon, label, suffix = "", value }: MetricC
     <div className="adminMetricCopy">
       <span>{label}</span>
       <strong>{connected ? formatMetric(value, suffix) : "—"}</strong>
-      {connected && typeof change === "number" ? <small className={change >= 0 ? "isPositive" : "isNegative"}><b>{change >= 0 ? "↑" : "↓"} {Math.abs(change).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</b><em>vs. período anterior</em></small> : <small>Analytics não conectado</small>}
+      {connected ? typeof change === "number" ? <small className={change >= 0 ? "isPositive" : "isNegative"}><b>{change >= 0 ? "↑" : "↓"} {Math.abs(change).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</b><em>vs. período anterior</em></small> : <small>Sem comparação do período anterior</small> : <small>Analytics não conectado</small>}
     </div>
     <svg aria-hidden="true" className="adminMetricSpark" viewBox="0 0 78 36"><defs><linearGradient id={`spark-${accent}`} x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="currentColor" stopOpacity=".18" /><stop offset="1" stopColor="currentColor" stopOpacity="0" /></linearGradient></defs><path d={`${sparkPaths[accent]} L76 36 L2 36 Z`} fill={`url(#spark-${accent})`} stroke="none" /><path d={sparkPaths[accent]} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" /></svg>
   </article>;

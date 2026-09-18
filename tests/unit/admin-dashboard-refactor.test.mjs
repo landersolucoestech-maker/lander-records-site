@@ -38,6 +38,7 @@ test("dashboard uses first-party contact submissions only for the conversion KPI
   assert.match(dashboardPage, /previousLeadChange = previousLeadCount > 0/);
   assert.match(dashboardPage, /visitors: null, views: null, engagementRate: null, conversions: leadCount/);
   assert.match(dashboard, /disabled=\{!analytics\?\.series\?\.length\}/);
+  assert.match(dashboard, /Sem comparação do período anterior/);
 });
 
 test("real dashboard aggregates recent publications across supported content domains", () => {
