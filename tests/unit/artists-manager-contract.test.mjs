@@ -18,10 +18,16 @@ test("Artists manager matches the approved table-first reference structure witho
   assert.doesNotMatch(manager, /Gerencie os artistas do seu selo, edite informações, discografia e conteúdos relacionados/);
   assert.doesNotMatch(manager, /Novo artista/);
   assert.match(manager, /styles\.tableSurface/);
-  assert.match(manager, /Buscar artistas\.\.\./);
-  assert.match(manager, /className="srOnly">Status<\/span>/);
-  assert.match(manager, /className="srOnly">Gênero<\/span>/);
-  assert.match(manager, /className="srOnly">Ordenar por<\/span>/);
+  assert.match(manager, /adminMetricGrid/);
+  assert.match(manager, /Artistas<\/span><strong>\{metrics\.total/);
+  assert.match(manager, /Ativos<\/span><strong>\{metrics\.published/);
+  assert.match(manager, /Rascunhos<\/span><strong>\{metrics\.draft/);
+  assert.match(manager, /Visualizações<\/span><strong>\{metrics\.views/);
+  assert.match(manager, /Buscar por nome, slug, função ou gênero/);
+  assert.match(manager, /Filtrar por status/);
+  assert.match(manager, /Filtrar por gênero/);
+  assert.match(manager, /Filtrar por função/);
+  assert.match(manager, /Ordenar artistas/);
   assert.match(manager, /Mais recentes/);
   assert.match(manager, /Visualizações/);
   assert.match(manager, /Última atualização/);
@@ -30,7 +36,7 @@ test("Artists manager matches the approved table-first reference structure witho
   assert.match(pagination, /Por página/);
   assert.match(pagination, /paginationItems/);
   assert.doesNotMatch(manager, /Selecionar artistas desta página|Selecionar \$\{artist\.name\}|selected|toggleCurrentPage|toggleArtist/);
-  assert.doesNotMatch(manager, /adminMetricGrid|adminMetricCard|adminMetricSpark|adminDashboardPanel|adminAnalyticsPanelHeading|Catálogo de artistas|Destaques na Home/);
+  assert.doesNotMatch(manager, /adminMetricSpark|adminDashboardPanel|adminAnalyticsPanelHeading|Catálogo de artistas|Destaques na Home/);
   assert.doesNotMatch(manager, /Importar CSV|Configurar módulo|Mais filtros|deleteArtistAction/);
 });
 
@@ -62,9 +68,9 @@ test("Artists write routes require a persistent editor while consult remains sep
 });
 
 test("Artists table reproduces the approved reference density and pagination", () => {
-  assert.match(managerStyles, /\.manager\{width:100%;display:grid;gap:18px\}/);
+  assert.match(managerStyles, /\.manager\{width:100%;display:grid;gap:12px\}/);
   assert.match(managerStyles, /\.tableSurface\{[\s\S]*border-radius:10px[\s\S]*background:#fff/);
-  assert.match(managerStyles, /\.toolbar\{display:grid;[\s\S]*min-height:102px[\s\S]*padding:20px 18px 24px/);
+  assert.match(managerStyles, /\.queryPanel\{display:grid;[\s\S]*padding:12px 14px[\s\S]*border-radius:8px/);
   assert.match(managerStyles, /\.artistTable th\{height:38px/);
   assert.match(managerStyles, /\.artistTable td\{height:56px/);
   assert.match(managerStyles, /\.identity img,\.avatarFallback\{[\s\S]*width:42px;height:42px[\s\S]*border-radius:6px/);
