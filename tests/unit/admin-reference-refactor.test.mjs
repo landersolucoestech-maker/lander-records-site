@@ -140,6 +140,7 @@ test("media kit keeps editor plus sticky live preview while reading existing pro
 });
 
 test("settings internal tabs use scoped mutations and preserve RBAC", () => {
+  assert.match(settings, /data-testid="settings-manager"/);
   assert.match(settings, /updateCompanySettings/);
   assert.match(settings, /updateIdentitySettings/);
   assert.match(settings, /upsertSocialLink/);

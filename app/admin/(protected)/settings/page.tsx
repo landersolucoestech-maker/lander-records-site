@@ -106,7 +106,7 @@ export default async function SettingsPage() {
     <article className={styles.portalCard}><span><AdminIcon name="shield" size={17}/></span><strong>Papéis e acesso</strong><p>O papel da sessão atual é <b>{session.user.role}</b>; as regras são aplicadas no servidor.</p></article>
   </div></div></section>;
 
-  return <div className={styles.page}>
+  return <div className={styles.page} data-testid="settings-manager">
     <SettingsTabs automations={automations} canManageUsers={canManageUsers} company={company} identity={identity} integrations={integrations} security={security} users={users}/>
   </div>;
 }
