@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -30,7 +29,7 @@ export type ArtistSummary = {
 
 type Filters = { genre?: string; q?: string; role?: string; status?: string };
 type SortMode = "updated-desc" | "updated-asc" | "name-asc" | "name-desc";
-type ArtistModalState = { mode: "view" | "edit"; artistId: string } | null;
+type ArtistModalState = { mode: "create" } | { mode: "view" | "edit"; artistId: string } | null;
 type ActionMenuState = { artistId: string } | null;
 type ActionMenuPosition = { top: number; left: number } | null;
 
@@ -126,7 +125,7 @@ function ArtistViewDialog({ artist, canEdit, onClose, onEdit }: { artist: Artist
   </div>, document.body);
 }
 
-function ArtistEditDialog({ initial, onClose, options }: { initial: ArtistEditorInitial; onClose: () => void; options: ArtistFormOptions }) {
+function ArtistEditorDialog({ initial, mode, onClose, options }: { initial: ArtistEditorInitial; mode: "create" | "edit"; onClose: () => void; options: ArtistFormOptions }) {
   const [mounted, setMounted] = useState(false);
   const dialogRef = useRef<HTMLElement>(null);
   useEffect(() => { setMounted(true); }, []);
@@ -134,8 +133,8 @@ function ArtistEditDialog({ initial, onClose, options }: { initial: ArtistEditor
   if (!mounted) return null;
 
   return createPortal(<div className={styles.modalBackdrop} onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }} role="presentation">
-    <section aria-labelledby="artist-edit-title" aria-modal="true" className={styles.editDialog} ref={dialogRef} role="dialog" tabIndex={-1}>
-      <header className={styles.modalHeader}><div><span>EDIÇÃO</span><h2 id="artist-edit-title">Editar artista</h2><p>Atualize as informações usando o mesmo formulário canônico do módulo.</p></div><button aria-label="Fechar edição" className={styles.modalClose} onClick={onClose} type="button">×</button></header>
+    <section aria-labelledby="artist-editor-title" aria-modal="true" className={styles.editDialog} ref={dialogRef} role="dialog" tabIndex={-1}>
+      <header className={styles.modalHeader}><div><span>{mode === "create" ? "CRIAÇÃO" : "EDIÇÃO"}</span><h2 id="artist-editor-title">{mode === "create" ? "Novo artista" : "Editar artista"}</h2><p>{mode === "create" ? "Cadastre identidade, mídias, plataformas e publicação sem sair do catálogo." : "Atualize as informações usando o mesmo formulário canônico do módulo."}</p></div><button aria-label={mode === "create" ? "Fechar criação" : "Fechar edição"} className={styles.modalClose} onClick={onClose} type="button">×</button></header>
       <div className={styles.editBody}><ArtistForm embedded initial={initial} onCancel={onClose} {...options}/></div>
     </section>
   </div>, document.body);
@@ -195,6 +194,13 @@ export default function ArtistManager({ artists, canDelete = false, canEdit = tr
 
   useEffect(() => { setPage(1); closeActionMenu(); }, [genre, pageSize, query, role, sort, status]);
 
+  useEffect(() => {
+    if (!canEdit || preview) return;
+    const openCreate = () => { closeActionMenu(); setModal({ mode: "create" }); };
+    window.addEventListener("admin:new-artist", openCreate);
+    return () => window.removeEventListener("admin:new-artist", openCreate);
+  }, [canEdit, preview]);
+
   useLayoutEffect(() => {
     if (!actionMenu) return;
     const trigger = actionTriggerRef.current;
@@ -240,7 +246,7 @@ export default function ArtistManager({ artists, canDelete = false, canEdit = tr
   const startIndex = filtered.length ? (page - 1) * pageSize : 0;
   const pageRows = filtered.slice(startIndex, startIndex + pageSize);
   const endIndex = filtered.length ? startIndex + pageRows.length : 0;
-  const selectedArtist = modal ? artists.find((artist) => artist.id === modal.artistId) : undefined;
+  const selectedArtist = modal && modal.mode !== "create" ? artists.find((artist) => artist.id === modal.artistId) : undefined;
   const actionArtist = actionMenu ? artists.find((artist) => artist.id === actionMenu.artistId) : undefined;
   const selectedEditor = modal?.mode === "edit" ? editorById[modal.artistId] : undefined;
   const hasFilters = Boolean(query.trim() || status !== "all" || genre !== "all" || role !== "all" || sort !== "updated-desc");
@@ -313,7 +319,7 @@ export default function ArtistManager({ artists, canDelete = false, canEdit = tr
           totalItems={filtered.length}
           totalPages={pageCount}
         />
-      </> : <div className={styles.empty}><span className={styles.emptyIcon}><AdminIcon name="artists" size={20} /></span><strong>{artists.length ? "Nenhum artista encontrado" : "Nenhum artista cadastrado"}</strong><span>{artists.length ? "Ajuste os filtros para voltar a exibir o catálogo." : "Cadastre o primeiro artista para começar a montar o casting da Lander Records."}</span>{hasFilters ? <button className="adminButton" onClick={clearFilters} type="button">Limpar filtros</button> : canEdit && !preview ? <Link className="adminPrimaryCompact" href="/admin/artists/new"><AdminIcon name="plus" size={14} />Cadastrar primeiro artista</Link> : null}</div>}
+      </> : <div className={styles.empty}><span className={styles.emptyIcon}><AdminIcon name="artists" size={20} /></span><strong>{artists.length ? "Nenhum artista encontrado" : "Nenhum artista cadastrado"}</strong><span>{artists.length ? "Ajuste os filtros para voltar a exibir o catálogo." : "Cadastre o primeiro artista para começar a montar o casting da Lander Records."}</span>{hasFilters ? <button className="adminButton" onClick={clearFilters} type="button">Limpar filtros</button> : canEdit && !preview ? <button className="adminPrimaryCompact" onClick={() => setModal({ mode: "create" })} type="button"><AdminIcon name="plus" size={14} />Cadastrar primeiro artista</button> : null}</div>}
     </section>
 
     {actionMenu && actionArtist && typeof document !== "undefined" ? createPortal(<div aria-label={`Ações de ${actionArtist.name}`} className={styles.actionMenu} data-artist-action-menu id="artist-row-action-menu" ref={actionMenuRef} role="menu" style={{ position: "fixed", top: actionMenuPosition?.top ?? 0, left: actionMenuPosition?.left ?? 0, visibility: actionMenuPosition ? "visible" : "hidden", zIndex: 900 }}>
@@ -323,6 +329,7 @@ export default function ArtistManager({ artists, canDelete = false, canEdit = tr
     </div>, document.body) : null}
 
     {modal?.mode === "view" && selectedArtist ? <ArtistViewDialog artist={selectedArtist} canEdit={canEdit && !preview && Boolean(editorById[selectedArtist.id])} key={`view-${selectedArtist.id}`} onClose={() => setModal(null)} onEdit={() => setModal({ mode: "edit", artistId: selectedArtist.id })}/> : null}
-    {modal?.mode === "edit" && selectedEditor ? <ArtistEditDialog initial={selectedEditor} key={`edit-${modal.artistId}`} onClose={() => setModal(null)} options={editorOptions}/> : null}
+    {modal?.mode === "create" ? <ArtistEditorDialog initial={{}} key="create-artist" mode="create" onClose={() => setModal(null)} options={editorOptions}/> : null}
+    {modal?.mode === "edit" && selectedEditor ? <ArtistEditorDialog initial={selectedEditor} key={`edit-${modal.artistId}`} mode="edit" onClose={() => setModal(null)} options={editorOptions}/> : null}
   </div>;
 }
