@@ -66,7 +66,7 @@ test("content uses the canonical modal workflow, floating actions and Lander Rec
   assert.match(posts, /href=\{`\/noticias\/\$\{post\.slug\}`\}/);
   assert.doesNotMatch(posts, /<details>/);
   assert.match(postStyles, /\.viewDialog/);
-  assert.match(postStyles, /\.pagination/);
+  assert.match(paginationStyles, /\.pagination/);
 });
 
 test("artists keep real routes while sharing the Portal catalog geometry", () => {
@@ -95,7 +95,7 @@ test("media library keeps real server actions, permission-aware controls and pag
   assert.match(mediaPage, /const canUpload = persistent && session\.user\.role !== "viewer"/);
   assert.match(mediaPage, /const canArchive = persistent && \(session\.user\.role === "admin" \|\| session\.user\.role === "owner"\)/);
   assert.match(mediaStyles, /\.tableSurface/);
-  assert.match(mediaStyles, /\.pagination/);
+  assert.match(paginationStyles, /\.pagination/);
   assert.doesNotMatch(media, /moreAction/);
 });
 
