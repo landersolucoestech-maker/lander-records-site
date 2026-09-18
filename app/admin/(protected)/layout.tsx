@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "../../../lib/auth";
 import { getDb } from "../../../lib/db";
@@ -25,6 +25,7 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
     })
     .from(auditLogs)
     .leftJoin(adminUsers, eq(auditLogs.actorUserId, adminUsers.id))
+    .where(inArray(auditLogs.entityType, ["artist", "post", "media_asset"]))
     .orderBy(desc(auditLogs.createdAt))
     .limit(12);
 
