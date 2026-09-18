@@ -37,7 +37,8 @@ test("Artists manager matches the approved table-first reference structure witho
   assert.match(pagination, /paginationItems/);
   assert.doesNotMatch(manager, /Selecionar artistas desta página|Selecionar \$\{artist\.name\}|selected|toggleCurrentPage|toggleArtist/);
   assert.doesNotMatch(manager, /adminMetricSpark|adminDashboardPanel|adminAnalyticsPanelHeading|Catálogo de artistas|Destaques na Home/);
-  assert.doesNotMatch(manager, /Importar CSV|Configurar módulo|Mais filtros|deleteArtistAction/);
+  assert.doesNotMatch(manager, /Importar CSV|Configurar módulo|Mais filtros/);
+  assert.match(manager, /deleteArtistAction/);
 });
 
 test("Artists catalog surfaces real roles and provider-backed view metrics without retired manual releases", () => {
@@ -58,13 +59,24 @@ test("Artists catalog surfaces real roles and provider-backed view metrics witho
   assert.doesNotMatch(manager, /artist\.audience/);
 });
 
-test("Artists write routes require a persistent editor while consult remains separate", () => {
+test("Artists write routes require a persistent editor while table actions use isolated modal workflows", () => {
   for (const source of [editPage, newPage]) {
     assert.match(source, /requireAdmin\("editor"\)/);
     assert.match(source, /if \(session\.source !== "session"\) redirect\("\/admin\/artists"\)/);
   }
-  assert.match(manager, /canEdit && !preview \? <Link href=\{`\/admin\/artists\/\$\{artist\.id\}`\}/);
-  assert.match(manager, /`\/admin\/artists\/\$\{artist\.id\}\/view`/);
+  assert.match(page, /const canEdit = session\.source === "session" && session\.user\.role !== "viewer"/);
+  assert.match(page, /const canDelete = session\.source === "session"/);
+  assert.match(manager, /data-artist-action-trigger/);
+  assert.match(manager, /data-artist-action-menu/);
+  assert.match(manager, /positionFloatingMenu\(trigger\.getBoundingClientRect\(\), menu\.getBoundingClientRect\(\)\)/);
+  assert.match(manager, /createPortal\(/);
+  assert.match(manager, />Visualizar<\/button>/);
+  assert.match(manager, />Editar<\/button>/);
+  assert.match(manager, />Excluir<\/button>/);
+  assert.match(manager, /ArtistViewDialog/);
+  assert.match(manager, /ArtistEditDialog/);
+  assert.match(manager, /<ArtistForm embedded/);
+  assert.doesNotMatch(manager, /<details>/);
 });
 
 test("Artists table reproduces the approved reference density and pagination", () => {
@@ -78,6 +90,9 @@ test("Artists table reproduces the approved reference density and pagination", (
   assert.match(paginationStyles, /\.controls \.active\{border-color:#ef2731/);
   assert.match(managerStyles, /min-width:980px/);
   assert.match(managerStyles, /\.statusBadge\{[\s\S]*min-height:22px[\s\S]*border-radius:7px/);
+  assert.match(managerStyles, /\.actionMenu\{display:grid;min-width:158px/);
+  assert.match(managerStyles, /\.modalBackdrop\{position:fixed;inset:0/);
+  assert.match(managerStyles, /\.editDialog\{width:min\(1320px,96vw\)/);
   assert.doesNotMatch(managerStyles, /checkboxColumn/);
   assert.match(managerStyles, /approved Artists reference/);
 });
