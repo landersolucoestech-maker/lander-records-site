@@ -17,6 +17,7 @@ const mediaStyles = read("app/admin/(protected)/media/MediaLibrary.module.css");
 const mediaPage = read("app/admin/(protected)/media/page.tsx");
 const mediaKit = read("app/admin/(protected)/media-kit/page.tsx");
 const mediaKitStyles = read("app/admin/(protected)/media-kit/MediaKit.module.css");
+const mediaKitPreview = read("app/admin/(protected)/media-kit/components/MediaKitPreviewDeck.tsx");
 const settings = read("app/admin/(protected)/settings/page.tsx");
 const settingsTabs = read("app/admin/(protected)/settings/SettingsTabs.tsx");
 const settingsStyles = read("app/admin/(protected)/settings/Settings.module.css");
@@ -127,23 +128,24 @@ test("media library keeps real server actions, permission-aware controls and pag
   assert.doesNotMatch(media, /moreAction/);
 });
 
-test("media kit keeps KPIs and preview static while only the left editor scrolls", () => {
+test("media kit keeps static KPIs, isolated editor scroll and a six-page commercial preview deck", () => {
   assert.match(mediaKit, /getDb\(\)/);
-  assert.match(mediaKit, /Identidade e apresentação/);
-  assert.match(mediaKit, /Audiência/);
-  assert.match(mediaKit, /Inventário editorial/);
-  assert.match(mediaKit, /Contato comercial/);
+  assert.match(mediaKit, /artistsTotal/);
+  assert.match(mediaKit, /releasesTotal/);
+  assert.match(mediaKit, /MediaKitPreviewDeck/);
+  assert.match(mediaKit, /6 páginas · deck comercial/);
   assert.match(mediaKit, /aria-label="Prévia visual do Mídia Kit"/);
-  assert.match(mediaKit, /Dados reais disponíveis/);
-  assert.match(mediaKit, /Nenhum dado real de audiência disponível/);
-  assert.match(mediaKit, /styles\.mediaKitLayout/);
   assert.match(mediaKitStyles, /\.mediaKitLayout\{[^}]*height:calc\(100dvh - var\(--ui-header-height,68px\) - 52px\)[^}]*overflow:hidden/);
   assert.match(mediaKitStyles, /\.editor\{[^}]*display:flex[^}]*flex-direction:column[^}]*height:100%[^}]*overflow-y:scroll/);
   assert.match(mediaKitStyles, /\.editor>\*\{flex:0 0 auto\}/);
-  assert.match(mediaKitStyles, /\.preview\{[^}]*position:static[^}]*height:100%[^}]*grid-template-rows:auto minmax\(0,1fr\)/);
-  assert.match(mediaKitStyles, /@media\(max-width:1180px\)\{\.mediaKitLayout\{height:auto/);
+  assert.match(mediaKitStyles, /\.preview\{[^}]*height:100%[^}]*grid-template-rows:auto minmax\(0,1fr\)/);
+  assert.match(mediaKitStyles, /\.previewViewport\{[^}]*overflow-y:auto/);
+  assert.match(mediaKitStyles, /\.mkPage\{[^}]*aspect-ratio:210\/297/);
+  assert.match(mediaKitPreview, /data-testid="media-kit-preview-deck"/);
+  for (const page of ["01", "02", "03", "04", "05", "06"]) assert.match(mediaKitPreview, new RegExp('page="' + page + '"'));
+  for (const heading of ["SOBRE A", "NOSSA AUDIÊNCIA", "FORMATOS DE PARCERIA", "ARTISTAS & DESTAQUES", "VAMOS"]) assert.match(mediaKitPreview, new RegExp(heading));
+  assert.match(mediaKitPreview, /SEM NÚMEROS INVENTADOS/);
 });
-
 test("settings internal tabs use scoped mutations and preserve RBAC", () => {
   assert.match(settings, /data-testid="settings-manager"/);
   assert.match(settings, /updateCompanySettings/);
