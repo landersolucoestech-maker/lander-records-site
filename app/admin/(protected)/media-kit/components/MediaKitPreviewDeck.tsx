@@ -22,7 +22,9 @@ export type MediaKitPreviewDeckProps = {
   socials: SocialItem[];
 };
 
-type FormatVisual = "mkVisualShow" | "mkVisualEditorial" | "mkVisualDigital" | "mkVisualSocial" | "mkVisualEvent" | "mkVisualNewsletter";\n\nconst formatItems: { icon: IconName; title: string; copy: string; visualClass: FormatVisual }[] = [
+type FormatVisual = "mkVisualShow" | "mkVisualEditorial" | "mkVisualDigital" | "mkVisualSocial" | "mkVisualEvent" | "mkVisualNewsletter";
+
+const formatItems: { icon: IconName; title: string; copy: string; visualClass: FormatVisual }[] = [
   { icon: "target", title: "Patrocínio", copy: "Presença de marca em projetos, lançamentos e iniciativas especiais.", visualClass: "mkVisualShow" },
   { icon: "posts", title: "Publieditorial", copy: "Conteúdo editorial integrado ao ecossistema da Lander Records.", visualClass: "mkVisualEditorial" },
   { icon: "chart", title: "Campanhas digitais", copy: "Campanhas multiplataforma pensadas para música, cultura e comunidade.", visualClass: "mkVisualDigital" },
@@ -31,7 +33,13 @@ type FormatVisual = "mkVisualShow" | "mkVisualEditorial" | "mkVisualDigital" | "
   { icon: "mail", title: "Newsletter", copy: "Comunicação direta com uma base qualificada quando o canal estiver conectado.", visualClass: "mkVisualNewsletter" },
 ];
 
-const opportunities = ["Sua marca no projeto", "Citação em redes sociais", "Branding em shows", "Ações com fãs", "Conteúdo exclusivo", "Projetos especiais"];\n\nfunction releaseYear(value: string | Date | null) {\n  if (!value) return "";\n  if (value instanceof Date) return String(value.getUTCFullYear());\n  return value.slice(0, 4);\n}
+const opportunities = ["Sua marca no projeto", "Citação em redes sociais", "Branding em shows", "Ações com fãs", "Conteúdo exclusivo", "Projetos especiais"];
+
+function releaseYear(value: string | Date | null) {
+  if (!value) return "";
+  if (value instanceof Date) return String(value.getUTCFullYear());
+  return value.slice(0, 4);
+}
 
 function Brand({ dark = false }: { dark?: boolean }) {
   return <div className={styles.mkBrand}><span className={styles.mkBrandMark} aria-hidden="true"><i/><i/><i/><i/></span><div><strong>LANDER <b>RECORDS</b></strong><small className={dark ? styles.mkMutedDark : undefined}>MÚSICA · ARTISTAS · CULTURA · OPORTUNIDADES</small></div></div>;
