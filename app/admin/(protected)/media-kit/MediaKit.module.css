@@ -127,3 +127,71 @@
 .quickSectionCopy>span{grid-column:1/-1;margin-top:3px;color:#667085;font-size:8px;line-height:1.35}
 .quickSectionAdd{align-self:center;color:#344054;font-size:8px;font-weight:850;white-space:nowrap}
 
+
+
+/* Reference-fidelity layout: six square media-kit pages matching the supplied composition. */
+.previewViewport{background:#62676b;padding:10px}
+.mkDeck{gap:10px}
+.mkPage{container-type:inline-size;aspect-ratio:1/1!important;border-radius:0;border:0;box-shadow:0 1px 8px rgba(0,0,0,.24);grid-template-rows:10.8cqw minmax(0,1fr) 6.4cqw;font-family:Arial,Helvetica,sans-serif}
+.mkPageLight{background:#f8f8f6}.mkPageDark{background:#090a0c}
+.refPageHeader{height:auto!important;padding:2.2cqw 4.6cqw 1.8cqw;border-bottom:1px solid rgba(17,24,39,.10);align-items:flex-start}
+.mkPageDark .refPageHeader{border-color:rgba(255,255,255,.08)}
+.refBrand{gap:1.5cqw}.refBrandMark{height:5.2cqw;gap:.35cqw}.refBrandMark i{width:.44cqw!important;border-radius:.35cqw}.refBrandMark i:nth-child(1){height:2.8cqw}.refBrandMark i:nth-child(2){height:5.2cqw}.refBrandMark i:nth-child(3){height:4cqw}.refBrandMark i:nth-child(4){height:2.2cqw}.refBrandMark i:nth-child(5){height:3.5cqw}
+.refBrand>div{gap:.15cqw}.refBrand strong{font-size:4.15cqw;line-height:.9;font-weight:950;letter-spacing:-.05em}.refBrand small{font-size:1.15cqw;line-height:1.15;letter-spacing:.07em}
+.refPageMeta{gap:1.5cqw;font-size:1.3cqw;line-height:1;font-weight:850}.refPageMeta strong{font-size:1.4cqw}
+.refPageFooter{height:auto!important;padding:1.8cqw 4.6cqw 1.6cqw;font-size:1.1cqw;line-height:1;letter-spacing:.07em;border-top:1px solid rgba(17,24,39,.08)}
+.refSectionHeading>span,.refKicker{font-size:1.15cqw;line-height:1;font-weight:900;letter-spacing:.08em}
+.refSectionHeading h3{margin:.7cqw 0 0;max-width:90cqw;font-family:Impact,Haettenschweiler,"Arial Narrow Bold",sans-serif;font-size:6.6cqw;line-height:.93;font-weight:900;letter-spacing:-.025em;text-transform:uppercase}
+.refSectionHeading>i,.refRedRule{width:7.5cqw;height:.65cqw;margin:1.4cqw 0 1.8cqw;border-radius:0}
+.refSectionHeading>strong{margin-bottom:1.4cqw;font-size:1.55cqw;line-height:1.25}
+.refSectionHeading>div{gap:1.25cqw}.refSectionHeading p{font-size:1.65cqw;line-height:1.42;color:#2f343a}
+.mkPageDark .refSectionHeading p{color:#e3e5e8}
+
+/* 01 — cover */
+.refCover{padding:3.7cqw 4.7cqw 2cqw;grid-template-columns:.86fr 1.14fr;gap:2cqw;align-items:center;background-position:center!important}
+.refCoverCopy{align-self:center}.refCoverCopy h3{max-width:43cqw;margin:1.8cqw 0 0;font-family:Impact,Haettenschweiler,"Arial Narrow Bold",sans-serif;font-size:8.3cqw;line-height:.93;letter-spacing:-.025em;text-transform:uppercase}
+.refCoverCopy h3 em{display:block;color:#ed1c24;font:inherit;font-style:normal}
+.refCoverCopy>strong{max-width:42cqw;font-size:1.65cqw;line-height:1.25}.refCoverCopy p{max-width:39cqw;margin:1.5cqw 0 0;font-size:1.75cqw;line-height:1.48}
+.refCoverCopy>a{gap:1.2cqw;margin-top:2cqw;padding:1.5cqw 2cqw;font-size:1.25cqw}
+.refCoverVisual>small{top:-1cqw;right:0;width:19cqw;font-size:1.5cqw;line-height:1.42}
+.refUploadedDevice,.refDevice{max-width:none;width:100%;margin-top:4cqw;border-width:.85cqw;border-radius:1cqw;box-shadow:0 4.5cqw 7cqw #0009;transform:perspective(800px) rotateY(-6deg) rotateX(1.5deg)}
+.refUploadedDevice img{height:36cqw}.refDeviceBar{height:5.2cqw;padding:1.2cqw 1.5cqw}.refDeviceBar span{font-size:1.2cqw}.refDeviceBar small{font-size:.75cqw}.refDeviceHero{height:23cqw;padding:2.8cqw}.refDeviceHero strong{max-width:25cqw;font-size:3.7cqw;line-height:.92}.refDeviceHero span{width:4.8cqw;height:4.8cqw;font-size:1.6cqw}.refDeviceTiles{padding:1cqw;gap:.8cqw}.refDeviceTiles i{height:7.5cqw}
+.refCoverHighlights{margin:0 4.7cqw .8cqw;padding:2.1cqw 0;border-top:1px solid #ffffff35}.refCoverHighlights>div{padding:0 1.4cqw;gap:.35cqw}.refCoverHighlights svg{width:4cqw;height:4cqw}.refCoverHighlights strong{font-size:1.45cqw}.refCoverHighlights span{font-size:1.75cqw}.refCoverHighlights small{font-size:1.02cqw;line-height:1.2}
+
+/* 02 — about */
+.refAboutBody{padding:3.1cqw 4.6cqw 1.7cqw;gap:2.7cqw}
+.refAboutTop{grid-template-columns:1.15fr .85fr;gap:3.4cqw;min-height:0;height:42cqw}.refAboutVisual{padding:3cqw;background-position:center;justify-content:flex-end}.refAboutVisual strong{font-family:Impact,Haettenschweiler,"Arial Narrow Bold",sans-serif;font-size:4.6cqw;line-height:1.02;font-weight:900}.refAboutVisual small{font-size:1.15cqw;line-height:1.3}
+.refKpis{min-height:17.5cqw;border-block:1px solid #d9dde1}.refKpis>div{padding:2.1cqw .8cqw;gap:.45cqw}.refKpis svg{width:4.1cqw;height:4.1cqw}.refKpis strong{font-family:Impact,Haettenschweiler,"Arial Narrow Bold",sans-serif;font-size:4.8cqw;line-height:1}.refKpis span{font-size:1.15cqw;line-height:1.12}.refKpis small{font-size:.95cqw;line-height:1.08}
+.refAboutBanner{min-height:14.5cqw;padding:2.5cqw 3.2cqw;align-items:center}.refAboutBanner strong{max-width:60cqw;font-family:Impact,Haettenschweiler,"Arial Narrow Bold",sans-serif;font-size:3.55cqw;line-height:1.02}.refAboutBanner span{max-width:19cqw;font-size:1.05cqw;line-height:1.4}
+
+/* 03 — audience */
+.refAudienceBody{padding:3cqw 4.6cqw 1.2cqw;gap:2cqw}
+.refAudienceGrid{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2.3cqw 3.3cqw;min-height:0;flex:1}
+.refAudiencePanel{padding:0 0 1.8cqw;border-bottom:1px solid #d9dde1}.refAudiencePanel:nth-child(odd){padding-right:2.3cqw;border-right:1px solid #d9dde1}
+.refAudiencePanel h4{margin:0 0 1.8cqw;font-family:Impact,Haettenschweiler,"Arial Narrow Bold",sans-serif;font-size:3.1cqw;line-height:1;text-transform:uppercase}
+.refDonut{width:16.8cqw;height:16.8cqw;margin:0 auto 1.4cqw}.refDonut:before{width:10.2cqw;height:10.2cqw}.refDonut strong{font-size:2.6cqw}.refDonut small{font-size:.9cqw}.refLegend{gap:.8cqw}.refLegend span{grid-template-columns:1.3cqw minmax(0,1fr) auto;gap:.8cqw;font-size:1.2cqw}.refLegend i{width:1.3cqw;height:1.3cqw}.refLegend b{font-size:1.15cqw}
+.refBarList{gap:1.15cqw}.refBarList>div{grid-template-columns:9.5cqw minmax(0,1fr) 5cqw;gap:1cqw;font-size:1.25cqw}.refBarList i{height:2cqw}.refBarList strong{font-size:1.15cqw}
+.refInterestList{gap:1cqw}.refInterestList>div{grid-template-columns:3.4cqw minmax(0,1fr) 5cqw;gap:1cqw}.refInterestList svg{width:2.8cqw;height:2.8cqw}.refInterestList span{font-size:1.25cqw}.refInterestList strong{font-size:1.15cqw}
+.refAudienceNote{padding-top:1.1cqw;font-size:1cqw}
+
+/* 04 — partnerships */
+.refPartnershipBody{padding:3cqw 4.6cqw 1.4cqw;gap:2.2cqw}
+.refPartnerGrid{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:2cqw 2.6cqw;flex:1}
+.refPartnerGrid>article{padding-bottom:1.3cqw}.refPartnerVisual{height:15.8cqw;padding:1.8cqw;background-size:cover;background-position:center}.refPartnerVisual svg{width:3.6cqw;height:3.6cqw}.refPartnerVisual span{font-size:.95cqw}.refPartnerGrid h4{margin:1.25cqw 0 .65cqw;font-family:Impact,Haettenschweiler,"Arial Narrow Bold",sans-serif;font-size:2.5cqw;line-height:1}.refPartnerGrid p{font-size:1.22cqw;line-height:1.35}.refPartnerGrid a{margin-top:.7cqw;font-size:1.05cqw}
+
+/* 05 — artists */
+.refArtistsBody{padding:3cqw 4.6cqw 1.4cqw;gap:2cqw}
+.refArtistsGrid{grid-template-columns:.74fr 1.34fr .92fr;gap:2.2cqw;min-height:0;flex:1}
+.refArtistsGrid h4{margin:0 0 1.4cqw;font-family:Impact,Haettenschweiler,"Arial Narrow Bold",sans-serif;font-size:2.6cqw;line-height:1}
+.refReleaseColumn>div{gap:1.1cqw;padding:1cqw 0}.refReleaseColumn>div>i{flex-basis:6.8cqw;height:6.8cqw;border-left-width:.7cqw}.refReleaseColumn strong{font-size:1.12cqw}.refReleaseColumn b{font-size:1.08cqw}.refReleaseColumn small{font-size:.95cqw}
+.refFeaturedArtist{min-height:0;height:39cqw;padding:2.8cqw}.refFeaturedArtist>span{font-size:1.1cqw}.refFeaturedArtist>strong{font-family:Impact,Haettenschweiler,"Arial Narrow Bold",sans-serif;font-size:5cqw;line-height:.94}.refFeaturedArtist>p{margin:1cqw 0 1.7cqw;font-size:1.15cqw;line-height:1.38}.refFeaturedArtist>div{gap:.7cqw}.refFeaturedArtist>div i{height:5.8cqw;border-bottom-width:.55cqw}
+.refOpportunityColumn>div{gap:1cqw;padding:1cqw 0}.refOpportunityColumn>div>span{flex-basis:3cqw;width:3cqw;height:3cqw;font-size:1.4cqw}.refOpportunityColumn strong{font-size:1.15cqw}.refOpportunityColumn small{font-size:.95cqw}
+.refQuote{margin:0;padding:1.8cqw 2.2cqw;border-left-width:.75cqw;font-size:1.22cqw;line-height:1.45}.refQuote strong{font-size:1.05cqw}.refEmpty{padding:1.5cqw;font-size:1.1cqw}
+
+/* 06 — contact */
+.refContactBody{padding:3cqw 4.6cqw 1.6cqw;grid-template-columns:1.02fr .98fr;gap:3.2cqw}
+.refContactMain{padding:2.5cqw .5cqw 0}.refContactMain .refSectionHeading h3{max-width:43cqw;font-size:7.2cqw}.refContactCta{gap:1.3cqw;margin-top:2.4cqw;padding:1.6cqw 2.5cqw;font-size:1.35cqw}.refContactList{gap:1.35cqw;margin-top:2.6cqw}.refContactList p{gap:1.3cqw;font-size:1.35cqw}.refContactList svg{width:2.7cqw;height:2.7cqw}
+.refNextSteps{padding:5.5cqw 4.2cqw;background-position:center}.refNextSteps>div:first-child>span{font-family:Impact,Haettenschweiler,"Arial Narrow Bold",sans-serif;font-size:4.9cqw;line-height:1}.refNextSteps p{font-size:1.55cqw;line-height:1.48}.refNextSteps strong{font-size:4.2cqw;line-height:1}.refNextSteps small{font-size:1.08cqw;line-height:1.25}
+
+.refGenericBody{padding:3cqw 4.6cqw 1.5cqw;gap:2cqw}.refGenericGrid{gap:2cqw}.refGenericGrid article{padding:1.8cqw}.refGenericGrid img{width:calc(100% + 3.6cqw);height:16cqw;margin:-1.8cqw -1.8cqw 1.5cqw}.refGenericGrid h4{font-size:2cqw}.refGenericGrid strong{font-size:2.5cqw}.refGenericGrid span,.refGenericGrid p{font-size:1.2cqw}
+

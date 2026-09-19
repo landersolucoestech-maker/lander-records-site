@@ -226,18 +226,25 @@ test("media kit is a persisted section builder with a dynamic editorial preview"
   assert.match(mediaKitPreview, /PRINCIPAIS CIDADES/);
   assert.match(mediaKitPreview, /OPORTUNIDADES DE EXPOSIÇÃO/);
   assert.match(mediaKitPreview, /PRÓXIMOS PASSOS/);
+  assert.match(mediaKitPreview, /coverHeadline/);
+  for (const slot of ["cover-highlights", "about-kpis", "audience-grid", "partnership-grid", "artists-grid", "contact-grid"]) {
+    assert.match(mediaKitPreview, new RegExp('data-reference-slot="' + slot + '"'));
+  }
   assert.doesNotMatch(mediaKitPreview, /<PageHeader page="01"/);
 
   assert.match(mediaKitStyles, /\.mediaKitLayout\{[^}]*height:calc\(100dvh - var\(--ui-header-height,68px\) - 52px\)[^}]*overflow:hidden/);
   assert.match(mediaKitStyles, /\.editor\{[^}]*overflow-y:scroll/);
   assert.match(mediaKitStyles, /\.previewViewport\{[^}]*overflow-y:auto/);
-  assert.match(mediaKitStyles, /\.mkPage\{[^}]*aspect-ratio:210\/297/);
+  assert.match(mediaKitStyles, /\.mkPage\{[^}]*aspect-ratio:1\/1!important/);
   assert.match(mediaKitStyles, /\.refCover\{/);
   assert.match(mediaKitStyles, /\.refAboutTop\{/);
   assert.match(mediaKitStyles, /\.refAudienceGrid\{/);
   assert.match(mediaKitStyles, /\.refPartnerGrid\{/);
   assert.match(mediaKitStyles, /\.refArtistsGrid\{/);
   assert.match(mediaKitStyles, /\.refContactBody\{/);
+  assert.match(mediaKitStyles, /container-type:inline-size/);
+  assert.match(mediaKitStyles, /font-family:Impact,Haettenschweiler/);
+  assert.match(mediaKitStyles, /\.refPartnerGrid\{[^}]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)[^}]*grid-template-rows:repeat\(2,minmax\(0,1fr\)\)/);
   assert.match(mediaKitStyles, /\.quickSectionPanel\{/);
   assert.match(mediaKitStyles, /\.quickSectionGrid\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   assert.match(mediaKitStyles, /\.quickSectionCard button\{/);

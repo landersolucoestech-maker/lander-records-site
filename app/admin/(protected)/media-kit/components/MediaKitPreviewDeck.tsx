@@ -81,6 +81,13 @@ function releaseYear(value: string | Date | null) {
   return value.slice(0, 4);
 }
 
+function coverHeadline(title: string) {
+  const normalized = title.trim();
+  const match = normalized.match(/^(.*?)([^\s]+[.!?]?)$/);
+  if (!match) return normalized;
+  return <>{match[1]}<em>{match[2]}</em></>;
+}
+
 function resolveValue(item: PreviewItem, real: RealData) {
   const values: Record<string, string | number> = {
     artists_total: real.artistsTotal,
@@ -155,7 +162,7 @@ function CoverPage({ settings, section, pageNumber, real }: { settings: PreviewS
     <div className={styles.refCover} style={background}>
       <div className={styles.refCoverCopy}>
         <span className={styles.refKicker}>{section.eyebrow || "LANDER RECORDS · "+settings.edition}</span>
-        <h3>{section.title || "CONECTANDO ARTISTAS, MÚSICA E OPORTUNIDADES."}</h3>
+        <h3>{coverHeadline(section.title || "CONECTANDO ARTISTAS, MÚSICA E OPORTUNIDADES.")}</h3>
         <i className={styles.refRedRule}/>
         {section.subtitle ? <strong>{section.subtitle}</strong> : null}
         {section.body ? <p>{section.body}</p> : null}
@@ -166,7 +173,7 @@ function CoverPage({ settings, section, pageNumber, real }: { settings: PreviewS
         {visualItem ? <div className={styles.refUploadedDevice}><img src={visualItem.mediaUrl} alt={visualItem.title || "Imagem do Mídia Kit"}/></div> : <FallbackDevice label={textValue(section.settings,"mockupLabel","MÚSICA MOVE PESSOAS.")}/>}
       </div>
     </div>
-    <div className={styles.refCoverHighlights}>
+    <div className={styles.refCoverHighlights} data-reference-slot="cover-highlights">
       {highlights.map((item)=><div key={item.id}><AdminIcon name={iconName(item.icon)} size={18}/><strong>{item.title || item.label}</strong><span>{String(resolveValue(item,real) || "")}</span><small>{item.subtitle}</small></div>)}
     </div>
   </PageShell>;
@@ -185,7 +192,7 @@ function AboutPage({ settings, section, pageNumber, real }: { settings: PreviewS
         <SectionHeading section={section}/>
         <aside className={styles.refAboutVisual} style={visualStyle}><strong>{sideTitle}</strong><i className={styles.refRedRule}/><small>{sideCaption}</small></aside>
       </div>
-      <div className={styles.refKpis}>{metrics.map((item)=><div key={item.id}><AdminIcon name={iconName(item.icon)} size={18}/><strong>{String(resolveValue(item,real) || "—")}</strong><span>{item.title || item.label}</span><small>{item.subtitle}</small></div>)}</div>
+      <div className={styles.refKpis} data-reference-slot="about-kpis">{metrics.map((item)=><div key={item.id}><AdminIcon name={iconName(item.icon)} size={18}/><strong>{String(resolveValue(item,real) || "—")}</strong><span>{item.title || item.label}</span><small>{item.subtitle}</small></div>)}</div>
       <div className={styles.refAboutBanner} style={visualStyle}><strong>{bannerTitle}</strong><span>{bannerNote}</span></div>
     </div>
   </PageShell>;
@@ -208,7 +215,7 @@ function AudiencePage({ settings, section, pageNumber }: { settings: PreviewSett
   return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
     <div className={styles.refAudienceBody}>
       <SectionHeading section={section}/>
-      <div className={styles.refAudienceGrid}>
+      <div className={styles.refAudienceGrid} data-reference-slot="audience-grid">
         <section className={styles.refAudiencePanel}><h4>PERFIL DO PÚBLICO</h4><div className={[styles.refDonut,totalGender===0?styles.refDonutEmpty:""].join(" ")} style={donutStyle}><div><strong>{totalGender>0?displayPercent(genders[0]):"—"}</strong><small>{totalGender>0?(genders[0]?.title||"Perfil"):"A INTEGRAR"}</small></div></div><div className={styles.refLegend}>{genders.slice(0,2).map((item,index)=><span key={item.id}><i className={index===0?styles.refLegendRed:styles.refLegendBlack}/>{item.title}<b>{displayPercent(item)}</b></span>)}</div></section>
         <section className={styles.refAudiencePanel}><h4>FAIXA ETÁRIA</h4><div className={styles.refBarList}>{ages.map((item)=><div key={item.id}><span>{item.title}</span><i><b style={{width:numberValue(item.metadata,"percentage")+"%"}}/></i><strong>{displayPercent(item)}</strong></div>)}</div></section>
         <section className={styles.refAudiencePanel}><h4>PRINCIPAIS INTERESSES</h4><div className={styles.refInterestList}>{interests.map((item)=><div key={item.id}><AdminIcon name={iconName(item.icon)} size={14}/><span>{item.title}</span><strong>{displayPercent(item)}</strong></div>)}</div></section>
@@ -224,7 +231,7 @@ function PartnershipPage({ settings, section, pageNumber }: { settings: PreviewS
   return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
     <div className={styles.refPartnershipBody}>
       <SectionHeading section={section}/>
-      <div className={styles.refPartnerGrid}>{items.map((item)=><article key={item.id}>
+      <div className={styles.refPartnerGrid} data-reference-slot="partnership-grid">{items.map((item)=><article key={item.id}>
         <div className={styles.refPartnerVisual} style={item.mediaUrl?{backgroundImage:`linear-gradient(#1112,#1119),url("${item.mediaUrl}")`}:undefined}><AdminIcon name={iconName(item.icon)} size={20}/><span>LANDER RECORDS</span></div>
         <h4>{item.title || item.label}</h4>{item.body?<p>{item.body}</p>:null}{item.url?<a href={item.url}>Saiba mais →</a>:null}
       </article>)}</div>
@@ -239,7 +246,7 @@ function ArtistsPage({ settings, section, pageNumber, real }: { settings: Previe
   return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
     <div className={styles.refArtistsBody}>
       <SectionHeading section={section}/>
-      <div className={styles.refArtistsGrid}>
+      <div className={styles.refArtistsGrid} data-reference-slot="artists-grid">
         <section className={styles.refReleaseColumn}><h4>LANÇAMENTOS RECENTES</h4>{real.releases.length?real.releases.slice(0,4).map((release)=><div key={release.artistName+"-"+release.title}><i/><p><strong>{release.artistName}</strong><b>{release.title}</b><small>{release.releaseType}{releaseYear(release.releaseDate)?" · "+releaseYear(release.releaseDate):""}</small></p></div>):<p className={styles.refEmpty}>Nenhum lançamento ativo.</p>}</section>
         <section className={styles.refFeaturedArtist} style={featuredStyle}><span>{textValue(section.settings,"featuredLabel","ARTISTA EM DESTAQUE")}</span><strong>{featured?.name || "Destaque a definir"}</strong><p>{featured?.shortBio || featured?.eyebrow || "Selecione artistas publicados para alimentar automaticamente este espaço."}</p><div><i/><i/><i/><i/></div></section>
         <section className={styles.refOpportunityColumn}><h4>OPORTUNIDADES DE EXPOSIÇÃO</h4>{opportunities.map((item)=><div key={item.id}><span>+</span><p><strong>{item.title}</strong>{item.body?<small>{item.body}</small>:null}</p></div>)}</section>
@@ -253,7 +260,7 @@ function ContactPage({ settings, section, pageNumber, real }: { settings: Previe
   const contacts=section.items.filter((item)=>item.enabled).sort((a,b)=>a.position-b.position);
   const panelStyle=section.mediaUrl?{backgroundImage:`linear-gradient(180deg,#090a0dbe,#090a0df3),url("${section.mediaUrl}")`}:undefined;
   return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
-    <div className={styles.refContactBody}>
+    <div className={styles.refContactBody} data-reference-slot="contact-grid">
       <section className={styles.refContactMain}>
         <SectionHeading section={section}/>
         {section.ctaLabel&&section.ctaUrl?<a className={styles.refContactCta} href={section.ctaUrl}>{section.ctaLabel}<span>→</span></a>:null}
