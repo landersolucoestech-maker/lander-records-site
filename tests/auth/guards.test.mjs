@@ -169,7 +169,7 @@ test("admin user mutations validate role and identifiers at the authoritative bo
 
 test("social links are normalized inside the privileged server action", async () => {
   const contents = await source("app/admin/actions.ts");
-  const mutation = contents.match(/export async function upsertSocialLink[\s\S]*?(?=\nexport async function upsertContactTopic)/)?.[0] || "";
+  const mutation = contents.match(/export async function upsertSocialLink[\s\S]*?(?=\nexport async function uploadMedia)/)?.[0] || "";
   assert.match(mutation, /requirePersistentAdmin\("editor"\)/);
   assert.match(mutation, /normalizeExternalUrl\(text\(formData, "url"\)\)/);
   assert.ok(mutation.indexOf("normalizeExternalUrl") < mutation.indexOf("db.update"), "URL validation must happen before persistence");
