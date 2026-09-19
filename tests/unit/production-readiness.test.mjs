@@ -39,6 +39,20 @@ test("dev preview stays disposable, public for review, and isolated from product
   assert.ok(!preview.includes("${{ secrets."));
 });
 
+
+test("media kit image uploads stay isolated in disposable preview and use real storage for persistent sessions", () => {
+  const actions = read("app/admin/(protected)/media-kit/actions.ts");
+  const auth = read("app/admin/(protected)/media-kit/preview-auth.ts");
+  assert.match(actions, /session\.source === "development-auth-bypass"/);
+  assert.match(actions, /storageProvider = "preview_inline"/);
+  assert.match(actions, /data:image\/webp;base64/);
+  assert.match(actions, /uploadStoredMedia\(key, output\.data, "image\/webp"\)/);
+  assert.match(actions, /createdBy: session\.user\.id/);
+  assert.match(auth, /isDisposablePreviewAuthBypassEnabled/);
+  assert.match(auth, /isDisposablePreviewRequestHost/);
+  assert.doesNotMatch(read(".github/workflows/dev-preview.yml"), /SUPABASE_SERVICE_ROLE_KEY|SUPABASE_URL/);
+});
+
 test("readiness documentation keeps deployment and migration independently controlled", () => {
   for (const path of [
     "docs/PRODUCTION_INFRASTRUCTURE.md",

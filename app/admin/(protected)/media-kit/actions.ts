@@ -2,8 +2,10 @@
 
 import { and, asc, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import sharp from "sharp";
 import { audit } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
+import { deleteMedia, uploadMedia as uploadStoredMedia } from "../../../../lib/storage";
 import { mediaAssets, mediaKitItems, mediaKitSections, mediaKitSettings } from "../../../../lib/db/schema";
 import { requireMediaKitMutationAdmin } from "./preview-auth";
 
@@ -52,7 +54,7 @@ function destination(formData: FormData, name: string) {
   throw new Error("Destino inválido. Use URL completa, rota interna, mailto: ou tel:.");
 }
 
-async function mediaId(formData: FormData, name: string) {
+async function selectedMediaId(formData: FormData, name: string) {
   const raw = text(formData, name);
   if (!raw) return null;
   const id = uuid(raw);
@@ -65,6 +67,74 @@ async function mediaId(formData: FormData, name: string) {
   if (!row) throw new Error("Mídia ativa não encontrada.");
   if (!row.mimeType.startsWith("image/")) throw new Error("O Mídia Kit aceita apenas imagens.");
   return row.id;
+}
+
+type MediaKitMutationSession = Awaited<ReturnType<typeof requireMediaKitMutationAdmin>>;
+
+async function resolveMediaInput(formData: FormData, session: MediaKitMutationSession) {
+  const file = formData.get("imageFile");
+  if (!(file instanceof File) || file.size === 0) {
+    return selectedMediaId(formData, "mediaId");
+  }
+
+  if (!file.type.startsWith("image/")) throw new Error("Selecione um arquivo de imagem.");
+  if (file.size > 12 * 1024 * 1024) throw new Error("Imagem maior que 12 MB.");
+
+  const fallbackAlt = text(formData, "title") || text(formData, "label") || "Imagem do Mídia Kit";
+  const altText = text(formData, "imageAltText") || fallbackAlt;
+  if (!altText || altText.length > 500) throw new Error("Texto alternativo da imagem inválido.");
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const output = await sharp(buffer)
+    .rotate()
+    .resize({ width: 2400, height: 2400, fit: "inside", withoutEnlargement: true })
+    .webp({ quality: 84 })
+    .toBuffer({ resolveWithObject: true });
+
+  const key = `media-kit/${crypto.randomUUID()}.webp`;
+  const isDisposablePreview = session.source === "development-auth-bypass";
+  let storageProvider = "supabase_storage";
+  let storageKey = key;
+  let url = "";
+  let storedRemotely = false;
+
+  if (isDisposablePreview) {
+    storageProvider = "preview_inline";
+    storageKey = `preview/${key}`;
+    url = `data:image/webp;base64,${output.data.toString("base64")}`;
+  } else {
+    const stored = await uploadStoredMedia(key, output.data, "image/webp");
+    storageKey = stored.key;
+    url = stored.url;
+    storedRemotely = true;
+  }
+
+  try {
+    const rows = await getDb().insert(mediaAssets).values({
+      storageProvider,
+      storageKey,
+      url,
+      mimeType: "image/webp",
+      byteSize: output.data.byteLength,
+      width: output.info.width,
+      height: output.info.height,
+      altText,
+      originalFilename: file.name,
+      createdBy: session.user.id,
+      updatedBy: session.user.id,
+    }).returning({ id: mediaAssets.id });
+
+    await audit(session.user.id, "media_kit.image_uploaded", "media_asset", rows[0].id, {
+      originalFilename: file.name,
+      byteSize: output.data.byteLength,
+      storageProvider,
+    });
+    revalidatePath("/admin/media");
+    return rows[0].id;
+  } catch (error) {
+    if (storedRemotely) await deleteMedia(storageKey).catch(() => undefined);
+    throw error;
+  }
 }
 
 function refresh() {
@@ -99,7 +169,7 @@ export async function createMediaKitSection(formData: FormData) {
   const type = enumValue(formData, "type", SECTION_TYPES, "custom");
   const theme = enumValue(formData, "theme", THEMES, "light");
   const title = text(formData, "title") || "Nova seção";
-  const selectedMediaId = await mediaId(formData, "mediaId");
+  const selectedMediaId = await resolveMediaInput(formData, session);
   const db = getDb();
 
   const created = await db.transaction(async (tx) => {
@@ -140,7 +210,7 @@ export async function updateMediaKitSection(formData: FormData) {
     body: text(formData, "body"),
     ctaLabel: text(formData, "ctaLabel"),
     ctaUrl: destination(formData, "ctaUrl"),
-    mediaId: await mediaId(formData, "mediaId"),
+    mediaId: await resolveMediaInput(formData, session),
     position: integer(formData, "position", 1),
     enabled: checked(formData, "enabled"),
     updatedAt: new Date(),
@@ -170,7 +240,7 @@ export async function createMediaKitItem(formData: FormData) {
   const kind = enumValue(formData, "kind", ITEM_KINDS, "card");
   const sourceKey = enumValue(formData, "sourceKey", SOURCE_KEYS, "static");
   const icon = enumValue(formData, "icon", ICONS, "document");
-  const selectedMediaId = await mediaId(formData, "mediaId");
+  const selectedMediaId = await resolveMediaInput(formData, session);
   const db = getDb();
 
   const created = await db.transaction(async (tx) => {
@@ -218,7 +288,7 @@ export async function updateMediaKitItem(formData: FormData) {
     url: destination(formData, "url"),
     sourceKey,
     icon,
-    mediaId: await mediaId(formData, "mediaId"),
+    mediaId: await resolveMediaInput(formData, session),
     position: integer(formData, "position", 1),
     enabled: checked(formData, "enabled"),
     updatedAt: new Date(),

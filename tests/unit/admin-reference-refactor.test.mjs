@@ -150,6 +150,11 @@ test("media kit is a persisted section builder with a dynamic editorial preview"
   assert.match(mediaKitBuilder, /Excluir item/);
   assert.match(mediaKitBuilder, /Total real de artistas/);
   assert.match(mediaKitBuilder, /Website/);
+  assert.match(mediaKitBuilder, /type="file"/);
+  assert.match(mediaKitBuilder, /name="imageFile"/);
+  assert.match(mediaKitBuilder, /Enviar nova imagem/);
+  assert.match(mediaKitBuilder, /Sem imagem/);
+  assert.match(mediaKitBuilder, /Texto alternativo da nova imagem/);
 
   for (const action of [
     "updateMediaKitSettings",
@@ -171,6 +176,12 @@ test("media kit is a persisted section builder with a dynamic editorial preview"
   assert.match(mediaKitPreviewAuth, /development-read-only/);
   assert.match(mediaKitActions, /media_kit\.section_created/);
   assert.match(mediaKitActions, /media_kit\.item_updated/);
+  assert.match(mediaKitActions, /sharp\(buffer\)/);
+  assert.match(mediaKitActions, /12 \* 1024 \* 1024/);
+  assert.match(mediaKitActions, /uploadStoredMedia/);
+  assert.match(mediaKitActions, /session\.source === "development-auth-bypass"/);
+  assert.match(mediaKitActions, /storageProvider = "preview_inline"/);
+  assert.match(mediaKitActions, /media_kit\.image_uploaded/);
 
   assert.match(dbSchema, /export const mediaKitSettings = pgTable\("media_kit_settings"/);
   assert.match(dbSchema, /export const mediaKitSections = pgTable\("media_kit_sections"/);
