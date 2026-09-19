@@ -61,6 +61,17 @@ type RealData = {
 
 const allowedIcons = new Set<IconName>(["activity","artists","calendar","chart","document","external","mail","media","pages","plus","posts","smartphone","target","users"]);
 
+const sectionPriority: Record<string, number> = {
+  cover: 1,
+  editorial: 2,
+  metrics: 2,
+  audience: 3,
+  cards: 4,
+  artists: 5,
+  contact: 6,
+  custom: 99,
+};
+
 function iconName(value: string): IconName {
   return allowedIcons.has(value as IconName) ? value as IconName : "document";
 }
@@ -145,11 +156,28 @@ function SectionHeading({ section }: { section: PreviewSection }) {
   </div>;
 }
 
-function FallbackDevice({ label }: { label: string }) {
-  return <div className={styles.refDevice}>
-    <div className={styles.refDeviceBar}><span>LANDER RECORDS</span><small>ARTISTAS · LANÇAMENTOS · NOTÍCIAS</small></div>
-    <div className={styles.refDeviceHero}><strong>{label}</strong><span>▶</span></div>
-    <div className={styles.refDeviceTiles}><i/><i/><i/><i/></div>
+function LaptopMockup({
+  imageUrl,
+  label,
+  alt,
+}: {
+  imageUrl?: string;
+  label: string;
+  alt: string;
+}) {
+  return <div className={styles.refLaptopMockup} data-testid="media-kit-cover-laptop">
+    <div className={styles.refLaptopLid}>
+      <div className={styles.refLaptopScreen}>
+        {imageUrl
+          ? <img src={imageUrl} alt={alt}/>
+          : <div className={styles.refLaptopFallback}>
+              <div className={styles.refLaptopNav}><strong>LANDER RECORDS</strong><span>ARTISTAS · LANÇAMENTOS · NOTÍCIAS</span></div>
+              <div className={styles.refLaptopHero}><strong>{label}</strong><span>▶</span></div>
+              <div className={styles.refLaptopTiles}><i/><i/><i/><i/></div>
+            </div>}
+      </div>
+    </div>
+    <div className={styles.refLaptopBase}><i/></div>
   </div>;
 }
 
@@ -159,22 +187,28 @@ function CoverPage({ settings, section, pageNumber, real }: { settings: PreviewS
   const highlights = items.slice(0,4);
   const background = section.mediaUrl ? { backgroundImage: `linear-gradient(90deg,rgba(5,6,8,.94),rgba(5,6,8,.38)),url("${section.mediaUrl}")` } : undefined;
   return <PageShell settings={settings} section={section} pageNumber={pageNumber} forceDark>
-    <div className={styles.refCover} style={background}>
-      <div className={styles.refCoverCopy}>
-        <span className={styles.refKicker}>{section.eyebrow || "LANDER RECORDS · "+settings.edition}</span>
-        <h3>{coverHeadline(section.title || "CONECTANDO ARTISTAS, MÚSICA E OPORTUNIDADES.")}</h3>
-        <i className={styles.refRedRule}/>
-        {section.subtitle ? <strong>{section.subtitle}</strong> : null}
-        {section.body ? <p>{section.body}</p> : null}
-        {section.ctaLabel && section.ctaUrl ? <a href={section.ctaUrl}>{section.ctaLabel}<span>→</span></a> : null}
+    <div className={styles.refCoverPageBody}>
+      <div className={styles.refCover} style={background}>
+        <div className={styles.refCoverCopy}>
+          <span className={styles.refKicker}>{section.eyebrow || "LANDER RECORDS · "+settings.edition}</span>
+          <h3>{coverHeadline(section.title || "CONECTANDO ARTISTAS, MÚSICA E OPORTUNIDADES.")}</h3>
+          <i className={styles.refRedRule}/>
+          {section.subtitle ? <strong>{section.subtitle}</strong> : null}
+          {section.body ? <p>{section.body}</p> : null}
+          {section.ctaLabel && section.ctaUrl ? <a href={section.ctaUrl}>{section.ctaLabel}<span>→</span></a> : null}
+        </div>
+        <div className={styles.refCoverVisual}>
+          <small>{textValue(section.settings,"coverSideNote","O SOM DE NOVAS POSSIBILIDADES.")}</small>
+          <LaptopMockup
+            imageUrl={visualItem?.mediaUrl}
+            label={textValue(section.settings,"mockupLabel","MÚSICA MOVE PESSOAS.")}
+            alt={visualItem?.title || "Mockup do site Lander Records"}
+          />
+        </div>
       </div>
-      <div className={styles.refCoverVisual}>
-        <small>{textValue(section.settings,"coverSideNote","O SOM DE NOVAS POSSIBILIDADES.")}</small>
-        {visualItem ? <div className={styles.refUploadedDevice}><img src={visualItem.mediaUrl} alt={visualItem.title || "Imagem do Mídia Kit"}/></div> : <FallbackDevice label={textValue(section.settings,"mockupLabel","MÚSICA MOVE PESSOAS.")}/>}
+      <div className={styles.refCoverHighlights} data-reference-slot="cover-highlights">
+        {highlights.map((item)=><div key={item.id}><AdminIcon name={iconName(item.icon)} size={18}/><strong>{item.title || item.label}</strong><span>{String(resolveValue(item,real) || "")}</span><small>{item.subtitle}</small></div>)}
       </div>
-    </div>
-    <div className={styles.refCoverHighlights} data-reference-slot="cover-highlights">
-      {highlights.map((item)=><div key={item.id}><AdminIcon name={iconName(item.icon)} size={18}/><strong>{item.title || item.label}</strong><span>{String(resolveValue(item,real) || "")}</span><small>{item.subtitle}</small></div>)}
     </div>
   </PageShell>;
 }
@@ -297,7 +331,12 @@ export function MediaKitPreviewDeck({
   sections: PreviewSection[];
   real: RealData;
 }) {
-  const visibleSections=sections.filter((section)=>section.enabled).sort((a,b)=>a.position-b.position);
+  const visibleSections=sections
+    .filter((section)=>section.enabled)
+    .sort((a,b)=>{
+      const templateOrder=(sectionPriority[a.type] ?? 999)-(sectionPriority[b.type] ?? 999);
+      return templateOrder || a.position-b.position;
+    });
   if (!visibleSections.length) return <div className={styles.mkPreviewEmpty}><AdminIcon name="document" size={28}/><strong>Nenhuma seção visível</strong><span>Adicione ou ative uma seção no editor para montar o Mídia Kit.</span></div>;
   return <div className={styles.mkDeck} data-testid="media-kit-preview-deck">
     {visibleSections.map((section,index)=><DynamicPage key={section.id} settings={settings} section={section} pageNumber={index+1} real={real}/>)}

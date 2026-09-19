@@ -227,6 +227,10 @@ test("media kit is a persisted section builder with a dynamic editorial preview"
   assert.match(mediaKitPreview, /OPORTUNIDADES DE EXPOSIÇÃO/);
   assert.match(mediaKitPreview, /PRÓXIMOS PASSOS/);
   assert.match(mediaKitPreview, /coverHeadline/);
+  assert.match(mediaKitPreview, /sectionPriority/);
+  assert.match(mediaKitPreview, /media-kit-cover-laptop/);
+  assert.match(mediaKitPreview, /refCoverPageBody/);
+  assert.match(mediaKitPreview, /refLaptopBase/);
   for (const slot of ["cover-highlights", "about-kpis", "audience-grid", "partnership-grid", "artists-grid", "contact-grid"]) {
     assert.match(mediaKitPreview, new RegExp('data-reference-slot="' + slot + '"'));
   }
@@ -237,7 +241,11 @@ test("media kit is a persisted section builder with a dynamic editorial preview"
   assert.match(mediaKitStyles, /\.previewViewport\{[^}]*overflow-y:auto/);
   assert.match(mediaKitStyles, /\.mkPage\{[^}]*aspect-ratio:1\/1!important/);
   assert.match(mediaKitStyles, /\.refCover\{/);
+  assert.match(mediaKitStyles, /\.refCoverPageBody\{[^}]*grid-template-rows:minmax\(0,1fr\) 15\.5cqw/);
+  assert.match(mediaKitStyles, /\.refLaptopMockup\{/);
+  assert.match(mediaKitStyles, /\.refLaptopBase\{/);
   assert.match(mediaKitStyles, /\.refAboutTop\{/);
+  assert.match(mediaKitStyles, /\.refAboutBody\{display:grid!important;grid-template-rows:minmax\(0,1fr\) 17cqw 14cqw/);
   assert.match(mediaKitStyles, /\.refAudienceGrid\{/);
   assert.match(mediaKitStyles, /\.refPartnerGrid\{/);
   assert.match(mediaKitStyles, /\.refArtistsGrid\{/);
