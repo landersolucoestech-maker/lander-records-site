@@ -1,39 +1,67 @@
 import { AdminIcon, type IconName } from "../../../components/AdminIcon";
 import styles from "../MediaKit.module.css";
 
-type SocialItem = { platform: string; label: string; url: string };
+type PreviewItem = {
+  id: string;
+  kind: string;
+  title: string;
+  subtitle: string;
+  body: string;
+  label: string;
+  value: string;
+  url: string;
+  sourceKey: string;
+  icon: string;
+  position: number;
+  enabled: boolean;
+  mediaUrl: string;
+};
+
+type PreviewSection = {
+  id: string;
+  type: string;
+  theme: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  body: string;
+  ctaLabel: string;
+  ctaUrl: string;
+  position: number;
+  enabled: boolean;
+  mediaUrl: string;
+  items: PreviewItem[];
+};
+
 type ArtistItem = { name: string; eyebrow: string; shortBio: string };
 type ReleaseItem = { title: string; artistName: string; releaseType: string; releaseDate: string | Date | null };
 
-export type MediaKitPreviewDeckProps = {
-  brand: string;
-  tagline: string;
-  contact: string;
-  phone: string;
-  location: string;
-  website: string;
-  pagesTotal: number;
-  postsTotal: number;
-  mediaTotal: number;
-  artistsTotal: number;
-  releasesTotal: number;
-  artists: ArtistItem[];
-  releases: ReleaseItem[];
-  socials: SocialItem[];
+type PreviewSettings = {
+  documentTitle: string;
+  edition: string;
+  footerWebsite: string;
+  showPageNumbers: boolean;
 };
 
-type FormatVisual = "mkVisualShow" | "mkVisualEditorial" | "mkVisualDigital" | "mkVisualSocial" | "mkVisualEvent" | "mkVisualNewsletter";
+type RealData = {
+  artistsTotal: number;
+  releasesTotal: number;
+  postsTotal: number;
+  mediaTotal: number;
+  contactEmail: string;
+  contactPhone: string;
+  location: string;
+  instagram: string;
+  website: string;
+  artists: ArtistItem[];
+  releases: ReleaseItem[];
+};
 
-const formatItems: { icon: IconName; title: string; copy: string; visualClass: FormatVisual }[] = [
-  { icon: "target", title: "Patrocínio", copy: "Presença de marca em projetos, lançamentos e iniciativas especiais.", visualClass: "mkVisualShow" },
-  { icon: "posts", title: "Publieditorial", copy: "Conteúdo editorial integrado ao ecossistema da Lander Records.", visualClass: "mkVisualEditorial" },
-  { icon: "chart", title: "Campanhas digitais", copy: "Campanhas multiplataforma pensadas para música, cultura e comunidade.", visualClass: "mkVisualDigital" },
-  { icon: "smartphone", title: "Redes sociais", copy: "Conteúdo nativo, menções e ativações nos canais oficiais.", visualClass: "mkVisualSocial" },
-  { icon: "artists", title: "Eventos", copy: "Shows, showcases, listening parties e experiências de marca.", visualClass: "mkVisualEvent" },
-  { icon: "mail", title: "Newsletter", copy: "Comunicação direta com uma base qualificada quando o canal estiver conectado.", visualClass: "mkVisualNewsletter" },
-];
+const allowedIcons = new Set<IconName>(["activity","artists","calendar","chart","document","external","mail","media","pages","plus","posts","smartphone","target","users"]);
 
-const opportunities = ["Sua marca no projeto", "Citação em redes sociais", "Branding em shows", "Ações com fãs", "Conteúdo exclusivo", "Projetos especiais"];
+function iconName(value: string): IconName {
+  return allowedIcons.has(value as IconName) ? value as IconName : "document";
+}
 
 function releaseYear(value: string | Date | null) {
   if (!value) return "";
@@ -41,120 +69,164 @@ function releaseYear(value: string | Date | null) {
   return value.slice(0, 4);
 }
 
+function resolveValue(item: PreviewItem, real: RealData) {
+  const values: Record<string, string | number> = {
+    artists_total: real.artistsTotal,
+    releases_total: real.releasesTotal,
+    posts_total: real.postsTotal,
+    media_total: real.mediaTotal,
+    contact_email: real.contactEmail,
+    contact_phone: real.contactPhone,
+    location: real.location,
+    instagram: real.instagram,
+    website: real.website,
+  };
+  return item.sourceKey === "static" ? item.value : values[item.sourceKey] ?? item.value;
+}
+
 function Brand({ dark = false }: { dark?: boolean }) {
   return <div className={styles.mkBrand}><span className={styles.mkBrandMark} aria-hidden="true"><i/><i/><i/><i/></span><div><strong>LANDER <b>RECORDS</b></strong><small className={dark ? styles.mkMutedDark : undefined}>MÚSICA · ARTISTAS · CULTURA · OPORTUNIDADES</small></div></div>;
 }
 
-function PageHeader({ page, dark = false }: { page: string; dark?: boolean }) {
-  return <header className={styles.mkPageHeader}><Brand dark={dark}/><div className={styles.mkPageMeta}><span>MÍDIA KIT 2026</span><strong>{page}</strong></div></header>;
-}
-
-function PageFooter({ label, dark = false }: { label: string; dark?: boolean }) {
-  return <footer className={styles.mkPageFooter}><span>LANDERRECORDS.COM</span><span className={dark ? styles.mkMutedDark : undefined}>{label}</span></footer>;
-}
-
-function MetricStrip({ data }: { data: MediaKitPreviewDeckProps }) {
-  const metrics = [
-    { icon: "artists" as IconName, value: data.artistsTotal, label: "ARTISTAS NO CAST", source: "Dado real" },
-    { icon: "media" as IconName, value: data.releasesTotal, label: "LANÇAMENTOS", source: "Dado real" },
-    { icon: "posts" as IconName, value: data.postsTotal, label: "PUBLICAÇÕES", source: "Dado real" },
-    { icon: "chart" as IconName, value: "—", label: "ALCANCE MENSAL", source: "A integrar" },
-    { icon: "users" as IconName, value: "—", label: "SEGUIDORES", source: "A integrar" },
-  ];
-  return <div className={styles.mkMetricStrip}>{metrics.map((item) => <div className={styles.mkMetricTile} key={item.label}><AdminIcon name={item.icon} size={18}/><strong>{item.value}</strong><span>{item.label}</span><small>{item.source}</small></div>)}</div>;
-}
-
-function CoverPage({ data }: { data: MediaKitPreviewDeckProps }) {
-  const highlights: [IconName,string,string][] = [["artists","ARTISTAS","Talentos reais"],["media","LANÇAMENTOS","Novos sons"],["users","PARCERIAS","Marcas e projetos"],["chart","PRESENÇA DIGITAL","Audiência em crescimento"]];
-  return <article className={[styles.mkPage,styles.mkPageDark,styles.mkCover].join(" ")}>
-    <PageHeader page="01" dark/>
-    <div className={styles.mkCoverBody}>
-      <div className={styles.mkCoverCopy}><span className={styles.mkKicker}>LANDER RECORDS · 2026</span><h3>CONECTANDO<br/>ARTISTAS,<br/>MÚSICA E<br/><em>OPORTUNIDADES.</em></h3><i className={styles.mkRedRule}/><p>{data.tagline}</p></div>
-      <div className={styles.mkCoverVisual}><div className={styles.mkLaptopMock}><div className={styles.mkLaptopBar}><span>LANDER RECORDS</span><small>ARTISTAS &nbsp; LANÇAMENTOS &nbsp; NOTÍCIAS</small></div><div className={styles.mkLaptopHero}><strong>MÚSICA<br/>MOVE<br/>PESSOAS.</strong><span>▶</span></div><div className={styles.mkLaptopThumbs}><i/><i/><i/><i/></div></div></div>
-    </div>
-    <div className={styles.mkCoverHighlights}>{highlights.map(([icon,title,copy]) => <div key={title}><AdminIcon name={icon} size={20}/><strong>{title}</strong><small>{copy}</small></div>)}</div>
-    <PageFooter label="O SOM DE NOVAS POSSIBILIDADES" dark/>
+function PageShell({
+  settings,
+  section,
+  pageNumber,
+  children,
+}: {
+  settings: PreviewSettings;
+  section: PreviewSection;
+  pageNumber: number;
+  children: React.ReactNode;
+}) {
+  const dark = section.theme === "dark";
+  return <article className={[styles.mkPage, dark ? styles.mkPageDark : styles.mkPageLight].join(" ")} data-section-type={section.type}>
+    <header className={styles.mkPageHeader}><Brand dark={dark}/><div className={styles.mkPageMeta}><span>{settings.documentTitle.toUpperCase()} {settings.edition}</span>{settings.showPageNumbers ? <strong>{String(pageNumber).padStart(2,"0")}</strong> : null}</div></header>
+    {children}
+    <footer className={styles.mkPageFooter}><span>{settings.footerWebsite.toUpperCase()}</span><span className={dark ? styles.mkMutedDark : undefined}>{section.eyebrow || "LANDER RECORDS"}</span></footer>
   </article>;
 }
 
-function AboutPage({ data }: { data: MediaKitPreviewDeckProps }) {
-  return <article className={[styles.mkPage,styles.mkPageLight].join(" ")}>
-    <PageHeader page="02"/>
-    <div className={styles.mkPageBody}>
-      <div className={styles.mkAboutTop}><section><span className={styles.mkSectionEyebrow}>INSTITUCIONAL</span><h3>SOBRE A<br/>{data.brand.toUpperCase()}</h3><i className={styles.mkRedRule}/><p>A {data.brand} atua como gravadora, produtora musical e estrutura de gestão artística 360°, conectando desenvolvimento de carreira, produção, conteúdo, posicionamento e oportunidades comerciais.</p><p>Nosso objetivo é transformar música em projetos consistentes, aproximando artistas, público e parceiros em experiências relevantes e sustentáveis.</p></section><aside className={styles.mkAboutStatement}><strong>MÚSICA,<br/>NEGÓCIOS,<br/>TENDÊNCIAS E<br/>OPORTUNIDADES<br/>EM UM SÓ LUGAR.</strong><i className={styles.mkRedRule}/><small>TALENTOS HOJE.<br/>GRANDES AMANHÃ.</small></aside></div>
-      <MetricStrip data={data}/>
-      <div className={styles.mkImpactBanner}><strong>VISIBILIDADE, CREDIBILIDADE E RELEVÂNCIA PARA ARTISTAS E MARCAS.</strong><span>MÚSICA · CULTURA · OPORTUNIDADES</span></div>
-    </div>
-    <PageFooter label="O SOM QUE CONECTA"/>
-  </article>;
+function Heading({ section }: { section: PreviewSection }) {
+  return <section className={styles.mkDynamicIntro}>
+    {section.eyebrow ? <span className={styles.mkSectionEyebrow}>{section.eyebrow}</span> : null}
+    <h3>{section.title || "Seção sem título"}</h3>
+    <i className={styles.mkRedRule}/>
+    {section.subtitle ? <strong>{section.subtitle}</strong> : null}
+    {section.body ? <div className={styles.mkRichText}>{section.body.split(/\n{2,}/).map((paragraph)=><p key={paragraph}>{paragraph}</p>)}</div> : null}
+    {section.ctaLabel && section.ctaUrl ? <a className={styles.mkCta} href={section.ctaUrl}>{section.ctaLabel}<span>→</span></a> : null}
+  </section>;
 }
 
-function AudiencePage({ data }: { data: MediaKitPreviewDeckProps }) {
-  const interests: [IconName,string][]=[["media","Música e lançamentos"],["artists","Artistas e carreiras"],["activity","Entretenimento e cultura"],["calendar","Shows e experiências"],["posts","Conteúdo e tendências"]];
-  const ages=[["13–17",30],["18–24",58],["25–34",76],["35–44",45],["45+",24]] as const;
-  return <article className={[styles.mkPage,styles.mkPageLight].join(" ")}>
-    <PageHeader page="03"/>
-    <div className={styles.mkPageBody}>
-      <section className={styles.mkIntro}><h3>NOSSA AUDIÊNCIA</h3><i className={styles.mkRedRule}/><p>A estrutura visual está pronta para receber métricas verificadas assim que uma fonte de audiência elegível estiver conectada.</p></section>
-      <div className={styles.mkAudienceGrid}>
-        <section><h4>PERFIL DO PÚBLICO</h4><div className={styles.mkDonut}><div><strong>—</strong><span>A INTEGRAR</span></div></div><div className={styles.mkLegend}><span><i/>Homens · a integrar</span><span><i/>Mulheres · a integrar</span></div></section>
-        <section><h4>FAIXA ETÁRIA</h4><div className={styles.mkBars}>{ages.map(([age,width])=><div key={age}><span>{age}</span><i><b style={{width:String(width)+"%"}}/></i><small>A integrar</small></div>)}</div></section>
-        <section><h4>PRINCIPAIS INTERESSES</h4><ul className={styles.mkInterestList}>{interests.map(([icon,item])=><li key={item}><AdminIcon name={icon} size={15}/><span>{item}</span></li>)}</ul></section>
-        <section><h4>PRESENÇA GEOGRÁFICA</h4><div className={styles.mkLocationPanel}><AdminIcon name="target" size={22}/><strong>{data.location}</strong><span>Demais cidades e distribuição de audiência entram quando houver fonte conectada.</span></div></section>
+function CoverPage({ settings, section, pageNumber, real }: { settings: PreviewSettings; section: PreviewSection; pageNumber: number; real: RealData }) {
+  const items=section.items.filter(item=>item.enabled);
+  const style = section.mediaUrl ? { backgroundImage: `linear-gradient(90deg,rgba(5,6,8,.96),rgba(5,6,8,.46)),url("${section.mediaUrl}")` } : undefined;
+  return <PageShell settings={settings} section={{...section,theme:"dark"}} pageNumber={pageNumber}>
+    <div className={styles.mkCoverDynamic} style={style}>
+      <div className={styles.mkCoverDynamicCopy}>
+        {section.eyebrow ? <span className={styles.mkKicker}>{section.eyebrow}</span> : null}
+        <h3>{section.title || "MÍDIA KIT"}</h3>
+        <i className={styles.mkRedRule}/>
+        {section.subtitle ? <strong>{section.subtitle}</strong> : null}
+        {section.body ? <p>{section.body}</p> : null}
+        {section.ctaLabel && section.ctaUrl ? <a className={styles.mkCtaDark} href={section.ctaUrl}>{section.ctaLabel}<span>→</span></a> : null}
       </div>
-      <div className={styles.mkDataNotice}><strong>SEM NÚMEROS INVENTADOS.</strong><span>O template preserva a estrutura comercial e recebe somente métricas verificadas.</span></div>
+      <div className={styles.mkCoverDynamicVisual}><div className={styles.mkLaptopMock}><div className={styles.mkLaptopBar}><span>LANDER RECORDS</span><small>ARTISTAS · LANÇAMENTOS · CONTEÚDO</small></div><div className={styles.mkLaptopHero}><strong>MÚSICA<br/>MOVE<br/>PESSOAS.</strong><span>▶</span></div><div className={styles.mkLaptopThumbs}><i/><i/><i/><i/></div></div></div>
     </div>
-    <PageFooter label="DADOS DE AUDIÊNCIA · INTEGRAÇÃO PENDENTE"/>
-  </article>;
+    <div className={styles.mkDynamicHighlights}>{items.map((item)=><div key={item.id}><AdminIcon name={iconName(item.icon)} size={18}/><strong>{item.title}</strong><span>{String(resolveValue(item,real) || item.subtitle || "")}</span><small>{item.subtitle}</small></div>)}</div>
+  </PageShell>;
 }
 
-function PartnershipPage() {
-  return <article className={[styles.mkPage,styles.mkPageLight].join(" ")}>
-    <PageHeader page="04"/>
-    <div className={styles.mkPageBody}>
-      <section className={styles.mkIntro}><h3>FORMATOS DE PARCERIA</h3><i className={styles.mkRedRule}/><p>Soluções para marcas que desejam se conectar com música, cultura e artistas dentro do ecossistema Lander Records.</p></section>
-      <div className={styles.mkFormatGrid}>{formatItems.map(item=>{ const visualClass = { mkVisualShow: styles.mkVisualShow, mkVisualEditorial: styles.mkVisualEditorial, mkVisualDigital: styles.mkVisualDigital, mkVisualSocial: styles.mkVisualSocial, mkVisualEvent: styles.mkVisualEvent, mkVisualNewsletter: styles.mkVisualNewsletter }[item.visualClass]; return <article className={styles.mkFormatTile} key={item.title}><div className={[styles.mkFormatVisual,visualClass].join(" ")}><AdminIcon name={item.icon} size={24}/><span>LANDER RECORDS</span></div><h4>{item.title}</h4><p>{item.copy}</p></article>;})}</div>
+function EditorialPage({ settings, section, pageNumber, real }: { settings: PreviewSettings; section: PreviewSection; pageNumber: number; real: RealData }) {
+  const items=section.items.filter(item=>item.enabled);
+  return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
+    <div className={styles.mkDynamicBody}>
+      <div className={styles.mkEditorialTop}><Heading section={section}/>{section.mediaUrl ? <div className={styles.mkEditorialMedia} style={{backgroundImage:`linear-gradient(180deg,#10121655,#101216dd),url("${section.mediaUrl}")`}}/> : <div className={styles.mkEditorialMediaFallback}><strong>MÚSICA.<br/>NEGÓCIOS.<br/>CULTURA.</strong></div>}</div>
+      {items.length ? <div className={styles.mkMetricStrip}>{items.map(item=><div className={styles.mkMetricTile} key={item.id}><AdminIcon name={iconName(item.icon)} size={18}/><strong>{String(resolveValue(item,real) || "—")}</strong><span>{item.title || item.label}</span><small>{item.subtitle}</small></div>)}</div> : null}
     </div>
-    <PageFooter label="PARCERIAS QUE AMPLIFICAM"/>
-  </article>;
+  </PageShell>;
 }
 
-function ArtistsPage({ data }: { data: MediaKitPreviewDeckProps }) {
-  const featured=data.artists[0];
-  return <article className={[styles.mkPage,styles.mkPageLight].join(" ")}>
-    <PageHeader page="05"/>
-    <div className={styles.mkPageBody}>
-      <section className={styles.mkIntro}><h3>ARTISTAS & DESTAQUES</h3><i className={styles.mkRedRule}/><p>Talentos, lançamentos e possibilidades de exposição reunidos em uma página editorial de alto impacto.</p></section>
-      <div className={styles.mkArtistsLayout}>
-        <section className={styles.mkReleaseList}><h4>LANÇAMENTOS RECENTES</h4>{data.releases.length?data.releases.slice(0,4).map(item=><div key={item.artistName+"-"+item.title}><span className={styles.mkReleaseThumb}/><p><strong>{item.artistName}</strong><b>{item.title}</b><small>{item.releaseType}{releaseYear(item.releaseDate)?" · "+releaseYear(item.releaseDate):""}</small></p></div>):<div className={styles.mkEmptyEditorial}>Nenhum lançamento ativo disponível.</div>}</section>
-        <section className={styles.mkFeaturedArtist}><div className={styles.mkFeaturedPhoto}><span>ARTISTA EM DESTAQUE</span><strong>{featured?.name || "Destaque a definir"}</strong><p>{featured?.shortBio || featured?.eyebrow || "Selecione artistas publicados para compor esta área do Mídia Kit."}</p><i>▶</i></div><div className={styles.mkFeaturedThumbs}><span/><span/><span/><span/></div></section>
-        <section className={styles.mkOpportunityList}><h4>OPORTUNIDADES DE EXPOSIÇÃO</h4>{opportunities.map(item=><div key={item}><span>+</span><p>{item}</p></div>)}</section>
+function AudiencePage({ settings, section, pageNumber, real }: { settings: PreviewSettings; section: PreviewSection; pageNumber: number; real: RealData }) {
+  const items=section.items.filter(item=>item.enabled);
+  return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
+    <div className={styles.mkDynamicBody}>
+      <Heading section={section}/>
+      <div className={styles.mkAudienceBuilderGrid}>{items.map((item,index)=><article key={item.id} className={styles.mkAudienceBuilderCard}><div><AdminIcon name={iconName(item.icon)} size={18}/><strong>{item.title || item.label}</strong></div><span className={styles.mkAudienceValue}>{String(resolveValue(item,real) || item.subtitle || "—")}</span>{item.body ? <p>{item.body}</p> : null}<i><b style={{width:String(Math.min(88,28+(index*13)%60))+"%"}}/></i></article>)}</div>
+    </div>
+  </PageShell>;
+}
+
+function CardsPage({ settings, section, pageNumber, real }: { settings: PreviewSettings; section: PreviewSection; pageNumber: number; real: RealData }) {
+  const items=section.items.filter(item=>item.enabled);
+  return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
+    <div className={styles.mkDynamicBody}>
+      <Heading section={section}/>
+      <div className={styles.mkBuilderCardGrid}>{items.map((item)=><article key={item.id}><div className={styles.mkBuilderCardVisual} style={item.mediaUrl?{backgroundImage:`linear-gradient(#1117,#111d),url("${item.mediaUrl}")`}:undefined}><AdminIcon name={iconName(item.icon)} size={22}/><span>{String(resolveValue(item,real) || item.label || "LANDER RECORDS")}</span></div><h4>{item.title || item.label}</h4>{item.subtitle ? <strong>{item.subtitle}</strong> : null}{item.body ? <p>{item.body}</p> : null}{item.url ? <a href={item.url}>Saiba mais →</a> : null}</article>)}</div>
+    </div>
+  </PageShell>;
+}
+
+function ArtistsPage({ settings, section, pageNumber, real }: { settings: PreviewSettings; section: PreviewSection; pageNumber: number; real: RealData }) {
+  const items=section.items.filter(item=>item.enabled);
+  const featured=real.artists[0];
+  return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
+    <div className={styles.mkDynamicBody}>
+      <Heading section={section}/>
+      <div className={styles.mkArtistsBuilderLayout}>
+        <section><h4>LANÇAMENTOS RECENTES</h4>{real.releases.slice(0,4).map(release=><div className={styles.mkReleaseBuilderRow} key={release.artistName+"-"+release.title}><i/><p><strong>{release.artistName}</strong><b>{release.title}</b><small>{release.releaseType}{releaseYear(release.releaseDate)?" · "+releaseYear(release.releaseDate):""}</small></p></div>)}</section>
+        <section className={styles.mkFeaturedBuilder} style={section.mediaUrl?{backgroundImage:`linear-gradient(0deg,#090a0ee8,#090a0e22),url("${section.mediaUrl}")`}:undefined}><span>ARTISTA EM DESTAQUE</span><strong>{featured?.name || "Destaque a definir"}</strong><p>{featured?.shortBio || featured?.eyebrow || "Selecione artistas publicados para destacar automaticamente."}</p></section>
+        <section><h4>DESTAQUES / OPORTUNIDADES</h4>{items.map(item=><div className={styles.mkOpportunityBuilder} key={item.id}><span>+</span><p><strong>{item.title}</strong>{item.body ? <small>{item.body}</small> : null}</p></div>)}</section>
       </div>
-      <blockquote className={styles.mkQuote}>“Mais que uma apresentação institucional: um material comercial preparado para conectar artistas, marcas e oportunidades.”</blockquote>
     </div>
-    <PageFooter label="TALENTOS QUE MOVEM O AMANHÃ"/>
-  </article>;
+  </PageShell>;
 }
 
-function ContactPage({ data }: { data: MediaKitPreviewDeckProps }) {
-  const instagram=data.socials.find(item=>item.platform.toLowerCase().includes("instagram"));
-  return <article className={[styles.mkPage,styles.mkPageLight].join(" ")}>
-    <PageHeader page="06"/>
-    <div className={[styles.mkPageBody,styles.mkContactBody].join(" ")}>
-      <section className={styles.mkContactCopy}><span className={styles.mkSectionEyebrow}>CONTATO COMERCIAL</span><h3>VAMOS<br/>CONSTRUIR ALGO<br/>GRANDE JUNTOS?</h3><i className={styles.mkRedRule}/><p>Seja para desenvolver uma campanha, apoiar um artista, patrocinar um projeto ou criar uma iniciativa especial, a estrutura comercial está pronta para a conversa.</p><a href={"mailto:"+data.contact}>ENTRE EM CONTATO <span>→</span></a><div className={styles.mkContactList}><span><AdminIcon name="mail" size={15}/>{data.contact}</span><span><AdminIcon name="smartphone" size={15}/>{data.phone}</span><span><AdminIcon name="users" size={15}/>{instagram?.label || "Instagram não configurado"}</span><span><AdminIcon name="external" size={15}/>{data.website}</span><span><AdminIcon name="target" size={15}/>{data.location}</span></div></section>
-      <aside className={styles.mkNextSteps}><div><span>PRÓXIMOS PASSOS</span><i className={styles.mkRedRule}/><p>Conectar métricas verificadas, selecionar os principais artistas e lançamentos e transformar este deck em um material comercial exportável.</p></div><strong>LANDER <b>RECORDS</b></strong><small>MÚSICA QUE APROXIMA PESSOAS.</small></aside>
+function ContactPage({ settings, section, pageNumber, real }: { settings: PreviewSettings; section: PreviewSection; pageNumber: number; real: RealData }) {
+  const items=section.items.filter(item=>item.enabled);
+  return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
+    <div className={styles.mkContactBuilder}>
+      <Heading section={section}/>
+      <aside style={section.mediaUrl?{backgroundImage:`linear-gradient(180deg,#090a0dbd,#090a0df2),url("${section.mediaUrl}")`}:undefined}>
+        <span>CONTATO & PRÓXIMOS PASSOS</span>
+        <div>{items.map(item=><p key={item.id}><AdminIcon name={iconName(item.icon)} size={15}/><span><strong>{item.title || item.label}</strong><b>{String(resolveValue(item,real) || item.value || "Não configurado")}</b></span></p>)}</div>
+      </aside>
     </div>
-    <PageFooter label="2026"/>
-  </article>;
+  </PageShell>;
 }
 
-export function MediaKitPreviewDeck(data: MediaKitPreviewDeckProps) {
+function GenericPage({ settings, section, pageNumber, real }: { settings: PreviewSettings; section: PreviewSection; pageNumber: number; real: RealData }) {
+  const items=section.items.filter(item=>item.enabled);
+  return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
+    <div className={styles.mkDynamicBody}>
+      <Heading section={section}/>
+      {items.length ? <div className={styles.mkGenericItems}>{items.map(item=><article key={item.id}>{item.mediaUrl?<div className={styles.mkGenericMedia} style={{backgroundImage:`url("${item.mediaUrl}")`}}/>:null}<div><AdminIcon name={iconName(item.icon)} size={17}/><h4>{item.title || item.label}</h4>{resolveValue(item,real)?<strong>{String(resolveValue(item,real))}</strong>:null}{item.subtitle?<span>{item.subtitle}</span>:null}{item.body?<p>{item.body}</p>:null}{item.url?<a href={item.url}>Abrir →</a>:null}</div></article>)}</div> : null}
+    </div>
+  </PageShell>;
+}
+
+function DynamicPage({ settings, section, pageNumber, real }: { settings: PreviewSettings; section: PreviewSection; pageNumber: number; real: RealData }) {
+  if (section.type === "cover") return <CoverPage settings={settings} section={section} pageNumber={pageNumber} real={real}/>;
+  if (section.type === "editorial" || section.type === "metrics") return <EditorialPage settings={settings} section={section} pageNumber={pageNumber} real={real}/>;
+  if (section.type === "audience") return <AudiencePage settings={settings} section={section} pageNumber={pageNumber} real={real}/>;
+  if (section.type === "cards") return <CardsPage settings={settings} section={section} pageNumber={pageNumber} real={real}/>;
+  if (section.type === "artists") return <ArtistsPage settings={settings} section={section} pageNumber={pageNumber} real={real}/>;
+  if (section.type === "contact") return <ContactPage settings={settings} section={section} pageNumber={pageNumber} real={real}/>;
+  return <GenericPage settings={settings} section={section} pageNumber={pageNumber} real={real}/>;
+}
+
+export function MediaKitPreviewDeck({
+  settings,
+  sections,
+  real,
+}: {
+  settings: PreviewSettings;
+  sections: PreviewSection[];
+  real: RealData;
+}) {
+  const visibleSections=sections.filter(section=>section.enabled).sort((a,b)=>a.position-b.position);
+  if (!visibleSections.length) return <div className={styles.mkPreviewEmpty}><AdminIcon name="document" size={28}/><strong>Nenhuma seção visível</strong><span>Adicione ou ative uma seção no editor para montar o Mídia Kit.</span></div>;
   return <div className={styles.mkDeck} data-testid="media-kit-preview-deck">
-    <CoverPage data={data}/>
-    <AboutPage data={data}/>
-    <AudiencePage data={data}/>
-    <PartnershipPage/>
-    <ArtistsPage data={data}/>
-    <ContactPage data={data}/>
+    {visibleSections.map((section,index)=><DynamicPage key={section.id} settings={settings} section={section} pageNumber={index+1} real={real}/>)}
   </div>;
 }

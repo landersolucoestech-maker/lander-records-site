@@ -1,10 +1,20 @@
-import Link from "next/link";
-import { count, eq } from "drizzle-orm";
+import { asc, count, eq } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
 import { hasMinimumRole } from "../../../../lib/auth/policy";
 import { getDb } from "../../../../lib/db";
-import { artists, mediaAssets, pages, posts, releases, siteSettings, socialLinks } from "../../../../lib/db/schema";
+import {
+  artists,
+  mediaAssets,
+  mediaKitItems,
+  mediaKitSections,
+  mediaKitSettings,
+  posts,
+  releases,
+  siteSettings,
+  socialLinks,
+} from "../../../../lib/db/schema";
 import { AdminIcon, type IconName } from "../../components/AdminIcon";
+import { MediaKitBuilder } from "./components/MediaKitBuilder";
 import { MediaKitPreviewDeck } from "./components/MediaKitPreviewDeck";
 import styles from "./MediaKit.module.css";
 
@@ -13,64 +23,143 @@ export const dynamic = "force-dynamic";
 function Metric({ accent, icon, label, value, hint }: { accent: "red" | "blue" | "green" | "orange"; icon: IconName; label: string; value: string | number; hint: string }) {
   return <article className={"adminMetricCard is-" + accent}><span className="adminMetricIcon"><AdminIcon name={icon} size={24} /></span><div className="adminMetricCopy"><span>{label}</span><strong>{value}</strong><small>{hint}</small></div></article>;
 }
-function PanelTitle({ icon, title, description, action }: { icon: IconName; title: string; description: string; action?: React.ReactNode }) {
-  return <div className="adminAnalyticsPanelHeading"><div className="adminPanelHeadingIdentity"><span className="adminPanelHeadingIcon"><AdminIcon name={icon} size={20} /></span><div><h2>{title}</h2><p>{description}</p></div></div>{action}</div>;
-}
 
 export default async function MediaKitPage() {
   const session = await requireAdmin();
   const persistent = session.source === "session";
-  const canEditContent = persistent && hasMinimumRole(session.user.role, "editor");
-  const canAdminSettings = persistent && hasMinimumRole(session.user.role, "admin");
+  const canEdit = persistent && hasMinimumRole(session.user.role, "editor");
+  const canDeleteSections = persistent && hasMinimumRole(session.user.role, "admin");
   const db = getDb();
-  const [[settings], [pageCount], [postCount], [mediaCount], [artistCount], [releaseCount], artistRows, releaseRows, socialRows] = await Promise.all([
-    db.select().from(siteSettings).limit(1),
-    db.select({ value: count() }).from(pages).where(eq(pages.enabled, true)),
-    db.select({ value: count() }).from(posts).where(eq(posts.status, "published")),
-    db.select({ value: count() }).from(mediaAssets).where(eq(mediaAssets.status, "active")),
+
+  const [
+    kitSettingsRows,
+    sectionRows,
+    itemRows,
+    mediaRows,
+    [artistCount],
+    [releaseCount],
+    [postCount],
+    artistRows,
+    releaseRows,
+    socialRows,
+    siteSettingsRows,
+  ] = await Promise.all([
+    db.select().from(mediaKitSettings).where(eq(mediaKitSettings.id, "default")).limit(1),
+    db.select({
+      id: mediaKitSections.id,
+      type: mediaKitSections.type,
+      theme: mediaKitSections.theme,
+      eyebrow: mediaKitSections.eyebrow,
+      title: mediaKitSections.title,
+      subtitle: mediaKitSections.subtitle,
+      body: mediaKitSections.body,
+      ctaLabel: mediaKitSections.ctaLabel,
+      ctaUrl: mediaKitSections.ctaUrl,
+      mediaId: mediaKitSections.mediaId,
+      position: mediaKitSections.position,
+      enabled: mediaKitSections.enabled,
+    }).from(mediaKitSections).orderBy(asc(mediaKitSections.position), asc(mediaKitSections.createdAt)),
+    db.select({
+      id: mediaKitItems.id,
+      sectionId: mediaKitItems.sectionId,
+      kind: mediaKitItems.kind,
+      title: mediaKitItems.title,
+      subtitle: mediaKitItems.subtitle,
+      body: mediaKitItems.body,
+      label: mediaKitItems.label,
+      value: mediaKitItems.value,
+      url: mediaKitItems.url,
+      sourceKey: mediaKitItems.sourceKey,
+      icon: mediaKitItems.icon,
+      mediaId: mediaKitItems.mediaId,
+      position: mediaKitItems.position,
+      enabled: mediaKitItems.enabled,
+    }).from(mediaKitItems).orderBy(asc(mediaKitItems.position), asc(mediaKitItems.createdAt)),
+    db.select({
+      id: mediaAssets.id,
+      url: mediaAssets.url,
+      altText: mediaAssets.altText,
+      originalFilename: mediaAssets.originalFilename,
+      mimeType: mediaAssets.mimeType,
+    }).from(mediaAssets).where(eq(mediaAssets.status, "active")).orderBy(asc(mediaAssets.originalFilename)),
     db.select({ value: count() }).from(artists).where(eq(artists.isPublished, true)),
     db.select({ value: count() }).from(releases).where(eq(releases.active, true)),
-    db.select({ name: artists.name, eyebrow: artists.eyebrow, shortBio: artists.shortBio }).from(artists).where(eq(artists.isPublished, true)).limit(4),
-    db.select({ title: releases.title, artistName: releases.artistName, releaseType: releases.releaseType, releaseDate: releases.releaseDate }).from(releases).where(eq(releases.active, true)).limit(4),
-    db.select({ platform: socialLinks.platform, label: socialLinks.label, url: socialLinks.url }).from(socialLinks).where(eq(socialLinks.active, true)).limit(8),
+    db.select({ value: count() }).from(posts).where(eq(posts.status, "published")),
+    db.select({ name: artists.name, eyebrow: artists.eyebrow, shortBio: artists.shortBio }).from(artists).where(eq(artists.isPublished, true)).limit(6),
+    db.select({ title: releases.title, artistName: releases.artistName, releaseType: releases.releaseType, releaseDate: releases.releaseDate }).from(releases).where(eq(releases.active, true)).limit(6),
+    db.select({ platform: socialLinks.platform, label: socialLinks.label, url: socialLinks.url }).from(socialLinks).where(eq(socialLinks.active, true)).limit(20),
+    db.select({ contactEmail: siteSettings.contactEmail, contactPhone: siteSettings.contactPhone, location: siteSettings.location, address: siteSettings.address }).from(siteSettings).limit(1),
   ]);
-  const brand = settings?.brandName || "Lander Records";
-  const tagline = settings?.tagline || "Gravadora, produtora musical e gestão artística 360°.";
-  const contact = settings?.contactEmail || "contato@landerrecords.com";
-  const phone = settings?.contactPhone || "Não configurado";
-  const location = settings?.address || settings?.location || "Não configurado";
-  const website = contact.includes("@") ? contact.split("@").at(-1) || "landerrecords.com" : "landerrecords.com";
-  const pagesTotal = Number(pageCount?.value || 0);
-  const postsTotal = Number(postCount?.value || 0);
-  const mediaTotal = Number(mediaCount?.value || 0);
+
+  const settings = kitSettingsRows[0] || {
+    documentTitle: "Mídia Kit",
+    edition: "2026",
+    footerWebsite: "landerrecords.com",
+    showPageNumbers: true,
+  };
+  const imageMedia = mediaRows.filter((media) => media.mimeType.startsWith("image/"));
+  const mediaUrl = new Map(imageMedia.map((media) => [media.id, media.url]));
+  const itemsBySection = new Map<string, typeof itemRows>();
+  for (const item of itemRows) {
+    const current = itemsBySection.get(item.sectionId) || [];
+    current.push(item);
+    itemsBySection.set(item.sectionId, current);
+  }
+
+  const sections = sectionRows.map((section) => ({
+    ...section,
+    mediaUrl: section.mediaId ? mediaUrl.get(section.mediaId) || "" : "",
+    items: (itemsBySection.get(section.id) || []).map((item) => ({
+      ...item,
+      mediaUrl: item.mediaId ? mediaUrl.get(item.mediaId) || "" : "",
+    })),
+  }));
+
   const artistsTotal = Number(artistCount?.value || 0);
   const releasesTotal = Number(releaseCount?.value || 0);
+  const postsTotal = Number(postCount?.value || 0);
+  const visibleSections = sections.filter((section) => section.enabled).length;
+  const visibleItems = itemRows.filter((item) => item.enabled).length;
+  const instagram = socialRows.find((item) => item.platform.toLowerCase().includes("instagram"));
+  const company = siteSettingsRows[0];
+  const contactEmail = company?.contactEmail || "contato@landerrecords.com";
+  const contactPhone = company?.contactPhone || "Não configurado";
+  const location = company?.address || company?.location || "Não configurado";
+  const website = settings.footerWebsite || "landerrecords.com";
 
   return <div className={["adminDashboard", styles.mediaKitLayout].join(" ")} data-testid="media-kit-manager">
     <section className="adminMetricGrid" aria-label="Resumo do Mídia Kit">
-      <Metric accent="red" icon="artists" label="Artistas publicados" value={artistsTotal} hint="casting disponível" />
-      <Metric accent="green" icon="media" label="Lançamentos" value={releasesTotal} hint="lançamentos ativos" />
-      <Metric accent="blue" icon="posts" label="Publicações" value={postsTotal} hint="conteúdos publicados" />
-      <Metric accent="orange" icon="document" label="Páginas do kit" value="6" hint="template editorial 2026" />
+      <Metric accent="red" icon="pages" label="Seções visíveis" value={visibleSections} hint="páginas no deck" />
+      <Metric accent="green" icon="document" label="Itens de conteúdo" value={visibleItems} hint="blocos ativos" />
+      <Metric accent="blue" icon="artists" label="Artistas publicados" value={artistsTotal} hint="fonte automática disponível" />
+      <Metric accent="orange" icon="media" label="Lançamentos" value={releasesTotal} hint="fonte automática disponível" />
     </section>
 
     <div className={styles.workspace}>
       <div className={styles.editor}>
-        <section className="adminDashboardPanel"><PanelTitle icon="document" title="Identidade e apresentação" description="Dados institucionais usados na apresentação comercial." action={<Link className="adminTextButton" href="/admin/settings">{canAdminSettings ? "Editar dados" : "Consultar dados"}</Link>} /><div className={styles.cardBody}><div className={styles.formGrid}><label><span>Título do documento</span><input value={brand} disabled readOnly/></label><label><span>Subtítulo</span><input value={tagline} disabled readOnly/></label><label><span>Versão editorial</span><input value="Mídia Kit 2026" disabled readOnly/></label><label><span>Status</span><input value="Deck comercial em 6 páginas" disabled readOnly/></label><label className={styles.span2}><span>Resumo institucional</span><textarea rows={4} value={tagline} disabled readOnly/></label><label className={styles.span2}><span>Posicionamento comercial</span><textarea rows={4} value={location} disabled readOnly/></label></div></div></section>
-
-        <section className="adminDashboardPanel"><PanelTitle icon="chart" title="Audiência" description="A página de audiência está diagramada e recebe apenas métricas verificadas." action={<Link className="adminTextButton" href="/admin/settings/lander-records">{canEditContent ? "Integrações" : "Consultar integrações"}</Link>} /><div className={styles.cardBody}><div className={styles.emptyState}><AdminIcon name="chart" size={24}/><strong>Template de audiência pronto</strong><p>Alcance, seguidores, demografia e cidades permanecem como “A integrar” até existir uma fonte elegível conectada.</p></div></div></section>
-
-        <section className="adminDashboardPanel"><PanelTitle icon="artists" title="Artistas e lançamentos" description="Dados reais do catálogo alimentam a página de destaques." /><div className={styles.cardBody}><div className={styles.inventoryList}><article><div><strong>Artistas publicados</strong><small>{artistsTotal} perfis disponíveis para o deck.</small></div><Link className="adminTextButton" href="/admin/artists">Abrir artistas</Link></article><article><div><strong>Lançamentos ativos</strong><small>{releasesTotal} lançamentos disponíveis.</small></div><Link className="adminTextButton" href="/admin/releases">Ver lançamentos</Link></article></div></div></section>
-
-        <section className="adminDashboardPanel"><PanelTitle icon="media" title="Inventário editorial" description="Recursos reais disponíveis para composição comercial." /><div className={styles.cardBody}><div className={styles.inventoryList}><article><div><strong>Biblioteca de mídia</strong><small>{mediaTotal} arquivos ativos disponíveis.</small></div><Link className="adminTextButton" href="/admin/media">Abrir biblioteca</Link></article><article><div><strong>Conteúdo editorial</strong><small>{postsTotal} publicações atualmente publicadas.</small></div><Link className="adminTextButton" href="/admin/posts">Ver conteúdos</Link></article></div></div></section>
-
-        <section className="adminDashboardPanel"><PanelTitle icon="mail" title="Contato comercial" description="Informações usadas na página final do deck." action={<Link className="adminTextButton" href="/admin/settings">{canAdminSettings ? "Editar contato" : "Consultar contato"}</Link>} /><div className={styles.cardBody}><div className={styles.formGrid}><label><span>Responsável / equipe</span><input value={brand} disabled readOnly/></label><label><span>E-mail</span><input value={contact} disabled readOnly/></label><label><span>Telefone / WhatsApp</span><input value={phone} disabled readOnly/></label><label><span>Localização</span><input value={location} disabled readOnly/></label></div></div></section>
+        {canEdit ? <MediaKitBuilder settings={settings} sections={sections} media={imageMedia} canDeleteSections={canDeleteSections}/> : <section className={styles.builderEmpty}><AdminIcon name="eye" size={24}/><strong>Modo somente leitura</strong><span>Sua sessão pode visualizar a composição, mas não editar o Mídia Kit.</span></section>}
       </div>
 
       <aside className={styles.preview} aria-label="Prévia visual do Mídia Kit">
-        <header className={styles.previewHeader}><div><span>PRÉVIA</span><strong>{brand}</strong></div><small>6 páginas · deck comercial</small></header>
+        <header className={styles.previewHeader}><div><span>PRÉVIA</span><strong>{settings.documentTitle} {settings.edition}</strong></div><small>{visibleSections} {visibleSections === 1 ? "página" : "páginas"} · composição dinâmica</small></header>
         <div className={styles.previewViewport}>
-          <MediaKitPreviewDeck brand={brand} tagline={tagline} contact={contact} phone={phone} location={location} website={website} pagesTotal={pagesTotal} postsTotal={postsTotal} mediaTotal={mediaTotal} artistsTotal={artistsTotal} releasesTotal={releasesTotal} artists={artistRows} releases={releaseRows} socials={socialRows}/>
+          <MediaKitPreviewDeck
+            settings={settings}
+            sections={sections}
+            real={{
+              artistsTotal,
+              releasesTotal,
+              postsTotal,
+              mediaTotal: imageMedia.length,
+              contactEmail,
+              contactPhone,
+              location,
+              instagram: instagram?.label || instagram?.url || "Instagram não configurado",
+              website,
+              artists: artistRows,
+              releases: releaseRows,
+            }}
+          />
         </div>
       </aside>
     </div>

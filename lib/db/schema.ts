@@ -317,6 +317,51 @@ export const socialLinks = pgTable("social_links", {
   ...timestamps,
 });
 
+export const mediaKitSettings = pgTable("media_kit_settings", {
+  id: varchar("id", { length: 40 }).primaryKey().default("default"),
+  documentTitle: varchar("document_title", { length: 180 }).default("Mídia Kit").notNull(),
+  edition: varchar("edition", { length: 80 }).default("2026").notNull(),
+  footerWebsite: text("footer_website").default("landerrecords.com").notNull(),
+  showPageNumbers: boolean("show_page_numbers").default(true).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const mediaKitSections = pgTable("media_kit_sections", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  type: varchar("type", { length: 40 }).default("custom").notNull(),
+  theme: varchar("theme", { length: 20 }).default("light").notNull(),
+  eyebrow: varchar("eyebrow", { length: 180 }).default("").notNull(),
+  title: text("title").default("").notNull(),
+  subtitle: text("subtitle").default("").notNull(),
+  body: text("body").default("").notNull(),
+  ctaLabel: varchar("cta_label", { length: 180 }).default("").notNull(),
+  ctaUrl: text("cta_url").default("").notNull(),
+  mediaId: uuid("media_id").references(() => mediaAssets.id, { onDelete: "set null" }),
+  position: integer("position").default(0).notNull(),
+  enabled: boolean("enabled").default(true).notNull(),
+  settings: jsonb("settings").$type<Record<string, unknown>>().default({}).notNull(),
+  ...timestamps,
+});
+
+export const mediaKitItems = pgTable("media_kit_items", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  sectionId: uuid("section_id").notNull().references(() => mediaKitSections.id, { onDelete: "cascade" }),
+  kind: varchar("kind", { length: 40 }).default("card").notNull(),
+  title: text("title").default("").notNull(),
+  subtitle: text("subtitle").default("").notNull(),
+  body: text("body").default("").notNull(),
+  label: text("label").default("").notNull(),
+  value: text("value").default("").notNull(),
+  url: text("url").default("").notNull(),
+  sourceKey: varchar("source_key", { length: 80 }).default("static").notNull(),
+  icon: varchar("icon", { length: 80 }).default("").notNull(),
+  mediaId: uuid("media_id").references(() => mediaAssets.id, { onDelete: "set null" }),
+  position: integer("position").default(0).notNull(),
+  enabled: boolean("enabled").default(true).notNull(),
+  metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}).notNull(),
+  ...timestamps,
+});
+
 export const contactTopics = pgTable("contact_topics", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: varchar("name", { length: 180 }).notNull(),

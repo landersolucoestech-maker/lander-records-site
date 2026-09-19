@@ -18,6 +18,10 @@ const mediaPage = read("app/admin/(protected)/media/page.tsx");
 const mediaKit = read("app/admin/(protected)/media-kit/page.tsx");
 const mediaKitStyles = read("app/admin/(protected)/media-kit/MediaKit.module.css");
 const mediaKitPreview = read("app/admin/(protected)/media-kit/components/MediaKitPreviewDeck.tsx");
+const mediaKitBuilder = read("app/admin/(protected)/media-kit/components/MediaKitBuilder.tsx");
+const mediaKitActions = read("app/admin/(protected)/media-kit/actions.ts");
+const dbSchema = read("lib/db/schema.ts");
+const mediaKitMigration = read("migrations/0015_media_kit_builder.sql");
 const settings = read("app/admin/(protected)/settings/page.tsx");
 const settingsTabs = read("app/admin/(protected)/settings/SettingsTabs.tsx");
 const settingsStyles = read("app/admin/(protected)/settings/Settings.module.css");
@@ -128,23 +132,55 @@ test("media library keeps real server actions, permission-aware controls and pag
   assert.doesNotMatch(media, /moreAction/);
 });
 
-test("media kit keeps static KPIs, isolated editor scroll and a six-page commercial preview deck", () => {
-  assert.match(mediaKit, /getDb\(\)/);
-  assert.match(mediaKit, /artistsTotal/);
-  assert.match(mediaKit, /releasesTotal/);
+test("media kit is a persisted section builder with a dynamic editorial preview", () => {
+  assert.match(mediaKit, /mediaKitSections/);
+  assert.match(mediaKit, /mediaKitItems/);
+  assert.match(mediaKit, /MediaKitBuilder/);
   assert.match(mediaKit, /MediaKitPreviewDeck/);
-  assert.match(mediaKit, /6 páginas · deck comercial/);
+  assert.match(mediaKit, /composição dinâmica/);
   assert.match(mediaKit, /aria-label="Prévia visual do Mídia Kit"/);
+
+  assert.match(mediaKitBuilder, /data-testid="media-kit-builder"/);
+  assert.match(mediaKitBuilder, /Adicionar seção/);
+  assert.match(mediaKitBuilder, /Adicionar conteúdo nesta seção/);
+  assert.match(mediaKitBuilder, /Salvar seção/);
+  assert.match(mediaKitBuilder, /Excluir seção/);
+  assert.match(mediaKitBuilder, /Salvar item/);
+  assert.match(mediaKitBuilder, /Excluir item/);
+  assert.match(mediaKitBuilder, /Total real de artistas/);
+  assert.match(mediaKitBuilder, /Website/);
+
+  for (const action of [
+    "updateMediaKitSettings",
+    "createMediaKitSection",
+    "updateMediaKitSection",
+    "deleteMediaKitSection",
+    "createMediaKitItem",
+    "updateMediaKitItem",
+    "deleteMediaKitItem",
+  ]) assert.match(mediaKitActions, new RegExp("export async function " + action));
+
+  assert.match(mediaKitActions, /requirePersistentAdmin\("editor"\)/);
+  assert.match(mediaKitActions, /requirePersistentAdmin\("admin"\)/);
+  assert.match(mediaKitActions, /media_kit\.section_created/);
+  assert.match(mediaKitActions, /media_kit\.item_updated/);
+
+  assert.match(dbSchema, /export const mediaKitSettings = pgTable\("media_kit_settings"/);
+  assert.match(dbSchema, /export const mediaKitSections = pgTable\("media_kit_sections"/);
+  assert.match(dbSchema, /export const mediaKitItems = pgTable\("media_kit_items"/);
+  assert.match(mediaKitMigration, /CREATE TABLE IF NOT EXISTS media_kit_sections/);
+  assert.match(mediaKitMigration, /ON DELETE CASCADE/);
+
+  assert.match(mediaKitPreview, /visibleSections=sections\.filter/);
+  assert.match(mediaKitPreview, /section\.type === "cover"/);
+  assert.match(mediaKitPreview, /section\.type === "cards"/);
+  assert.match(mediaKitPreview, /section\.type === "contact"/);
+  assert.doesNotMatch(mediaKitPreview, /<PageHeader page="01"/);
+
   assert.match(mediaKitStyles, /\.mediaKitLayout\{[^}]*height:calc\(100dvh - var\(--ui-header-height,68px\) - 52px\)[^}]*overflow:hidden/);
-  assert.match(mediaKitStyles, /\.editor\{[^}]*display:flex[^}]*flex-direction:column[^}]*height:100%[^}]*overflow-y:scroll/);
-  assert.match(mediaKitStyles, /\.editor>\*\{flex:0 0 auto\}/);
-  assert.match(mediaKitStyles, /\.preview\{[^}]*height:100%[^}]*grid-template-rows:auto minmax\(0,1fr\)/);
+  assert.match(mediaKitStyles, /\.editor\{[^}]*overflow-y:scroll/);
   assert.match(mediaKitStyles, /\.previewViewport\{[^}]*overflow-y:auto/);
   assert.match(mediaKitStyles, /\.mkPage\{[^}]*aspect-ratio:210\/297/);
-  assert.match(mediaKitPreview, /data-testid="media-kit-preview-deck"/);
-  for (const page of ["01", "02", "03", "04", "05", "06"]) assert.match(mediaKitPreview, new RegExp('page="' + page + '"'));
-  for (const heading of ["SOBRE A", "NOSSA AUDIÊNCIA", "FORMATOS DE PARCERIA", "ARTISTAS & DESTAQUES", "VAMOS"]) assert.match(mediaKitPreview, new RegExp(heading));
-  assert.match(mediaKitPreview, /SEM NÚMEROS INVENTADOS/);
 });
 test("settings internal tabs use scoped mutations and preserve RBAC", () => {
   assert.match(settings, /data-testid="settings-manager"/);
