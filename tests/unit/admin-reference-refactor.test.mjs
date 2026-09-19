@@ -23,6 +23,7 @@ const mediaKitActions = read("app/admin/(protected)/media-kit/actions.ts");
 const mediaKitPreviewAuth = read("app/admin/(protected)/media-kit/preview-auth.ts");
 const dbSchema = read("lib/db/schema.ts");
 const mediaKitMigration = read("migrations/0015_media_kit_builder.sql");
+const mediaKitReferenceMigration = read("migrations/0016_media_kit_reference_layout.sql");
 const settings = read("app/admin/(protected)/settings/page.tsx");
 const settingsTabs = read("app/admin/(protected)/settings/SettingsTabs.tsx");
 const settingsStyles = read("app/admin/(protected)/settings/Settings.module.css");
@@ -155,6 +156,14 @@ test("media kit is a persisted section builder with a dynamic editorial preview"
   assert.match(mediaKitBuilder, /Enviar nova imagem/);
   assert.match(mediaKitBuilder, /Sem imagem/);
   assert.match(mediaKitBuilder, /Texto alternativo da nova imagem/);
+  assert.match(mediaKitBuilder, /Composição da capa/);
+  assert.match(mediaKitBuilder, /Composição Sobre \+ KPIs/);
+  assert.match(mediaKitBuilder, /Composição de audiência/);
+  assert.match(mediaKitBuilder, /Composição de parcerias/);
+  assert.match(mediaKitBuilder, /Composição Artistas & Destaques/);
+  assert.match(mediaKitBuilder, /Composição de encerramento/);
+  assert.match(mediaKitBuilder, /audienceGroup/);
+  assert.match(mediaKitBuilder, /name="percentage"/);
 
   for (const action of [
     "updateMediaKitSettings",
@@ -182,23 +191,44 @@ test("media kit is a persisted section builder with a dynamic editorial preview"
   assert.match(mediaKitActions, /session\.source === "development-auth-bypass"/);
   assert.match(mediaKitActions, /storageProvider = "preview_inline"/);
   assert.match(mediaKitActions, /media_kit\.image_uploaded/);
+  assert.match(mediaKitActions, /sectionSettingsFromForm/);
+  assert.match(mediaKitActions, /itemMetadataFromForm/);
+  assert.match(mediaKitActions, /AUDIENCE_GROUPS/);
 
   assert.match(dbSchema, /export const mediaKitSettings = pgTable\("media_kit_settings"/);
   assert.match(dbSchema, /export const mediaKitSections = pgTable\("media_kit_sections"/);
   assert.match(dbSchema, /export const mediaKitItems = pgTable\("media_kit_items"/);
   assert.match(mediaKitMigration, /CREATE TABLE IF NOT EXISTS media_kit_sections/);
   assert.match(mediaKitMigration, /ON DELETE CASCADE/);
+  assert.match(mediaKitReferenceMigration, /"sideTitle"/);
+  assert.match(mediaKitReferenceMigration, /"nextStepsTitle"/);
+  assert.match(mediaKitReferenceMigration, /"group":"gender"/);
+  assert.match(mediaKitReferenceMigration, /"group":"age"/);
+  assert.match(mediaKitReferenceMigration, /"group":"interest"/);
+  assert.match(mediaKitReferenceMigration, /"group":"city"/);
 
   assert.match(mediaKitPreview, /visibleSections=sections\.filter/);
   assert.match(mediaKitPreview, /section\.type === "cover"/);
   assert.match(mediaKitPreview, /section\.type === "cards"/);
   assert.match(mediaKitPreview, /section\.type === "contact"/);
+  assert.match(mediaKitPreview, /PERFIL DO PÚBLICO/);
+  assert.match(mediaKitPreview, /FAIXA ETÁRIA/);
+  assert.match(mediaKitPreview, /PRINCIPAIS INTERESSES/);
+  assert.match(mediaKitPreview, /PRINCIPAIS CIDADES/);
+  assert.match(mediaKitPreview, /OPORTUNIDADES DE EXPOSIÇÃO/);
+  assert.match(mediaKitPreview, /PRÓXIMOS PASSOS/);
   assert.doesNotMatch(mediaKitPreview, /<PageHeader page="01"/);
 
   assert.match(mediaKitStyles, /\.mediaKitLayout\{[^}]*height:calc\(100dvh - var\(--ui-header-height,68px\) - 52px\)[^}]*overflow:hidden/);
   assert.match(mediaKitStyles, /\.editor\{[^}]*overflow-y:scroll/);
   assert.match(mediaKitStyles, /\.previewViewport\{[^}]*overflow-y:auto/);
   assert.match(mediaKitStyles, /\.mkPage\{[^}]*aspect-ratio:210\/297/);
+  assert.match(mediaKitStyles, /\.refCover\{/);
+  assert.match(mediaKitStyles, /\.refAboutTop\{/);
+  assert.match(mediaKitStyles, /\.refAudienceGrid\{/);
+  assert.match(mediaKitStyles, /\.refPartnerGrid\{/);
+  assert.match(mediaKitStyles, /\.refArtistsGrid\{/);
+  assert.match(mediaKitStyles, /\.refContactBody\{/);
 });
 test("settings internal tabs use scoped mutations and preserve RBAC", () => {
   assert.match(settings, /data-testid="settings-manager"/);

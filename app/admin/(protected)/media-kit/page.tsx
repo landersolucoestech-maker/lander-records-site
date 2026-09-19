@@ -59,6 +59,7 @@ export default async function MediaKitPage() {
       mediaId: mediaKitSections.mediaId,
       position: mediaKitSections.position,
       enabled: mediaKitSections.enabled,
+      settings: mediaKitSections.settings,
     }).from(mediaKitSections).orderBy(asc(mediaKitSections.position), asc(mediaKitSections.createdAt)),
     db.select({
       id: mediaKitItems.id,
@@ -75,6 +76,7 @@ export default async function MediaKitPage() {
       mediaId: mediaKitItems.mediaId,
       position: mediaKitItems.position,
       enabled: mediaKitItems.enabled,
+      metadata: mediaKitItems.metadata,
     }).from(mediaKitItems).orderBy(asc(mediaKitItems.position), asc(mediaKitItems.createdAt)),
     db.select({
       id: mediaAssets.id,

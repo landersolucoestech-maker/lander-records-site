@@ -32,6 +32,7 @@ type MediaKitItemRow = {
   mediaId: string | null;
   position: number;
   enabled: boolean;
+  metadata: Record<string, unknown>;
 };
 
 type MediaKitSectionRow = {
@@ -47,6 +48,7 @@ type MediaKitSectionRow = {
   mediaId: string | null;
   position: number;
   enabled: boolean;
+  settings: Record<string, unknown>;
   items: MediaKitItemRow[];
 };
 
@@ -58,13 +60,13 @@ type SettingsRow = {
 };
 
 const sectionTypes = [
-  ["cover", "Capa / Hero"],
-  ["editorial", "Editorial / Sobre"],
-  ["metrics", "KPIs / Números"],
-  ["audience", "Audiência / Dados"],
-  ["cards", "Cards / Serviços / Parcerias"],
-  ["artists", "Artistas / Lançamentos"],
-  ["contact", "Contato / CTA"],
+  ["cover", "01 · Capa / Hero"],
+  ["editorial", "02 · Sobre / Institucional"],
+  ["metrics", "02 · KPIs / Números"],
+  ["audience", "03 · Nossa audiência"],
+  ["cards", "04 · Formatos de parceria"],
+  ["artists", "05 · Artistas & destaques"],
+  ["contact", "06 · Contato / Próximos passos"],
   ["custom", "Conteúdo livre"],
 ] as const;
 
@@ -128,7 +130,79 @@ function Field({ label, children, wide = false }: { label: string; children: Rea
   return <label className={wide ? styles.builderWide : undefined}><span>{label}</span>{children}</label>;
 }
 
-function ItemEditor({ item, media }: { item: MediaKitItemRow; media: MediaOption[] }) {
+function recordText(record: Record<string, unknown>, key: string) {
+  const value = record[key];
+  return typeof value === "string" ? value : "";
+}
+
+function recordNumber(record: Record<string, unknown>, key: string) {
+  const value = record[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : "";
+}
+
+function sectionImageLabel(type: string) {
+  if (type === "cover") return "Imagem principal da capa";
+  if (type === "editorial" || type === "metrics") return "Imagem lateral / institucional";
+  if (type === "artists") return "Imagem do artista em destaque";
+  if (type === "contact") return "Imagem do painel Próximos Passos";
+  return "Imagem principal da seção";
+}
+
+function SectionTemplateFields({ section }: { section: MediaKitSectionRow }) {
+  const settings = section.settings || {};
+  if (section.type === "cover") return <>
+    <div className={styles.builderTemplateTitle}><strong>Composição da capa</strong><span>Campos específicos do layout 01 da referência.</span></div>
+    <Field label="Frase do topo / lateral"><input name="coverSideNote" defaultValue={recordText(settings,"coverSideNote")} placeholder="O SOM DE NOVAS POSSIBILIDADES."/></Field>
+    <Field label="Texto do mockup"><input name="mockupLabel" defaultValue={recordText(settings,"mockupLabel")} placeholder="MÚSICA MOVE PESSOAS."/></Field>
+  </>;
+  if (section.type === "editorial" || section.type === "metrics") return <>
+    <div className={styles.builderTemplateTitle}><strong>Composição Sobre + KPIs</strong><span>Painel lateral e banner inferior da página 02.</span></div>
+    <Field label="Headline do painel lateral" wide><textarea name="sideTitle" rows={3} defaultValue={recordText(settings,"sideTitle")}/></Field>
+    <Field label="Legenda do painel lateral"><input name="sideCaption" defaultValue={recordText(settings,"sideCaption")}/></Field>
+    <Field label="Headline do banner inferior" wide><textarea name="bannerTitle" rows={2} defaultValue={recordText(settings,"bannerTitle")}/></Field>
+    <Field label="Nota do banner"><input name="bannerNote" defaultValue={recordText(settings,"bannerNote")}/></Field>
+  </>;
+  if (section.type === "audience") return <>
+    <div className={styles.builderTemplateTitle}><strong>Composição de audiência</strong><span>Os itens abaixo podem ser classificados em perfil, faixa etária, interesses e cidades.</span></div>
+    <Field label="Nota / fonte dos dados" wide><input name="dataNote" defaultValue={recordText(settings,"dataNote")} placeholder="DADOS REFERENTES A..."/></Field>
+  </>;
+  if (section.type === "cards") return <>
+    <div className={styles.builderTemplateTitle}><strong>Composição de parcerias</strong><span>Os itens desta seção aparecem em um grid 3 × 2 como na referência.</span></div>
+    <Field label="Texto do rodapé" wide><input name="footerNote" defaultValue={recordText(settings,"footerNote")} placeholder="PARCERIAS QUE AMPLIFICAM"/></Field>
+  </>;
+  if (section.type === "artists") return <>
+    <div className={styles.builderTemplateTitle}><strong>Composição Artistas & Destaques</strong><span>Destaque central, oportunidades e depoimento inferior.</span></div>
+    <Field label="Rótulo do artista em destaque"><input name="featuredLabel" defaultValue={recordText(settings,"featuredLabel")} placeholder="ARTISTA EM DESTAQUE"/></Field>
+    <Field label="Texto do rodapé"><input name="footerNote" defaultValue={recordText(settings,"footerNote")}/></Field>
+    <Field label="Depoimento" wide><textarea name="quote" rows={3} defaultValue={recordText(settings,"quote")}/></Field>
+    <Field label="Autor / crédito do depoimento" wide><input name="quoteAuthor" defaultValue={recordText(settings,"quoteAuthor")}/></Field>
+  </>;
+  if (section.type === "contact") return <>
+    <div className={styles.builderTemplateTitle}><strong>Composição de encerramento</strong><span>Painel Próximos Passos da página 06.</span></div>
+    <Field label="Título do painel lateral"><input name="nextStepsTitle" defaultValue={recordText(settings,"nextStepsTitle")} placeholder="PRÓXIMOS PASSOS"/></Field>
+    <Field label="Slogan final"><input name="closingSlogan" defaultValue={recordText(settings,"closingSlogan")}/></Field>
+    <Field label="Texto Próximos Passos" wide><textarea name="nextStepsBody" rows={4} defaultValue={recordText(settings,"nextStepsBody")}/></Field>
+  </>;
+  return null;
+}
+
+function ItemTemplateFields({ sectionType, metadata }: { sectionType: string; metadata: Record<string, unknown> }) {
+  if (sectionType !== "audience") return null;
+  return <>
+    <div className={styles.builderTemplateTitle}><strong>Dados de audiência</strong><span>Classifique o item para posicioná-lo no bloco correto da página 03.</span></div>
+    <Field label="Grupo">
+      <select name="audienceGroup" defaultValue={recordText(metadata,"group") || "interest"}>
+        <option value="gender">Perfil do público</option>
+        <option value="age">Faixa etária</option>
+        <option value="interest">Principais interesses</option>
+        <option value="city">Principais cidades</option>
+      </select>
+    </Field>
+    <Field label="Percentual"><input name="percentage" type="number" min="0" max="100" defaultValue={recordNumber(metadata,"percentage")} placeholder="0–100"/></Field>
+  </>;
+}
+
+function ItemEditor({ item, media, sectionType }: { item: MediaKitItemRow; media: MediaOption[]; sectionType: string }) {
   return <details className={styles.builderItem}>
     <summary>
       <span className={styles.builderItemIdentity}><AdminIcon name="document" size={15}/><strong>{item.title || item.label || "Item sem título"}</strong><small>{item.kind} · posição {item.position}</small></span>
@@ -153,6 +227,7 @@ function ItemEditor({ item, media }: { item: MediaKitItemRow; media: MediaOption
         <Field label="Label"><input name="label" defaultValue={item.label}/></Field>
         <Field label="Valor manual"><input name="value" defaultValue={item.value}/></Field>
         <Field label="URL"><input name="url" defaultValue={item.url} placeholder="https://, /rota, mailto: ou tel:"/></Field>
+        <ItemTemplateFields sectionType={sectionType} metadata={item.metadata || {}}/>
         <MediaImageFields value={item.mediaId} media={media} label="Imagem do item"/>
         <Field label="Conteúdo" wide><textarea name="body" rows={3} defaultValue={item.body}/></Field>
       </div>
@@ -167,7 +242,7 @@ function ItemEditor({ item, media }: { item: MediaKitItemRow; media: MediaOption
   </details>;
 }
 
-function NewItemForm({ sectionId, media }: { sectionId: string; media: MediaOption[] }) {
+function NewItemForm({ sectionId, media, sectionType }: { sectionId: string; media: MediaOption[]; sectionType: string }) {
   return <details className={styles.builderNewItem}>
     <summary><AdminIcon name="plus" size={15}/>Adicionar conteúdo nesta seção</summary>
     <form action={createMediaKitItem} className={styles.builderItemForm}>
@@ -187,6 +262,7 @@ function NewItemForm({ sectionId, media }: { sectionId: string; media: MediaOpti
         <Field label="Label"><input name="label"/></Field>
         <Field label="Valor manual"><input name="value"/></Field>
         <Field label="URL"><input name="url" placeholder="https://, /rota, mailto: ou tel:"/></Field>
+        <ItemTemplateFields sectionType={sectionType} metadata={{}}/>
         <MediaImageFields value={null} media={media} label="Imagem do novo item"/>
         <Field label="Conteúdo" wide><textarea name="body" rows={3}/></Field>
       </div>
@@ -218,7 +294,8 @@ function SectionEditor({ section, media, canDeleteSections }: { section: MediaKi
         <Field label="Texto / conteúdo" wide><textarea name="body" rows={5} defaultValue={section.body}/></Field>
         <Field label="CTA"><input name="ctaLabel" defaultValue={section.ctaLabel}/></Field>
         <Field label="Destino do CTA"><input name="ctaUrl" defaultValue={section.ctaUrl} placeholder="https://, /rota, mailto: ou tel:"/></Field>
-        <MediaImageFields value={section.mediaId} media={media} label="Imagem principal da seção"/>
+        <SectionTemplateFields section={section}/>
+        <MediaImageFields value={section.mediaId} media={media} label={sectionImageLabel(section.type)}/>
       </div>
       <div className={styles.builderActions}>
         <label className={styles.builderToggle}><input type="checkbox" name="enabled" defaultChecked={section.enabled}/><span>Exibir seção no Mídia Kit</span></label>
@@ -231,8 +308,8 @@ function SectionEditor({ section, media, canDeleteSections }: { section: MediaKi
 
     <div className={styles.builderItems}>
       <div className={styles.builderItemsTitle}><strong>Conteúdo da seção</strong><span>{section.items.length} {section.items.length === 1 ? "item" : "itens"}</span></div>
-      {section.items.map((item)=><ItemEditor key={item.id} item={item} media={media}/>)}
-      <NewItemForm sectionId={section.id} media={media}/>
+      {section.items.map((item)=><ItemEditor key={item.id} item={item} media={media} sectionType={section.type}/>)}
+      <NewItemForm sectionId={section.id} media={media} sectionType={section.type}/>
     </div>
   </article>;
 }
@@ -279,6 +356,7 @@ export function MediaKitBuilder({
           <Field label="CTA"><input name="ctaLabel"/></Field>
           <Field label="Destino do CTA"><input name="ctaUrl"/></Field>
           <MediaImageFields value={null} media={media} label="Imagem principal da nova seção"/>
+          <p className={styles.builderTemplateHint}>Depois de criar a seção, os campos específicos do layout escolhido aparecerão no editor.</p>
         </div>
         <div className={styles.builderActions}><span/><button className="adminButton primary" type="submit">Criar seção</button></div>
       </form>

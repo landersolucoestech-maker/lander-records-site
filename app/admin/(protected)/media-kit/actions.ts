@@ -14,6 +14,7 @@ const THEMES = new Set(["light", "dark"]);
 const ITEM_KINDS = new Set(["metric", "card", "bullet", "contact", "text", "release"]);
 const SOURCE_KEYS = new Set(["static", "artists_total", "releases_total", "posts_total", "media_total", "contact_email", "contact_phone", "location", "instagram", "website"]);
 const ICONS = new Set(["activity", "artists", "calendar", "chart", "document", "external", "mail", "media", "pages", "plus", "posts", "smartphone", "target", "users"]);
+const AUDIENCE_GROUPS = new Set(["gender", "age", "interest", "city"]);
 
 function text(formData: FormData, name: string) {
   return String(formData.get(name) || "").trim();
@@ -137,6 +138,45 @@ async function resolveMediaInput(formData: FormData, session: MediaKitMutationSe
   }
 }
 
+function compactRecord(entries: Array<[string, string | number]>) {
+  return Object.fromEntries(entries.filter(([, value]) => value !== ""));
+}
+
+function sectionSettingsFromForm(formData: FormData) {
+  return compactRecord([
+    ["coverSideNote", text(formData, "coverSideNote")],
+    ["mockupLabel", text(formData, "mockupLabel")],
+    ["sideTitle", text(formData, "sideTitle")],
+    ["sideCaption", text(formData, "sideCaption")],
+    ["bannerTitle", text(formData, "bannerTitle")],
+    ["bannerNote", text(formData, "bannerNote")],
+    ["dataNote", text(formData, "dataNote")],
+    ["footerNote", text(formData, "footerNote")],
+    ["featuredLabel", text(formData, "featuredLabel")],
+    ["quote", text(formData, "quote")],
+    ["quoteAuthor", text(formData, "quoteAuthor")],
+    ["nextStepsTitle", text(formData, "nextStepsTitle")],
+    ["nextStepsBody", text(formData, "nextStepsBody")],
+    ["closingSlogan", text(formData, "closingSlogan")],
+  ]);
+}
+
+function itemMetadataFromForm(formData: FormData) {
+  const group = text(formData, "audienceGroup");
+  const percentageRaw = text(formData, "percentage");
+  const entries: Array<[string, string | number]> = [];
+  if (group) {
+    if (!AUDIENCE_GROUPS.has(group)) throw new Error("Grupo de audiência inválido.");
+    entries.push(["group", group]);
+  }
+  if (percentageRaw) {
+    const percentage = Number.parseInt(percentageRaw, 10);
+    if (!Number.isInteger(percentage) || percentage < 0 || percentage > 100) throw new Error("Percentual deve estar entre 0 e 100.");
+    entries.push(["percentage", percentage]);
+  }
+  return Object.fromEntries(entries);
+}
+
 function refresh() {
   revalidatePath("/admin/media-kit");
 }
@@ -188,6 +228,7 @@ export async function createMediaKitSection(formData: FormData) {
       mediaId: selectedMediaId,
       position,
       enabled: true,
+      settings: sectionSettingsFromForm(formData),
     }).returning({ id: mediaKitSections.id });
     return rows[0];
   });
@@ -213,6 +254,7 @@ export async function updateMediaKitSection(formData: FormData) {
     mediaId: await resolveMediaInput(formData, session),
     position: integer(formData, "position", 1),
     enabled: checked(formData, "enabled"),
+    settings: sectionSettingsFromForm(formData),
     updatedAt: new Date(),
   };
   const db = getDb();
@@ -263,6 +305,7 @@ export async function createMediaKitItem(formData: FormData) {
       mediaId: selectedMediaId,
       position,
       enabled: true,
+      metadata: itemMetadataFromForm(formData),
     }).returning({ id: mediaKitItems.id });
     return rows[0];
   });
@@ -291,6 +334,7 @@ export async function updateMediaKitItem(formData: FormData) {
     mediaId: await resolveMediaInput(formData, session),
     position: integer(formData, "position", 1),
     enabled: checked(formData, "enabled"),
+    metadata: itemMetadataFromForm(formData),
     updatedAt: new Date(),
   };
   const db = getDb();
