@@ -216,7 +216,7 @@ test("media kit is a persisted section builder with a dynamic editorial preview"
   assert.match(mediaKitReferenceMigration, /"group":"interest"/);
   assert.match(mediaKitReferenceMigration, /"group":"city"/);
 
-  assert.match(mediaKitPreview, /visibleSections\\s*=\\s*sections\\s*\\.filter/);
+  assert.match(mediaKitPreview, /visibleSections\s*=\s*sections\s*\.filter/);
   assert.match(mediaKitPreview, /section\.type === "cover"/);
   assert.match(mediaKitPreview, /section\.type === "cards"/);
   assert.match(mediaKitPreview, /section\.type === "contact"/);
