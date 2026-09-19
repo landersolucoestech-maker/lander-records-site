@@ -2,9 +2,10 @@
 
 import { and, asc, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { audit, requirePersistentAdmin } from "../../../../lib/auth";
+import { audit } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
 import { mediaAssets, mediaKitItems, mediaKitSections, mediaKitSettings } from "../../../../lib/db/schema";
+import { requireMediaKitMutationAdmin } from "./preview-auth";
 
 const SECTION_TYPES = new Set(["cover", "editorial", "metrics", "audience", "cards", "artists", "contact", "custom"]);
 const THEMES = new Set(["light", "dark"]);
@@ -71,7 +72,7 @@ function refresh() {
 }
 
 export async function updateMediaKitSettings(formData: FormData) {
-  const session = await requirePersistentAdmin("editor");
+  const session = await requireMediaKitMutationAdmin("editor");
   const documentTitle = text(formData, "documentTitle");
   const edition = text(formData, "edition");
   const footerWebsite = text(formData, "footerWebsite");
@@ -94,7 +95,7 @@ export async function updateMediaKitSettings(formData: FormData) {
 }
 
 export async function createMediaKitSection(formData: FormData) {
-  const session = await requirePersistentAdmin("editor");
+  const session = await requireMediaKitMutationAdmin("editor");
   const type = enumValue(formData, "type", SECTION_TYPES, "custom");
   const theme = enumValue(formData, "theme", THEMES, "light");
   const title = text(formData, "title") || "Nova seção";
@@ -126,7 +127,7 @@ export async function createMediaKitSection(formData: FormData) {
 }
 
 export async function updateMediaKitSection(formData: FormData) {
-  const session = await requirePersistentAdmin("editor");
+  const session = await requireMediaKitMutationAdmin("editor");
   const id = requiredUuid(formData, "id", "Seção");
   const type = enumValue(formData, "type", SECTION_TYPES, "custom");
   const theme = enumValue(formData, "theme", THEMES, "light");
@@ -153,7 +154,7 @@ export async function updateMediaKitSection(formData: FormData) {
 }
 
 export async function deleteMediaKitSection(formData: FormData) {
-  const session = await requirePersistentAdmin("admin");
+  const session = await requireMediaKitMutationAdmin("admin");
   const id = requiredUuid(formData, "id", "Seção");
   const db = getDb();
   const current = (await db.select({ id: mediaKitSections.id, title: mediaKitSections.title }).from(mediaKitSections).where(eq(mediaKitSections.id, id)).limit(1))[0];
@@ -164,7 +165,7 @@ export async function deleteMediaKitSection(formData: FormData) {
 }
 
 export async function createMediaKitItem(formData: FormData) {
-  const session = await requirePersistentAdmin("editor");
+  const session = await requireMediaKitMutationAdmin("editor");
   const sectionId = requiredUuid(formData, "sectionId", "Seção");
   const kind = enumValue(formData, "kind", ITEM_KINDS, "card");
   const sourceKey = enumValue(formData, "sourceKey", SOURCE_KEYS, "static");
@@ -201,7 +202,7 @@ export async function createMediaKitItem(formData: FormData) {
 }
 
 export async function updateMediaKitItem(formData: FormData) {
-  const session = await requirePersistentAdmin("editor");
+  const session = await requireMediaKitMutationAdmin("editor");
   const id = requiredUuid(formData, "id", "Item");
   const sectionId = requiredUuid(formData, "sectionId", "Seção");
   const kind = enumValue(formData, "kind", ITEM_KINDS, "card");
@@ -231,7 +232,7 @@ export async function updateMediaKitItem(formData: FormData) {
 }
 
 export async function deleteMediaKitItem(formData: FormData) {
-  const session = await requirePersistentAdmin("editor");
+  const session = await requireMediaKitMutationAdmin("editor");
   const id = requiredUuid(formData, "id", "Item");
   const sectionId = requiredUuid(formData, "sectionId", "Seção");
   const db = getDb();

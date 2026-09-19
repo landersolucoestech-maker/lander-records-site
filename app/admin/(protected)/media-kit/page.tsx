@@ -16,6 +16,7 @@ import {
 import { AdminIcon, type IconName } from "../../components/AdminIcon";
 import { MediaKitBuilder } from "./components/MediaKitBuilder";
 import { MediaKitPreviewDeck } from "./components/MediaKitPreviewDeck";
+import { canMutateMediaKitInCurrentEnvironment } from "./preview-auth";
 import styles from "./MediaKit.module.css";
 
 export const dynamic = "force-dynamic";
@@ -26,9 +27,9 @@ function Metric({ accent, icon, label, value, hint }: { accent: "red" | "blue" |
 
 export default async function MediaKitPage() {
   const session = await requireAdmin();
-  const persistent = session.source === "session";
-  const canEdit = persistent && hasMinimumRole(session.user.role, "editor");
-  const canDeleteSections = persistent && hasMinimumRole(session.user.role, "admin");
+  const mutationEnabled = canMutateMediaKitInCurrentEnvironment(session);
+  const canEdit = mutationEnabled && hasMinimumRole(session.user.role, "editor");
+  const canDeleteSections = mutationEnabled && hasMinimumRole(session.user.role, "admin");
   const db = getDb();
 
   const [

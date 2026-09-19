@@ -20,6 +20,7 @@ const mediaKitStyles = read("app/admin/(protected)/media-kit/MediaKit.module.css
 const mediaKitPreview = read("app/admin/(protected)/media-kit/components/MediaKitPreviewDeck.tsx");
 const mediaKitBuilder = read("app/admin/(protected)/media-kit/components/MediaKitBuilder.tsx");
 const mediaKitActions = read("app/admin/(protected)/media-kit/actions.ts");
+const mediaKitPreviewAuth = read("app/admin/(protected)/media-kit/preview-auth.ts");
 const dbSchema = read("lib/db/schema.ts");
 const mediaKitMigration = read("migrations/0015_media_kit_builder.sql");
 const settings = read("app/admin/(protected)/settings/page.tsx");
@@ -160,8 +161,14 @@ test("media kit is a persisted section builder with a dynamic editorial preview"
     "deleteMediaKitItem",
   ]) assert.match(mediaKitActions, new RegExp("export async function " + action));
 
-  assert.match(mediaKitActions, /requirePersistentAdmin\("editor"\)/);
-  assert.match(mediaKitActions, /requirePersistentAdmin\("admin"\)/);
+  assert.match(mediaKitActions, /requireMediaKitMutationAdmin\("editor"\)/);
+  assert.match(mediaKitActions, /requireMediaKitMutationAdmin\("admin"\)/);
+  assert.match(mediaKit, /canMutateMediaKitInCurrentEnvironment\(session\)/);
+  assert.match(mediaKitPreviewAuth, /session\.source === "session"/);
+  assert.match(mediaKitPreviewAuth, /session\.source === "development-auth-bypass"/);
+  assert.match(mediaKitPreviewAuth, /isDisposablePreviewAuthBypassEnabled/);
+  assert.match(mediaKitPreviewAuth, /isDisposablePreviewRequestHost/);
+  assert.match(mediaKitPreviewAuth, /development-read-only/);
   assert.match(mediaKitActions, /media_kit\.section_created/);
   assert.match(mediaKitActions, /media_kit\.item_updated/);
 
