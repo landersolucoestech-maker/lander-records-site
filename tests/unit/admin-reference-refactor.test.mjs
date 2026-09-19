@@ -144,6 +144,15 @@ test("media kit is a persisted section builder with a dynamic editorial preview"
 
   assert.match(mediaKitBuilder, /data-testid="media-kit-builder"/);
   assert.match(mediaKitBuilder, /Adicionar seção/);
+  assert.match(mediaKitBuilder, /quickSectionTemplates/);
+  assert.match(mediaKitBuilder, /Escolha um modelo\. A seção é criada imediatamente/);
+  assert.match(mediaKitBuilder, /01 · Capa \/ Hero/);
+  assert.match(mediaKitBuilder, /02 · Sobre \/ Institucional/);
+  assert.match(mediaKitBuilder, /03 · Nossa audiência/);
+  assert.match(mediaKitBuilder, /04 · Formatos de parceria/);
+  assert.match(mediaKitBuilder, /05 · Artistas & destaques/);
+  assert.match(mediaKitBuilder, /06 · Contato \/ Próximos passos/);
+  assert.doesNotMatch(mediaKitBuilder, /<form action=\{createMediaKitSection\} className=\{styles\.builderDocumentForm\}>/);
   assert.match(mediaKitBuilder, /Adicionar conteúdo nesta seção/);
   assert.match(mediaKitBuilder, /Salvar seção/);
   assert.match(mediaKitBuilder, /Excluir seção/);
@@ -229,6 +238,9 @@ test("media kit is a persisted section builder with a dynamic editorial preview"
   assert.match(mediaKitStyles, /\.refPartnerGrid\{/);
   assert.match(mediaKitStyles, /\.refArtistsGrid\{/);
   assert.match(mediaKitStyles, /\.refContactBody\{/);
+  assert.match(mediaKitStyles, /\.quickSectionPanel\{/);
+  assert.match(mediaKitStyles, /\.quickSectionGrid\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(mediaKitStyles, /\.quickSectionCard button\{/);
 });
 test("settings internal tabs use scoped mutations and preserve RBAC", () => {
   assert.match(settings, /data-testid="settings-manager"/);
