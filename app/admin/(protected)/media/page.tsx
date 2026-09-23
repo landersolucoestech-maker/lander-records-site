@@ -10,8 +10,11 @@ export const dynamic = "force-dynamic";
 
 export default async function MediaPage() {
   const session = await requireAdmin();
+  const persistent = session.source === "session";
+  const canUpload = persistent && session.user.role !== "viewer";
+  const canArchive = persistent && (session.user.role === "admin" || session.user.role === "owner");
   if (mockDataEnabled()) {
-    return <MediaLibrary archiveAction={archiveMedia} canArchive={false} canUpload items={mockMedia.map((item) => ({ ...item }))} uploadAction={uploadMedia} />;
+    return <MediaLibrary archiveAction={archiveMedia} canArchive={false} canUpload={canUpload} items={mockMedia.map((item) => ({ ...item }))} uploadAction={uploadMedia} />;
   }
   const rows = await getDb().select().from(mediaAssets).orderBy(desc(mediaAssets.createdAt));
   const items: MediaLibraryItem[] = rows.map((media) => ({
@@ -27,9 +30,6 @@ export default async function MediaPage() {
     status: media.status,
     createdAt: new Intl.DateTimeFormat("pt-BR", { dateStyle: "short" }).format(media.createdAt),
   }));
-  const persistent = session.source === "session";
-  const canUpload = persistent && session.user.role !== "viewer";
-  const canArchive = persistent && (session.user.role === "admin" || session.user.role === "owner");
 
   return <MediaLibrary archiveAction={archiveMedia} canArchive={canArchive} canUpload={canUpload} items={items} uploadAction={uploadMedia} />;
 }
