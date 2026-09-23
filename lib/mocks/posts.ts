@@ -52,3 +52,17 @@ export const mockPostRecords = mockPosts.map((item, index) => ({
   seoTitle:item.seoTitle, seoDescription:item.seoDescription, canonicalUrl:item.canonicalUrl,
   updatedAt:new Intl.DateTimeFormat("pt-BR").format(item.updatedAt),
 }));
+
+
+export function mockPostPresentation(postId: string) {
+  const post = mockPosts.find((item) => item.id === postId);
+  return {
+    publicationLink: post ? `/noticias/${post.slug}` : "",
+    authorImage: "/lander-records-logo.webp",
+    links: {
+      instagram: "https://instagram.com/landerrecords",
+      youtube: "https://youtube.com/@landerrecords",
+      facebook: "https://www.facebook.com/",
+    },
+  };
+}
