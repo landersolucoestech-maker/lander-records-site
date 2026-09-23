@@ -1,6 +1,7 @@
 import { and, asc, desc, eq } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
+import { mockArtistEditor, mockArtistEditorOptions, mockArtistSummaries, mockDataEnabled } from "../../../../lib/mocks";
 import {
   artistGenreRelations,
   artistMetrics,
@@ -24,12 +25,16 @@ const VIEW_METRICS = new Set(["views", "view_count", "video_views", "video_view_
 
 export default async function AdminArtistsPage({ searchParams }: { searchParams: Promise<ArtistFilters> }) {
   const session = await requireAdmin();
-  const db = getDb();
+  const filters = await searchParams;
   const canEdit = session.source === "session" && session.user.role !== "viewer";
   const canDelete = session.source === "session" && (session.user.role === "admin" || session.user.role === "owner");
+  if (mockDataEnabled()) {
+    const editorById = Object.fromEntries(mockArtistSummaries.map((artist) => [artist.id, mockArtistEditor(artist.id)]).filter((entry) => Boolean(entry[1])));
+    return <ArtistManager artists={mockArtistSummaries} canDelete={false} canEdit deleted={filters.deleted === "1"} editorById={editorById} editorOptions={mockArtistEditorOptions} initialFilters={{ genre: filters.genre, q: filters.q, role: filters.role, status: filters.status }} saved={filters.saved === "1"} />;
+  }
+  const db = getDb();
   const emptyOptions: ArtistFormOptions = { media: [], categories: [], roles: [], genres: [], destinations: [] };
-  const [filters, baseRows, profiles, categoryRows, genreRows, roleRows, placementRows, metricRows, cachedMetricRows, linkRows, embedRows, editorOptions] = await Promise.all([
-    searchParams,
+  const [baseRows, profiles, categoryRows, genreRows, roleRows, placementRows, metricRows, cachedMetricRows, linkRows, embedRows, editorOptions] = await Promise.all([
     db.select({ artist: artists, cardImage: mediaAssets.url }).from(artists).leftJoin(mediaAssets, eq(artists.cardMediaId, mediaAssets.id)).orderBy(desc(artists.updatedAt), asc(artists.name)),
     db.select().from(artistProfiles),
     db.select({ artistId: artistCategoryRelations.artistId, categoryId: artistCategoryRelations.categoryId }).from(artistCategoryRelations).orderBy(asc(artistCategoryRelations.position)),
