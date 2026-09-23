@@ -134,12 +134,12 @@ test("media library keeps real server actions, permission-aware controls and pag
   assert.doesNotMatch(media, /moreAction/);
 });
 
-test("media kit is a persisted section builder with a dynamic editorial preview", () => {
+test("media kit is a persisted section builder with a controlled editorial preview", () => {
   assert.match(mediaKit, /mediaKitSections/);
   assert.match(mediaKit, /mediaKitItems/);
   assert.match(mediaKit, /MediaKitBuilder/);
   assert.match(mediaKit, /MediaKitPreviewDeck/);
-  assert.match(mediaKit, /composição dinâmica/);
+  assert.match(mediaKit, /composição editorial/);
   assert.match(mediaKit, /aria-label="Prévia visual do Mídia Kit"/);
 
   assert.match(mediaKitBuilder, /data-testid="media-kit-builder"/);
@@ -216,7 +216,7 @@ test("media kit is a persisted section builder with a dynamic editorial preview"
   assert.match(mediaKitReferenceMigration, /"group":"interest"/);
   assert.match(mediaKitReferenceMigration, /"group":"city"/);
 
-  assert.match(mediaKitPreview, /visibleSections\s*=\s*sections\s*\.filter/);
+  assert.match(mediaKitPreview, /visibleSections\s*=\s*visibleByPosition\(sections\)/);
   assert.match(mediaKitPreview, /section\.type === "cover"/);
   assert.match(mediaKitPreview, /section\.type === "cards"/);
   assert.match(mediaKitPreview, /section\.type === "contact"/);
@@ -227,7 +227,7 @@ test("media kit is a persisted section builder with a dynamic editorial preview"
   assert.match(mediaKitPreview, /OPORTUNIDADES DE EXPOSIÇÃO/);
   assert.match(mediaKitPreview, /PRÓXIMOS PASSOS/);
   assert.match(mediaKitPreview, /coverHeadline/);
-  assert.match(mediaKitPreview, /sectionPriority/);
+  assert.doesNotMatch(mediaKitPreview, /sectionPriority/);
   assert.match(mediaKitPreview, /media-kit-cover-laptop/);
   assert.match(mediaKitPreview, /refCoverPageBody/);
   assert.match(mediaKitPreview, /refLaptopBase/);
