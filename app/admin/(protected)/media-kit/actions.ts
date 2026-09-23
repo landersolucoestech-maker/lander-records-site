@@ -275,7 +275,7 @@ export async function updateMediaKitSection(formData: FormData) {
 }
 
 export async function deleteMediaKitSection(formData: FormData) {
-  const session = await requireMediaKitMutationAdmin("admin");
+  const session = await requireMediaKitMutationAdmin("editor");
   const id = requiredUuid(formData, "id", "Seção");
   const db = getDb();
   const current = (await db.select({ id: mediaKitSections.id, title: mediaKitSections.title }).from(mediaKitSections).where(eq(mediaKitSections.id, id)).limit(1))[0];

@@ -71,15 +71,7 @@ const sectionTypes = [
   ["custom", "Conteúdo livre"],
 ] as const;
 
-const quickSectionTemplates = [
-  { type: "cover", theme: "dark", icon: "pages", number: "01", label: "Capa / Hero", description: "Abertura com imagem, headline e quatro destaques.", title: "CONECTANDO ARTISTAS, MÚSICA E OPORTUNIDADES.", eyebrow: "LANDER RECORDS" },
-  { type: "editorial", theme: "light", icon: "document", number: "02", label: "Sobre", description: "Apresentação institucional, KPIs e banner de posicionamento.", title: "SOBRE A LANDER RECORDS", eyebrow: "INSTITUCIONAL" },
-  { type: "audience", theme: "light", icon: "users", number: "03", label: "Audiência", description: "Perfil, faixa etária, interesses e principais cidades.", title: "NOSSA AUDIÊNCIA", eyebrow: "AUDIÊNCIA" },
-  { type: "cards", theme: "light", icon: "target", number: "04", label: "Parcerias", description: "Grid comercial com formatos, imagens e chamadas.", title: "FORMATOS DE PARCERIA", eyebrow: "COMERCIAL" },
-  { type: "artists", theme: "light", icon: "artists", number: "05", label: "Artistas & destaques", description: "Lançamentos, artista em destaque e oportunidades.", title: "ARTISTAS & DESTAQUES", eyebrow: "CASTING" },
-  { type: "contact", theme: "light", icon: "mail", number: "06", label: "Contato", description: "CTA, contatos e painel de próximos passos.", title: "VAMOS CONSTRUIR ALGO GRANDE JUNTOS?", eyebrow: "CONTATO COMERCIAL" },
-  { type: "custom", theme: "light", icon: "plus", number: "+", label: "Conteúdo livre", description: "Uma página flexível para qualquer conteúdo adicional.", title: "NOVA SEÇÃO", eyebrow: "LANDER RECORDS" },
-] as const;
+
 
 const itemKinds = [
   ["metric", "Métrica"],
@@ -301,12 +293,19 @@ function NewItemForm({ sectionId, media, sectionType }: { sectionId: string; med
   </details>;
 }
 
-function SectionEditor({ section, media, canDeleteSections }: { section: MediaKitSectionRow; media: MediaOption[]; canDeleteSections: boolean }) {
-  return <article className={styles.builderSection}>
-    <header className={styles.builderSectionHeader}>
-      <div><span>SEÇÃO {section.position}</span><strong>{section.title || "Sem título"}</strong><small>{sectionTypes.find(([value])=>value===section.type)?.[1] || section.type}</small></div>
-      <span className={section.enabled ? styles.builderStatusOn : styles.builderStatusOff}>{section.enabled ? "Visível" : "Oculta"}</span>
-    </header>
+function SectionEditor({ section, media }: { section: MediaKitSectionRow; media: MediaOption[] }) {
+  return <details className={styles.builderSection}>
+    <summary className={styles.builderSectionHeader}>
+      <div>
+        <span>SEÇÃO {section.position}</span>
+        <strong>{section.title || "Sem título"}</strong>
+        <small>{sectionTypes.find(([value])=>value===section.type)?.[1] || section.type} · clique para editar</small>
+      </div>
+      <div className={styles.builderSectionSummaryActions}>
+        <span className={section.enabled ? styles.builderStatusOn : styles.builderStatusOff}>{section.enabled ? "Visível" : "Oculta"}</span>
+        <span className={styles.builderChevron} aria-hidden="true">⌄</span>
+      </div>
+    </summary>
 
     <form action={updateMediaKitSection} className={styles.builderSectionForm}>
       <input type="hidden" name="id" value={section.id}/>
@@ -331,8 +330,8 @@ function SectionEditor({ section, media, canDeleteSections }: { section: MediaKi
       <div className={styles.builderActions}>
         <label className={styles.builderToggle}><input type="checkbox" name="enabled" defaultChecked={section.enabled}/><span>Exibir seção no Mídia Kit</span></label>
         <div>
-          <button className="adminButton primary" type="submit">Salvar seção</button>
-          {canDeleteSections ? <button className={styles.dangerButton} type="submit" formAction={deleteMediaKitSection}>Excluir seção</button> : null}
+          <button className="adminButton primary" type="submit">Salvar alterações</button>
+          <button className={styles.dangerButton} type="submit" formAction={deleteMediaKitSection}>Remover seção</button>
         </div>
       </div>
     </form>
@@ -342,19 +341,17 @@ function SectionEditor({ section, media, canDeleteSections }: { section: MediaKi
       {section.items.map((item)=><ItemEditor key={item.id} item={item} media={media} sectionType={section.type}/>)}
       <NewItemForm sectionId={section.id} media={media} sectionType={section.type}/>
     </div>
-  </article>;
+  </details>;
 }
 
 export function MediaKitBuilder({
   settings,
   sections,
   media,
-  canDeleteSections,
 }: {
   settings: SettingsRow;
   sections: MediaKitSectionRow[];
   media: MediaOption[];
-  canDeleteSections: boolean;
 }) {
   return <div className={styles.builder} data-testid="media-kit-builder">
     <section className="adminDashboardPanel">
@@ -372,25 +369,36 @@ export function MediaKitBuilder({
       </form>
     </section>
 
-    <section className={styles.quickSectionPanel}>
-      <div className={styles.quickSectionHeading}>
-        <div className="adminPanelHeadingIdentity"><span className="adminPanelHeadingIcon"><AdminIcon name="plus" size={20}/></span><div><h2>Adicionar seção</h2><p>Escolha um modelo. A seção é criada imediatamente e você edita o conteúdo depois.</p></div></div>
+    <section className={styles.createSectionPanel}>
+      <div className={styles.createSectionHeading}>
+        <div className="adminPanelHeadingIdentity">
+          <span className="adminPanelHeadingIcon"><AdminIcon name="plus" size={20}/></span>
+          <div>
+            <h2>Nova seção</h2>
+            <p>Crie uma seção livremente. Layout, conteúdo, ordem, imagem e visibilidade continuam editáveis depois.</p>
+          </div>
+        </div>
       </div>
-      <div className={styles.quickSectionGrid}>
-        {quickSectionTemplates.map((template)=><form action={createMediaKitSection} className={styles.quickSectionCard} key={template.type}>
-          <input type="hidden" name="type" value={template.type}/>
-          <input type="hidden" name="theme" value={template.theme}/>
-          <input type="hidden" name="title" value={template.title}/>
-          <input type="hidden" name="eyebrow" value={template.eyebrow}/>
-          <button type="submit" aria-label={`Adicionar seção ${template.label}`}>
-            <span className={styles.quickSectionIcon}><AdminIcon name={template.icon} size={18}/></span>
-            <span className={styles.quickSectionCopy}><small>{template.number}</small><strong>{template.label}</strong><span>{template.description}</span></span>
-            <span className={styles.quickSectionAdd}>Adicionar</span>
-          </button>
-        </form>)}
-      </div>
+      <form action={createMediaKitSection} className={styles.createSectionForm}>
+        <div className={styles.createSectionGrid}>
+          <Field label="Layout">
+            <select name="type" defaultValue="custom">{sectionTypes.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select>
+          </Field>
+          <Field label="Tema">
+            <select name="theme" defaultValue="light"><option value="light">Claro</option><option value="dark">Escuro</option></select>
+          </Field>
+          <Field label="Identificador / eyebrow"><input name="eyebrow" placeholder="Ex.: INSTITUCIONAL, AUDIÊNCIA, COMERCIAL"/></Field>
+          <Field label="Título"><input name="title" placeholder="Título da nova seção"/></Field>
+          <Field label="Subtítulo" wide><input name="subtitle" placeholder="Opcional"/></Field>
+          <Field label="Texto inicial" wide><textarea name="body" rows={3} placeholder="Opcional. Você pode completar tudo depois."/></Field>
+        </div>
+        <div className={styles.createSectionActions}>
+          <span>A nova seção entra no fim do deck e pode ser reordenada pelo campo “Posição”.</span>
+          <button className="adminButton primary" type="submit"><AdminIcon name="plus" size={14}/>Adicionar seção</button>
+        </div>
+      </form>
     </section>
 
-    {sections.length ? sections.map((section)=><SectionEditor key={section.id} section={section} media={media} canDeleteSections={canDeleteSections}/>) : <section className={styles.builderEmpty}><AdminIcon name="document" size={24}/><strong>Nenhuma seção cadastrada</strong><span>Crie a primeira seção para iniciar o Mídia Kit.</span></section>}
+    {sections.length ? sections.map((section)=><SectionEditor key={section.id} section={section} media={media}/>) : <section className={styles.builderEmpty}><AdminIcon name="document" size={24}/><strong>Nenhuma seção cadastrada</strong><span>Crie a primeira seção para iniciar o Mídia Kit.</span></section>}
   </div>;
 }

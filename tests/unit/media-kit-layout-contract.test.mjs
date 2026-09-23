@@ -46,3 +46,19 @@ test("audience preview publishes only verified quantitative metrics", () => {
   assert.match(preview, /numberValue\(item\.metadata, "percentage"\) > 0/);
   assert.doesNotMatch(preview, />A INTEGRAR</);
 });
+
+
+test("section management is free-form and uses the editor permission consistently", () => {
+  assert.doesNotMatch(builder, /quickSectionTemplates/);
+  assert.match(builder, /Crie uma seção livremente/);
+  assert.match(builder, /Remover seção/);
+  assert.match(actions, /export async function deleteMediaKitSection[\s\S]*?requireMediaKitMutationAdmin\("editor"\)/);
+  assert.match(css, /\.createSectionPanel\{/);
+  assert.match(css, /\.builderSection>summary\{/);
+});
+
+test("media kit typography avoids the previous extra-bold display treatment", () => {
+  assert.doesNotMatch(css, /font-family:Impact,Haettenschweiler/);
+  assert.doesNotMatch(css, /font-weight:950|font-weight:900|font-weight:850/);
+  assert.match(css, /font-family:Montserrat,Arial,sans-serif/);
+});

@@ -29,7 +29,6 @@ export default async function MediaKitPage() {
   const session = await requireAdmin();
   const mutationEnabled = canMutateMediaKitInCurrentEnvironment(session);
   const canEdit = mutationEnabled && hasMinimumRole(session.user.role, "editor");
-  const canDeleteSections = mutationEnabled && hasMinimumRole(session.user.role, "admin");
   const db = getDb();
 
   const [
@@ -140,7 +139,7 @@ export default async function MediaKitPage() {
 
     <div className={styles.workspace}>
       <div className={styles.editor}>
-        {canEdit ? <MediaKitBuilder settings={settings} sections={sections} media={imageMedia} canDeleteSections={canDeleteSections}/> : <section className={styles.builderEmpty}><AdminIcon name="eye" size={24}/><strong>Modo somente leitura</strong><span>Sua sessão pode visualizar a composição, mas não editar o Mídia Kit.</span></section>}
+        {canEdit ? <MediaKitBuilder settings={settings} sections={sections} media={imageMedia}/> : <section className={styles.builderEmpty}><AdminIcon name="eye" size={24}/><strong>Modo somente leitura</strong><span>Sua sessão pode visualizar a composição, mas não editar o Mídia Kit.</span></section>}
       </div>
 
       <aside className={styles.preview} aria-label="Prévia visual do Mídia Kit">

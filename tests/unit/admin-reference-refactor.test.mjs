@@ -144,8 +144,11 @@ test("media kit is a persisted section builder with a controlled editorial previ
 
   assert.match(mediaKitBuilder, /data-testid="media-kit-builder"/);
   assert.match(mediaKitBuilder, /Adicionar seção/);
-  assert.match(mediaKitBuilder, /quickSectionTemplates/);
-  assert.match(mediaKitBuilder, /Escolha um modelo\. A seção é criada imediatamente/);
+  assert.doesNotMatch(mediaKitBuilder, /quickSectionTemplates/);
+  assert.match(mediaKitBuilder, /Crie uma seção livremente/);
+  assert.match(mediaKitBuilder, /name="type"/);
+  assert.match(mediaKitBuilder, /name="theme"/);
+  assert.match(mediaKitBuilder, /name="title"/);
   assert.match(mediaKitBuilder, /01 · Capa \/ Hero/);
   assert.match(mediaKitBuilder, /02 · Sobre \/ Institucional/);
   assert.match(mediaKitBuilder, /03 · Nossa audiência/);
@@ -154,8 +157,8 @@ test("media kit is a persisted section builder with a controlled editorial previ
   assert.match(mediaKitBuilder, /06 · Contato \/ Próximos passos/);
   assert.doesNotMatch(mediaKitBuilder, /<form action=\{createMediaKitSection\} className=\{styles\.builderDocumentForm\}>/);
   assert.match(mediaKitBuilder, /Adicionar conteúdo nesta seção/);
-  assert.match(mediaKitBuilder, /Salvar seção/);
-  assert.match(mediaKitBuilder, /Excluir seção/);
+  assert.match(mediaKitBuilder, /Salvar alterações/);
+  assert.match(mediaKitBuilder, /Remover seção/);
   assert.match(mediaKitBuilder, /Salvar item/);
   assert.match(mediaKitBuilder, /Excluir item/);
   assert.match(mediaKitBuilder, /Total real de artistas/);
@@ -185,7 +188,7 @@ test("media kit is a persisted section builder with a controlled editorial previ
   ]) assert.match(mediaKitActions, new RegExp("export async function " + action));
 
   assert.match(mediaKitActions, /requireMediaKitMutationAdmin\("editor"\)/);
-  assert.match(mediaKitActions, /requireMediaKitMutationAdmin\("admin"\)/);
+  assert.match(mediaKitActions, /export async function deleteMediaKitSection[\s\S]*?requireMediaKitMutationAdmin\("editor"\)/);
   assert.match(mediaKit, /canMutateMediaKitInCurrentEnvironment\(session\)/);
   assert.match(mediaKitPreviewAuth, /session\.source === "session"/);
   assert.match(mediaKitPreviewAuth, /session\.source === "development-auth-bypass"/);
@@ -251,7 +254,8 @@ test("media kit is a persisted section builder with a controlled editorial previ
   assert.match(mediaKitStyles, /\.refArtistsGrid\{/);
   assert.match(mediaKitStyles, /\.refContactBody\{/);
   assert.match(mediaKitStyles, /container-type:inline-size/);
-  assert.match(mediaKitStyles, /font-family:Impact,Haettenschweiler/);
+  assert.doesNotMatch(mediaKitStyles, /font-family:Impact,Haettenschweiler/);
+  assert.match(mediaKitStyles, /font-family:Montserrat,Arial,sans-serif/);
   assert.match(mediaKitStyles, /\.refPartnerGrid\{[^}]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)[^}]*grid-template-rows:repeat\(2,minmax\(0,1fr\)\)/);
   assert.match(mediaKitStyles, /\.quickSectionPanel\{/);
   assert.match(mediaKitStyles, /\.quickSectionGrid\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
