@@ -9,8 +9,10 @@ export const dynamic = "force-dynamic";
 
 export default async function CategoriesPage() {
   const session = await requireAdmin();
+  const canEdit = session.source === "session" && session.user.role !== "viewer";
+  const canDelete = session.source === "session" && (session.user.role === "admin" || session.user.role === "owner");
   if (mockDataEnabled()) {
-    return <CategoryManager artistCategories={mockArtistCategories.map((item) => ({ ...item }))} canDelete={false} canEdit postCategories={mockPostCategories.map((item) => ({ ...item }))} />;
+    return <CategoryManager artistCategories={mockArtistCategories.map((item) => ({ ...item }))} canDelete={false} canEdit={canEdit} postCategories={mockPostCategories.map((item) => ({ ...item }))} />;
   }
   const db = getDb();
   const [artists, news] = await Promise.all([
@@ -18,7 +20,5 @@ export default async function CategoriesPage() {
     db.select().from(postCategories).orderBy(asc(postCategories.position), asc(postCategories.name)),
   ]);
 
-  const canEdit = session.source === "session" && session.user.role !== "viewer";
-  const canDelete = session.source === "session" && (session.user.role === "admin" || session.user.role === "owner");
   return <CategoryManager artistCategories={artists} canDelete={canDelete} canEdit={canEdit} postCategories={news} />;
 }
