@@ -6,7 +6,7 @@ import {
   recordText,
   visibleByPosition,
 } from "../media-kit-contract";
-import styles from "../MediaKit.module.css";
+import styles from "../MediaKitPreview.module.css";
 
 type PreviewItem = {
   id: string;
@@ -169,6 +169,7 @@ function PageShell({
   const footerNote = recordText(section.settings, "footerNote", section.eyebrow || "LANDER RECORDS");
   return <article
     className={[styles.mkPage, dark ? styles.mkPageDark : styles.mkPageLight].join(" ")}
+    data-preview-version="clean-grid-v1"
     data-section-type={section.type}
   >
     <header className={styles.refPageHeader}>
@@ -232,7 +233,7 @@ function CoverPage({
   pageNumber: number;
   real: RealData;
 }) {
-  const items = visibleByPosition(section.items).filter((item) => meaningfulItem(item, real));
+  const items = visibleByPosition(section.items).filter((item) => meaningfulItem(item, real)).slice(0, 6);
   const visualItem = items.find((item) => item.mediaUrl);
   const highlights = items.slice(0, 4);
   return <PageShell settings={settings} section={section} pageNumber={pageNumber} forceDark>
@@ -335,9 +336,9 @@ function AudiencePage({
   const group = (name: string) => items.filter((item) => recordText(item.metadata, "group") === name);
   const measurable = (rows: PreviewItem[]) => rows.filter((item) => numberValue(item.metadata, "percentage") > 0);
   const genders = measurable(group("gender"));
-  const ages = measurable(group("age"));
-  const interests = group("interest").filter((item) => item.title.trim());
-  const cities = measurable(group("city"));
+  const ages = measurable(group("age")).slice(0, 5);
+  const interests = group("interest").filter((item) => item.title.trim()).slice(0, 5);
+  const cities = measurable(group("city")).slice(0, 4);
   const firstGender = numberValue(genders[0]?.metadata, "percentage");
   const totalGender = genders.reduce((sum, item) => sum + numberValue(item.metadata, "percentage"), 0);
   const donutStyle = totalGender > 0
@@ -496,7 +497,8 @@ function ContactPage({
 }) {
   const contacts = visibleByPosition(section.items)
     .map((item) => ({ item, value: publishableValue(item, real) }))
-    .filter(({ value }) => value !== "");
+    .filter(({ value }) => value !== "")
+    .slice(0, 5);
 
   return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
     <div className={styles.refContactBody} data-reference-slot="contact-grid">

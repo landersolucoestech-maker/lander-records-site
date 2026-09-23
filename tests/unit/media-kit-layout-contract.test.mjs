@@ -6,7 +6,7 @@ const read = (path) => fs.readFileSync(new URL("../../" + path, import.meta.url)
 const preview = read("app/admin/(protected)/media-kit/components/MediaKitPreviewDeck.tsx");
 const builder = read("app/admin/(protected)/media-kit/components/MediaKitBuilder.tsx");
 const actions = read("app/admin/(protected)/media-kit/actions.ts");
-const css = read("app/admin/(protected)/media-kit/MediaKit.module.css");
+const css = read("app/admin/(protected)/media-kit/MediaKitPreview.module.css");
 const contract = read("app/admin/(protected)/media-kit/media-kit-contract.ts");
 
 test("media kit has one explicit visual contract for image placement", () => {
@@ -61,4 +61,21 @@ test("media kit typography avoids the previous extra-bold display treatment", ()
   assert.doesNotMatch(css, /font-family:Impact,Haettenschweiler/);
   assert.doesNotMatch(css, /font-weight:950|font-weight:900|font-weight:850/);
   assert.match(css, /font-family:Montserrat,Arial,sans-serif/);
+});
+
+
+test("live preview is isolated from editor CSS and uses one stable landscape grid", () => {
+  assert.match(preview, /MediaKitPreview\.module\.css/);
+  assert.match(preview, /data-preview-version="clean-grid-v1"/);
+  assert.match(css, /aspect-ratio:16\/9!important/);
+  assert.match(css, /grid-template-rows:7\.2cqw minmax\(0,1fr\) 4\.8cqw/);
+  assert.match(css, /overflow:hidden/);
+  assert.doesNotMatch(css, /Media Kit v3|Media Kit v4|Strict reference structure fixes/);
+});
+
+test("dense dynamic content is capped before it can overflow the live preview", () => {
+  assert.match(preview, /measurable\(group\("age"\)\)\.slice\(0, 5\)/);
+  assert.match(preview, /group\("interest"\)[\s\S]*?\.slice\(0, 5\)/);
+  assert.match(preview, /measurable\(group\("city"\)\)\.slice\(0, 4\)/);
+  assert.match(preview, /filter\(\(\{ value \}\) => value !== ""\)[\s\S]*?\.slice\(0, 5\)/);
 });
