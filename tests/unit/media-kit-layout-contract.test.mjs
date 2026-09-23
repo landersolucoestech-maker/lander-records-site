@@ -44,7 +44,7 @@ test("reference audience page contains the four expected information blocks",()=
 
 test("cover and about pages retain strong editorial hierarchy",()=>{
   assert.match(preview,/coverHeadline/);
-  assert.match(css,/\.coverCopy h2\{[^}]*font-size:5\.15cqw/);
+  assert.match(css,/\.coverCopy h2\{[^}]*font-size:4\.15cqw/);
   assert.match(css,/\.aboutMetrics\{[^}]*grid-template-columns:repeat\(5,1fr\)/);
   assert.match(css,/\.aboutBanner\{/);
   assert.match(preview,/data-reference-slot="about-kpis"/);
@@ -80,11 +80,13 @@ test("persisted canonical deck is migrated to the same six-page reference sequen
 
 
 test("reference deck typography stays proportionate inside the portrait preview",()=> {
-  assert.match(css,/\.heading h3,[^}]*font-size:4\.25cqw/);
-  assert.match(css,/\.headingCompact h3\{font-size:3\.35cqw/);
-  assert.match(css,/\.aboutMetrics b\{font-size:1\.75cqw/);
-  assert.match(css,/\.aboutMetrics strong\{font-size:\.66cqw/);
-  assert.match(css,/\.aboutBanner strong\{[^}]*font-size:2\.1cqw/);
-  assert.match(css,/\.contactMain \.heading h3\{font-size:4cqw/);
-  assert.doesNotMatch(css,/font-size:6\.6cqw|font-size:5\.5cqw|font-size:5\.2cqw/);
+  assert.match(css,/\.heading h3,[^}]*font-size:3\.35cqw/);
+  assert.match(css,/\.headingCompact h3\{font-size:2\.7cqw/);
+  assert.match(css,/\.aboutMetrics b\{font-size:1\.25cqw/);
+  assert.match(css,/\.aboutMetrics strong\{[^}]*font-size:\.5cqw/);
+  assert.match(css,/\.aboutMetrics strong\{[^}]*overflow-wrap:anywhere/);
+  assert.match(css,/\.aboutBanner strong\{[^}]*font-size:1\.55cqw/);
+  assert.match(css,/\.contactMain \.heading h3\{font-size:3\.15cqw/);
+  assert.match(css,/\.coverCopy h2\{[^}]*font-size:4\.15cqw/);
+  assert.doesNotMatch(css,/font-size:6\.6cqw|font-size:5\.5cqw|font-size:5\.2cqw|font-size:5\.15cqw|font-size:4\.25cqw/);
 });
