@@ -144,7 +144,7 @@ export default async function MediaKitPage() {
       </div>
 
       <aside className={styles.preview} aria-label="Prévia visual do Mídia Kit">
-        <header className={styles.previewHeader}><div><span>PRÉVIA</span><strong>{settings.documentTitle} {settings.edition}</strong></div><small>{visibleSections} {visibleSections === 1 ? "página" : "páginas"} · composição dinâmica</small></header>
+        <header className={styles.previewHeader}><div><span>PRÉVIA</span><strong>{settings.documentTitle} {settings.edition}</strong></div><small>{visibleSections} {visibleSections === 1 ? "página" : "páginas"} · composição editorial</small></header>
         <div className={styles.previewViewport}>
           <MediaKitPreviewDeck
             settings={settings}

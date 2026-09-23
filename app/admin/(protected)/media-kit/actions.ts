@@ -7,6 +7,7 @@ import { audit } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
 import { deleteMedia, uploadMedia as uploadStoredMedia } from "../../../../lib/storage";
 import { mediaAssets, mediaKitItems, mediaKitSections, mediaKitSettings } from "../../../../lib/db/schema";
+import { MEDIA_FIT_VALUES, MEDIA_POSITION_VALUES } from "./media-kit-contract";
 import { requireMediaKitMutationAdmin } from "./preview-auth";
 
 const SECTION_TYPES = new Set(["cover", "editorial", "metrics", "audience", "cards", "artists", "contact", "custom"]);
@@ -15,6 +16,8 @@ const ITEM_KINDS = new Set(["metric", "card", "bullet", "contact", "text", "rele
 const SOURCE_KEYS = new Set(["static", "artists_total", "releases_total", "posts_total", "media_total", "contact_email", "contact_phone", "location", "instagram", "website"]);
 const ICONS = new Set(["activity", "artists", "calendar", "chart", "document", "external", "mail", "media", "pages", "plus", "posts", "smartphone", "target", "users"]);
 const AUDIENCE_GROUPS = new Set(["gender", "age", "interest", "city"]);
+const MEDIA_FITS = new Set<string>(MEDIA_FIT_VALUES);
+const MEDIA_POSITIONS = new Set<string>(MEDIA_POSITION_VALUES);
 
 function text(formData: FormData, name: string) {
   return String(formData.get(name) || "").trim();
@@ -143,7 +146,13 @@ function compactRecord(entries: Array<[string, string | number]>) {
 }
 
 function sectionSettingsFromForm(formData: FormData) {
+  const fit = text(formData, "mediaFit") || "cover";
+  const position = text(formData, "mediaPosition") || "center";
+  if (!MEDIA_FITS.has(fit)) throw new Error("Enquadramento de imagem inválido.");
+  if (!MEDIA_POSITIONS.has(position)) throw new Error("Foco de imagem inválido.");
   return compactRecord([
+    ["mediaFit", fit],
+    ["mediaPosition", position],
     ["coverSideNote", text(formData, "coverSideNote")],
     ["mockupLabel", text(formData, "mockupLabel")],
     ["sideTitle", text(formData, "sideTitle")],

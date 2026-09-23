@@ -8,6 +8,7 @@ import {
   updateMediaKitSection,
   updateMediaKitSettings,
 } from "../actions";
+import { MEDIA_FIT_VALUES, MEDIA_POSITION_VALUES, mediaFit, mediaPosition } from "../media-kit-contract";
 import styles from "../MediaKit.module.css";
 
 type MediaOption = {
@@ -123,7 +124,7 @@ function MediaImageFields({
   const current = value ? media.find((item) => item.id === value) : null;
   return <div className={styles.builderImageFields}>
     <div className={styles.builderImageHeading}>
-      <div><strong>{label}</strong><span>Escolha da biblioteca ou envie uma imagem nova.</span></div>
+      <div><strong>{label}</strong><span>Escolha da biblioteca ou envie uma imagem nova. O template controla onde ela pode aparecer.</span></div>
       {current ? <span className={styles.builderImageBadge}>Imagem vinculada</span> : <span className={styles.builderImageBadgeEmpty}>Sem imagem</span>}
     </div>
     {current ? <div className={styles.builderImageCurrent}><img src={current.url} alt={current.altText || current.originalFilename}/><div><strong>{current.altText || current.originalFilename}</strong><small>{current.originalFilename}</small></div></div> : null}
@@ -132,7 +133,7 @@ function MediaImageFields({
       <Field label="Enviar nova imagem"><input type="file" name="imageFile" accept="image/*"/></Field>
       <Field label="Texto alternativo da nova imagem" wide><input name="imageAltText" maxLength={500} placeholder="Descreva a imagem para acessibilidade"/></Field>
     </div>
-    <p className={styles.builderImageHelp}>Se você enviar um arquivo novo, ele substitui a seleção da biblioteca e já fica vinculado ao conteúdo. Para remover a imagem, escolha “Sem imagem”, não envie arquivo e salve.</p>
+    <p className={styles.builderImageHelp}>Se você enviar um arquivo novo, ele substitui a seleção da biblioteca. A imagem nunca é replicada automaticamente em outros blocos. Para remover, escolha “Sem imagem”, não envie arquivo e salve.</p>
   </div>;
 }
 
@@ -151,11 +152,30 @@ function recordNumber(record: Record<string, unknown>, key: string) {
 }
 
 function sectionImageLabel(type: string) {
-  if (type === "cover") return "Imagem principal da capa";
-  if (type === "editorial" || type === "metrics") return "Imagem lateral / institucional";
-  if (type === "artists") return "Imagem do artista em destaque";
-  if (type === "contact") return "Imagem do painel Próximos Passos";
-  return "Imagem principal da seção";
+  if (type === "cover") return "Imagem de fundo da capa";
+  if (type === "editorial" || type === "metrics") return "Imagem editorial lateral";
+  if (type === "artists") return "Imagem do card de artista em destaque";
+  if (type === "contact") return "Imagem de apoio do painel Próximos Passos";
+  return "Imagem editorial da seção";
+}
+
+function SectionMediaControls({ section }: { section: MediaKitSectionRow }) {
+  return <>
+    <div className={styles.builderTemplateTitle}>
+      <strong>Tratamento da imagem</strong>
+      <span>A imagem fica restrita ao slot do template. Só a capa permite fotografia como fundo integral.</span>
+    </div>
+    <Field label="Enquadramento">
+      <select name="mediaFit" defaultValue={mediaFit(section.settings)}>
+        {MEDIA_FIT_VALUES.map((value) => <option key={value} value={value}>{value === "cover" ? "Preencher / recortar" : "Conter / sem recorte"}</option>)}
+      </select>
+    </Field>
+    <Field label="Foco da imagem">
+      <select name="mediaPosition" defaultValue={mediaPosition(section.settings)}>
+        {MEDIA_POSITION_VALUES.map((value) => <option key={value} value={value}>{value === "center" ? "Centro" : value === "top" ? "Topo" : "Base"}</option>)}
+      </select>
+    </Field>
+  </>;
 }
 
 function SectionTemplateFields({ section }: { section: MediaKitSectionRow }) {
@@ -305,6 +325,7 @@ function SectionEditor({ section, media, canDeleteSections }: { section: MediaKi
         <Field label="CTA"><input name="ctaLabel" defaultValue={section.ctaLabel}/></Field>
         <Field label="Destino do CTA"><input name="ctaUrl" defaultValue={section.ctaUrl} placeholder="https://, /rota, mailto: ou tel:"/></Field>
         <SectionTemplateFields section={section}/>
+        <SectionMediaControls section={section}/>
         <MediaImageFields value={section.mediaId} media={media} label={sectionImageLabel(section.type)}/>
       </div>
       <div className={styles.builderActions}>
