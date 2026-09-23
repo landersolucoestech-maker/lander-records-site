@@ -5,3 +5,4 @@ export * from "./posts";
 export * from "./site";
 export * from "./integrations";
 export * from "./admin";
+export * from "./media-kit";
