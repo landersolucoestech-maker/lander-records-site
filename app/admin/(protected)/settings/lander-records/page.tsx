@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { requireAdmin } from "../../../../../lib/auth";
 import { hasMinimumRole } from "../../../../../lib/auth/policy";
 import { getDb } from "../../../../../lib/db";
+import { mockDataEnabled, mockIntegrationMetricRows, mockIntegrationSettings } from "../../../../../lib/mocks";
 import { integrationMetricCache, landerRecordsIntegrationSettings } from "../../../../../lib/db/integration-schema";
 import { soundchartsCredentialsConfigured } from "../../../../../lib/integrations/soundcharts";
 import { spotifyCredentialsConfigured } from "../../../../../lib/integrations/spotify";
@@ -26,18 +27,19 @@ export default async function LanderRecordsIntegrationSettingsPage({ searchParam
   const persistent = session.source === "session";
   const canEdit = persistent && hasMinimumRole(session.user.role, "editor");
   const canManageUsers = persistent && session.user.role === "owner";
-  const db = getDb();
-  const [rows, metricRows] = await Promise.all([
-    db.select().from(landerRecordsIntegrationSettings).where(eq(landerRecordsIntegrationSettings.key, "lander_records")).limit(1),
-    db.select().from(integrationMetricCache).where(eq(integrationMetricCache.entityType, "lander_records")),
-  ]);
+  const [rows, metricRows] = mockDataEnabled()
+    ? [[mockIntegrationSettings], mockIntegrationMetricRows]
+    : await Promise.all([
+        getDb().select().from(landerRecordsIntegrationSettings).where(eq(landerRecordsIntegrationSettings.key, "lander_records")).limit(1),
+        getDb().select().from(integrationMetricCache).where(eq(integrationMetricCache.entityType, "lander_records")),
+      ]);
   const settings = rows[0] || {
     instagramUrl: "", youtubeUrl: "", spotifyPlaylistUrl: "", spotifyPlaylistId: "", spotifyUserId: "", spotifyConnectedAt: null, spotifyLastSyncedAt: null, spotifyLastError: "", soundchartsArtistUuid: "", soundchartsResolutionStatus: "unresolved", soundchartsMatchedVia: "", soundchartsLastSyncedAt: null, soundchartsLastError: "",
   };
   const metrics = Object.fromEntries(metricRows.map((row) => [`${row.platform}:${row.metric}`, row.value]));
   const params = await searchParams;
-  const spotifyReady = spotifyCredentialsConfigured() && Boolean(process.env.INTEGRATION_TOKEN_ENCRYPTION_KEY?.trim());
-  const soundchartsReady = soundchartsCredentialsConfigured();
+  const spotifyReady = mockDataEnabled() || (spotifyCredentialsConfigured() && Boolean(process.env.INTEGRATION_TOKEN_ENCRYPTION_KEY?.trim()));
+  const soundchartsReady = mockDataEnabled() || soundchartsCredentialsConfigured();
   const spotifyConnected = spotifyReady && Boolean(settings.spotifyConnectedAt);
   const soundchartsConnected = soundchartsReady && settings.soundchartsResolutionStatus === "resolved";
 
