@@ -116,7 +116,36 @@ export const mockPageSections = [
   ...legalSections("mock-page-privacy","POLÍTICA DE PRIVACIDADE"),
   ...legalSections("mock-page-terms","TERMOS E CONDIÇÕES"),
 ];
-export const mockPageItems = [...homeItems,...aboutItems];
+
+const aboutIdentityItems = [
+  item(aboutSections[2].id,"mission",1,{title:"Missão",body:"Desenvolver projetos artísticos sustentáveis, conectando criação, estratégia e execução."}),
+  item(aboutSections[2].id,"vision",2,{title:"Visão",body:"Ser referência em gestão artística integrada, produção e desenvolvimento de carreira."}),
+  item(aboutSections[2].id,"values",3,{title:"Valores",body:"Criatividade, transparência, consistência, colaboração, respeito e resultado."}),
+];
+const aboutMethodItems = [
+  item(aboutSections[4].id,"diagnosis",1,{title:"Diagnóstico",body:"Leitura de identidade, repertório, audiência, canais, momento de carreira e oportunidades."}),
+  item(aboutSections[4].id,"positioning",2,{title:"Posicionamento",body:"Definição de narrativa, proposta artística, linguagem visual e prioridades estratégicas."}),
+  item(aboutSections[4].id,"production",3,{title:"Produção",body:"Repertório, gravação, direção musical, assets, conteúdo e preparação de lançamento."}),
+  item(aboutSections[4].id,"distribution",4,{title:"Distribuição & audiência",body:"Calendário, distribuição digital, mídia, conteúdo e relacionamento com público."}),
+  item(aboutSections[4].id,"business",5,{title:"Negócios",body:"Booking, marcas, parcerias, projetos especiais e novas fontes de receita."}),
+  item(aboutSections[4].id,"summary",6,{title:"Gestão contínua",body:"Acompanhamento de performance, aprendizados e próximos ciclos de crescimento."}),
+];
+const contactIntro = section("mock-page-contact","intro",3,{eyebrow:"LANDER RECORDS",title:"FALE COM A EQUIPE",body:"Conte o contexto do seu projeto, objetivo, prazo e formato desejado. Nossa equipe direciona sua mensagem para booking, parcerias, conteúdo, distribuição ou desenvolvimento artístico."});
+mockPageSections.push(contactIntro);
+
+const privacySection = mockPageSections.find((entry)=>entry.pageId==="mock-page-privacy" && entry.sectionKey==="legal_body")!;
+const termsSection = mockPageSections.find((entry)=>entry.pageId==="mock-page-terms" && entry.sectionKey==="legal_body")!;
+const legalItems = [
+  item(privacySection.id,"collection",1,{title:"1. Dados tratados",body:"Podemos receber dados enviados voluntariamente em formulários, informações técnicas de navegação e dados necessários para responder solicitações."}),
+  item(privacySection.id,"purpose",2,{title:"2. Finalidades",body:"Os dados são utilizados para atendimento, segurança, operação do site, melhoria de experiência e relacionamento comercial solicitado pelo usuário."}),
+  item(privacySection.id,"retention",3,{title:"3. Retenção e direitos",body:"A retenção segue necessidade operacional e obrigações aplicáveis. Solicitações de acesso, correção ou exclusão podem ser encaminhadas pelos canais oficiais."}),
+  item(termsSection.id,"use",1,{title:"1. Uso do site",body:"O site apresenta informações institucionais, artísticas, editoriais e canais de contato da Lander Records."}),
+  item(termsSection.id,"content",2,{title:"2. Conteúdo e propriedade intelectual",body:"Textos, marcas, imagens e demais materiais são protegidos e não devem ser reutilizados fora das permissões aplicáveis."}),
+  item(termsSection.id,"contact",3,{title:"3. Contato e atualizações",body:"Estes termos podem ser atualizados para refletir mudanças operacionais. A versão vigente permanece disponível nesta página."}),
+];
+
+export const mockPageItems = [...homeItems,...aboutItems,...aboutIdentityItems,...aboutMethodItems,...legalItems];
+
 
 export function mockPageContent(pageKey:string) {
   const page = mockPages.find((entry)=>entry.key===pageKey);
