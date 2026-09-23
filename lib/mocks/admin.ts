@@ -55,3 +55,23 @@ export const mockAuditRows = actions.map((action,index)=>({
   actorName:index%3===0?"Marina Costa":index%3===1?"Rafael Lima":"Sistema",
   actorEmail:index%3===2?"":index%3===0?"marina@landerrecords.com":"rafael@landerrecords.com",
 }));
+
+
+export const mockAuditSummary = {
+  missingCard: 2,
+  missingHero: 1,
+  draftPosts: 1,
+};
+
+export const mockNotifications = mockAuditRows
+  .filter(({ log }) => ["artist", "post", "media_asset"].includes(log.entityType))
+  .slice(0, 12)
+  .map(({ log, actorName }) => ({
+    id: log.id,
+    action: log.action,
+    entityType: log.entityType,
+    entityId: log.entityId,
+    metadata: log.metadata,
+    createdAt: log.createdAt.toISOString(),
+    actorName: actorName || "Sistema",
+  }));
