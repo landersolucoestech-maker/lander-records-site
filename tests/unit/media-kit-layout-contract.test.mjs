@@ -65,3 +65,15 @@ test("builder keeps free section management and supports the reference applicati
   assert.match(builder,/Exemplo de aplicação/);
   assert.match(actions,/deleteMediaKitSection[\s\S]*?requireMediaKitMutationAdmin\("editor"\)/);
 });
+
+
+test("persisted canonical deck is migrated to the same six-page reference sequence", () => {
+  const migration = read("migrations/0017_media_kit_reference_sequence.sql");
+  assert.match(migration, /FORMATOS DE PUBLICIDADE/);
+  assert.match(migration, /type = 'application'/);
+  assert.match(migration, /EXEMPLO DE APLICAÇÃO/);
+  for (const label of ["Banner Topo","Publicidade Lateral","Anuncie Aqui","Conteúdo Editorial"]) {
+    assert.match(migration, new RegExp(label));
+  }
+  assert.match(migration, /VAMOS CONSTRUIR ALGO GRANDE JUNTOS/);
+});
