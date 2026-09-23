@@ -3,6 +3,7 @@ import { asc, eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "../../../../../../lib/auth";
 import { getDb } from "../../../../../../lib/db";
+import { mockDataEnabled, mockPages, mockPageSections } from "../../../../../../lib/mocks";
 import { pageSectionBindings, sectionDefinitions } from "../../../../../../lib/db/page-management-schema";
 import { pageSections, pages } from "../../../../../../lib/db/schema";
 import styles from "../../../artists/ArtistView.module.css";
@@ -13,16 +14,20 @@ export const dynamic = "force-dynamic";
 export default async function PageView({ params }: { params: Promise<{ id: string }> }) {
   const session = await requireAdmin();
   const { id } = await params;
-  const db = getDb();
-  const [pageRows, sections] = await Promise.all([
-    db.select().from(pages).where(eq(pages.id, id)).limit(1),
-    db.select({ section: pageSections, definitionName: sectionDefinitions.name })
-      .from(pageSections)
-      .leftJoin(pageSectionBindings, eq(pageSections.id, pageSectionBindings.pageSectionId))
-      .leftJoin(sectionDefinitions, eq(pageSectionBindings.definitionId, sectionDefinitions.id))
-      .where(eq(pageSections.pageId, id))
-      .orderBy(asc(pageSections.position)),
-  ]);
+  const [pageRows, sections] = mockDataEnabled()
+    ? [
+        mockPages.filter((page)=>page.id===id),
+        mockPageSections.filter((section)=>section.pageId===id).map((section)=>({section,definitionName:section.title || section.sectionKey})),
+      ]
+    : await Promise.all([
+        getDb().select().from(pages).where(eq(pages.id, id)).limit(1),
+        getDb().select({ section: pageSections, definitionName: sectionDefinitions.name })
+          .from(pageSections)
+          .leftJoin(pageSectionBindings, eq(pageSections.id, pageSectionBindings.pageSectionId))
+          .leftJoin(sectionDefinitions, eq(pageSectionBindings.definitionId, sectionDefinitions.id))
+          .where(eq(pageSections.pageId, id))
+          .orderBy(asc(pageSections.position)),
+      ]);
   const page = pageRows[0];
   if (!page) notFound();
   const publicRoute = pageContract(page.key).route;
