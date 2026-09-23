@@ -2,6 +2,7 @@ import Link from "next/link";
 import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
+import { mockAuditRows, mockAuditSummary, mockDataEnabled } from "../../../../lib/mocks";
 import { adminUsers, artists, auditLogs, posts } from "../../../../lib/db/schema";
 import { AdminIcon, type IconName } from "../../components/AdminIcon";
 import styles from "../DashboardCrud.module.css";
@@ -15,16 +16,18 @@ function Metric({ accent, icon, label, value, hint }: { accent: "red" | "blue" |
 
 export default async function AuditPage() {
   await requireAdmin("admin");
-  const db = getDb();
-  const [rows, missingCardRows, missingHeroRows, draftPostRows] = await Promise.all([
-    db.select({ log: auditLogs, actorName: adminUsers.name, actorEmail: adminUsers.email }).from(auditLogs).leftJoin(adminUsers, eq(auditLogs.actorUserId, adminUsers.id)).orderBy(desc(auditLogs.createdAt)).limit(500),
-    db.select({ count: sql<number>`count(*)::int` }).from(artists).where(and(isNull(artists.cardMediaId), isNull(artists.archivedAt))),
-    db.select({ count: sql<number>`count(*)::int` }).from(artists).where(and(isNull(artists.heroMediaId), isNull(artists.archivedAt))),
-    db.select({ count: sql<number>`count(*)::int` }).from(posts).where(and(eq(posts.status, "draft"), isNull(posts.archivedAt))),
-  ]);
-  const missingCard = countValue(missingCardRows);
-  const missingHero = countValue(missingHeroRows);
-  const draftPosts = countValue(draftPostRows);
+  const [rows, missingCard, missingHero, draftPosts] = mockDataEnabled()
+    ? [mockAuditRows, mockAuditSummary.missingCard, mockAuditSummary.missingHero, mockAuditSummary.draftPosts]
+    : await (async()=>{
+        const db=getDb();
+        const [auditRows, missingCardRows, missingHeroRows, draftPostRows] = await Promise.all([
+          db.select({ log: auditLogs, actorName: adminUsers.name, actorEmail: adminUsers.email }).from(auditLogs).leftJoin(adminUsers, eq(auditLogs.actorUserId, adminUsers.id)).orderBy(desc(auditLogs.createdAt)).limit(500),
+          db.select({ count: sql<number>`count(*)::int` }).from(artists).where(and(isNull(artists.cardMediaId), isNull(artists.archivedAt))),
+          db.select({ count: sql<number>`count(*)::int` }).from(artists).where(and(isNull(artists.heroMediaId), isNull(artists.archivedAt))),
+          db.select({ count: sql<number>`count(*)::int` }).from(posts).where(and(eq(posts.status, "draft"), isNull(posts.archivedAt))),
+        ]);
+        return [auditRows,countValue(missingCardRows),countValue(missingHeroRows),countValue(draftPostRows)] as const;
+      })();
 
   return <div className="adminDashboard" data-testid="audit-manager">
     <section className="adminMetricGrid" aria-label="Resumo da auditoria">
