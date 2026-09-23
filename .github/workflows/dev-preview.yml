@@ -39,6 +39,7 @@ jobs:
       NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
       CONTACT_IP_HASH_SALT: preview-contact-ip-salt-not-for-production
       DEV_PREVIEW_PUBLIC_ACCESS: "true"
+      LANDER_MOCK_DATA: "1"
 
     steps:
       - uses: actions/checkout@v5

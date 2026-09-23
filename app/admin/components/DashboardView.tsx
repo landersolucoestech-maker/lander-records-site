@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AdminIcon, type IconName } from "./AdminIcon";
+import { mockDashboardData } from "@/lib/mocks/admin";
 
 type Activity = {
   id: string;
@@ -52,49 +53,7 @@ type MetricCardProps = {
   value?: number | null;
 };
 
-const referenceDashboard: DashboardData = {
-  analytics: {
-    visitors: 12842,
-    views: 38421,
-    engagementRate: 4.8,
-    conversions: 284,
-    previousVisitorsChange: 12.5,
-    previousViewsChange: 18.3,
-    previousEngagementChange: 0.9,
-    previousConversionsChange: 22.1,
-    series: [
-      { label: "16 ago", visitors: 650, views: 390 },
-      { label: "19 ago", visitors: 720, views: 405 },
-      { label: "22 ago", visitors: 700, views: 390 },
-      { label: "25 ago", visitors: 760, views: 420 },
-      { label: "28 ago", visitors: 1120, views: 480 },
-      { label: "31 ago", visitors: 1480, views: 520 },
-      { label: "3 set", visitors: 1260, views: 500 },
-      { label: "6 set", visitors: 1360, views: 535 },
-      { label: "9 set", visitors: 1180, views: 490 },
-      { label: "12 set", visitors: 1290, views: 525 },
-      { label: "15 set", visitors: 930, views: 455 },
-    ],
-    devices: [
-      { label: "Desktop", count: 6962, percentage: 54.2 },
-      { label: "Mobile", count: 4971, percentage: 38.7 },
-      { label: "Tablet", count: 909, percentage: 7.1 },
-    ],
-  },
-  recentActivity: [
-    { id: "demo-a1", label: "Nova notícia publicada", meta: "Lançamento: Lander Records no Primavera Sound 2026", when: "há 2h", icon: "document", accent: "red" },
-    { id: "demo-a2", label: "Mídia enviada", meta: "Capa do single - DJ Stay", when: "há 5h", icon: "image", accent: "red" },
-    { id: "demo-a3", label: "Novo artista cadastrado", meta: "DJ Stay", when: "há 1 dia", icon: "artists", accent: "red" },
-    { id: "demo-a4", label: "Configuração atualizada", meta: "Informações da home", when: "há 1 dia", icon: "settings", accent: "neutral" },
-  ],
-  recentPublications: [
-    { id: "demo-p1", title: "Lander Records no Primavera Sound 2026", type: "Notícia", status: "published", updatedAt: "15/09/2026, 14:32", thumbnail: "/lander-records-anuncie-banner.webp", href: "/admin/posts" },
-    { id: "demo-p2", title: "DJ Stay – Novo single", type: "Artista", status: "published", updatedAt: "14/09/2026, 10:15", thumbnail: "/dj-stay-home-card.webp", href: "/admin/artists" },
-    { id: "demo-p3", title: "sobre-nos", type: "Página", status: "published", updatedAt: "12/09/2026, 18:40", thumbnail: "/lander-records-logo.webp", href: "/admin/pages" },
-    { id: "demo-p4", title: "Novo talento: Alana Ruiz", type: "Notícia", status: "published", updatedAt: "10/09/2026, 16:20", thumbnail: "/dj-stay-wide.webp", href: "/admin/posts" },
-    { id: "demo-p5", title: "Galeria Primavera Sound", type: "Mídia", status: "published", updatedAt: "09/09/2026, 11:05", thumbnail: "/lander-records-anuncie-banner.webp", href: "/admin/media" },
-  ],
-};
+
 
 const sparkPaths: Record<MetricCardProps["accent"], string> = {
   red: "M2 25 L14 18 L26 27 L38 20 L50 20 L62 12 L76 6",
@@ -215,7 +174,7 @@ function typeClass(type: string) {
 }
 
 export function DashboardView({ data, demoMode = false, name, preview = false, readOnly = false, role = "viewer" }: { data: DashboardData; demoMode?: boolean; name: string; preview?: boolean; readOnly?: boolean; role?: "viewer" | "editor" | "admin" | "owner" }) {
-  const dashboardData = demoMode ? referenceDashboard : data;
+  const dashboardData = demoMode ? mockDashboardData : data;
   const analytics = dashboardData.analytics ?? null;
   const dashboardSummary = analytics
     ? "Acompanhe os indicadores conectados do site e o resumo operacional."
