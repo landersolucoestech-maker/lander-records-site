@@ -27,12 +27,12 @@ export default async function LanderRecordsIntegrationSettingsPage({ searchParam
   const persistent = session.source === "session";
   const canEdit = persistent && hasMinimumRole(session.user.role, "editor");
   const canManageUsers = persistent && session.user.role === "owner";
-  const [rows, metricRows] = mockDataEnabled()
-    ? [[mockIntegrationSettings], mockIntegrationMetricRows]
-    : await Promise.all([
-        getDb().select().from(landerRecordsIntegrationSettings).where(eq(landerRecordsIntegrationSettings.key, "lander_records")).limit(1),
-        getDb().select().from(integrationMetricCache).where(eq(integrationMetricCache.entityType, "lander_records")),
-      ]);
+  const realData = mockDataEnabled() ? null : await Promise.all([
+    getDb().select().from(landerRecordsIntegrationSettings).where(eq(landerRecordsIntegrationSettings.key, "lander_records")).limit(1),
+    getDb().select().from(integrationMetricCache).where(eq(integrationMetricCache.entityType, "lander_records")),
+  ]);
+  const rows = realData ? realData[0] : [mockIntegrationSettings];
+  const metricRows = realData ? realData[1] : mockIntegrationMetricRows;
   const settings = rows[0] || {
     instagramUrl: "", youtubeUrl: "", spotifyPlaylistUrl: "", spotifyPlaylistId: "", spotifyUserId: "", spotifyConnectedAt: null, spotifyLastSyncedAt: null, spotifyLastError: "", soundchartsArtistUuid: "", soundchartsResolutionStatus: "unresolved", soundchartsMatchedVia: "", soundchartsLastSyncedAt: null, soundchartsLastError: "",
   };
