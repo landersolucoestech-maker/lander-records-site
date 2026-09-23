@@ -19,13 +19,14 @@ export default async function SettingsPage() {
   const canEdit = persistent && hasMinimumRole(session.user.role, "editor");
   const canAdmin = persistent && hasMinimumRole(session.user.role, "admin");
   const canManageUsers = persistent && session.user.role === "owner";
-  const [settingsRows, socials, media] = mockDataEnabled()
-    ? [[mockSiteSettings], mockSocialLinks.map((item)=>({...item})), mockMedia.map((item)=>({...item}))]
-    : await Promise.all([
-        getDb().select().from(siteSettings).limit(1),
-        getDb().select().from(socialLinks).orderBy(asc(socialLinks.position)),
-        getDb().select().from(mediaAssets).where(eq(mediaAssets.status, "active")).orderBy(asc(mediaAssets.originalFilename)),
-      ]);
+  const realData = mockDataEnabled() ? null : await Promise.all([
+    getDb().select().from(siteSettings).limit(1),
+    getDb().select().from(socialLinks).orderBy(asc(socialLinks.position)),
+    getDb().select().from(mediaAssets).where(eq(mediaAssets.status, "active")).orderBy(asc(mediaAssets.originalFilename)),
+  ]);
+  const settingsRows = realData ? realData[0] : [mockSiteSettings];
+  const socials = realData ? realData[1] : mockSocialLinks.map((item)=>({...item}));
+  const media = realData ? realData[2] : mockMedia.map((item)=>({...item}));
   const settings = settingsRows[0];
   if (!settings) throw new Error("As configurações do site ainda não foram inicializadas.");
   const logo = settings.logoMediaId ? media.find((item) => item.id === settings.logoMediaId) : null;
