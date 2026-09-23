@@ -172,7 +172,8 @@ test("media kit is a persisted section builder with a controlled editorial previ
   assert.match(mediaKitBuilder, /Composição da capa/);
   assert.match(mediaKitBuilder, /Composição Sobre \+ KPIs/);
   assert.match(mediaKitBuilder, /Composição de audiência/);
-  assert.match(mediaKitBuilder, /Composição de publicidade/);\n  assert.match(mediaKitBuilder, /Exemplo de aplicação/);
+  assert.match(mediaKitBuilder, /Composição de publicidade/);
+  assert.match(mediaKitBuilder, /Exemplo de aplicação/);
   assert.match(mediaKitBuilder, /Composição Artistas & Destaques/);
   assert.match(mediaKitBuilder, /Composição de encerramento/);
   assert.match(mediaKitBuilder, /audienceGroup/);
@@ -228,7 +229,8 @@ test("media kit is a persisted section builder with a controlled editorial previ
   assert.match(mediaKitPreview, /FAIXA ETÁRIA/);
   assert.match(mediaKitPreview, /PRINCIPAIS INTERESSES/);
   assert.match(mediaKitPreview, /PRINCIPAIS CIDADES/);
-  assert.match(mediaKitPreview, /FORMATOS DE PUBLICIDADE/);\n  assert.match(mediaKitPreview, /EXEMPLO DE APLICAÇÃO/);
+  assert.match(mediaKitPreview, /FORMATOS DE PUBLICIDADE/);
+  assert.match(mediaKitPreview, /EXEMPLO DE APLICAÇÃO/);
   assert.match(mediaKitPreview, /PRÓXIMOS PASSOS/);
   assert.match(mediaKitPreview, /coverHeadline/);
   assert.doesNotMatch(mediaKitPreview, /sectionPriority/);
