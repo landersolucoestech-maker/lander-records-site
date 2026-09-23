@@ -23,7 +23,7 @@ test("media kit preview never injects promotional photos as implicit backgrounds
   assert.doesNotMatch(css, /dj-stay-wide\.webp|dj-stay-home-card\.webp|lander-records-anuncie-banner\.webp/);
   assert.doesNotMatch(preview, /dj-stay-wide\.webp|dj-stay-home-card\.webp|lander-records-anuncie-banner\.webp/);
   assert.match(preview, /backgroundStyle\(section/);
-  assert.match(css, /single authoritative visual contract/);
+  assert.match(css, /authoritative, isolated, overflow-safe/);
 });
 
 test("editorial pages do not reuse one section image across multiple backgrounds", () => {
