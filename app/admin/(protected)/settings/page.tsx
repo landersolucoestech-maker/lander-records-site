@@ -4,6 +4,7 @@ import { asc, eq } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
 import { hasMinimumRole } from "../../../../lib/auth/policy";
 import { getDb } from "../../../../lib/db";
+import { mockDataEnabled, mockMedia, mockSiteSettings, mockSocialLinks } from "../../../../lib/mocks";
 import { mediaAssets, siteSettings, socialLinks } from "../../../../lib/db/schema";
 import { updateCompanySettings, updateIdentitySettings, upsertSocialLink } from "../../actions";
 import { AdminIcon } from "../../components/AdminIcon";
@@ -18,12 +19,13 @@ export default async function SettingsPage() {
   const canEdit = persistent && hasMinimumRole(session.user.role, "editor");
   const canAdmin = persistent && hasMinimumRole(session.user.role, "admin");
   const canManageUsers = persistent && session.user.role === "owner";
-  const db = getDb();
-  const [settingsRows, socials, media] = await Promise.all([
-    db.select().from(siteSettings).limit(1),
-    db.select().from(socialLinks).orderBy(asc(socialLinks.position)),
-    db.select().from(mediaAssets).where(eq(mediaAssets.status, "active")).orderBy(asc(mediaAssets.originalFilename)),
-  ]);
+  const [settingsRows, socials, media] = mockDataEnabled()
+    ? [[mockSiteSettings], mockSocialLinks.map((item)=>({...item})), mockMedia.map((item)=>({...item}))]
+    : await Promise.all([
+        getDb().select().from(siteSettings).limit(1),
+        getDb().select().from(socialLinks).orderBy(asc(socialLinks.position)),
+        getDb().select().from(mediaAssets).where(eq(mediaAssets.status, "active")).orderBy(asc(mediaAssets.originalFilename)),
+      ]);
   const settings = settingsRows[0];
   if (!settings) throw new Error("As configurações do site ainda não foram inicializadas.");
   const logo = settings.logoMediaId ? media.find((item) => item.id === settings.logoMediaId) : null;
