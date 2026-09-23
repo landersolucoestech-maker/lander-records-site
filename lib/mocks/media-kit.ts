@@ -13,7 +13,7 @@ export const mockMediaKitSections = [
   { id:"mock-kit-partnerships", type:"cards", theme:"light", eyebrow:"COMERCIAL", title:"FORMATOS DE PARCERIA", subtitle:"Soluções para marcas que desejam se conectar com música, cultura e artistas.", body:"", ctaLabel:"", ctaUrl:"", mediaId:null, position:4, enabled:true, settings:{footerNote:"PARCERIAS QUE AMPLIFICAM"} },
   { id:"mock-kit-artists", type:"artists", theme:"light", eyebrow:"CASTING", title:"ARTISTAS & DESTAQUES", subtitle:"Talentos, lançamentos e possibilidades de exposição reunidos em uma página.", body:"", ctaLabel:"", ctaUrl:"", mediaId:"mock-media-dj-stay-card", position:5, enabled:true, settings:{featuredLabel:"ARTISTA EM DESTAQUE",quote:"Mais que uma gravadora, uma parceira de verdade.",quoteAuthor:"Parceiro comercial"} },
   { id:"mock-kit-contact", type:"contact", theme:"dark", eyebrow:"CONTATO", title:"VAMOS CONVERSAR", subtitle:"Booking, marcas, conteúdo, lançamentos e novos projetos.", body:"Conte o contexto da oportunidade e conectaremos você à pessoa certa da equipe.", ctaLabel:"FALE COM A LANDER", ctaUrl:"/contato", mediaId:"mock-media-banner", position:6, enabled:true, settings:{nextStepsTitle:"PRÓXIMOS PASSOS",nextStepsBody:"Briefing, alinhamento de objetivos, proposta e plano de execução.",closingSlogan:"MÚSICA QUE APROXIMA PESSOAS."} },
-] as const;
+];
 
 const metric = (id:string,sectionId:string,title:string,sourceKey:string,position:number,icon:string,subtitle="") => ({
   id,sectionId,kind:"metric",title,subtitle,body:"",label:title,value:"",url:"",sourceKey,icon,mediaId:null,position,enabled:true,metadata:{},
@@ -59,7 +59,7 @@ export const mockMediaKitItems = [
   {id:"mock-kit-contact-phone",sectionId:"mock-kit-contact",kind:"contact",title:"Telefone",subtitle:"",body:"",label:"Telefone",value:"",url:"",sourceKey:"contact_phone",icon:"smartphone",mediaId:null,position:2,enabled:true,metadata:{}},
   {id:"mock-kit-contact-location",sectionId:"mock-kit-contact",kind:"contact",title:"Localização",subtitle:"",body:"",label:"Localização",value:"",url:"",sourceKey:"location",icon:"target",mediaId:null,position:3,enabled:true,metadata:{}},
   {id:"mock-kit-contact-instagram",sectionId:"mock-kit-contact",kind:"contact",title:"Instagram",subtitle:"",body:"",label:"Instagram",value:"",url:"",sourceKey:"instagram",icon:"activity",mediaId:null,position:4,enabled:true,metadata:{}},
-] as const;
+];
 
 export const mockMediaKitArtists = [
   {name:"DJ Stay",eyebrow:"DJ · PRODUTOR",shortBio:"Funk, bass e performance de alta energia."},
