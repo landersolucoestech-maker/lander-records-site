@@ -168,10 +168,11 @@ export function AdminShell({ children, email, footerAction, name, notifications 
   const initials = developmentPreview ? "DE" : name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "LR";
   const navigation = useMemo(() => visibleAdminNavigation(role), [role]);
   const canEdit = !readOnly && role !== "viewer";
-  const headerAction = contextualHeader?.action && (!contextualHeader.action.requiresEdit || canEdit) ? contextualHeader.action : undefined;
   const normalizedPath = pathname.replace(/\/+$/, "") || "/";
   const contentRoot = preview ? "/cms-preview/posts" : "/admin/posts";
   const artistsRoot = preview ? "/cms-preview/artists" : "/admin/artists";
+  const canUseIsolatedPreviewCrud = developmentPreview && (normalizedPath === contentRoot || normalizedPath === artistsRoot);
+  const headerAction = contextualHeader?.action && (!contextualHeader.action.requiresEdit || canEdit || canUseIsolatedPreviewCrud) ? contextualHeader.action : undefined;
   const mediaRoot = preview ? "/cms-preview/media" : "/admin/media";
   const showContentHeaderTools = normalizedPath === contentRoot;
   const showArtistHeaderTools = normalizedPath === artistsRoot;

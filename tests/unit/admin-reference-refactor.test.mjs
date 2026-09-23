@@ -66,6 +66,8 @@ test("major modules retain one contextual shell without fake global capabilities
   assert.match(shell, /admin:new-artist/);
   assert.match(shell, /adminTopbarPrimaryDisabled/);
   assert.match(shell, /const canEdit = !readOnly && role !== "viewer"/);
+  assert.match(shell, /const canUseIsolatedPreviewCrud = developmentPreview && \(normalizedPath === contentRoot \|\| normalizedPath === artistsRoot\)/);
+  assert.match(shell, /canEdit \|\| canUseIsolatedPreviewCrud/);
 });
 
 test("content uses the canonical modal workflow, floating actions and Lander Records public route", () => {
