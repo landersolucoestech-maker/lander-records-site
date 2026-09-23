@@ -245,7 +245,7 @@ test("media kit is a persisted section builder with a controlled editorial previ
   assert.match(mediaKitStyles, /\.previewViewport\{[^}]*overflow-y:auto/);
   assert.match(mediaKitPreviewStyles, /\.mkPage\{[^}]*aspect-ratio:16\/9!important/);
   assert.match(mediaKitPreviewStyles, /\.refCover\{/);
-  assert.match(mediaKitPreviewStyles, /\.refCoverPageBody\{[^}]*grid-template-rows:minmax\(0,1fr\) 9\.2cqw/);
+  assert.match(mediaKitPreviewStyles, /\.refCoverPageBody\{[^}]*grid-template-rows:minmax\(0,1fr\) 7cqw/);
   assert.match(mediaKitPreviewStyles, /\.refCoverMedia\{/);
   assert.doesNotMatch(mediaKitPreviewStyles, /\.refLaptopMockup\{|\.refLaptopBase\{/);
   assert.match(mediaKitPreviewStyles, /\.refAboutTop\{/);
