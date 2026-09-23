@@ -69,7 +69,7 @@ test("live preview is isolated from editor CSS and uses one stable landscape gri
   assert.match(preview, /MediaKitPreview\.module\.css/);
   assert.match(preview, /data-preview-version="clean-grid-v1"/);
   assert.match(css, /aspect-ratio:16\/9!important/);
-  assert.match(css, /grid-template-rows:3\.2cqw minmax\(0,1fr\) 2cqw/);
+  assert.match(css, /grid-template-rows:2\.4cqw minmax\(0,1fr\) 1\.45cqw/);
   assert.match(css, /overflow:hidden/);
   assert.doesNotMatch(css, /Media Kit v3|Media Kit v4|Strict reference structure fixes/);
 });
@@ -103,11 +103,11 @@ test("specialized pages always have an editorial heading fallback", () => {
 
 
 test("live preview padding stays compact so page content uses the available frame", () => {
-  assert.match(css, /padding-inline:1\.2cqw/);
-  assert.match(css, /\.refCover\{[^}]*padding:\.55cqw 1\.2cqw \.4cqw/);
-  assert.match(css, /\.refAboutBody\{[^}]*padding:\.55cqw 1\.2cqw \.4cqw/);
-  assert.match(css, /\.refAudienceBody\{[^}]*padding:\.5cqw 1\.2cqw \.35cqw/);
-  assert.match(editorCss, /\.previewViewport\{[^}]*padding:2px/);
+  assert.match(css, /padding-inline:\.65cqw/);
+  assert.match(css, /\.refCover\{[^}]*padding:\.28cqw \.65cqw \.2cqw/);
+  assert.match(css, /\.refAboutBody\{[^}]*padding:\.28cqw \.65cqw \.2cqw/);
+  assert.match(css, /\.refAudienceBody\{[^}]*padding:\.25cqw \.65cqw \.16cqw/);
+  assert.match(editorCss, /\.previewViewport\{[^}]*padding:0/);
 });
 
 
@@ -119,9 +119,23 @@ test("cover background stays neutral without decorative red glow", () => {
 
 
 test("all live preview cards and panels use compact internal spacing", () => {
-  assert.match(css, /\.refAudiencePanel\{[^}]*padding:\.45cqw \.55cqw/);
-  assert.match(css, /\.refAboutBanner\{[^}]*padding:\.62cqw \.9cqw/);
-  assert.match(css, /\.refFeaturedArtist\{[^}]*padding:\.65cqw/);
-  assert.match(css, /\.refNextSteps\{[^}]*padding:\.8cqw/);
-  assert.match(css, /\.refGenericGrid article\{[^}]*padding:\.4cqw/);
+  assert.match(css, /\.refAudiencePanel\{[^}]*padding:\.2cqw \.28cqw/);
+  assert.match(css, /\.refAboutBanner\{[^}]*padding:\.3cqw \.45cqw/);
+  assert.match(css, /\.refFeaturedArtist\{[^}]*padding:\.3cqw/);
+  assert.match(css, /\.refNextSteps\{[^}]*padding:\.38cqw/);
+  assert.match(css, /\.refGenericGrid article\{[^}]*padding:\.18cqw/);
+});
+
+
+test("every media kit section uses edge-tight page padding", () => {
+  const expected = [
+    [/\.refCover\{[^}]*padding:\.28cqw \.65cqw \.2cqw/, "cover"],
+    [/\.refAboutBody\{[^}]*padding:\.28cqw \.65cqw \.2cqw/, "about"],
+    [/\.refAudienceBody\{[^}]*padding:\.25cqw \.65cqw \.16cqw/, "audience"],
+    [/\.refPartnershipBody\{[^}]*padding:\.25cqw \.65cqw \.16cqw/, "partnership"],
+    [/\.refArtistsBody\{[^}]*padding:\.25cqw \.65cqw \.16cqw/, "artists"],
+    [/\.refContactBody\{[^}]*padding:\.28cqw \.65cqw \.2cqw/, "contact"],
+    [/\.refGenericBody\{[^}]*padding:\.25cqw \.65cqw \.16cqw/, "generic"],
+  ];
+  for (const [pattern, name] of expected) assert.match(css, pattern, name);
 });

@@ -43,7 +43,7 @@
 .preview{position:static;min-width:0;min-height:0;height:100%;overflow:hidden;display:grid;grid-template-rows:auto minmax(0,1fr);border:1px solid #dfe4ea;border-radius:10px;background:#e8eaed;box-shadow:0 3px 12px #10182808}
 .previewHeader{min-height:54px;padding:11px 14px;border-bottom:1px solid #d7dbe0;background:#fff;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .previewHeader>div{display:grid;gap:2px}.previewHeader span{font-size:9px;font-weight:650;letter-spacing:.05em;color:#e30613}.previewHeader strong{font-size:14px;font-weight:650;color:#15191e}.previewHeader small{color:#607694;font-size:9px}
-.previewViewport{min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;scrollbar-gutter:stable;padding:2px;background:linear-gradient(180deg,#eceef1,#dfe2e6)}
+.previewViewport{min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;scrollbar-gutter:stable;padding:0;background:linear-gradient(180deg,#eceef1,#dfe2e6)}
 .mkDeck{display:grid;align-content:start;gap:14px;width:100%}
 .mkPage{position:relative;box-sizing:border-box;width:100%;aspect-ratio:210/297;overflow:hidden;border:1px solid #cfd3d8;border-radius:5px;box-shadow:0 8px 24px rgba(15,23,42,.13);font-family:Montserrat,Arial,sans-serif;display:grid;grid-template-rows:auto minmax(0,1fr) auto}
 .mkPage *{box-sizing:border-box}.mkPageLight{background:#f8f8f7;color:#111}.mkPageDark{background:#090a0c;color:#fff}
