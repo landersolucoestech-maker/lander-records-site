@@ -108,3 +108,10 @@ test("live preview padding stays compact so page content uses the available fram
   assert.match(css, /\.refAboutBody\{[^}]*padding:1\.15cqw 2\.4cqw \.8cqw/);
   assert.match(css, /\.refAudienceBody\{[^}]*padding:1\.05cqw 2\.4cqw \.75cqw/);
 });
+
+
+test("cover background stays neutral without decorative red glow", () => {
+  assert.match(css, /\.refCover\{[^}]*background:#0a0c0f/);
+  assert.doesNotMatch(css, /radial-gradient\([^)]*237,28,36/);
+  assert.doesNotMatch(css, /refPartnerVisualPlain:after\{[^}]*237,28,36/);
+});
