@@ -7,6 +7,7 @@ const preview = read("app/admin/(protected)/media-kit/components/MediaKitPreview
 const builder = read("app/admin/(protected)/media-kit/components/MediaKitBuilder.tsx");
 const actions = read("app/admin/(protected)/media-kit/actions.ts");
 const css = read("app/admin/(protected)/media-kit/MediaKitPreview.module.css");
+const editorCss = read("app/admin/(protected)/media-kit/MediaKit.module.css");
 const contract = read("app/admin/(protected)/media-kit/media-kit-contract.ts");
 
 test("media kit has one explicit visual contract for image placement", () => {
@@ -22,7 +23,7 @@ test("media kit preview never injects promotional photos as implicit backgrounds
   assert.doesNotMatch(css, /dj-stay-wide\.webp|dj-stay-home-card\.webp|lander-records-anuncie-banner\.webp/);
   assert.doesNotMatch(preview, /dj-stay-wide\.webp|dj-stay-home-card\.webp|lander-records-anuncie-banner\.webp/);
   assert.match(preview, /backgroundStyle\(section/);
-  assert.match(css, /Explicit media stays inside template slots/);
+  assert.match(css, /single authoritative visual contract/);
 });
 
 test("editorial pages do not reuse one section image across multiple backgrounds", () => {
@@ -53,8 +54,8 @@ test("section management is free-form and uses the editor permission consistentl
   assert.match(builder, /Crie uma seção livremente/);
   assert.match(builder, /Remover seção/);
   assert.match(actions, /export async function deleteMediaKitSection[\s\S]*?requireMediaKitMutationAdmin\("editor"\)/);
-  assert.match(css, /\.createSectionPanel\{/);
-  assert.match(css, /\.builderSection>summary\{/);
+  assert.match(editorCss, /\.createSectionPanel\{/);
+  assert.match(editorCss, /\.builderSection>summary\{/);
 });
 
 test("media kit typography avoids the previous extra-bold display treatment", () => {
