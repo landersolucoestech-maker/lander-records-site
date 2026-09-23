@@ -5,14 +5,14 @@ export const mockArtistCategories = [
   { id: "mock-cat-cantores", name: "Cantores", slug: "cantores", description: "Vozes e intérpretes do casting.", position: 2, active: true, showAsFilter: true },
   { id: "mock-cat-produtores", name: "Produtores", slug: "produtores", description: "Produtores musicais e criadores de repertório.", position: 3, active: true, showAsFilter: true },
   { id: "mock-cat-novos", name: "Novos talentos", slug: "novos-talentos", description: "Artistas em desenvolvimento e lançamento.", position: 4, active: true, showAsFilter: true },
-] as const;
+];
 
 export const mockArtistRoles = [
   { id: "mock-role-dj", name: "DJ" },
   { id: "mock-role-cantor", name: "Cantor(a)" },
   { id: "mock-role-produtor", name: "Produtor(a)" },
   { id: "mock-role-songwriter", name: "Compositor(a)" },
-] as const;
+];
 
 export const mockMusicGenres = [
   { id: "mock-genre-funk", name: "Funk" },
@@ -21,12 +21,12 @@ export const mockMusicGenres = [
   { id: "mock-genre-trap", name: "Trap" },
   { id: "mock-genre-rnb", name: "R&B" },
   { id: "mock-genre-electronic", name: "Eletrônica" },
-] as const;
+];
 
 export const mockPublicationDestinations = [
   { id: "mock-destination-home", name: "Home · artistas em destaque", description: "Vitrine principal de artistas da página inicial." },
   { id: "mock-destination-index", name: "Catálogo público de artistas", description: "Listagem completa em /artistas." },
-] as const;
+];
 
 function artist(input: Partial<PublicArtist> & Pick<PublicArtist, "id" | "name" | "slug">): PublicArtist {
   return {
