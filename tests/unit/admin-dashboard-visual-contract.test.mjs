@@ -100,7 +100,8 @@ test("Contents uses category as its sole active taxonomy and no redundant public
 
 test("Content create, edit, view and row actions share accessible interaction contracts", () => {
   assert.match(adminShell, /action: \{ label: "Novo conteúdo", event: "admin:new-content", icon: "plus", requiresEdit: true \}/);
-  assert.match(adminShell, /const headerAction = contextualHeader\?\.action && \(!contextualHeader\.action\.requiresEdit \|\| canEdit\)/);
+  assert.match(adminShell, /const canUseIsolatedPreviewCrud = developmentPreview && \(normalizedPath === contentRoot \|\| normalizedPath === artistsRoot\)/);
+  assert.match(adminShell, /const headerAction = contextualHeader\?\.action && \(!contextualHeader\.action\.requiresEdit \|\| canEdit \|\| canUseIsolatedPreviewCrud\)/);
   assert.match(postManager, /type ModalMode = "create" \| "edit" \| "view"/);
   assert.match(postManager, /window\.addEventListener\("admin:new-content", openModal\)/);
   assert.match(postManager, /aria-haspopup="menu"/);
