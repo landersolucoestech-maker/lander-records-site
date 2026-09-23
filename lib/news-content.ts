@@ -2,8 +2,10 @@ import { eq } from "drizzle-orm";
 import { getDb } from "./db";
 import { postLinks, postProfiles } from "./db/news-management-schema";
 import { mediaAssets } from "./db/schema";
+import { mockDataEnabled, mockPostPresentation } from "./mocks";
 
 export async function getPublicPostPresentation(postId: string) {
+  if (mockDataEnabled()) return mockPostPresentation(postId);
   const db = getDb();
   const [profileRows, links] = await Promise.all([
     db.select({ publicationLink: postProfiles.publicationLink, authorImage: mediaAssets.url })
