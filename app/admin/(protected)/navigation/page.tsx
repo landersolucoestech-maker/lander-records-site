@@ -1,6 +1,7 @@
 import { asc } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
+import { mockDataEnabled, mockNavigation } from "../../../../lib/mocks";
 import { navigationItems } from "../../../../lib/db/schema";
 import { isNavigationLinkType, navigationDestinationError } from "../../navigation-contract";
 import NavigationManager, { type NavigationSummary } from "./NavigationManager";
@@ -61,10 +62,13 @@ function summarize(items: Array<typeof navigationItems.$inferSelect>): Navigatio
 
 export default async function NavigationPage({ searchParams }: { searchParams: Promise<NavigationFilters> }) {
   const session = await requireAdmin();
-  const db = getDb();
   const filters = await searchParams;
-  const allItems = await db.select().from(navigationItems).orderBy(asc(navigationItems.menuKey), asc(navigationItems.position), asc(navigationItems.createdAt), asc(navigationItems.id));
-  const items = summarize(allItems);
+  const items = mockDataEnabled()
+    ? mockNavigation.map((item) => ({
+        id:item.id,menuKey:item.menuKey,parentId:item.parentId,parentLabel:null,label:item.label,url:item.url,linkType:item.linkType,
+        position:item.position,enabled:item.enabled,newTab:item.newTab,depth:0,childCount:0,issue:null,safeDestination:true,
+      }))
+    : summarize(await getDb().select().from(navigationItems).orderBy(asc(navigationItems.menuKey), asc(navigationItems.position), asc(navigationItems.createdAt), asc(navigationItems.id)));
   const needle = filters.q?.trim().toLocaleLowerCase("pt-BR") || "";
   const filtered = items.filter((item) => (!needle || `${item.label} ${item.url}`.toLocaleLowerCase("pt-BR").includes(needle)) && (!filters.status || filters.status === "all" || (filters.status === "active" ? item.enabled : !item.enabled)) && (!filters.type || filters.type === "all" || item.linkType === filters.type) && (!filters.menu || filters.menu === "all" || item.menuKey === filters.menu) && (!filters.hierarchy || filters.hierarchy === "all" || (filters.hierarchy === "root" ? !item.parentId : Boolean(item.parentId))));
   const metrics = { total: items.length, active: items.filter((item) => item.enabled).length, inactive: items.filter((item) => !item.enabled).length, external: items.filter((item) => item.linkType === "external").length };
