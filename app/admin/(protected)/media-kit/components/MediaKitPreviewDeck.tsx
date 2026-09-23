@@ -197,7 +197,7 @@ function SectionHeading({ section }: { section: PreviewSection }) {
   </div>;
 }
 
-function LaptopMockup({
+function CoverVisual({
   imageUrl,
   label,
   alt,
@@ -206,19 +206,14 @@ function LaptopMockup({
   label: string;
   alt: string;
 }) {
-  return <div className={styles.refLaptopMockup} data-testid="media-kit-cover-laptop">
-    <div className={styles.refLaptopLid}>
-      <div className={styles.refLaptopScreen}>
-        {imageUrl
-          ? <img src={imageUrl} alt={alt}/>
-          : <div className={styles.refLaptopFallback}>
-              <div className={styles.refLaptopNav}><strong>LANDER RECORDS</strong><span>ARTISTAS · LANÇAMENTOS · NOTÍCIAS</span></div>
-              <div className={styles.refLaptopHero}><strong>{label}</strong><span>▶</span></div>
-              <div className={styles.refLaptopTiles}><i/><i/><i/><i/></div>
-            </div>}
-      </div>
-    </div>
-    <div className={styles.refLaptopBase}><i/></div>
+  return <div className={styles.refCoverMedia} data-testid="media-kit-cover-visual">
+    {imageUrl
+      ? <img src={imageUrl} alt={alt}/>
+      : <div className={styles.refCoverMediaFallback}>
+          <Brand dark/>
+          <strong>{label}</strong>
+          <span>LANDER RECORDS · MÚSICA · ARTISTAS · CULTURA</span>
+        </div>}
   </div>;
 }
 
@@ -235,7 +230,7 @@ function CoverPage({
 }) {
   const items = visibleByPosition(section.items).filter((item) => meaningfulItem(item, real)).slice(0, 6);
   const visualItem = items.find((item) => item.mediaUrl);
-  const highlights = items.slice(0, 4);
+  const highlights = items.filter((item) => item.id !== visualItem?.id).slice(0, 4);
   return <PageShell settings={settings} section={section} pageNumber={pageNumber} forceDark>
     <div className={styles.refCoverPageBody}>
       <div className={styles.refCover} style={backgroundStyle(section, "linear-gradient(90deg,rgba(5,6,8,.96),rgba(5,6,8,.48))")}>
@@ -249,10 +244,10 @@ function CoverPage({
         </div>
         <div className={styles.refCoverVisual}>
           <small>{recordText(section.settings, "coverSideNote", "O SOM DE NOVAS POSSIBILIDADES.")}</small>
-          <LaptopMockup
+          <CoverVisual
             imageUrl={visualItem?.mediaUrl}
             label={recordText(section.settings, "mockupLabel", "MÚSICA MOVE PESSOAS.")}
-            alt={visualItem?.title || "Apresentação digital da Lander Records"}
+            alt={visualItem?.title || "Destaque visual da Lander Records"}
           />
         </div>
       </div>
@@ -293,7 +288,7 @@ function AboutPage({
   return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
     <div className={styles.refAboutBody}>
       <div className={styles.refAboutTop}>
-        <SectionHeading section={section}/>
+        <SectionHeading section={{...section, title: section.title || (section.type === "metrics" ? "INDICADORES DA LANDER RECORDS" : "SOBRE A LANDER RECORDS")}}/>
         <aside className={styles.refAboutVisual}>
           {section.mediaUrl
             ? <img className={styles.refEditorialImage} src={section.mediaUrl} alt={sideCaption || section.title} style={imageStyle(section)}/>
@@ -349,7 +344,7 @@ function AudiencePage({
 
   return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
     <div className={styles.refAudienceBody}>
-      <SectionHeading section={section}/>
+      <SectionHeading section={{...section, title: section.title || "NOSSA AUDIÊNCIA"}}/>
       <div className={styles.refAudienceGrid} data-reference-slot="audience-grid">
         {genders.length ? <section className={styles.refAudiencePanel}>
           <h4>PERFIL DO PÚBLICO</h4>
@@ -418,7 +413,7 @@ function PartnershipPage({
   const items = visibleByPosition(section.items).filter((item) => meaningfulItem(item, real)).slice(0, 6);
   return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
     <div className={styles.refPartnershipBody}>
-      <SectionHeading section={section}/>
+      <SectionHeading section={{...section, title: section.title || "PARCERIAS E OPORTUNIDADES"}}/>
       <div className={styles.refPartnerGrid} data-reference-slot="partnership-grid">
         {items.map((item) => <article key={item.id}>
           <div className={[styles.refPartnerVisual, item.mediaUrl ? "" : styles.refPartnerVisualPlain].join(" ")}>
@@ -449,7 +444,7 @@ function ArtistsPage({
   const featured = real.artists[0];
   return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
     <div className={styles.refArtistsBody}>
-      <SectionHeading section={section}/>
+      <SectionHeading section={{...section, title: section.title || "ARTISTAS E DESTAQUES"}}/>
       <div className={styles.refArtistsGrid} data-reference-slot="artists-grid">
         <section className={styles.refReleaseColumn}>
           <h4>LANÇAMENTOS RECENTES</h4>
@@ -503,7 +498,7 @@ function ContactPage({
   return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
     <div className={styles.refContactBody} data-reference-slot="contact-grid">
       <section className={styles.refContactMain}>
-        <SectionHeading section={section}/>
+        <SectionHeading section={{...section, title: section.title || "VAMOS CONVERSAR"}}/>
         {section.ctaLabel && section.ctaUrl ? <a className={styles.refContactCta} href={section.ctaUrl}>{section.ctaLabel}<span>→</span></a> : null}
         {contacts.length ? <div className={styles.refContactList}>
           {contacts.map(({ item, value }) => <p key={item.id}><AdminIcon name={iconName(item.icon)} size={14}/><span>{String(value)}</span></p>)}
@@ -537,7 +532,7 @@ function GenericPage({
   const items = visibleByPosition(section.items).filter((item) => meaningfulItem(item, real));
   return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
     <div className={styles.refGenericBody}>
-      <SectionHeading section={section}/>
+      <SectionHeading section={{...section, title: section.title || "CONTEÚDO"}}/>
       {items.length ? <div className={styles.refGenericGrid}>
         {items.map((item) => {
           const value = publishableValue(item, real);

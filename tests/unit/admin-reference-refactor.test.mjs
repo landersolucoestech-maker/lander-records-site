@@ -232,9 +232,9 @@ test("media kit is a persisted section builder with a controlled editorial previ
   assert.match(mediaKitPreview, /PRÓXIMOS PASSOS/);
   assert.match(mediaKitPreview, /coverHeadline/);
   assert.doesNotMatch(mediaKitPreview, /sectionPriority/);
-  assert.match(mediaKitPreview, /media-kit-cover-laptop/);
+  assert.match(mediaKitPreview, /media-kit-cover-visual/);
   assert.match(mediaKitPreview, /refCoverPageBody/);
-  assert.match(mediaKitPreview, /refLaptopBase/);
+  assert.match(mediaKitPreview, /refCoverMedia/);
   for (const slot of ["cover-highlights", "about-kpis", "audience-grid", "partnership-grid", "artists-grid", "contact-grid"]) {
     assert.match(mediaKitPreview, new RegExp('data-reference-slot="' + slot + '"'));
   }
@@ -245,11 +245,11 @@ test("media kit is a persisted section builder with a controlled editorial previ
   assert.match(mediaKitStyles, /\.previewViewport\{[^}]*overflow-y:auto/);
   assert.match(mediaKitPreviewStyles, /\.mkPage\{[^}]*aspect-ratio:16\/9!important/);
   assert.match(mediaKitPreviewStyles, /\.refCover\{/);
-  assert.match(mediaKitPreviewStyles, /\.refCoverPageBody\{[^}]*grid-template-rows:minmax\(0,1fr\) 12\.5cqw/);
-  assert.match(mediaKitPreviewStyles, /\.refLaptopMockup\{/);
-  assert.match(mediaKitPreviewStyles, /\.refLaptopBase\{/);
+  assert.match(mediaKitPreviewStyles, /\.refCoverPageBody\{[^}]*grid-template-rows:minmax\(0,1fr\) 9\.2cqw/);
+  assert.match(mediaKitPreviewStyles, /\.refCoverMedia\{/);
+  assert.doesNotMatch(mediaKitPreviewStyles, /\.refLaptopMockup\{|\.refLaptopBase\{/);
   assert.match(mediaKitPreviewStyles, /\.refAboutTop\{/);
-  assert.match(mediaKitPreviewStyles, /\.refAboutBody\{[^}]*grid-template-rows:minmax\(0,1fr\) 10\.5cqw 9cqw/);
+  assert.match(mediaKitPreviewStyles, /\.refAboutBody\{[^}]*grid-template-rows:minmax\(0,1fr\) 8\.8cqw 7\.2cqw/);
   assert.match(mediaKitPreviewStyles, /\.refAudienceGrid\{/);
   assert.match(mediaKitPreviewStyles, /\.refPartnerGrid\{/);
   assert.match(mediaKitPreviewStyles, /\.refArtistsGrid\{/);

@@ -69,7 +69,7 @@ test("live preview is isolated from editor CSS and uses one stable landscape gri
   assert.match(preview, /MediaKitPreview\.module\.css/);
   assert.match(preview, /data-preview-version="clean-grid-v1"/);
   assert.match(css, /aspect-ratio:16\/9!important/);
-  assert.match(css, /grid-template-rows:7\.2cqw minmax\(0,1fr\) 4\.8cqw/);
+  assert.match(css, /grid-template-rows:5\.6cqw minmax\(0,1fr\) 3\.8cqw/);
   assert.match(css, /overflow:hidden/);
   assert.doesNotMatch(css, /Media Kit v3|Media Kit v4|Strict reference structure fixes/);
 });
@@ -79,4 +79,24 @@ test("dense dynamic content is capped before it can overflow the live preview", 
   assert.match(preview, /group\("interest"\)[\s\S]*?\.slice\(0, 5\)/);
   assert.match(preview, /measurable\(group\("city"\)\)\.slice\(0, 4\)/);
   assert.match(preview, /filter\(\(\{ value \}\) => value !== ""\)[\s\S]*?\.slice\(0, 5\)/);
+});
+
+
+test("cover composition uses a bounded visual panel instead of the fragile laptop mockup", () => {
+  assert.match(preview, /media-kit-cover-visual/);
+  assert.match(preview, /CoverVisual/);
+  assert.doesNotMatch(preview, /LaptopMockup|media-kit-cover-laptop/);
+  assert.match(css, /\.refCoverMedia\{/);
+  assert.match(css, /\.refCoverCopy h3\{[^}]*font-size:4\.45cqw/);
+});
+
+test("specialized pages always have an editorial heading fallback", () => {
+  for (const label of [
+    "INDICADORES DA LANDER RECORDS",
+    "SOBRE A LANDER RECORDS",
+    "NOSSA AUDIÊNCIA",
+    "PARCERIAS E OPORTUNIDADES",
+    "ARTISTAS E DESTAQUES",
+    "VAMOS CONVERSAR",
+  ]) assert.match(preview, new RegExp(label));
 });
