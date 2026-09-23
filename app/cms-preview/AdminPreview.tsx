@@ -10,173 +10,27 @@ import PostManager, { type PostRecord } from "../admin/(protected)/posts/PostMan
 import PageManager, { type PageSummary } from "../admin/(protected)/pages/PageManager";
 import NavigationManager, { type NavigationSummary } from "../admin/(protected)/navigation/NavigationManager";
 import { HeaderManagerView, type HeaderManagerData } from "../admin/(protected)/header/HeaderManagerView";
+import {
+  mockPreviewArtists,
+  mockPreviewDashboard,
+  mockPreviewHeader,
+  mockPreviewModules,
+  mockPreviewNavigation,
+  mockPreviewPages,
+  mockPreviewPosts,
+  mockPreviewRows,
+  mockPreviewSettings,
+} from "../../lib/mocks";
 
 type PreviewState = "filled" | "empty" | "loading" | "error";
 
-const modules = [
-  ["dashboard", "Dashboard"],
-  ["home", "Home"],
-  ["artists", "Artistas"],
-  ["posts", "Conteúdos"],
-  ["pages", "Páginas"],
-  ["media", "Mídias"],
-  ["categories", "Categorias"],
-  ["navigation", "Navegação"],
-  ["header", "Cabeçalho"],
-  ["settings", "Configurações"],
-  ["integrations", "Integrações"],
-  ["users", "Usuários"],
-  ["audit", "Auditoria"],
-] as const;
-
-const rows: Record<string, Array<[string, string, string]>> = {
-  artists: [["DJ Stay", "Publicado", "Eletrônica"], ["Lander", "Rascunho", "Produtor"], ["Aurora", "Inativo", "Pop"]],
-  media: [["artist-card.webp", "Ativo", "1200 × 1200"], ["news-cover.webp", "Ativo", "1600 × 900"], ["hero-banner.webp", "Arquivado", "1920 × 800"]],
-  categories: [["Eletrônica", "Ativa", "Artistas"], ["Notícias", "Ativa", "Conteúdos"], ["Agenda", "Ativa", "Conteúdos"]],
-  users: [["Equipe editorial", "Ativo", "Editor"], ["Administrador local", "Ativo", "Administrador"], ["Leitura", "Ativo", "Visualizador"]],
-  audit: [["Conteúdo atualizado", "Sucesso", "page_section"], ["Artista publicado", "Sucesso", "artist"], ["Login administrativo", "Sucesso", "admin_user"]],
-};
-
-const previewArtists: ArtistSummary[] = [
-  { id: "preview-1", name: "Artista Aurora", slug: "artista-aurora", status: "published", cardImage: "", genres: ["Eletrônica"], homePosition: 1, isPubliclyVisible: true, updatedAt: "Não consultado" },
-  { id: "preview-2", name: "Coletivo Horizonte", slug: "coletivo-horizonte", status: "published", cardImage: "", genres: ["Hip Hop", "Rap"], homePosition: 2, isPubliclyVisible: true, updatedAt: "Não consultado" },
-  { id: "preview-3", name: "Projeto Norte", slug: "projeto-norte", status: "draft", cardImage: "", genres: ["Pop"], isPubliclyVisible: false, updatedAt: "Não consultado" },
-  { id: "preview-4", name: "Trio Atlântico", slug: "trio-atlantico", status: "inactive", cardImage: "", genres: ["MPB"], isPubliclyVisible: false, updatedAt: "Não consultado" },
-];
-
-const previewPosts: PostRecord[] = [
-  {
-    id: "news-preview-1",
-    title: "Novidades da Lander Records",
-    slug: "novidades-lander-records",
-    excerpt: "Conteúdo editorial demonstrativo para validar a composição da listagem.",
-    contentMarkdown: "Conteúdo editorial demonstrativo da Lander Records para validar o fluxo completo de visualização.",
-    status: "published",
-    editorStatus: "published",
-    category: "Notícias",
-    categoryId: "preview-category-news",
-    authorName: "Equipe editorial",
-    publishedAt: "Não consultado",
-    publishedAtInput: "",
-    coverImage: "",
-    coverMediaId: "",
-    authorMediaId: "",
-    authorImage: "",
-    links: {},
-    featuredOnHome: true,
-    homePosition: 1,
-    isPubliclyVisible: true,
-    seoTitle: "",
-    seoDescription: "",
-    canonicalUrl: "",
-    updatedAt: "Não consultado",
-  },
-  {
-    id: "news-preview-2",
-    title: "Bastidores do estúdio",
-    slug: "bastidores-do-estudio",
-    excerpt: "Exemplo isolado de uma notícia em elaboração.",
-    contentMarkdown: "Rascunho demonstrativo dos bastidores do estúdio.",
-    status: "draft",
-    editorStatus: "draft",
-    category: "Editorial",
-    categoryId: "preview-category-editorial",
-    authorName: "Equipe editorial",
-    publishedAt: "",
-    publishedAtInput: "",
-    coverImage: "",
-    coverMediaId: "",
-    authorMediaId: "",
-    authorImage: "",
-    links: {},
-    featuredOnHome: false,
-    homePosition: 0,
-    isPubliclyVisible: false,
-    seoTitle: "",
-    seoDescription: "",
-    canonicalUrl: "",
-    updatedAt: "Não consultado",
-  },
-  {
-    id: "news-preview-3",
-    title: "Agenda cultural da semana",
-    slug: "agenda-cultural",
-    excerpt: "Exemplo de conteúdo publicado fora do destaque da Home.",
-    contentMarkdown: "Conteúdo demonstrativo da agenda cultural da semana.",
-    status: "published",
-    editorStatus: "published",
-    category: "Agenda",
-    categoryId: "preview-category-agenda",
-    authorName: "Redação",
-    publishedAt: "Não consultado",
-    publishedAtInput: "",
-    coverImage: "",
-    coverMediaId: "",
-    authorMediaId: "",
-    authorImage: "",
-    links: {},
-    featuredOnHome: false,
-    homePosition: 0,
-    isPubliclyVisible: true,
-    seoTitle: "",
-    seoDescription: "",
-    canonicalUrl: "",
-    updatedAt: "Não consultado",
-  },
-  {
-    id: "news-preview-4",
-    title: "Comunicado anterior",
-    slug: "comunicado-anterior",
-    excerpt: "Registro arquivado representado somente no preview visual.",
-    contentMarkdown: "Registro demonstrativo arquivado para validar o estado editorial.",
-    status: "archived",
-    editorStatus: "archived",
-    category: "Comunicados",
-    categoryId: "preview-category-announcements",
-    authorName: "Redação",
-    publishedAt: "",
-    publishedAtInput: "",
-    coverImage: "",
-    coverMediaId: "",
-    authorMediaId: "",
-    authorImage: "",
-    links: {},
-    featuredOnHome: false,
-    homePosition: 0,
-    isPubliclyVisible: false,
-    seoTitle: "",
-    seoDescription: "",
-    canonicalUrl: "",
-    updatedAt: "Não consultado",
-  },
-];
-
-const previewPages: PageSummary[] = [
-  { id: "page-preview-home", key: "home", title: "Home", configuredRoute: "/", publicRoute: "/", classification: "Estrutural", scope: "Composição gerenciada no módulo Home", routeWarning: false, enabled: true, seoConfigured: true, sectionCount: 7, enabledSectionCount: 7, updatedAt: "Não consultado" },
-  { id: "page-preview-about", key: "about", title: "Sobre a Lander Records", configuredRoute: "/sobre-nos", publicRoute: "/sobre-nos", classification: "Institucional", scope: "Conteúdo estruturado por seções", routeWarning: false, enabled: true, seoConfigured: false, sectionCount: 6, enabledSectionCount: 6, updatedAt: "Não consultado" },
-  { id: "page-preview-artists", key: "artists", title: "Artistas", configuredRoute: "/artistas", publicRoute: "/artistas", classification: "Módulo de domínio", scope: "Apresentação; catálogo no módulo Artistas", routeWarning: false, enabled: true, seoConfigured: true, sectionCount: 3, enabledSectionCount: 3, updatedAt: "Não consultado" },
-  { id: "page-preview-news", key: "news", title: "Notícias", configuredRoute: "/noticias", publicRoute: "/noticias", classification: "Módulo de domínio", scope: "Apresentação; publicações no módulo Conteúdos", routeWarning: false, enabled: true, seoConfigured: true, sectionCount: 3, enabledSectionCount: 3, updatedAt: "Não consultado" },
-  { id: "page-preview-contact", key: "contact", title: "Contato", configuredRoute: "/contato", publicRoute: "/contato", classification: "Funcional", scope: "Conteúdo editorial; formulário separado", routeWarning: false, enabled: false, seoConfigured: false, sectionCount: 2, enabledSectionCount: 1, updatedAt: "Não consultado" },
-  { id: "page-preview-future", key: "future", title: "Estrutura editorial futura com título longo", configuredRoute: "/estrutura-futura", publicRoute: null, classification: "Estrutura administrativa", scope: "Sem renderer público registrado", routeWarning: true, enabled: true, seoConfigured: true, sectionCount: 1, enabledSectionCount: 1, updatedAt: "Não consultado" },
-];
-
-const previewNavigation: NavigationSummary[] = [
-  { id: "nav-preview-home", menuKey: "primary", parentId: null, parentLabel: null, label: "Início", url: "/", linkType: "internal", position: 1, enabled: true, newTab: true, depth: 0, childCount: 0, issue: null, safeDestination: true },
-  { id: "nav-preview-artists", menuKey: "primary", parentId: null, parentLabel: null, label: "Artistas", url: "/artistas", linkType: "internal", position: 2, enabled: true, newTab: false, depth: 0, childCount: 1, issue: null, safeDestination: true },
-  { id: "nav-preview-artists-child", menuKey: "primary", parentId: "nav-preview-artists", parentLabel: "Artistas", label: "Todos os artistas", url: "/artistas", linkType: "internal", position: 1, enabled: true, newTab: false, depth: 1, childCount: 0, issue: null, safeDestination: true },
-  { id: "nav-preview-news", menuKey: "primary", parentId: null, parentLabel: null, label: "Notícias", url: "/noticias", linkType: "internal", position: 3, enabled: false, newTab: false, depth: 0, childCount: 0, issue: null, safeDestination: true },
-  { id: "nav-preview-partner", menuKey: "primary", parentId: null, parentLabel: null, label: "Parceiro", url: "https://example.com/lander", linkType: "external", position: 4, enabled: true, newTab: true, depth: 0, childCount: 0, issue: null, safeDestination: true },
-  { id: "nav-preview-contact", menuKey: "footer", parentId: null, parentLabel: null, label: "Contato", url: "/contato", linkType: "internal", position: 2, enabled: true, newTab: false, depth: 0, childCount: 0, issue: null, safeDestination: true },
-];
-
-const previewHeader: HeaderManagerData = {
-  brandName: "Lander Records",
-  ctaLabel: "Quero Contratar",
-  ctaUrl: "/contato",
-  globalLogoUrl: "",
-  primaryItems: previewNavigation.filter((item) => item.menuKey === "primary" && !item.parentId && item.enabled).map(({ id, label, newTab, url }) => ({ id, label, newTab, url })),
-  publicLogoSrc: "/lander-records-brand.svg",
-};
+const modules = mockPreviewModules;
+const rows = mockPreviewRows;
+const previewArtists = mockPreviewArtists as ArtistSummary[];
+const previewPosts = mockPreviewPosts as PostRecord[];
+const previewPages = mockPreviewPages as PageSummary[];
+const previewNavigation = mockPreviewNavigation as NavigationSummary[];
+const previewHeader = mockPreviewHeader as HeaderManagerData;
 
 function badgeClass(status: string) {
   if (/publicado|ativa|ativo|sucesso|novo/i.test(status)) return "live";
@@ -192,14 +46,14 @@ function StateBody({ section, state }: { section: string; state: PreviewState })
   if (section === "dashboard") {
     return <>
       <div className="adminMetricGrid">
-        {[["Artistas", "12"], ["Notícias publicadas", "28"], ["Rascunhos", "4"], ["Páginas ativas", "7"]].map(([label, value]) => <div className="adminMetricCard" key={label}><span>{label}</span><strong>{value}</strong><small>Dados visuais de demonstração</small></div>)}
+        {[["Visitantes", mockPreviewDashboard.analytics.visitors], ["Visualizações", mockPreviewDashboard.analytics.views], ["Conversões", mockPreviewDashboard.analytics.conversions], ["Engajamento", `${mockPreviewDashboard.analytics.engagementRate}%`]].map(([label, value]) => <div className="adminMetricCard" key={label}><span>{label}</span><strong>{value}</strong><small>Cenário central de demonstração</small></div>)}
       </div>
       <section className="adminPanel adminStack"><h2>Atividades recentes</h2>{rows.audit.map(([title, status, kind]) => <div className="adminSectionCard" key={title}><strong>{title}</strong><span>{kind} · <span className={`adminBadge ${badgeClass(status)}`}>{status}</span></span></div>)}</section>
     </>;
   }
 
   if (section === "settings" || section === "integrations") {
-    return <section className="adminPanel"><h2>Identidade e integrações</h2><div className="adminForm"><div className="adminFormGrid"><label>Nome da marca<input defaultValue="Lander Records" readOnly /></label><label>E-mail de contato<input defaultValue="contato@exemplo.local" readOnly /></label><label>Spotify<input defaultValue="Não conectado no preview" readOnly /></label><label>Soundcharts<input defaultValue="Não conectado no preview" readOnly /></label></div><button className="adminButton primary" type="button" disabled>Salvar indisponível no preview</button></div></section>;
+    return <section className="adminPanel"><h2>Identidade e integrações</h2><div className="adminForm"><div className="adminFormGrid"><label>Nome da marca<input defaultValue={mockPreviewSettings.brandName} readOnly /></label><label>E-mail de contato<input defaultValue={mockPreviewSettings.email} readOnly /></label><label>Spotify<input defaultValue={mockPreviewSettings.spotify} readOnly /></label><label>Soundcharts<input defaultValue={mockPreviewSettings.soundcharts} readOnly /></label></div><button className="adminButton primary" type="button" disabled>Salvar indisponível no preview</button></div></section>;
   }
 
   const data = rows[section] || [];
