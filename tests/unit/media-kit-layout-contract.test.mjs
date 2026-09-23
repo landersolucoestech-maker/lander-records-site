@@ -69,7 +69,7 @@ test("live preview is isolated from editor CSS and uses one stable landscape gri
   assert.match(preview, /MediaKitPreview\.module\.css/);
   assert.match(preview, /data-preview-version="clean-grid-v1"/);
   assert.match(css, /aspect-ratio:16\/9!important/);
-  assert.match(css, /grid-template-rows:4\.2cqw minmax\(0,1fr\) 2\.8cqw/);
+  assert.match(css, /grid-template-rows:3\.2cqw minmax\(0,1fr\) 2cqw/);
   assert.match(css, /overflow:hidden/);
   assert.doesNotMatch(css, /Media Kit v3|Media Kit v4|Strict reference structure fixes/);
 });
@@ -103,10 +103,11 @@ test("specialized pages always have an editorial heading fallback", () => {
 
 
 test("live preview padding stays compact so page content uses the available frame", () => {
-  assert.match(css, /padding-inline:2\.4cqw/);
-  assert.match(css, /\.refCover\{[^}]*padding:1\.15cqw 2\.4cqw \.9cqw/);
-  assert.match(css, /\.refAboutBody\{[^}]*padding:1\.15cqw 2\.4cqw \.8cqw/);
-  assert.match(css, /\.refAudienceBody\{[^}]*padding:1\.05cqw 2\.4cqw \.75cqw/);
+  assert.match(css, /padding-inline:1\.2cqw/);
+  assert.match(css, /\.refCover\{[^}]*padding:\.55cqw 1\.2cqw \.4cqw/);
+  assert.match(css, /\.refAboutBody\{[^}]*padding:\.55cqw 1\.2cqw \.4cqw/);
+  assert.match(css, /\.refAudienceBody\{[^}]*padding:\.5cqw 1\.2cqw \.35cqw/);
+  assert.match(editorCss, /\.previewViewport\{[^}]*padding:2px/);
 });
 
 
@@ -114,4 +115,13 @@ test("cover background stays neutral without decorative red glow", () => {
   assert.match(css, /\.refCover\{[^}]*background:#0a0c0f/);
   assert.doesNotMatch(css, /radial-gradient\([^)]*237,28,36/);
   assert.doesNotMatch(css, /refPartnerVisualPlain:after\{[^}]*237,28,36/);
+});
+
+
+test("all live preview cards and panels use compact internal spacing", () => {
+  assert.match(css, /\.refAudiencePanel\{[^}]*padding:\.45cqw \.55cqw/);
+  assert.match(css, /\.refAboutBanner\{[^}]*padding:\.62cqw \.9cqw/);
+  assert.match(css, /\.refFeaturedArtist\{[^}]*padding:\.65cqw/);
+  assert.match(css, /\.refNextSteps\{[^}]*padding:\.8cqw/);
+  assert.match(css, /\.refGenericGrid article\{[^}]*padding:\.4cqw/);
 });
