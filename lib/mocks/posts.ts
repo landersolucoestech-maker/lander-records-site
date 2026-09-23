@@ -1,12 +1,14 @@
 import type { PublicPost } from "@/modules/posts/types";
 
-export const mockPostCategories = [
+export type MockPostCategory = { id: string; name: string; slug: string; position: number; active: boolean; showAsFilter: boolean };
+
+export const mockPostCategories: MockPostCategory[] = [
   { id: "mock-post-cat-releases", name: "Lançamentos", slug: "lancamentos", position: 1, active: true, showAsFilter: true },
   { id: "mock-post-cat-backstage", name: "Bastidores", slug: "bastidores", position: 2, active: true, showAsFilter: true },
   { id: "mock-post-cat-market", name: "Mercado", slug: "mercado", position: 3, active: true, showAsFilter: true },
   { id: "mock-post-cat-events", name: "Eventos", slug: "eventos", position: 4, active: true, showAsFilter: true },
   { id: "mock-post-cat-editorial", name: "Editorial", slug: "editorial", position: 5, active: true, showAsFilter: true },
-] as const;
+];
 
 const categoryBySlug = Object.fromEntries(mockPostCategories.map((item) => [item.slug, item]));
 

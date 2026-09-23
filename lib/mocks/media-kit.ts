@@ -15,11 +15,29 @@ export const mockMediaKitSections = [
   { id:"mock-kit-contact", type:"contact", theme:"dark", eyebrow:"CONTATO", title:"VAMOS CONVERSAR", subtitle:"Booking, marcas, conteúdo, lançamentos e novos projetos.", body:"Conte o contexto da oportunidade e conectaremos você à pessoa certa da equipe.", ctaLabel:"FALE COM A LANDER", ctaUrl:"/contato", mediaId:"mock-media-banner", position:6, enabled:true, settings:{nextStepsTitle:"PRÓXIMOS PASSOS",nextStepsBody:"Briefing, alinhamento de objetivos, proposta e plano de execução.",closingSlogan:"MÚSICA QUE APROXIMA PESSOAS."} },
 ];
 
-const metric = (id:string,sectionId:string,title:string,sourceKey:string,position:number,icon:string,subtitle="") => ({
+export type MockMediaKitItem = {
+  id: string;
+  sectionId: string;
+  kind: string;
+  title: string;
+  subtitle: string;
+  body: string;
+  label: string;
+  value: string;
+  url: string;
+  sourceKey: string;
+  icon: string;
+  mediaId: string | null;
+  position: number;
+  enabled: boolean;
+  metadata: Record<string, unknown>;
+};
+
+const metric = (id:string,sectionId:string,title:string,sourceKey:string,position:number,icon:string,subtitle=""): MockMediaKitItem => ({
   id,sectionId,kind:"metric",title,subtitle,body:"",label:title,value:"",url:"",sourceKey,icon,mediaId:null,position,enabled:true,metadata:{},
 });
 
-export const mockMediaKitItems = [
+export const mockMediaKitItems: MockMediaKitItem[] = [
   metric("mock-kit-item-artists","mock-kit-cover","ARTISTAS","artists_total",1,"artists","talentos em desenvolvimento"),
   metric("mock-kit-item-releases","mock-kit-cover","LANÇAMENTOS","releases_total",2,"media","catálogo em expansão"),
   metric("mock-kit-item-posts","mock-kit-cover","CONTEÚDOS","posts_total",3,"document","portal editorial ativo"),
