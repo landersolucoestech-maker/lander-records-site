@@ -59,10 +59,11 @@ export type ArtistFormOptions = {
   destinations: Array<ArtistOption & { description: string }>;
 };
 
-export default function ArtistForm({ initial = {}, media, categories, roles, genres, destinations, embedded = false, onCancel }: ArtistFormOptions & {
+export default function ArtistForm({ initial = {}, media, categories, roles, genres, destinations, embedded = false, onCancel, onLocalSubmit }: ArtistFormOptions & {
   initial?: ArtistEditorInitial;
   embedded?: boolean;
   onCancel?: () => void;
+  onLocalSubmit?: (formData: FormData) => void | Promise<void>;
 }) {
   const [state, action] = useActionState<ArtistActionState, FormData>(saveArtistAction, { ok: false });
   const [name, setName] = useState(initial.name || "");
@@ -89,7 +90,7 @@ export default function ArtistForm({ initial = {}, media, categories, roles, gen
   };
 
   return <>
-    <form action={action} className={`${styles.form}${embedded ? ` ${styles.embedded}` : ""}`} encType="multipart/form-data">
+    <form action={onLocalSubmit ?? action} className={`${styles.form}${embedded ? ` ${styles.embedded}` : ""}`} encType="multipart/form-data">
       {initial.id ? <input type="hidden" name="id" value={initial.id} /> : null}
       {embedded ? <input type="hidden" name="returnTo" value="/admin/artists?saved=1" /> : null}
       <input type="hidden" name="cardMediaId" value={cardMediaId}/>

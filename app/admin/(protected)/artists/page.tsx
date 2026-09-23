@@ -30,7 +30,7 @@ export default async function AdminArtistsPage({ searchParams }: { searchParams:
   const canDelete = session.source === "session" && (session.user.role === "admin" || session.user.role === "owner");
   if (mockDataEnabled()) {
     const editorById = Object.fromEntries(mockArtistSummaries.map((artist) => [artist.id, mockArtistEditor(artist.id)]).filter((entry) => Boolean(entry[1])));
-    return <ArtistManager artists={mockArtistSummaries} canDelete={false} canEdit deleted={filters.deleted === "1"} editorById={editorById} editorOptions={mockArtistEditorOptions} initialFilters={{ genre: filters.genre, q: filters.q, role: filters.role, status: filters.status }} saved={filters.saved === "1"} />;
+    return <ArtistManager artists={mockArtistSummaries} canDelete canEdit deleted={filters.deleted === "1"} developmentMode editorById={editorById} editorOptions={mockArtistEditorOptions} initialFilters={{ genre: filters.genre, q: filters.q, role: filters.role, status: filters.status }} saved={filters.saved === "1"} />;
   }
   const db = getDb();
   const emptyOptions: ArtistFormOptions = { media: [], categories: [], roles: [], genres: [], destinations: [] };

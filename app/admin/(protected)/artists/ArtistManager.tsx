@@ -58,6 +58,29 @@ function numberLabel(value: number | undefined) {
   return new Intl.NumberFormat("pt-BR").format(value);
 }
 
+function localFormText(formData: FormData, name: string) {
+  return String(formData.get(name) || "").trim();
+}
+
+function localFormList(formData: FormData, name: string) {
+  return formData.getAll(name).map(String).filter(Boolean);
+}
+
+function localFormNumber(formData: FormData, name: string) {
+  const value = Number.parseInt(localFormText(formData, name), 10);
+  return Number.isFinite(value) ? value : 0;
+}
+
+function localSlug(value: string) {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+function localImageUrl(formData: FormData, uploadField: string, selectedMediaId: string, options: ArtistFormOptions["media"], fallback = "") {
+  const upload = formData.get(uploadField);
+  if (upload instanceof File && upload.size > 0) return URL.createObjectURL(upload);
+  return options.find((item) => item.id === selectedMediaId)?.url || fallback;
+}
+
 function positionFloatingMenu(anchor: DOMRect, menu: DOMRect) {
   const gap = 6;
   const viewportPadding = 10;
@@ -125,7 +148,7 @@ function ArtistViewDialog({ artist, canEdit, onClose, onEdit }: { artist: Artist
   </div>, document.body);
 }
 
-function ArtistEditorDialog({ initial, mode, onClose, options }: { initial: ArtistEditorInitial; mode: "create" | "edit"; onClose: () => void; options: ArtistFormOptions }) {
+function ArtistEditorDialog({ initial, mode, onClose, onLocalSubmit, options }: { initial: ArtistEditorInitial; mode: "create" | "edit"; onClose: () => void; onLocalSubmit?: (formData: FormData) => void | Promise<void>; options: ArtistFormOptions }) {
   const [mounted, setMounted] = useState(false);
   const dialogRef = useRef<HTMLElement>(null);
   useEffect(() => { setMounted(true); }, []);
@@ -135,14 +158,19 @@ function ArtistEditorDialog({ initial, mode, onClose, options }: { initial: Arti
   return createPortal(<div className={styles.modalBackdrop} onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }} role="presentation">
     <section aria-labelledby="artist-editor-title" aria-modal="true" className={styles.editDialog} ref={dialogRef} role="dialog" tabIndex={-1}>
       <header className={styles.modalHeader}><div><span>{mode === "create" ? "CRIAÇÃO" : "EDIÇÃO"}</span><h2 id="artist-editor-title">{mode === "create" ? "Novo artista" : "Editar artista"}</h2><p>{mode === "create" ? "Cadastre identidade, mídias, plataformas e publicação sem sair do catálogo." : "Atualize as informações usando o mesmo formulário canônico do módulo."}</p></div><button aria-label={mode === "create" ? "Fechar criação" : "Fechar edição"} className={styles.modalClose} onClick={onClose} type="button">×</button></header>
-      <div className={styles.editBody}><ArtistForm embedded initial={initial} onCancel={onClose} {...options}/></div>
+      <div className={styles.editBody}><ArtistForm embedded initial={initial} onCancel={onClose} onLocalSubmit={onLocalSubmit} {...options}/></div>
     </section>
   </div>, document.body);
 }
 
-export default function ArtistManager({ artists, canDelete = false, canEdit = true, deleted, editorById = {}, editorOptions = emptyEditorOptions, initialFilters = {}, preview = false, saved }: { artists: ArtistSummary[]; canDelete?: boolean; canEdit?: boolean; deleted?: boolean; editorById?: Record<string, ArtistEditorInitial>; editorOptions?: ArtistFormOptions; initialFilters?: Filters; preview?: boolean; saved?: boolean }) {
+export default function ArtistManager({ artists: initialArtists, canDelete = false, canEdit = true, deleted, developmentMode = false, editorById: initialEditorById = {}, editorOptions = emptyEditorOptions, initialFilters = {}, preview = false, saved }: { artists: ArtistSummary[]; canDelete?: boolean; canEdit?: boolean; deleted?: boolean; developmentMode?: boolean; editorById?: Record<string, ArtistEditorInitial>; editorOptions?: ArtistFormOptions; initialFilters?: Filters; preview?: boolean; saved?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
+  const [localArtists, setLocalArtists] = useState(initialArtists);
+  const [localEditors, setLocalEditors] = useState(initialEditorById);
+  const [localNotice, setLocalNotice] = useState("");
+  const artists = developmentMode ? localArtists : initialArtists;
+  const editorById = developmentMode ? localEditors : initialEditorById;
   const [query, setQuery] = useState(initialFilters.q || "");
   const [status, setStatus] = useState(initialFilters.status || "all");
   const [genre, setGenre] = useState(initialFilters.genre || "all");
@@ -165,7 +193,7 @@ export default function ArtistManager({ artists, canDelete = false, canEdit = tr
   }), [artists]);
 
   useEffect(() => {
-    if (preview) return;
+    if (preview || developmentMode) return;
     const params = new URLSearchParams();
     if (query.trim()) params.set("q", query.trim());
     if (status !== "all") params.set("status", status);
@@ -173,7 +201,7 @@ export default function ArtistManager({ artists, canDelete = false, canEdit = tr
     if (role !== "all") params.set("role", role);
     const timer = window.setTimeout(() => router.replace(`${pathname}${params.size ? `?${params}` : ""}`, { scroll: false }), 180);
     return () => window.clearTimeout(timer);
-  }, [genre, pathname, preview, query, role, router, status]);
+  }, [developmentMode, genre, pathname, preview, query, role, router, status]);
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase("pt-BR");
@@ -261,9 +289,96 @@ export default function ArtistManager({ artists, canDelete = false, canEdit = tr
     setPage(1);
   };
 
+  const saveLocalArtist = async (formData: FormData) => {
+    const existingId = localFormText(formData, "id");
+    const id = existingId || `preview-artist-${crypto.randomUUID()}`;
+    const existingSummary = localArtists.find((artist) => artist.id === id);
+    const existingEditor = localEditors[id] || {};
+    const name = localFormText(formData, "name") || "Artista sem nome";
+    const slug = localSlug(localFormText(formData, "slug") || name) || `artista-${id.slice(-8)}`;
+    const requestedStatus = localFormText(formData, "status");
+    const status: "published" | "draft" | "inactive" = requestedStatus === "published" || requestedStatus === "inactive" ? requestedStatus : "draft";
+    const categoryIds = localFormList(formData, "categoryIds");
+    const roleIds = localFormList(formData, "roleIds");
+    const genreIds = localFormList(formData, "genreIds");
+    const destinationIds = localFormList(formData, "destinationIds");
+    const cardMediaId = localFormText(formData, "cardMediaId");
+    const heroMediaId = localFormText(formData, "heroMediaId");
+    const cardImage = localImageUrl(formData, "cardMediaUpload", cardMediaId, editorOptions.media, cardMediaId ? existingEditor.cardImage || "" : "");
+    const heroImage = localImageUrl(formData, "heroMediaUpload", heroMediaId, editorOptions.media, heroMediaId ? existingEditor.heroImage || "" : "");
+    const roles = roleIds.map((roleId) => editorOptions.roles.find((item) => item.id === roleId)?.name).filter((item): item is string => Boolean(item));
+    const genres = genreIds.map((genreId) => editorOptions.genres.find((item) => item.id === genreId)?.name).filter((item): item is string => Boolean(item));
+    const links = Object.fromEntries(["facebook", "instagram", "spotify", "youtube", "tiktok", "soundcloud"].map((platform) => [platform, localFormText(formData, `link_${platform}`)]).filter(([, url]) => Boolean(url)));
+    const now = new Date().toISOString();
+    const nextEditor: ArtistEditorInitial = {
+      ...existingEditor,
+      id,
+      name,
+      slug,
+      status,
+      shortBio: localFormText(formData, "shortBio"),
+      biography: localFormText(formData, "biography"),
+      cardMediaId,
+      heroMediaId,
+      ogMediaId: localFormText(formData, "ogMediaId"),
+      cardImage,
+      heroImage,
+      categoryIds,
+      roleIds,
+      genreIds,
+      destinationIds,
+      links,
+      hireTitle: localFormText(formData, "hireTitle") || "Contrate",
+      hireText: localFormText(formData, "hireText"),
+      hireButtonLabel: localFormText(formData, "hireButtonLabel") || "Quero contratar",
+      youtubeVideo: localFormText(formData, "youtubeVideo"),
+      spotifyEmbed: localFormText(formData, "spotifyEmbed"),
+      homePosition: localFormNumber(formData, "homePosition"),
+      listPosition: localFormNumber(formData, "listPosition"),
+      seoTitle: localFormText(formData, "seoTitle"),
+      seoDescription: localFormText(formData, "seoDescription"),
+      canonicalUrl: localFormText(formData, "canonicalUrl"),
+    };
+    const nextSummary: ArtistSummary = {
+      id,
+      name,
+      slug,
+      status,
+      cardImage,
+      genres,
+      roles,
+      views: existingSummary?.views,
+      audience: existingSummary?.audience,
+      homePosition: localFormNumber(formData, "homePosition"),
+      isPubliclyVisible: status === "published",
+      shortBio: nextEditor.shortBio,
+      biography: nextEditor.biography,
+      updatedAt: now,
+    };
+    setLocalArtists((current) => existingId ? current.map((artist) => artist.id === id ? nextSummary : artist) : [nextSummary, ...current]);
+    setLocalEditors((current) => ({ ...current, [id]: nextEditor }));
+    setLocalNotice(existingId ? `Artista “${name}” atualizado nesta prévia.` : `Artista “${name}” criado nesta prévia.`);
+    setModal(null);
+  };
+
+  const deleteLocalArtist = (artist: ArtistSummary) => {
+    if (!window.confirm(`Excluir “${artist.name}” desta prévia?`)) return;
+    setLocalArtists((current) => current.filter((item) => item.id !== artist.id));
+    setLocalEditors((current) => {
+      const next = { ...current };
+      delete next[artist.id];
+      return next;
+    });
+    closeActionMenu();
+    setModal(null);
+    setLocalNotice(`Artista “${artist.name}” excluído desta prévia.`);
+  };
+
   return <div className={`adminDashboard ${styles.manager}`} data-testid="artist-manager">
     {deleted ? <div className="adminNotice">Artista excluído com sucesso.</div> : null}
     {saved ? <div className="adminNotice">Artista salvo com sucesso.</div> : null}
+    {localNotice ? <div className="adminNotice">{localNotice}</div> : null}
+    {developmentMode && !preview ? <div className="adminNotice">Modo de demonstração: adicionar, editar e excluir alteram somente esta sessão de prévia.</div> : null}
 
     <section className="adminMetricGrid" aria-label="Resumo dos artistas">
       <article className="adminMetricCard is-red"><span className="adminMetricIcon"><AdminIcon name="artists" size={24}/></span><div className="adminMetricCopy"><span>Artistas</span><strong>{metrics.total.toLocaleString("pt-BR")}</strong><small>total cadastrado</small></div></article>
@@ -325,11 +440,11 @@ export default function ArtistManager({ artists, canDelete = false, canEdit = tr
     {actionMenu && actionArtist && typeof document !== "undefined" ? createPortal(<div aria-label={`Ações de ${actionArtist.name}`} className={styles.actionMenu} data-artist-action-menu id="artist-row-action-menu" ref={actionMenuRef} role="menu" style={{ position: "fixed", top: actionMenuPosition?.top ?? 0, left: actionMenuPosition?.left ?? 0, visibility: actionMenuPosition ? "visible" : "hidden", zIndex: 900 }}>
       <button onClick={() => { closeActionMenu(); setModal({ mode: "view", artistId: actionArtist.id }); }} role="menuitem" type="button"><AdminIcon name="eye" size={14}/>Visualizar</button>
       {canEdit && !preview && editorById[actionArtist.id] ? <button onClick={() => { closeActionMenu(); setModal({ mode: "edit", artistId: actionArtist.id }); }} role="menuitem" type="button"><AdminIcon name="edit" size={14}/>Editar</button> : <button aria-disabled="true" className={styles.disabledAction} disabled role="menuitem" type="button"><AdminIcon name="edit" size={14}/>Editar</button>}
-      {canDelete && !preview ? <form action={deleteArtistAction} onSubmit={(event) => { const confirmed = window.confirm(`Excluir definitivamente “${actionArtist.name}”?`); if (!confirmed) { event.preventDefault(); return; } closeActionMenu(); }}><input name="id" type="hidden" value={actionArtist.id}/><button className={styles.deleteAction} role="menuitem" type="submit"><AdminIcon name="trash" size={14}/>Excluir</button></form> : <button aria-disabled="true" className={`${styles.deleteAction} ${styles.disabledAction}`} disabled role="menuitem" type="button"><AdminIcon name="trash" size={14}/>Excluir</button>}
+      {developmentMode && !preview ? <button className={styles.deleteAction} onClick={() => deleteLocalArtist(actionArtist)} role="menuitem" type="button"><AdminIcon name="trash" size={14}/>Excluir</button> : canDelete && !preview ? <form action={deleteArtistAction} onSubmit={(event) => { const confirmed = window.confirm(`Excluir definitivamente “${actionArtist.name}”?`); if (!confirmed) { event.preventDefault(); return; } closeActionMenu(); }}><input name="id" type="hidden" value={actionArtist.id}/><button className={styles.deleteAction} role="menuitem" type="submit"><AdminIcon name="trash" size={14}/>Excluir</button></form> : <button aria-disabled="true" className={`${styles.deleteAction} ${styles.disabledAction}`} disabled role="menuitem" type="button"><AdminIcon name="trash" size={14}/>Excluir</button>}
     </div>, document.body) : null}
 
     {modal?.mode === "view" && selectedArtist ? <ArtistViewDialog artist={selectedArtist} canEdit={canEdit && !preview && Boolean(editorById[selectedArtist.id])} key={`view-${selectedArtist.id}`} onClose={() => setModal(null)} onEdit={() => setModal({ mode: "edit", artistId: selectedArtist.id })}/> : null}
-    {modal?.mode === "create" ? <ArtistEditorDialog initial={{}} key="create-artist" mode="create" onClose={() => setModal(null)} options={editorOptions}/> : null}
-    {modal?.mode === "edit" && selectedEditor ? <ArtistEditorDialog initial={selectedEditor} key={`edit-${modal.artistId}`} mode="edit" onClose={() => setModal(null)} options={editorOptions}/> : null}
+    {modal?.mode === "create" ? <ArtistEditorDialog initial={{}} key="create-artist" mode="create" onClose={() => setModal(null)} onLocalSubmit={developmentMode ? saveLocalArtist : undefined} options={editorOptions}/> : null}
+    {modal?.mode === "edit" && selectedEditor ? <ArtistEditorDialog initial={selectedEditor} key={`edit-${modal.artistId}`} mode="edit" onClose={() => setModal(null)} onLocalSubmit={developmentMode ? saveLocalArtist : undefined} options={editorOptions}/> : null}
   </div>;
 }

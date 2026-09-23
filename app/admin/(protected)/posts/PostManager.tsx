@@ -82,6 +82,25 @@ function slugifyClient(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }
 
+function localPostText(formData: FormData, name: string) {
+  return String(formData.get(name) || "").trim();
+}
+
+function localPostNumber(formData: FormData, name: string) {
+  const value = Number.parseInt(localPostText(formData, name), 10);
+  return Number.isFinite(value) ? value : 0;
+}
+
+function localPostImage(formData: FormData, uploadField: string, mediaId: string, media: MediaOption[], fallback = "") {
+  const upload = formData.get(uploadField);
+  if (upload instanceof File && upload.size > 0) return URL.createObjectURL(upload);
+  return media.find((item) => item.id === mediaId)?.url || fallback;
+}
+
+function postDisplayDate(value: Date) {
+  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(value);
+}
+
 function positionFloatingMenu(anchor: DOMRect, menu: DOMRect) {
   const gap = 6;
   const viewportPadding = 10;
@@ -208,7 +227,7 @@ function ContentViewDialog({ canEdit, onClose, onEdit, post }: { canEdit: boolea
   </div>, document.body);
 }
 
-function ContentEditorForm({ canEdit, categories, initial, media, mode, onClose }: { canEdit: boolean; categories: Option[]; initial?: PostRecord; media: MediaOption[]; mode: "create" | "edit"; onClose: () => void }) {
+function ContentEditorForm({ canEdit, categories, initial, media, mode, onClose, onLocalSubmit }: { canEdit: boolean; categories: Option[]; initial?: PostRecord; media: MediaOption[]; mode: "create" | "edit"; onClose: () => void; onLocalSubmit?: (formData: FormData) => void | Promise<void> }) {
   const [state, action] = useActionState<PostActionState, FormData>(savePostAction, { ok: false });
   const [title, setTitle] = useState(initial?.title || "");
   const [slug, setSlug] = useState(initial?.slug || "");
@@ -226,7 +245,7 @@ function ContentEditorForm({ canEdit, categories, initial, media, mode, onClose 
   const changeTitle = (value: string) => { setTitle(value); if (!slugTouched) setSlug(slugifyClient(value)); };
 
   return <>
-    <form action={action} className={styles.modalForm} encType="multipart/form-data">
+    <form action={onLocalSubmit ?? action} className={styles.modalForm} encType="multipart/form-data">
       {initial?.id ? <input name="id" type="hidden" value={initial.id}/> : null}
       <input name="coverMediaId" type="hidden" value={coverMediaId}/>
       {state.error ? <div className={styles.modalError} role="alert">{state.error}</div> : null}
@@ -295,7 +314,7 @@ function ContentEditorForm({ canEdit, categories, initial, media, mode, onClose 
   </>;
 }
 
-function ContentEditorModal({ canEdit, categories, media, mode, onClose, post }: { canEdit: boolean; categories: Option[]; media: MediaOption[]; mode: "create" | "edit"; onClose: () => void; post?: PostRecord }) {
+function ContentEditorModal({ canEdit, categories, media, mode, onClose, onLocalSubmit, post }: { canEdit: boolean; categories: Option[]; media: MediaOption[]; mode: "create" | "edit"; onClose: () => void; onLocalSubmit?: (formData: FormData) => void | Promise<void>; post?: PostRecord }) {
   const dialogRef = useRef<HTMLElement>(null);
   useDialogLifecycle(true, onClose, dialogRef);
   if (mode === "edit" && !post) return null;
@@ -305,12 +324,16 @@ function ContentEditorModal({ canEdit, categories, media, mode, onClose, post }:
   return <div className={styles.modalBackdrop} onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }} role="presentation">
     <section aria-labelledby="content-modal-title" aria-modal="true" className={styles.modal} ref={dialogRef} role="dialog" tabIndex={-1}>
       <header className={styles.modalHeader}><div><span>{eyebrow}</span><h2 id="content-modal-title">{title}</h2><p>Preencha as informações editoriais da publicação em um único fluxo.</p></div><button aria-label="Fechar modal" className={styles.modalClose} onClick={onClose} type="button">×</button></header>
-      <ContentEditorForm canEdit={canEdit} categories={categories} initial={mode === "edit" ? post : undefined} media={media} mode={mode} onClose={onClose}/>
+      <ContentEditorForm canEdit={canEdit} categories={categories} initial={mode === "edit" ? post : undefined} media={media} mode={mode} onClose={onClose} onLocalSubmit={onLocalSubmit}/>
     </section>
   </div>;
 }
 
-export default function PostManager({ canDelete = false, canEdit = true, categories = [], deleted, developmentMode = false, initialId, initialMode, media = [], posts, preview = false, saved }: { canDelete?: boolean; canEdit?: boolean; categories?: Option[]; deleted?: boolean; developmentMode?: boolean; initialId?: string; initialMode?: ModalMode; media?: MediaOption[]; posts: PostRecord[]; preview?: boolean; saved?: boolean }) {
+export default function PostManager({ canDelete = false, canEdit = true, categories = [], deleted, developmentMode = false, initialId, initialMode, media = [], posts: initialPosts, preview = false, saved }: { canDelete?: boolean; canEdit?: boolean; categories?: Option[]; deleted?: boolean; developmentMode?: boolean; initialId?: string; initialMode?: ModalMode; media?: MediaOption[]; posts: PostRecord[]; preview?: boolean; saved?: boolean }) {
+  const [localPosts, setLocalPosts] = useState(initialPosts);
+  const [localNotice, setLocalNotice] = useState("");
+  const posts = developmentMode ? localPosts : initialPosts;
+  const canMutate = canEdit || developmentMode;
   const [modal, setModal] = useState<ModalState>(() => initialMode ? { mode: initialMode, postId: initialId } : null);
   const [actionMenu, setActionMenu] = useState<ActionMenuState>(null);
   const [actionMenuPosition, setActionMenuPosition] = useState<ActionMenuPosition>(null);
@@ -371,13 +394,70 @@ export default function PostManager({ canDelete = false, canEdit = true, categor
     setPage(1);
   };
 
+  const saveLocalPost = async (formData: FormData) => {
+    const existingId = localPostText(formData, "id");
+    const id = existingId || `preview-post-${crypto.randomUUID()}`;
+    const existing = localPosts.find((post) => post.id === id);
+    const title = localPostText(formData, "title") || "Conteúdo sem título";
+    const slug = slugifyClient(localPostText(formData, "slug") || title) || `conteudo-${id.slice(-8)}`;
+    const categoryId = localPostText(formData, "categoryId");
+    const editorStatusValue = localPostText(formData, "status");
+    const editorStatus: "draft" | "published" | "archived" = editorStatusValue === "published" || editorStatusValue === "archived" ? editorStatusValue : "draft";
+    const publishedRaw = localPostText(formData, "publishedAt");
+    const publishedDate = publishedRaw ? new Date(publishedRaw) : editorStatus === "published" ? new Date() : null;
+    const publishedAtInput = publishedDate && Number.isFinite(publishedDate.getTime()) ? publishedDate.toISOString() : "";
+    const coverMediaId = localPostText(formData, "coverMediaId");
+    const authorMediaId = localPostText(formData, "authorMediaId");
+    const coverImage = localPostImage(formData, "coverMediaUpload", coverMediaId, media, coverMediaId ? existing?.coverImage || "" : "");
+    const authorImage = localPostImage(formData, "authorMediaUpload", authorMediaId, media, authorMediaId ? existing?.authorImage || "" : "");
+    const links = Object.fromEntries(["instagram", "facebook", "youtube", "tiktok"].map((platform) => [platform, localPostText(formData, `link_${platform}`)]).filter(([, url]) => Boolean(url)));
+    const next: PostRecord = {
+      id,
+      title,
+      slug,
+      excerpt: localPostText(formData, "excerpt"),
+      contentMarkdown: localPostText(formData, "contentMarkdown"),
+      status: editorStatus,
+      editorStatus,
+      category: categories.find((item) => item.id === categoryId)?.name || existing?.category || "Sem categoria",
+      categoryId,
+      authorName: localPostText(formData, "authorName") || "Lander Records",
+      publishedAt: publishedDate && Number.isFinite(publishedDate.getTime()) ? postDisplayDate(publishedDate) : "",
+      publishedAtInput,
+      coverImage,
+      coverMediaId,
+      authorMediaId,
+      authorImage,
+      links,
+      featuredOnHome: formData.has("featuredOnHome"),
+      homePosition: localPostNumber(formData, "homePosition"),
+      isPubliclyVisible: editorStatus === "published",
+      seoTitle: localPostText(formData, "seoTitle"),
+      seoDescription: localPostText(formData, "seoDescription"),
+      canonicalUrl: localPostText(formData, "canonicalUrl"),
+      updatedAt: postDisplayDate(new Date()),
+    };
+    setLocalPosts((current) => existingId ? current.map((post) => post.id === id ? next : post) : [next, ...current]);
+    setLocalNotice(existingId ? `Conteúdo “${title}” atualizado nesta prévia.` : `Conteúdo “${title}” criado nesta prévia.`);
+    setModal(null);
+  };
+
+  const deleteLocalPost = (post: PostRecord) => {
+    if (!window.confirm(`Excluir “${post.title}” desta prévia?`)) return;
+    setLocalPosts((current) => current.filter((item) => item.id !== post.id));
+    closeActionMenu();
+    setModal(null);
+    setLocalNotice(`Conteúdo “${post.title}” excluído desta prévia.`);
+  };
+
   useEffect(() => { setPage(1); closeActionMenu(); }, [authorFilter, categoryFilter, query, sortMode, statusFilter]);
 
   useEffect(() => {
+    if (!canMutate || preview) return;
     const openModal = () => { closeActionMenu(); setModal({ mode: "create" }); };
     window.addEventListener("admin:new-content", openModal);
     return () => window.removeEventListener("admin:new-content", openModal);
-  }, []);
+  }, [canMutate, preview]);
 
   useLayoutEffect(() => {
     if (!actionMenu) return;
@@ -423,6 +503,7 @@ export default function PostManager({ canDelete = false, canEdit = true, categor
   return <div className={styles.manager} data-testid="posts-manager">
     {deleted ? <div className={styles.successNotice}>Conteúdo excluído com sucesso.</div> : null}
     {saved ? <div className={styles.successNotice}>Conteúdo salvo com sucesso.</div> : null}
+    {localNotice ? <div className={styles.successNotice}>{localNotice}</div> : null}
 
     <section className="adminMetricGrid" aria-label="Resumo dos conteúdos">
       <article className="adminMetricCard is-red"><span className="adminMetricIcon"><AdminIcon name="posts" size={24}/></span><div className="adminMetricCopy"><span>Conteúdos</span><strong>{metrics.total.toLocaleString("pt-BR")}</strong><small>total cadastrado</small></div></article>
@@ -478,10 +559,10 @@ export default function PostManager({ canDelete = false, canEdit = true, categor
 
     {actionMenu && actionPost && typeof document !== "undefined" ? createPortal(<div aria-label={`Ações de ${actionPost.title}`} className={styles.actionMenu} data-content-action-menu id="content-row-action-menu" ref={actionMenuRef} role="menu" style={{ position: "fixed", top: actionMenuPosition?.top ?? 0, left: actionMenuPosition?.left ?? 0, visibility: actionMenuPosition ? "visible" : "hidden", zIndex: 900 }}>
       <button onClick={() => { closeActionMenu(); setModal({ mode: "view", postId: actionPost.id }); }} role="menuitem" type="button"><AdminIcon name="eye" size={14}/>Ver</button>
-      {canEdit && !preview ? <button onClick={() => { closeActionMenu(); setModal({ mode: "edit", postId: actionPost.id }); }} role="menuitem" type="button"><AdminIcon name="edit" size={14}/>Editar</button> : <button aria-disabled="true" className={styles.disabledAction} disabled role="menuitem" type="button"><AdminIcon name="edit" size={14}/>Editar</button>}
-      {canDelete && !preview ? <form action={deletePostAction} onSubmit={(event) => { const confirmed = window.confirm(`Excluir definitivamente “${actionPost.title}”?`); if (!confirmed) { event.preventDefault(); return; } closeActionMenu(); }}><input name="id" type="hidden" value={actionPost.id}/><button className={styles.deleteAction} role="menuitem" type="submit"><AdminIcon name="trash" size={14}/>Excluir</button></form> : <button aria-disabled="true" className={`${styles.deleteAction} ${styles.disabledAction}`} disabled role="menuitem" type="button"><AdminIcon name="trash" size={14}/>Excluir</button>}
+      {canMutate && !preview ? <button onClick={() => { closeActionMenu(); setModal({ mode: "edit", postId: actionPost.id }); }} role="menuitem" type="button"><AdminIcon name="edit" size={14}/>Editar</button> : <button aria-disabled="true" className={styles.disabledAction} disabled role="menuitem" type="button"><AdminIcon name="edit" size={14}/>Editar</button>}
+      {developmentMode && !preview ? <button className={styles.deleteAction} onClick={() => deleteLocalPost(actionPost)} role="menuitem" type="button"><AdminIcon name="trash" size={14}/>Excluir</button> : canDelete && !preview ? <form action={deletePostAction} onSubmit={(event) => { const confirmed = window.confirm(`Excluir definitivamente “${actionPost.title}”?`); if (!confirmed) { event.preventDefault(); return; } closeActionMenu(); }}><input name="id" type="hidden" value={actionPost.id}/><button className={styles.deleteAction} role="menuitem" type="submit"><AdminIcon name="trash" size={14}/>Excluir</button></form> : <button aria-disabled="true" className={`${styles.deleteAction} ${styles.disabledAction}`} disabled role="menuitem" type="button"><AdminIcon name="trash" size={14}/>Excluir</button>}
     </div>, document.body) : null}
 
-    {modal?.mode === "view" && selectedPost ? <ContentViewDialog canEdit={canEdit && !preview} key={`view-${selectedPost.id}`} onClose={closeViewModal} onEdit={() => setModal({ mode: "edit", postId: selectedPost.id })} post={selectedPost}/> : modal ? <ContentEditorModal canEdit={canEdit && !preview} categories={categories} key={`${modal.mode}-${modal.postId || "new"}`} media={media} mode={modal.mode as "create" | "edit"} onClose={() => setModal(null)} post={selectedPost}/> : null}
+    {modal?.mode === "view" && selectedPost ? <ContentViewDialog canEdit={canMutate && !preview} key={`view-${selectedPost.id}`} onClose={closeViewModal} onEdit={() => setModal({ mode: "edit", postId: selectedPost.id })} post={selectedPost}/> : modal ? <ContentEditorModal canEdit={canMutate && !preview} categories={categories} key={`${modal.mode}-${modal.postId || "new"}`} media={media} mode={modal.mode as "create" | "edit"} onClose={() => setModal(null)} onLocalSubmit={developmentMode ? saveLocalPost : undefined} post={selectedPost}/> : null}
   </div>;
 }
