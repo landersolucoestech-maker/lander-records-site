@@ -4,10 +4,12 @@ import test from "node:test";
 
 const source = fs.readFileSync(new URL("../../app/admin/components/HomeManagerView.tsx", import.meta.url), "utf8");
 const pageSource = fs.readFileSync(new URL("../../app/admin/(protected)/home/page.tsx", import.meta.url), "utf8");
+const mockSource = fs.readFileSync(new URL("../../lib/mocks/preview.ts", import.meta.url), "utf8");
 
 test("Home manager keeps the eight implemented blocks and omits unsupported controls", () => {
+  assert.match(source, /mockPreviewHomeSections/);
   for (const key of ["hero", "intro", "social", "shortcuts", "artists", "releases", "advertising", "news"]) {
-    assert.match(source, new RegExp(`key: [\\\"']${key}[\\\"']`));
+    assert.match(mockSource, new RegExp(`key:[\\\"']${key}[\\\"']`));
   }
   assert.doesNotMatch(source, /Publicar alterações|Adicionar nova seção futura|draggable|onDrag/i);
   assert.match(source, /reordenação ainda não é suportada/i);
