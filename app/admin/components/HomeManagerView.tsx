@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AdminIcon } from "./AdminIcon";
+import { mockPreviewHomeSections } from "../../../lib/mocks";
 
 type HomeSectionKind = "hero" | "intro" | "social" | "shortcuts" | "artists" | "advertising" | "releases" | "news";
 type HomeSectionClass = "editable" | "configurable" | "automatic";
@@ -46,13 +47,4 @@ export function HomeManagerView({ canEdit = true, preview = false, sections }: {
   </div>;
 }
 
-export function createPreviewHomeSections(): HomeManagerSection[] { return [
-  { key: "hero", title: "Hero / Banner principal", description: "Título, subtítulo, mídia de fundo e chamadas principais da abertura da Home.", classification: "editable", badge: "Editável", detail: "Conteúdo administrável", actionHref: "/admin/pages", actionLabel: "Editar", primaryText: "Música que conecta" },
-  { key: "intro", title: "Sobre Nós", description: "Resumo institucional com conteúdo textual e acesso à página Sobre Nós.", classification: "editable", badge: "Editável", detail: "Conteúdo administrável", actionHref: "/admin/pages", actionLabel: "Editar" },
-  { key: "social", title: "Redes Sociais (Instagram e YouTube)", description: "Métricas sociais exibidas dentro da apresentação institucional.", classification: "configurable", badge: "Automático / Configurável", detail: "Fonte: Soundcharts · não consultado", actionHref: "/admin/settings/lander-records", actionLabel: "Configurar", itemLabels: ["—", "—"] },
-  { key: "shortcuts", title: "Nossas Ações", description: "Quatro atalhos editoriais com título e link de direcionamento.", classification: "editable", badge: "Editável", detail: "Conteúdo administrável", actionHref: "/admin/pages", actionLabel: "Editar", itemLabels: ["Shows", "Música", "Distribuição", "Portal"] },
-  { key: "artists", title: "Artistas em destaque", description: "Título e apoio são editáveis na Home; a seleção de artistas vem do módulo Artistas.", classification: "configurable", badge: "CMS + Artistas", detail: "Seleção não consultada no preview", actionHref: "/admin/pages", actionLabel: "Editar seção", secondaryActionHref: "/admin/artists", secondaryActionLabel: "Gerenciar artistas" },
-  { key: "releases", title: "Últimos Lançamentos", description: "Título e apoio são editáveis na Home; os lançamentos vêm automaticamente da playlist Spotify configurada.", classification: "configurable", badge: "CMS + Spotify", detail: "Fonte: Spotify · não consultado", actionHref: "/admin/pages", actionLabel: "Editar seção", secondaryActionHref: "/admin/settings/lander-records", secondaryActionLabel: "Configurar fonte" },
-  { key: "advertising", title: "Anuncie com a Lander", description: "Banner comercial gerenciado como mídia da seção da Home.", classification: "editable", badge: "Editável", detail: "Mídia administrável no CMS", actionHref: "/admin/pages", actionLabel: "Editar", imageUrls: ["/lander-records-anuncie-banner.webp"] },
-  { key: "news", title: "Últimas Notícias", description: "Título editorial é editável na Home; as matérias vêm do módulo Conteúdos.", classification: "configurable", badge: "CMS + Conteúdos", detail: "Fonte: Lander Records · não consultado", actionHref: "/admin/pages", actionLabel: "Editar seção", secondaryActionHref: "/admin/posts", secondaryActionLabel: "Gerenciar conteúdos" },
-]; }
+export function createPreviewHomeSections(): HomeManagerSection[] { return mockPreviewHomeSections() as HomeManagerSection[]; }
