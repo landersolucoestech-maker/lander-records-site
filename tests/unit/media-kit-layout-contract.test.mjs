@@ -103,7 +103,7 @@ test("specialized pages always have an editorial heading fallback", () => {
 
 
 test("live preview padding stays compact so page content uses the available frame", () => {
-  assert.match(css, /padding-inline:\.65cqw/);
+  assert.match(css, /padding-inline:\.28cqw/);
   assert.match(css, /\.refCover\{[^}]*padding:\.28cqw \.65cqw \.2cqw/);
   assert.match(css, /\.refAboutBody\{[^}]*padding:\.28cqw \.65cqw \.2cqw/);
   assert.match(css, /\.refAudienceBody\{[^}]*padding:\.25cqw \.65cqw \.16cqw/);
