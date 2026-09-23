@@ -1,6 +1,7 @@
 import { asc } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
+import { mockDataEnabled, mockPageSections, mockPages } from "../../../../lib/mocks";
 import { pageSections, pages } from "../../../../lib/db/schema";
 import { AdminIcon, type IconName } from "../../components/AdminIcon";
 import PageManager, { type PageSummary } from "./PageManager";
@@ -15,7 +16,10 @@ function Metric({ accent, icon, label, value, hint }: { accent: "red" | "blue" |
 export default async function PagesAdminPage() {
   const session = await requireAdmin();
   const db = getDb();
-  const [rows, sections] = await Promise.all([
+  const [rows, sections] = mockDataEnabled() ? [
+    mockPages.map(({ id, key, title, slug, enabled, seoTitle, seoDescription, updatedAt }) => ({ id, key, title, slug, enabled, seoTitle, seoDescription, updatedAt })),
+    mockPageSections.map(({ id, pageId, sectionKey, type, position, enabled, title, subtitle }) => ({ id, pageId, sectionKey, type, position, enabled, title, subtitle })),
+  ] : await Promise.all([
     db.select({ id: pages.id, key: pages.key, title: pages.title, slug: pages.slug, enabled: pages.enabled, seoTitle: pages.seoTitle, seoDescription: pages.seoDescription, updatedAt: pages.updatedAt }).from(pages).orderBy(asc(pages.title)),
     db.select({ id: pageSections.id, pageId: pageSections.pageId, sectionKey: pageSections.sectionKey, type: pageSections.type, position: pageSections.position, enabled: pageSections.enabled, title: pageSections.title, subtitle: pageSections.subtitle }).from(pageSections).orderBy(asc(pageSections.position)),
   ]);
@@ -42,6 +46,6 @@ export default async function PagesAdminPage() {
       <Metric accent="blue" icon="sliders" label="Seções" value={totalSections} hint="blocos cadastrados" />
       <Metric accent="orange" icon="eye" label="Seções ativas" value={enabledSections} hint="blocos habilitados" />
     </section>
-    <PageManager canEdit={session.source === "session" && session.user.role !== "viewer"} demoMode={session.source === "development-auth-bypass"} pages={summary} />
+    <PageManager canEdit={mockDataEnabled() || (session.source === "session" && session.user.role !== "viewer")} demoMode={mockDataEnabled() || session.source === "development-auth-bypass"} pages={summary} />
   </div>;
 }

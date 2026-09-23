@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, ilike, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
+import { mockDataEnabled, mockMediaOptions, mockPostCategories, mockPostRecords } from "../../../../lib/mocks";
 import { postLinks, postProfiles } from "../../../../lib/db/news-management-schema";
 import { mediaAssets, postCategories, posts } from "../../../../lib/db/schema";
 import PostManager, { type PostRecord } from "./PostManager";
@@ -21,8 +22,24 @@ const publicPost = sql<boolean>`${posts.status} = 'published' AND ${posts.archiv
 
 export default async function AdminPostsPage({ searchParams }: { searchParams: Promise<PostFilters> }) {
   const session = await requireAdmin();
-  const db = getDb();
   const filters = await searchParams;
+  if (mockDataEnabled()) {
+    const initialMode = filters.create === "1" ? "create" : filters.edit ? "edit" : filters.view ? "view" : undefined;
+    const initialId = filters.edit || filters.view || undefined;
+    return <PostManager
+      canDelete={false}
+      canEdit
+      categories={mockPostCategories.map(({ id, name }) => ({ id, name }))}
+      deleted={filters.deleted === "1"}
+      developmentMode
+      initialId={initialId}
+      initialMode={initialMode}
+      media={mockMediaOptions}
+      posts={mockPostRecords}
+      saved={filters.saved === "1"}
+    />;
+  }
+  const db = getDb();
   const conditions: SQL[] = [];
   const query = filters.q?.trim();
   if (query) {

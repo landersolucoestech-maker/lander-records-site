@@ -1,6 +1,7 @@
 import { desc } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
+import { mockDataEnabled, mockMedia } from "../../../../lib/mocks";
 import { mediaAssets } from "../../../../lib/db/schema";
 import { archiveMedia, uploadMedia } from "../../actions";
 import { MediaLibrary, type MediaLibraryItem } from "./MediaLibrary";
@@ -9,6 +10,9 @@ export const dynamic = "force-dynamic";
 
 export default async function MediaPage() {
   const session = await requireAdmin();
+  if (mockDataEnabled()) {
+    return <MediaLibrary archiveAction={archiveMedia} canArchive={false} canUpload items={mockMedia.map((item) => ({ ...item }))} uploadAction={uploadMedia} />;
+  }
   const rows = await getDb().select().from(mediaAssets).orderBy(desc(mediaAssets.createdAt));
   const items: MediaLibraryItem[] = rows.map((media) => ({
     id: media.id,

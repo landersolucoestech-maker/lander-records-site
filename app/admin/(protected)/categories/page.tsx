@@ -1,6 +1,7 @@
 import { asc } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
+import { mockArtistCategories, mockDataEnabled, mockPostCategories } from "../../../../lib/mocks";
 import { artistCategories, postCategories } from "../../../../lib/db/schema";
 import CategoryManager from "./CategoryManager";
 
@@ -8,6 +9,9 @@ export const dynamic = "force-dynamic";
 
 export default async function CategoriesPage() {
   const session = await requireAdmin();
+  if (mockDataEnabled()) {
+    return <CategoryManager artistCategories={mockArtistCategories.map((item) => ({ ...item }))} canDelete={false} canEdit postCategories={mockPostCategories.map((item) => ({ ...item }))} />;
+  }
   const db = getDb();
   const [artists, news] = await Promise.all([
     db.select().from(artistCategories).orderBy(asc(artistCategories.position), asc(artistCategories.name)),
