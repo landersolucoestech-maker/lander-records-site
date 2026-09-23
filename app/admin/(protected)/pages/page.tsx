@@ -46,6 +46,6 @@ export default async function PagesAdminPage() {
       <Metric accent="blue" icon="sliders" label="Seções" value={totalSections} hint="blocos cadastrados" />
       <Metric accent="orange" icon="eye" label="Seções ativas" value={enabledSections} hint="blocos habilitados" />
     </section>
-    <PageManager canEdit={mockDataEnabled() || (session.source === "session" && session.user.role !== "viewer")} demoMode={mockDataEnabled() || session.source === "development-auth-bypass"} pages={summary} />
+<PageManager canEdit={session.source === "session" && session.user.role !== "viewer"} demoMode={mockDataEnabled() || session.source === "development-auth-bypass"} pages={summary} />
   </div>;
 }
