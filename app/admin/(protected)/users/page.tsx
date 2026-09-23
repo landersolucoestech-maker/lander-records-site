@@ -57,7 +57,7 @@ export default async function UsersPage() {
           <div className={styles.inviteInput}><AdminIcon name="users" size={14}/><input aria-label="Nome do novo usuário" disabled={!canManage} name="name" placeholder="Nome do usuário" required/></div>
           <div className={styles.inviteInput}><AdminIcon name="mail" size={14}/><input aria-label="E-mail do novo usuário" disabled={!canManage} name="email" type="email" placeholder="Digite o endereço de e-mail" required/></div>
           <select aria-label="Papel do novo usuário" disabled={!canManage} name="role" defaultValue="editor"><option value="owner">Proprietário</option><option value="admin">Administrador</option><option value="editor">Editor</option><option value="viewer">Leitor</option></select>
-          <input aria-label="Senha temporária" className={styles.passwordInput} disabled={!canManage} disabled={!canManage} name="temporaryPassword" type="password" minLength={12} placeholder="Senha temporária" required/>
+          <input aria-label="Senha temporária" className={styles.passwordInput} disabled={!canManage} name="temporaryPassword" type="password" minLength={12} placeholder="Senha temporária" required/>
           <button className={styles.primaryButton} disabled={!canManage} type="submit"><AdminIcon name="plus" size={14}/>{canManage ? "Criar usuário" : "Preview somente leitura"}</button>
         </form>
 
@@ -71,7 +71,7 @@ export default async function UsersPage() {
             <label className={styles.statusToggle}><input disabled={!canManage} name="isActive" type="checkbox" defaultChecked={user.isActive}/><span>{user.isActive ? "Ativo" : "Inativo"}</span></label>
             <button className={styles.iconButton} aria-label={`Salvar ${user.name}`} disabled={!canManage} type="submit"><AdminIcon name="check" size={15}/></button>
           </form>
-          <details className={styles.passwordDetails}><summary><AdminIcon name="settings" size={14}/>Senha</summary><form action={resetAdminPassword}><input type="hidden" name="id" value={user.id}/><input aria-label={`Nova senha temporária para ${user.name}`} name="temporaryPassword" type="password" minLength={12} placeholder="Nova senha temporária" required/><button className={styles.dangerButton} disabled={!canManage} type="submit">Redefinir</button></form></details>
+          <details className={styles.passwordDetails}><summary><AdminIcon name="settings" size={14}/>Senha</summary><form action={resetAdminPassword}><input type="hidden" name="id" value={user.id}/><input aria-label={`Nova senha temporária para ${user.name}`} disabled={!canManage} name="temporaryPassword" type="password" minLength={12} placeholder="Nova senha temporária" required/><button className={styles.dangerButton} disabled={!canManage} type="submit">Redefinir</button></form></details>
         </article>) : <div className={styles.empty}>Nenhum usuário administrativo cadastrado.</div>}</div>
       </div>
     </section>
