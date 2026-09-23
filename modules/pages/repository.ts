@@ -1,6 +1,7 @@
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { mediaAssets, pageSectionItems, pageSections, pages } from "@/lib/db/schema";
+import { mockDataEnabled, mockPageContent } from "@/lib/mocks";
 export { getSiteChrome } from "@/modules/settings/repository";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -11,6 +12,7 @@ function sectionMediaId(settings: Record<string, unknown> | null | undefined) {
 }
 
 export async function getPageContent(pageKey: string) {
+  if (mockDataEnabled()) return mockPageContent(pageKey);
   const db = getDb();
   const pageRows = await db.select().from(pages).where(and(eq(pages.key, pageKey), eq(pages.enabled, true))).limit(1);
   const page = pageRows[0];

@@ -3,8 +3,10 @@ import { getDb } from "@/lib/db";
 import { artistGenreRelations, artistMetrics, artistProfiles, artistPublicationDestinations, artistPublicationPlacements, artistRoleRelations, artistRoles, musicGenres } from "@/lib/db/artist-management-schema";
 import { artistCategories, artistCategoryRelations, artistEmbeds, artistLinks, artists, mediaAssets } from "@/lib/db/schema";
 import type { PublicArtist } from "./types";
+import { mockArtistCategories, mockArtists, mockDataEnabled } from "@/lib/mocks";
 export { getSlugRedirect } from "@/modules/settings/repository";
 export async function getArtistCategoriesForPublic() {
+  if (mockDataEnabled()) return mockArtistCategories;
   return getDb().select().from(artistCategories).where(and(eq(artistCategories.active, true), eq(artistCategories.showAsFilter, true))).orderBy(asc(artistCategories.position), asc(artistCategories.name));
 }
 
@@ -61,6 +63,7 @@ async function hydrateArtists(baseArtists: Array<typeof artists.$inferSelect>): 
 }
 
 export async function getPublishedArtists(featuredOnly = false) {
+  if (mockDataEnabled()) return featuredOnly ? mockArtists.slice(0, 5) : mockArtists;
   const destinationKey = featuredOnly ? "home_artists" : "artists_index";
   const rows = await getDb().select({ artist: artists })
     .from(artists)
@@ -80,6 +83,7 @@ export async function getPublishedArtists(featuredOnly = false) {
 }
 
 export async function getPublishedArtistBySlug(slug: string) {
+  if (mockDataEnabled()) return mockArtists.find((artist) => artist.slug === slug) ?? null;
   const rows = await getDb().select({ artist: artists }).from(artists).innerJoin(artistProfiles, eq(artists.id, artistProfiles.artistId)).where(and(eq(artists.slug, slug), eq(artists.isPublished, true), isNull(artists.archivedAt), eq(artistProfiles.isActive, true))).limit(1);
   const hydrated = await hydrateArtists(rows.map((row) => row.artist));
   return hydrated[0] ?? null;

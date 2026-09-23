@@ -2,6 +2,7 @@ import { and, asc, desc, eq, isNull, lte, or } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { mediaAssets, postCategories, posts } from "@/lib/db/schema";
 import type { PublicPost } from "./types";
+import { mockDataEnabled, mockPostCategories, mockPosts } from "@/lib/mocks";
 export { getSlugRedirect } from "@/modules/settings/repository";
 function publishablePostWhere() {
   const now = new Date();
@@ -9,10 +10,12 @@ function publishablePostWhere() {
 }
 
 export async function getPostCategoriesForPublic() {
+  if (mockDataEnabled()) return mockPostCategories;
   return getDb().select().from(postCategories).where(and(eq(postCategories.active, true), eq(postCategories.showAsFilter, true))).orderBy(asc(postCategories.position), asc(postCategories.name));
 }
 
 export async function getPublishedPosts(featuredOnly = false): Promise<PublicPost[]> {
+  if (mockDataEnabled()) return featuredOnly ? mockPosts.slice(0, 3) : mockPosts;
   const db = getDb();
   const where = featuredOnly ? and(publishablePostWhere(), eq(posts.featuredOnHome, true)) : publishablePostWhere();
   const [rows, mediaRows] = await Promise.all([
@@ -31,6 +34,7 @@ export async function getPublishedPosts(featuredOnly = false): Promise<PublicPos
 }
 
 export async function getPublishedPostBySlug(slug: string): Promise<PublicPost | null> {
+  if (mockDataEnabled()) return mockPosts.find((post) => post.slug === slug) ?? null;
   const db = getDb();
   const [rows, mediaRows] = await Promise.all([
     db.select({ post: posts, categoryId: postCategories.id, categoryName: postCategories.name, categorySlug: postCategories.slug, coverUrl: mediaAssets.url })

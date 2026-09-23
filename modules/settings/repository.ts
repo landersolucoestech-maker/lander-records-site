@@ -1,7 +1,9 @@
 import { and, asc, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { mediaAssets, navigationItems, siteSettings, slugRedirects, socialLinks } from "@/lib/db/schema";
+import { mockDataEnabled, mockNavigation, mockSiteSettings, mockSocialLinks } from "@/lib/mocks";
 export async function getSiteChrome() {
+  if (mockDataEnabled()) return { settings: mockSiteSettings, logoUrl: "/lander-records-logo.webp", socialImageUrl: "/lander-records-anuncie-banner.webp", navigation: mockNavigation, socials: mockSocialLinks };
   const db = getDb();
   const [settingsRows, nav, socials, mediaRows] = await Promise.all([
     db.select().from(siteSettings).limit(1),
@@ -24,6 +26,7 @@ export async function getSiteChrome() {
 }
 
 export async function getSlugRedirect(entityType: "artist" | "post", oldSlug: string) {
+  if (mockDataEnabled()) return null;
   const rows = await getDb().select({ newSlug: slugRedirects.newSlug }).from(slugRedirects).where(and(eq(slugRedirects.entityType, entityType), eq(slugRedirects.oldSlug, oldSlug))).limit(1);
   return rows[0]?.newSlug ?? null;
 }

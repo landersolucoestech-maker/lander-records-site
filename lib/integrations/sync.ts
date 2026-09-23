@@ -11,6 +11,7 @@ import { artistLinks, artists } from "../db/schema";
 import { normalizeExternalUrl, spotifyArtistIdFromUrl } from "./identity";
 import { fetchSoundchartsArtistMetrics, resolveSoundchartsArtist, soundchartsCredentialsConfigured } from "./soundcharts";
 import { fetchLatestSpotifyPlaylistReleases, spotifyCredentialsConfigured } from "./spotify";
+import { mockDataEnabled, mockSocialMetrics, mockSpotifyFeed } from "../mocks";
 
 const LANDER_ENTITY_ID = "lander_records";
 const SOUNDCHARTS_TTL_MS = 24 * 60 * 60 * 1000;
@@ -297,6 +298,7 @@ export async function syncAllIntegrations(force = false) {
 }
 
 export async function getLanderRecordsSocialMetrics() {
+  if (mockDataEnabled()) return mockSocialMetrics;
   const rows = await getDb().select().from(integrationMetricCache).where(and(
     eq(integrationMetricCache.entityType, "lander_records"),
     eq(integrationMetricCache.entityId, LANDER_ENTITY_ID),
@@ -306,6 +308,7 @@ export async function getLanderRecordsSocialMetrics() {
 }
 
 export async function getCachedSpotifyReleases(playlistId?: string) {
+  if (mockDataEnabled()) return mockSpotifyFeed.releases;
   const minimum = new Date(Date.now() - SPOTIFY_STALE_MAX_MS);
   const where = playlistId
     ? and(gt(spotifyReleaseCache.fetchedAt, minimum), eq(spotifyReleaseCache.playlistId, playlistId))
@@ -314,6 +317,7 @@ export async function getCachedSpotifyReleases(playlistId?: string) {
 }
 
 export async function getHomeSpotifyReleaseFeed() {
+  if (mockDataEnabled()) return mockSpotifyFeed;
   const db = getDb();
   const settings = (await db.select().from(landerRecordsIntegrationSettings).where(eq(landerRecordsIntegrationSettings.key, LANDER_ENTITY_ID)).limit(1))[0];
   if (!settings?.spotifyPlaylistId || !settings.spotifyPlaylistUrl) return { playlistUrl: "", releases: [] };
