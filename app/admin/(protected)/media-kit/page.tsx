@@ -41,48 +41,34 @@ export default async function MediaKitPage() {
   const session = await requireAdmin();
   const mutationEnabled = canMutateMediaKitInCurrentEnvironment(session);
   const canEdit = mutationEnabled && hasMinimumRole(session.user.role, "editor");
-  const [
-    kitSettingsRows,
-    sectionRows,
-    itemRows,
-    mediaRows,
-    [artistCount],
-    [releaseCount],
-    [postCount],
-    artistRows,
-    releaseRows,
-    socialRows,
-    siteSettingsRows,
-  ] = mockDataEnabled()
-    ? [
-        [mockMediaKitSettings],
-        mockMediaKitSections.map((item)=>({...item})),
-        mockMediaKitItems.map((item)=>({...item})),
-        mockMedia.map(({id,url,altText,originalFilename,mimeType})=>({id,url,altText,originalFilename,mimeType})),
-        [{value:mockMediaKitArtists.length}],
-        [{value:mockMediaKitReleases.length}],
-        [{value:mockPosts.length}],
-        mockMediaKitArtists,
-        mockMediaKitReleases,
-        mockSocialLinks,
-        [mockSiteSettings],
-      ]
-    : await (async()=>{
-        const db=getDb();
-        return Promise.all([
-          db.select().from(mediaKitSettings).where(eq(mediaKitSettings.id, "default")).limit(1),
-          db.select({id:mediaKitSections.id,type:mediaKitSections.type,theme:mediaKitSections.theme,eyebrow:mediaKitSections.eyebrow,title:mediaKitSections.title,subtitle:mediaKitSections.subtitle,body:mediaKitSections.body,ctaLabel:mediaKitSections.ctaLabel,ctaUrl:mediaKitSections.ctaUrl,mediaId:mediaKitSections.mediaId,position:mediaKitSections.position,enabled:mediaKitSections.enabled,settings:mediaKitSections.settings}).from(mediaKitSections).orderBy(asc(mediaKitSections.position), asc(mediaKitSections.createdAt)),
-          db.select({id:mediaKitItems.id,sectionId:mediaKitItems.sectionId,kind:mediaKitItems.kind,title:mediaKitItems.title,subtitle:mediaKitItems.subtitle,body:mediaKitItems.body,label:mediaKitItems.label,value:mediaKitItems.value,url:mediaKitItems.url,sourceKey:mediaKitItems.sourceKey,icon:mediaKitItems.icon,mediaId:mediaKitItems.mediaId,position:mediaKitItems.position,enabled:mediaKitItems.enabled,metadata:mediaKitItems.metadata}).from(mediaKitItems).orderBy(asc(mediaKitItems.position), asc(mediaKitItems.createdAt)),
-          db.select({id:mediaAssets.id,url:mediaAssets.url,altText:mediaAssets.altText,originalFilename:mediaAssets.originalFilename,mimeType:mediaAssets.mimeType}).from(mediaAssets).where(eq(mediaAssets.status, "active")).orderBy(asc(mediaAssets.originalFilename)),
-          db.select({value:count()}).from(artists).where(eq(artists.isPublished,true)),
-          db.select({value:count()}).from(releases).where(eq(releases.active,true)),
-          db.select({value:count()}).from(posts).where(eq(posts.status,"published")),
-          db.select({name:artists.name,eyebrow:artists.eyebrow,shortBio:artists.shortBio}).from(artists).where(eq(artists.isPublished,true)).limit(6),
-          db.select({title:releases.title,artistName:releases.artistName,releaseType:releases.releaseType,releaseDate:releases.releaseDate}).from(releases).where(eq(releases.active,true)).limit(6),
-          db.select({platform:socialLinks.platform,label:socialLinks.label,url:socialLinks.url}).from(socialLinks).where(eq(socialLinks.active,true)).limit(20),
-          db.select({contactEmail:siteSettings.contactEmail,contactPhone:siteSettings.contactPhone,location:siteSettings.location,address:siteSettings.address}).from(siteSettings).limit(1),
-        ]);
-      })();
+  const realData = mockDataEnabled() ? null : await (async()=>{
+    const db=getDb();
+    return Promise.all([
+      db.select().from(mediaKitSettings).where(eq(mediaKitSettings.id, "default")).limit(1),
+      db.select({id:mediaKitSections.id,type:mediaKitSections.type,theme:mediaKitSections.theme,eyebrow:mediaKitSections.eyebrow,title:mediaKitSections.title,subtitle:mediaKitSections.subtitle,body:mediaKitSections.body,ctaLabel:mediaKitSections.ctaLabel,ctaUrl:mediaKitSections.ctaUrl,mediaId:mediaKitSections.mediaId,position:mediaKitSections.position,enabled:mediaKitSections.enabled,settings:mediaKitSections.settings}).from(mediaKitSections).orderBy(asc(mediaKitSections.position), asc(mediaKitSections.createdAt)),
+      db.select({id:mediaKitItems.id,sectionId:mediaKitItems.sectionId,kind:mediaKitItems.kind,title:mediaKitItems.title,subtitle:mediaKitItems.subtitle,body:mediaKitItems.body,label:mediaKitItems.label,value:mediaKitItems.value,url:mediaKitItems.url,sourceKey:mediaKitItems.sourceKey,icon:mediaKitItems.icon,mediaId:mediaKitItems.mediaId,position:mediaKitItems.position,enabled:mediaKitItems.enabled,metadata:mediaKitItems.metadata}).from(mediaKitItems).orderBy(asc(mediaKitItems.position), asc(mediaKitItems.createdAt)),
+      db.select({id:mediaAssets.id,url:mediaAssets.url,altText:mediaAssets.altText,originalFilename:mediaAssets.originalFilename,mimeType:mediaAssets.mimeType}).from(mediaAssets).where(eq(mediaAssets.status, "active")).orderBy(asc(mediaAssets.originalFilename)),
+      db.select({value:count()}).from(artists).where(eq(artists.isPublished,true)),
+      db.select({value:count()}).from(releases).where(eq(releases.active,true)),
+      db.select({value:count()}).from(posts).where(eq(posts.status,"published")),
+      db.select({name:artists.name,eyebrow:artists.eyebrow,shortBio:artists.shortBio}).from(artists).where(eq(artists.isPublished,true)).limit(6),
+      db.select({title:releases.title,artistName:releases.artistName,releaseType:releases.releaseType,releaseDate:releases.releaseDate}).from(releases).where(eq(releases.active,true)).limit(6),
+      db.select({platform:socialLinks.platform,label:socialLinks.label,url:socialLinks.url}).from(socialLinks).where(eq(socialLinks.active,true)).limit(20),
+      db.select({contactEmail:siteSettings.contactEmail,contactPhone:siteSettings.contactPhone,location:siteSettings.location,address:siteSettings.address}).from(siteSettings).limit(1),
+    ]);
+  })();
+
+  const kitSettingsRows = realData ? realData[0] : [mockMediaKitSettings];
+  const sectionRows = realData ? realData[1] : mockMediaKitSections.map((item)=>({...item}));
+  const itemRows = realData ? realData[2] : mockMediaKitItems.map((item)=>({...item}));
+  const mediaRows = realData ? realData[3] : mockMedia.map(({id,url,altText,originalFilename,mimeType})=>({id,url,altText,originalFilename,mimeType}));
+  const artistCount = realData ? realData[4][0] : {value:mockMediaKitArtists.length};
+  const releaseCount = realData ? realData[5][0] : {value:mockMediaKitReleases.length};
+  const postCount = realData ? realData[6][0] : {value:mockPosts.length};
+  const artistRows = realData ? realData[7] : mockMediaKitArtists;
+  const releaseRows = realData ? realData[8] : mockMediaKitReleases;
+  const socialRows = realData ? realData[9] : mockSocialLinks;
+  const siteSettingsRows = realData ? realData[10] : [mockSiteSettings];
 
   const settings = kitSettingsRows[0] || {
     documentTitle: "Mídia Kit",
