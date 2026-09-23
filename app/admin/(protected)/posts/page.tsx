@@ -23,12 +23,13 @@ const publicPost = sql<boolean>`${posts.status} = 'published' AND ${posts.archiv
 export default async function AdminPostsPage({ searchParams }: { searchParams: Promise<PostFilters> }) {
   const session = await requireAdmin();
   const filters = await searchParams;
+  const canEdit = session.source === "session" && session.user.role !== "viewer";
   if (mockDataEnabled()) {
     const initialMode = filters.create === "1" ? "create" : filters.edit ? "edit" : filters.view ? "view" : undefined;
     const initialId = filters.edit || filters.view || undefined;
     return <PostManager
       canDelete={false}
-      canEdit
+      canEdit={canEdit}
       categories={mockPostCategories.map(({ id, name }) => ({ id, name }))}
       deleted={filters.deleted === "1"}
       developmentMode
