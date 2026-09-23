@@ -153,8 +153,8 @@ test("media kit is a persisted section builder with a controlled editorial previ
   assert.match(mediaKitBuilder, /01 · Capa \/ Hero/);
   assert.match(mediaKitBuilder, /02 · Sobre \/ Institucional/);
   assert.match(mediaKitBuilder, /03 · Nossa audiência/);
-  assert.match(mediaKitBuilder, /04 · Formatos de parceria/);
-  assert.match(mediaKitBuilder, /05 · Artistas & destaques/);
+  assert.match(mediaKitBuilder, /04 · Formatos de publicidade/);
+  assert.match(mediaKitBuilder, /05 · Exemplo de aplicação/);
   assert.match(mediaKitBuilder, /06 · Contato \/ Próximos passos/);
   assert.doesNotMatch(mediaKitBuilder, /<form action=\{createMediaKitSection\} className=\{styles\.builderDocumentForm\}>/);
   assert.match(mediaKitBuilder, /Adicionar conteúdo nesta seção/);
@@ -172,7 +172,7 @@ test("media kit is a persisted section builder with a controlled editorial previ
   assert.match(mediaKitBuilder, /Composição da capa/);
   assert.match(mediaKitBuilder, /Composição Sobre \+ KPIs/);
   assert.match(mediaKitBuilder, /Composição de audiência/);
-  assert.match(mediaKitBuilder, /Composição de parcerias/);
+  assert.match(mediaKitBuilder, /Composição de publicidade/);\n  assert.match(mediaKitBuilder, /Exemplo de aplicação/);
   assert.match(mediaKitBuilder, /Composição Artistas & Destaques/);
   assert.match(mediaKitBuilder, /Composição de encerramento/);
   assert.match(mediaKitBuilder, /audienceGroup/);
@@ -228,14 +228,14 @@ test("media kit is a persisted section builder with a controlled editorial previ
   assert.match(mediaKitPreview, /FAIXA ETÁRIA/);
   assert.match(mediaKitPreview, /PRINCIPAIS INTERESSES/);
   assert.match(mediaKitPreview, /PRINCIPAIS CIDADES/);
-  assert.match(mediaKitPreview, /OPORTUNIDADES DE EXPOSIÇÃO/);
+  assert.match(mediaKitPreview, /FORMATOS DE PUBLICIDADE/);\n  assert.match(mediaKitPreview, /EXEMPLO DE APLICAÇÃO/);
   assert.match(mediaKitPreview, /PRÓXIMOS PASSOS/);
   assert.match(mediaKitPreview, /coverHeadline/);
   assert.doesNotMatch(mediaKitPreview, /sectionPriority/);
-  assert.match(mediaKitPreview, /media-kit-cover-visual/);
-  assert.match(mediaKitPreview, /refCoverPageBody/);
-  assert.match(mediaKitPreview, /refCoverMedia/);
-  for (const slot of ["cover-highlights", "about-kpis", "audience-grid", "partnership-grid", "artists-grid", "contact-grid"]) {
+  assert.match(mediaKitPreview, /coverDevice/);
+  assert.match(mediaKitPreview, /className={styles.cover}/);
+  assert.match(mediaKitPreview, /className={styles.coverDevice}/);
+  for (const slot of ["cover-highlights", "about-kpis", "audience-grid", "advertising-grid", "application-example", "contact-grid"]) {
     assert.match(mediaKitPreview, new RegExp('data-reference-slot="' + slot + '"'));
   }
   assert.doesNotMatch(mediaKitPreview, /<PageHeader page="01"/);
@@ -243,21 +243,21 @@ test("media kit is a persisted section builder with a controlled editorial previ
   assert.match(mediaKitStyles, /\.mediaKitLayout\{[^}]*height:calc\(100dvh - var\(--ui-header-height,68px\) - 52px\)[^}]*overflow:hidden/);
   assert.match(mediaKitStyles, /\.editor\{[^}]*overflow-y:scroll/);
   assert.match(mediaKitStyles, /\.previewViewport\{[^}]*overflow-y:auto/);
-  assert.match(mediaKitPreviewStyles, /\.mkPage\{[^}]*aspect-ratio:16\/9!important/);
-  assert.match(mediaKitPreviewStyles, /\.refCover\{/);
-  assert.match(mediaKitPreviewStyles, /\.refCoverPageBody\{[^}]*grid-template-rows:minmax\(0,1fr\) 7cqw/);
-  assert.match(mediaKitPreviewStyles, /\.refCoverMedia\{/);
+  assert.match(mediaKitPreviewStyles, /\.page\{[^}]*aspect-ratio:4\/5!important/);
+  assert.match(mediaKitPreviewStyles, /\.cover\{/);
+  assert.match(mediaKitPreviewStyles, /\.cover\{[^}]*grid-template-rows:minmax\(0,1fr\) 17cqw/);
+  assert.match(mediaKitPreviewStyles, /\.coverDevice\{/);
   assert.doesNotMatch(mediaKitPreviewStyles, /\.refLaptopMockup\{|\.refLaptopBase\{/);
-  assert.match(mediaKitPreviewStyles, /\.refAboutTop\{/);
-  assert.match(mediaKitPreviewStyles, /\.refAboutBody\{[^}]*grid-template-rows:minmax\(0,1fr\) 8\.8cqw 7\.2cqw/);
-  assert.match(mediaKitPreviewStyles, /\.refAudienceGrid\{/);
-  assert.match(mediaKitPreviewStyles, /\.refPartnerGrid\{/);
-  assert.match(mediaKitPreviewStyles, /\.refArtistsGrid\{/);
-  assert.match(mediaKitPreviewStyles, /\.refContactBody\{/);
+  assert.match(mediaKitPreviewStyles, /\.aboutIntro\{/);
+  assert.match(mediaKitPreviewStyles, /\.about\{[^}]*grid-template-rows:minmax\(0,1fr\) 19cqw 20cqw/);
+  assert.match(mediaKitPreviewStyles, /\.audienceGrid\{/);
+  assert.match(mediaKitPreviewStyles, /\.adGrid\{/);
+  assert.match(mediaKitPreviewStyles, /\.applicationStage\{/);
+  assert.match(mediaKitPreviewStyles, /\.contact\{/);
   assert.match(mediaKitPreviewStyles, /container-type:inline-size/);
   assert.doesNotMatch(mediaKitPreviewStyles, /font-family:Impact,Haettenschweiler/);
   assert.match(mediaKitPreviewStyles, /font-family:Montserrat,Arial,sans-serif/);
-  assert.match(mediaKitPreviewStyles, /\.refPartnerGrid\{[^}]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)[^}]*grid-template-rows:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(mediaKitPreviewStyles, /\.adGrid\{[^}]*grid-template-columns:repeat\(3,1fr\)[^}]*grid-template-rows:repeat\(2,1fr\)/);
   assert.match(mediaKitStyles, /\.createSectionPanel\{/);
   assert.match(mediaKitStyles, /\.createSectionGrid\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   assert.match(mediaKitStyles, /\.builderSection>summary\{[^}]*cursor:pointer/);

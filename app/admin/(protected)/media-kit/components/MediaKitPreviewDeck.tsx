@@ -80,19 +80,6 @@ function numberValue(record: Record<string, unknown> | undefined, key: string) {
   return typeof value === "number" && Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
 }
 
-function releaseYear(value: string | Date | null) {
-  if (!value) return "";
-  if (value instanceof Date) return String(value.getUTCFullYear());
-  return value.slice(0, 4);
-}
-
-function coverHeadline(title: string) {
-  const normalized = title.trim();
-  const match = normalized.match(/^(.*?)([^\s]+[.!?]?)$/);
-  if (!match) return normalized;
-  return <>{match[1]}<em>{match[2]}</em></>;
-}
-
 function resolveValue(item: PreviewItem, real: RealData) {
   const values: Record<string, string | number> = {
     artists_total: real.artistsTotal,
@@ -126,28 +113,22 @@ function meaningfulItem(item: PreviewItem, real: RealData) {
 }
 
 function imageStyle(section: PreviewSection): React.CSSProperties {
-  return {
-    objectFit: mediaFit(section.settings),
-    objectPosition: mediaPosition(section.settings),
-  };
+  return { objectFit: mediaFit(section.settings), objectPosition: mediaPosition(section.settings) };
 }
 
-function backgroundStyle(section: PreviewSection, overlay: string): React.CSSProperties | undefined {
-  if (!section.mediaUrl) return undefined;
-  return {
-    backgroundImage: overlay + ',url("' + section.mediaUrl + '")',
-    backgroundSize: mediaFit(section.settings) === "contain" ? "contain" : "cover",
-    backgroundPosition: mediaPosition(section.settings),
-    backgroundRepeat: "no-repeat",
-  };
+function coverHeadline(title: string) {
+  const normalized = title.trim();
+  const match = normalized.match(/^(.*?)([^\s]+[.!?]?)$/);
+  if (!match) return normalized;
+  return <>{match[1]}<em>{match[2]}</em></>;
 }
 
 function Brand({ dark = false }: { dark?: boolean }) {
-  return <div className={styles.refBrand}>
-    <span className={styles.refBrandMark} aria-hidden="true"><i/><i/><i/><i/><i/></span>
+  return <div className={styles.brand}>
+    <span className={styles.brandMark} aria-hidden="true"><i/><i/></span>
     <div>
       <strong>LANDER <b>RECORDS</b></strong>
-      <small className={dark ? styles.refMutedDark : undefined}>MÚSICA · ARTISTAS · CULTURA · OPORTUNIDADES</small>
+      <small className={dark ? styles.mutedDark : undefined}>MÚSICA · ARTISTAS · NEGÓCIOS · OPORTUNIDADES</small>
     </div>
   </div>;
 }
@@ -158,62 +139,52 @@ function PageShell({
   pageNumber,
   children,
   forceDark = false,
+  forceLight = false,
 }: {
   settings: PreviewSettings;
   section: PreviewSection;
   pageNumber: number;
   children: React.ReactNode;
   forceDark?: boolean;
+  forceLight?: boolean;
 }) {
-  const dark = forceDark || section.theme === "dark";
-  const footerNote = recordText(section.settings, "footerNote", section.eyebrow || "LANDER RECORDS");
+  const dark = forceDark ? true : forceLight ? false : section.theme === "dark";
+  const footerNote = recordText(section.settings, "footerNote", section.eyebrow || "INFORMAÇÃO QUE MOVE O MERCADO");
   return <article
-    className={[styles.mkPage, dark ? styles.mkPageDark : styles.mkPageLight].join(" ")}
-    data-preview-version="clean-grid-v1"
+    className={[styles.page, dark ? styles.pageDark : styles.pageLight].join(" ")}
+    data-preview-version="reference-portrait-v1"
     data-section-type={section.type}
   >
-    <header className={styles.refPageHeader}>
+    <header className={styles.pageHeader}>
       <Brand dark={dark}/>
-      <div className={styles.refPageMeta}>
+      <div className={styles.pageMeta}>
         <span>{settings.documentTitle.toUpperCase()} {settings.edition}</span>
         {settings.showPageNumbers ? <strong>{String(pageNumber).padStart(2,"0")}</strong> : null}
       </div>
     </header>
-    {children}
-    <footer className={styles.refPageFooter}>
+    <div className={styles.pageBody}>{children}</div>
+    <footer className={styles.pageFooter}>
       <span>{settings.footerWebsite.toUpperCase()}</span>
-      <span className={dark ? styles.refMutedDark : undefined}>{footerNote}</span>
+      <span className={dark ? styles.mutedDark : undefined}>{footerNote}</span>
     </footer>
   </article>;
 }
 
-function SectionHeading({ section }: { section: PreviewSection }) {
-  return <div className={styles.refSectionHeading}>
+function SectionHeading({
+  section,
+  fallbackTitle,
+  compact = false,
+}: {
+  section: PreviewSection;
+  fallbackTitle: string;
+  compact?: boolean;
+}) {
+  return <div className={compact ? styles.headingCompact : styles.heading}>
     {section.eyebrow ? <span>{section.eyebrow}</span> : null}
-    {section.title ? <h3>{section.title}</h3> : null}
+    <h3>{section.title || fallbackTitle}</h3>
     <i/>
     {section.subtitle ? <strong>{section.subtitle}</strong> : null}
     {section.body ? <div>{section.body.split(/\n{2,}/).map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div> : null}
-  </div>;
-}
-
-function CoverVisual({
-  imageUrl,
-  label,
-  alt,
-}: {
-  imageUrl?: string;
-  label: string;
-  alt: string;
-}) {
-  return <div className={styles.refCoverMedia} data-testid="media-kit-cover-visual">
-    {imageUrl
-      ? <img src={imageUrl} alt={alt}/>
-      : <div className={styles.refCoverMediaFallback}>
-          <Brand dark/>
-          <strong>{label}</strong>
-          <span>LANDER RECORDS · MÚSICA · ARTISTAS · CULTURA</span>
-        </div>}
   </div>;
 }
 
@@ -228,39 +199,37 @@ function CoverPage({
   pageNumber: number;
   real: RealData;
 }) {
-  const items = visibleByPosition(section.items).filter((item) => meaningfulItem(item, real)).slice(0, 6);
-  const visualItem = items.find((item) => item.mediaUrl);
-  const highlights = items.filter((item) => item.id !== visualItem?.id).slice(0, 4);
+  const items = visibleByPosition(section.items).filter((item) => meaningfulItem(item, real));
+  const deviceItem = items.find((item) => item.mediaUrl);
+  const highlights = items.filter((item) => item.id !== deviceItem?.id).slice(0, 4);
+
   return <PageShell settings={settings} section={section} pageNumber={pageNumber} forceDark>
-    <div className={styles.refCoverPageBody}>
-      <div className={styles.refCover} style={backgroundStyle(section, "linear-gradient(90deg,rgba(5,6,8,.96),rgba(5,6,8,.48))")}>
-        <div className={styles.refCoverCopy}>
-          <span className={styles.refKicker}>{section.eyebrow || "LANDER RECORDS · " + settings.edition}</span>
-          <h3>{coverHeadline(section.title || "CONECTANDO ARTISTAS, MÚSICA E OPORTUNIDADES.")}</h3>
-          <i className={styles.refRedRule}/>
-          {section.subtitle ? <strong>{section.subtitle}</strong> : null}
-          {section.body ? <p>{section.body}</p> : null}
-          {section.ctaLabel && section.ctaUrl ? <a href={section.ctaUrl}>{section.ctaLabel}<span>→</span></a> : null}
-        </div>
-        <div className={styles.refCoverVisual}>
-          <small>{recordText(section.settings, "coverSideNote", "O SOM DE NOVAS POSSIBILIDADES.")}</small>
-          <CoverVisual
-            imageUrl={visualItem?.mediaUrl}
-            label={recordText(section.settings, "mockupLabel", "MÚSICA MOVE PESSOAS.")}
-            alt={visualItem?.title || "Destaque visual da Lander Records"}
-          />
-        </div>
+    <div className={styles.cover}>
+      {section.mediaUrl ? <img className={styles.coverBackdrop} src={section.mediaUrl} alt="" style={imageStyle(section)}/> : null}
+      <div className={styles.coverShade}/>
+      <div className={styles.coverTopNote}>{recordText(section.settings, "coverSideNote", "INFORMAÇÃO, MÚSICA E OPORTUNIDADES.")}</div>
+      <div className={styles.coverCopy}>
+        <span>{section.eyebrow || "LANDER RECORDS · " + settings.edition}</span>
+        <h2>{coverHeadline(section.title || "CONECTANDO ARTISTAS, MÚSICA E OPORTUNIDADES.")}</h2>
+        <i/>
+        {section.subtitle ? <strong>{section.subtitle}</strong> : null}
+        {section.body ? <p>{section.body}</p> : null}
       </div>
-      {highlights.length ? <div className={styles.refCoverHighlights} data-reference-slot="cover-highlights">
-        {highlights.map((item) => {
-          const value = publishableValue(item, real);
-          return <div key={item.id}>
-            <AdminIcon name={iconName(item.icon)} size={18}/>
-            <strong>{item.title || item.label}</strong>
-            {value !== "" ? <span>{String(value)}</span> : null}
-            {item.subtitle ? <small>{item.subtitle}</small> : null}
-          </div>;
-        })}
+      <div className={styles.coverDevice}>
+        <div className={styles.deviceBar}><b>LANDER RECORDS</b><span>ARTISTAS · LANÇAMENTOS · NOTÍCIAS</span></div>
+        <div className={styles.deviceHero}>
+          {deviceItem?.mediaUrl ? <img src={deviceItem.mediaUrl} alt={deviceItem.title || "Site Lander Records"}/> : null}
+          <strong>{recordText(section.settings, "mockupLabel", "MÚSICA MOVE PESSOAS.")}</strong>
+        </div>
+        <div className={styles.deviceTiles}><i/><i/><i/><i/></div>
+      </div>
+      {highlights.length ? <div className={styles.coverMetrics} data-reference-slot="cover-highlights">
+        {highlights.map((item) => <div key={item.id}>
+          <AdminIcon name={iconName(item.icon)} size={18}/>
+          <strong>{item.title || item.label}</strong>
+          {publishableValue(item, real) !== "" ? <b>{String(publishableValue(item, real))}</b> : null}
+          {item.subtitle ? <small>{item.subtitle}</small> : null}
+        </div>)}
       </div> : null}
     </div>
   </PageShell>;
@@ -280,39 +249,31 @@ function AboutPage({
   const metrics = visibleByPosition(section.items)
     .filter((item) => meaningfulItem(item, real) && publishableValue(item, real) !== "")
     .slice(0, 5);
-  const sideTitle = recordText(section.settings, "sideTitle", "MÚSICA, NEGÓCIOS, TENDÊNCIAS E OPORTUNIDADES EM UM SÓ LUGAR.");
-  const sideCaption = recordText(section.settings, "sideCaption", "TALENTOS HOJE. GRANDES AMANHÃ.");
-  const bannerTitle = recordText(section.settings, "bannerTitle", "VISIBILIDADE, CREDIBILIDADE E RELEVÂNCIA PARA ARTISTAS E MARCAS.");
-  const bannerNote = recordText(section.settings, "bannerNote", "MÚSICA · CULTURA · OPORTUNIDADES");
 
-  return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
-    <div className={styles.refAboutBody}>
-      <div className={styles.refAboutTop}>
-        <SectionHeading section={{...section, title: section.title || (section.type === "metrics" ? "INDICADORES DA LANDER RECORDS" : "SOBRE A LANDER RECORDS")}}/>
-        <aside className={styles.refAboutVisual}>
-          {section.mediaUrl
-            ? <img className={styles.refEditorialImage} src={section.mediaUrl} alt={sideCaption || section.title} style={imageStyle(section)}/>
-            : <div className={styles.refEditorialFallback}><Brand dark/><span>LANDER RECORDS</span></div>}
-          <div className={styles.refAboutVisualCopy}>
-            <strong>{sideTitle}</strong>
-            <i className={styles.refRedRule}/>
-            <small>{sideCaption}</small>
-          </div>
+  return <PageShell settings={settings} section={section} pageNumber={pageNumber} forceLight>
+    <div className={styles.about}>
+      <div className={styles.aboutIntro}>
+        <SectionHeading section={section} fallbackTitle="SOBRE A LANDER RECORDS"/>
+        <aside className={styles.aboutVisual}>
+          {section.mediaUrl ? <img src={section.mediaUrl} alt={section.title || "Lander Records"} style={imageStyle(section)}/> : null}
+          <div className={styles.aboutVisualShade}/>
+          <strong>{recordText(section.settings, "sideTitle", "MÚSICA, NEGÓCIOS, TENDÊNCIAS E OPORTUNIDADES EM UM SÓ LUGAR.")}</strong>
+          <i/>
         </aside>
       </div>
-
-      {metrics.length ? <div className={styles.refKpis} data-reference-slot="about-kpis">
+      <div className={styles.aboutMetrics} data-reference-slot="about-kpis">
         {metrics.map((item) => <div key={item.id}>
           <AdminIcon name={iconName(item.icon)} size={18}/>
-          <strong>{String(publishableValue(item, real))}</strong>
-          <span>{item.title || item.label}</span>
+          <b>{String(publishableValue(item, real))}</b>
+          <strong>{item.title || item.label}</strong>
           {item.subtitle ? <small>{item.subtitle}</small> : null}
         </div>)}
-      </div> : null}
-
-      <div className={styles.refAboutBanner}>
-        <strong>{bannerTitle}</strong>
-        <span>{bannerNote}</span>
+      </div>
+      <div className={styles.aboutBanner}>
+        {section.mediaUrl ? <img src={section.mediaUrl} alt="" style={imageStyle(section)}/> : null}
+        <div/>
+        <strong>{recordText(section.settings, "bannerTitle", "CONTEÚDO QUE GERA VISIBILIDADE REAL PARA ARTISTAS E MARCAS.")}</strong>
+        <i/>
       </div>
     </div>
   </PageShell>;
@@ -330,76 +291,50 @@ function AudiencePage({
   const items = visibleByPosition(section.items);
   const group = (name: string) => items.filter((item) => recordText(item.metadata, "group") === name);
   const measurable = (rows: PreviewItem[]) => rows.filter((item) => numberValue(item.metadata, "percentage") > 0);
-  const genders = measurable(group("gender"));
+  const genders = measurable(group("gender")).slice(0, 2);
   const ages = measurable(group("age")).slice(0, 5);
-  const interests = group("interest").filter((item) => item.title.trim()).slice(0, 5);
-  const cities = measurable(group("city")).slice(0, 4);
+  const interests = group("interest").filter((item) => item.title.trim()).slice(0, 6);
+  const cities = measurable(group("city")).slice(0, 6);
   const firstGender = numberValue(genders[0]?.metadata, "percentage");
-  const totalGender = genders.reduce((sum, item) => sum + numberValue(item.metadata, "percentage"), 0);
-  const donutStyle = totalGender > 0
-    ? { background: "conic-gradient(#ed1c24 0 " + firstGender + "%,#17191d " + firstGender + "% 100%)" }
-    : undefined;
   const displayPercent = (item: PreviewItem) => numberValue(item.metadata, "percentage") + "%";
-  const hasVerifiedMetrics = Boolean(genders.length || ages.length || cities.length);
 
-  return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
-    <div className={styles.refAudienceBody}>
-      <SectionHeading section={{...section, title: section.title || "NOSSA AUDIÊNCIA"}}/>
-      <div className={styles.refAudienceGrid} data-reference-slot="audience-grid">
-        {genders.length ? <section className={styles.refAudiencePanel}>
+  return <PageShell settings={settings} section={section} pageNumber={pageNumber} forceLight>
+    <div className={styles.audience}>
+      <SectionHeading section={section} fallbackTitle="NOSSA AUDIÊNCIA" compact/>
+      <div className={styles.audienceGrid} data-reference-slot="audience-grid">
+        <section className={styles.audiencePanel}>
           <h4>PERFIL DO PÚBLICO</h4>
-          <div className={styles.refDonut} style={donutStyle}>
-            <div><strong>{displayPercent(genders[0])}</strong><small>{genders[0]?.title}</small></div>
+          <div className={styles.donut} style={{background:`conic-gradient(#ed1c24 0 ${firstGender}%,#22262b ${firstGender}% 100%)`}}>
+            <div><strong>{genders[0] ? displayPercent(genders[0]) : "—"}</strong></div>
           </div>
-          <div className={styles.refLegend}>
-            {genders.slice(0, 2).map((item, index) => <span key={item.id}>
-              <i className={index === 0 ? styles.refLegendRed : styles.refLegendBlack}/>
-              {item.title}<b>{displayPercent(item)}</b>
-            </span>)}
+          <div className={styles.legend}>
+            {genders.map((item,index) => <span key={item.id}><i className={index===0?styles.redDot:styles.blackDot}/>{item.title}<b>{displayPercent(item)}</b></span>)}
           </div>
-        </section> : null}
-
-        {ages.length ? <section className={styles.refAudiencePanel}>
+        </section>
+        <section className={styles.audiencePanel}>
           <h4>FAIXA ETÁRIA</h4>
-          <div className={styles.refBarList}>
-            {ages.map((item) => <div key={item.id}>
-              <span>{item.title}</span><i><b style={{width: displayPercent(item)}}/></i><strong>{displayPercent(item)}</strong>
-            </div>)}
+          <div className={styles.barList}>
+            {ages.map((item)=><div key={item.id}><span>{item.title}</span><i><b style={{width:displayPercent(item)}}/></i><strong>{displayPercent(item)}</strong></div>)}
           </div>
-        </section> : null}
-
-        {interests.length ? <section className={styles.refAudiencePanel}>
+        </section>
+        <section className={styles.audiencePanel}>
           <h4>PRINCIPAIS INTERESSES</h4>
-          <div className={styles.refInterestList}>
-            {interests.map((item) => <div key={item.id}>
-              <AdminIcon name={iconName(item.icon)} size={14}/>
-              <span>{item.title}</span>
-              {numberValue(item.metadata, "percentage") > 0 ? <strong>{displayPercent(item)}</strong> : <span/>}
-            </div>)}
+          <div className={styles.interestList}>
+            {interests.map((item)=><div key={item.id}><AdminIcon name={iconName(item.icon)} size={14}/><span>{item.title}</span></div>)}
           </div>
-        </section> : null}
-
-        {cities.length ? <section className={styles.refAudiencePanel}>
+        </section>
+        <section className={styles.audiencePanel}>
           <h4>PRINCIPAIS CIDADES</h4>
-          <div className={styles.refBarList}>
-            {cities.map((item) => <div key={item.id}>
-              <span>{item.title}</span><i><b style={{width: displayPercent(item)}}/></i><strong>{displayPercent(item)}</strong>
-            </div>)}
+          <div className={styles.barList}>
+            {cities.map((item)=><div key={item.id}><span>{item.title}</span><i><b style={{width:displayPercent(item)}}/></i><strong>{displayPercent(item)}</strong></div>)}
           </div>
-        </section> : null}
-
-        {!hasVerifiedMetrics ? <section className={styles.refDataNotice}>
-          <AdminIcon name="chart" size={20}/>
-          <strong>Métricas quantitativas só entram quando estiverem verificadas.</strong>
-          <span>O preview não publica números fictícios, placeholders ou indicadores sem fonte.</span>
-        </section> : null}
+        </section>
       </div>
-      {recordText(section.settings, "dataNote") ? <div className={styles.refAudienceNote}>{recordText(section.settings, "dataNote")}</div> : null}
     </div>
   </PageShell>;
 }
 
-function PartnershipPage({
+function AdvertisingPage({
   settings,
   section,
   pageNumber,
@@ -410,20 +345,50 @@ function PartnershipPage({
   pageNumber: number;
   real: RealData;
 }) {
-  const items = visibleByPosition(section.items).filter((item) => meaningfulItem(item, real)).slice(0, 6);
-  return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
-    <div className={styles.refPartnershipBody}>
-      <SectionHeading section={{...section, title: section.title || "PARCERIAS E OPORTUNIDADES"}}/>
-      <div className={styles.refPartnerGrid} data-reference-slot="partnership-grid">
-        {items.map((item) => <article key={item.id}>
-          <div className={[styles.refPartnerVisual, item.mediaUrl ? "" : styles.refPartnerVisualPlain].join(" ")}>
-            {item.mediaUrl ? <img src={item.mediaUrl} alt={item.title || item.label} className={styles.refPartnerImage}/> : null}
-            <span className={styles.refPartnerIcon}><AdminIcon name={iconName(item.icon)} size={20}/></span>
-          </div>
+  const items = visibleByPosition(section.items).filter((item)=>meaningfulItem(item,real)).slice(0,6);
+  return <PageShell settings={settings} section={section} pageNumber={pageNumber} forceLight>
+    <div className={styles.advertising}>
+      <SectionHeading section={section} fallbackTitle="FORMATOS DE PUBLICIDADE" compact/>
+      <div className={styles.adGrid} data-reference-slot="advertising-grid">
+        {items.map((item,index)=><article key={item.id}>
           <h4>{item.title || item.label}</h4>
+          <div className={styles.adVisual}>
+            {item.mediaUrl ? <img src={item.mediaUrl} alt={item.title || item.label}/> : <div className={styles.adVisualFallback}><AdminIcon name={iconName(item.icon)} size={22}/><strong>{index===2?"ANUNCIE AQUI":item.title}</strong></div>}
+          </div>
           {item.body ? <p>{item.body}</p> : null}
-          {item.url ? <a href={item.url}>Saiba mais →</a> : null}
         </article>)}
+      </div>
+    </div>
+  </PageShell>;
+}
+
+function ApplicationPage({
+  settings,
+  section,
+  pageNumber,
+  real,
+}: {
+  settings: PreviewSettings;
+  section: PreviewSection;
+  pageNumber: number;
+  real: RealData;
+}) {
+  const items = visibleByPosition(section.items).filter((item)=>meaningfulItem(item,real)).slice(0,4);
+  const classes=[styles.calloutTop,styles.calloutRight,styles.calloutBottom,styles.calloutLeft];
+  return <PageShell settings={settings} section={section} pageNumber={pageNumber} forceLight>
+    <div className={styles.application}>
+      <SectionHeading section={section} fallbackTitle="EXEMPLO DE APLICAÇÃO" compact/>
+      <div className={styles.applicationStage} data-reference-slot="application-example">
+        <div className={styles.siteMockup}>
+          <div className={styles.siteMockupBar}><Brand/><span>ARTISTAS · LANÇAMENTOS · NOTÍCIAS</span></div>
+          <div className={styles.siteMockupHero}>
+            {section.mediaUrl ? <img src={section.mediaUrl} alt="Aplicação comercial no site Lander Records" style={imageStyle(section)}/> : null}
+            <strong>LANDER RECORDS</strong>
+          </div>
+          <div className={styles.siteMockupContent}><i/><i/><i/><i/></div>
+          <aside>ANUNCIE<br/>AQUI <b>→</b></aside>
+        </div>
+        {items.map((item,index)=><div className={[styles.applicationCallout,classes[index]].join(" ")} key={item.id}>{item.title || item.label}</div>)}
       </div>
     </div>
   </PageShell>;
@@ -440,41 +405,14 @@ function ArtistsPage({
   pageNumber: number;
   real: RealData;
 }) {
-  const opportunities = visibleByPosition(section.items).filter((item) => item.title.trim() || item.body.trim()).slice(0, 6);
-  const featured = real.artists[0];
-  return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
-    <div className={styles.refArtistsBody}>
-      <SectionHeading section={{...section, title: section.title || "ARTISTAS E DESTAQUES"}}/>
-      <div className={styles.refArtistsGrid} data-reference-slot="artists-grid">
-        <section className={styles.refReleaseColumn}>
-          <h4>LANÇAMENTOS RECENTES</h4>
-          {real.releases.length
-            ? real.releases.slice(0,4).map((release) => <div key={release.artistName + "-" + release.title}>
-                <i/><p><strong>{release.artistName}</strong><b>{release.title}</b><small>{release.releaseType}{releaseYear(release.releaseDate) ? " · " + releaseYear(release.releaseDate) : ""}</small></p>
-              </div>)
-            : <p className={styles.refEmpty}>Sem lançamentos publicados no momento.</p>}
-        </section>
-
-        <section className={styles.refFeaturedArtist}>
-          {section.mediaUrl ? <img className={styles.refFeaturedArtistImage} src={section.mediaUrl} alt={featured?.name || "Artista em destaque"} style={imageStyle(section)}/> : null}
-          <div className={styles.refFeaturedArtistOverlay}/>
-          <div className={styles.refFeaturedArtistCopy}>
-            <span>{recordText(section.settings, "featuredLabel", "ARTISTA EM DESTAQUE")}</span>
-            <strong>{featured?.name || "LANDER RECORDS"}</strong>
-            <p>{featured?.shortBio || featured?.eyebrow || "Talentos, identidade e desenvolvimento artístico em primeiro plano."}</p>
-          </div>
-        </section>
-
-        <section className={styles.refOpportunityColumn}>
-          <h4>OPORTUNIDADES DE EXPOSIÇÃO</h4>
-          {opportunities.map((item) => <div key={item.id}>
-            <span>+</span><p><strong>{item.title}</strong>{item.body ? <small>{item.body}</small> : null}</p>
-          </div>)}
-        </section>
+  const featured=real.artists[0];
+  return <PageShell settings={settings} section={section} pageNumber={pageNumber} forceLight>
+    <div className={styles.artistExtra}>
+      <SectionHeading section={section} fallbackTitle="ARTISTAS & DESTAQUES" compact/>
+      <div className={styles.artistExtraCard}>
+        {section.mediaUrl ? <img src={section.mediaUrl} alt={featured?.name || "Artista Lander Records"} style={imageStyle(section)}/> : null}
+        <div><span>{recordText(section.settings,"featuredLabel","ARTISTA EM DESTAQUE")}</span><strong>{featured?.name || "LANDER RECORDS"}</strong><p>{featured?.shortBio || "Talentos, identidade e desenvolvimento artístico."}</p></div>
       </div>
-      {isPublishableValue(recordText(section.settings, "quote"))
-        ? <blockquote className={styles.refQuote}>“{recordText(section.settings, "quote")}” {isPublishableValue(recordText(section.settings, "quoteAuthor")) ? <strong>— {recordText(section.settings, "quoteAuthor")}</strong> : null}</blockquote>
-        : null}
     </div>
   </PageShell>;
 }
@@ -490,29 +428,30 @@ function ContactPage({
   pageNumber: number;
   real: RealData;
 }) {
-  const contacts = visibleByPosition(section.items)
-    .map((item) => ({ item, value: publishableValue(item, real) }))
-    .filter(({ value }) => value !== "")
-    .slice(0, 5);
+  const contacts=visibleByPosition(section.items)
+    .map((item)=>({item,value:publishableValue(item,real)}))
+    .filter(({value})=>value!=="")
+    .slice(0,5);
 
-  return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
-    <div className={styles.refContactBody} data-reference-slot="contact-grid">
-      <section className={styles.refContactMain}>
-        <SectionHeading section={{...section, title: section.title || "VAMOS CONVERSAR"}}/>
-        {section.ctaLabel && section.ctaUrl ? <a className={styles.refContactCta} href={section.ctaUrl}>{section.ctaLabel}<span>→</span></a> : null}
-        {contacts.length ? <div className={styles.refContactList}>
-          {contacts.map(({ item, value }) => <p key={item.id}><AdminIcon name={iconName(item.icon)} size={14}/><span>{String(value)}</span></p>)}
-        </div> : null}
-      </section>
-
-      <aside className={styles.refNextSteps}>
-        {section.mediaUrl ? <img className={styles.refNextStepsMedia} src={section.mediaUrl} alt={section.title || "Lander Records"} style={imageStyle(section)}/> : null}
-        <div className={styles.refNextStepsCopy}>
-          <span>{recordText(section.settings, "nextStepsTitle", "PRÓXIMOS PASSOS")}</span>
-          <i className={styles.refRedRule}/>
-          <p>{recordText(section.settings, "nextStepsBody", "Seguimos evoluindo para criar novas oportunidades, conectar talentos e levar a música ainda mais longe.")}</p>
+  return <PageShell settings={settings} section={section} pageNumber={pageNumber} forceLight>
+    <div className={styles.contact} data-reference-slot="contact-grid">
+      <section className={styles.contactMain}>
+        <SectionHeading section={section} fallbackTitle="VAMOS CONSTRUIR ALGO GRANDE JUNTOS?"/>
+        {section.ctaLabel && section.ctaUrl ? <a className={styles.contactCta} href={section.ctaUrl}>{section.ctaLabel}<span>→</span></a> : null}
+        <div className={styles.contactList}>
+          {contacts.map(({item,value})=><p key={item.id}><AdminIcon name={iconName(item.icon)} size={14}/><span>{String(value)}</span></p>)}
         </div>
-        <div className={styles.refNextStepsBrand}><strong>LANDER <b>RECORDS</b></strong><small>{recordText(section.settings, "closingSlogan", "MÚSICA QUE APROXIMA PESSOAS.")}</small></div>
+      </section>
+      <aside className={styles.nextSteps}>
+        {section.mediaUrl ? <img src={section.mediaUrl} alt="" style={imageStyle(section)}/> : null}
+        <div className={styles.nextStepsShade}/>
+        <div className={styles.nextStepsCopy}>
+          <strong>{recordText(section.settings,"nextStepsTitle","PRÓXIMOS PASSOS")}</strong>
+          <i/>
+          <p>{recordText(section.settings,"nextStepsBody","Briefing, alinhamento de objetivos, proposta e plano de execução.")}</p>
+          <Brand dark/>
+          <small>{recordText(section.settings,"closingSlogan","MÚSICA QUE APROXIMA PESSOAS.")}</small>
+        </div>
       </aside>
     </div>
   </PageShell>;
@@ -529,23 +468,18 @@ function GenericPage({
   pageNumber: number;
   real: RealData;
 }) {
-  const items = visibleByPosition(section.items).filter((item) => meaningfulItem(item, real));
+  const items=visibleByPosition(section.items).filter((item)=>meaningfulItem(item,real)).slice(0,6);
   return <PageShell settings={settings} section={section} pageNumber={pageNumber}>
-    <div className={styles.refGenericBody}>
-      <SectionHeading section={{...section, title: section.title || "CONTEÚDO"}}/>
-      {items.length ? <div className={styles.refGenericGrid}>
-        {items.map((item) => {
-          const value = publishableValue(item, real);
-          return <article key={item.id}>
-            {item.mediaUrl ? <img src={item.mediaUrl} alt={item.title || item.label}/> : null}
-            <AdminIcon name={iconName(item.icon)} size={17}/>
-            {item.title || item.label ? <h4>{item.title || item.label}</h4> : null}
-            {value !== "" ? <strong>{String(value)}</strong> : null}
-            {item.subtitle ? <span>{item.subtitle}</span> : null}
-            {item.body ? <p>{item.body}</p> : null}
-          </article>;
-        })}
-      </div> : null}
+    <div className={styles.generic}>
+      <SectionHeading section={section} fallbackTitle="CONTEÚDO" compact/>
+      <div className={styles.genericGrid}>
+        {items.map((item)=><article key={item.id}>
+          {item.mediaUrl ? <img src={item.mediaUrl} alt={item.title || item.label}/> : null}
+          <AdminIcon name={iconName(item.icon)} size={16}/>
+          <strong>{item.title || item.label}</strong>
+          {item.body ? <p>{item.body}</p> : null}
+        </article>)}
+      </div>
     </div>
   </PageShell>;
 }
@@ -561,12 +495,13 @@ function DynamicPage({
   pageNumber: number;
   real: RealData;
 }) {
-  if (section.type === "cover") return <CoverPage settings={settings} section={section} pageNumber={pageNumber} real={real}/>;
-  if (section.type === "editorial" || section.type === "metrics") return <AboutPage settings={settings} section={section} pageNumber={pageNumber} real={real}/>;
-  if (section.type === "audience") return <AudiencePage settings={settings} section={section} pageNumber={pageNumber}/>;
-  if (section.type === "cards") return <PartnershipPage settings={settings} section={section} pageNumber={pageNumber} real={real}/>;
-  if (section.type === "artists") return <ArtistsPage settings={settings} section={section} pageNumber={pageNumber} real={real}/>;
-  if (section.type === "contact") return <ContactPage settings={settings} section={section} pageNumber={pageNumber} real={real}/>;
+  if(section.type==="cover") return <CoverPage settings={settings} section={section} pageNumber={pageNumber} real={real}/>;
+  if(section.type==="editorial"||section.type==="metrics") return <AboutPage settings={settings} section={section} pageNumber={pageNumber} real={real}/>;
+  if(section.type==="audience") return <AudiencePage settings={settings} section={section} pageNumber={pageNumber}/>;
+  if(section.type==="cards") return <AdvertisingPage settings={settings} section={section} pageNumber={pageNumber} real={real}/>;
+  if(section.type==="application") return <ApplicationPage settings={settings} section={section} pageNumber={pageNumber} real={real}/>;
+  if(section.type==="artists") return <ArtistsPage settings={settings} section={section} pageNumber={pageNumber} real={real}/>;
+  if(section.type==="contact") return <ContactPage settings={settings} section={section} pageNumber={pageNumber} real={real}/>;
   return <GenericPage settings={settings} section={section} pageNumber={pageNumber} real={real}/>;
 }
 
@@ -579,16 +514,9 @@ export function MediaKitPreviewDeck({
   sections: PreviewSection[];
   real: RealData;
 }) {
-  const visibleSections = visibleByPosition(sections);
-  if (!visibleSections.length) {
-    return <div className={styles.mkPreviewEmpty}>
-      <AdminIcon name="document" size={28}/>
-      <strong>Nenhuma seção visível</strong>
-      <span>Adicione ou ative uma seção no editor para montar o Mídia Kit.</span>
-    </div>;
-  }
-
-  return <div className={styles.mkDeck} data-testid="media-kit-preview-deck">
-    {visibleSections.map((section, index) => <DynamicPage key={section.id} settings={settings} section={section} pageNumber={index + 1} real={real}/>)}
+  const visibleSections=visibleByPosition(sections);
+  if(!visibleSections.length) return <div className={styles.empty}><AdminIcon name="document" size={28}/><strong>Nenhuma seção visível</strong><span>Adicione ou ative uma seção no editor para montar o Mídia Kit.</span></div>;
+  return <div className={styles.deck} data-testid="media-kit-preview-deck">
+    {visibleSections.map((section,index)=><DynamicPage key={section.id} settings={settings} section={section} pageNumber={index+1} real={real}/>)}
   </div>;
 }

@@ -65,8 +65,9 @@ const sectionTypes = [
   ["editorial", "02 · Sobre / Institucional"],
   ["metrics", "02 · KPIs / Números"],
   ["audience", "03 · Nossa audiência"],
-  ["cards", "04 · Formatos de parceria"],
-  ["artists", "05 · Artistas & destaques"],
+  ["cards", "04 · Formatos de publicidade"],
+  ["application", "05 · Exemplo de aplicação"],
+  ["artists", "Extra · Artistas & destaques"],
   ["contact", "06 · Contato / Próximos passos"],
   ["custom", "Conteúdo livre"],
 ] as const;
@@ -146,6 +147,7 @@ function recordNumber(record: Record<string, unknown>, key: string) {
 function sectionImageLabel(type: string) {
   if (type === "cover") return "Imagem de fundo da capa";
   if (type === "editorial" || type === "metrics") return "Imagem editorial lateral";
+  if (type === "application") return "Imagem da aplicação / tela demonstrativa";
   if (type === "artists") return "Imagem do card de artista em destaque";
   if (type === "contact") return "Imagem de apoio do painel Próximos Passos";
   return "Imagem editorial da seção";
@@ -189,8 +191,12 @@ function SectionTemplateFields({ section }: { section: MediaKitSectionRow }) {
     <Field label="Nota / fonte dos dados" wide><input name="dataNote" defaultValue={recordText(settings,"dataNote")} placeholder="DADOS REFERENTES A..."/></Field>
   </>;
   if (section.type === "cards") return <>
-    <div className={styles.builderTemplateTitle}><strong>Composição de parcerias</strong><span>Os itens desta seção aparecem em um grid 3 × 2 como na referência.</span></div>
-    <Field label="Texto do rodapé" wide><input name="footerNote" defaultValue={recordText(settings,"footerNote")} placeholder="PARCERIAS QUE AMPLIFICAM"/></Field>
+    <div className={styles.builderTemplateTitle}><strong>Composição de publicidade</strong><span>Os itens desta seção aparecem em um grid 3 × 2 como na página 04 da referência.</span></div>
+    <Field label="Texto do rodapé" wide><input name="footerNote" defaultValue={recordText(settings,"footerNote")} placeholder="FORMATOS COMERCIAIS"/></Field>
+  </>;
+  if (section.type === "application") return <>
+    <div className={styles.builderTemplateTitle}><strong>Exemplo de aplicação</strong><span>Use a imagem principal como tela demonstrativa e até quatro itens como chamadas ao redor da aplicação.</span></div>
+    <Field label="Texto do rodapé" wide><input name="footerNote" defaultValue={recordText(settings,"footerNote")} placeholder="APLICAÇÃO COMERCIAL"/></Field>
   </>;
   if (section.type === "artists") return <>
     <div className={styles.builderTemplateTitle}><strong>Composição Artistas & Destaques</strong><span>Destaque central, oportunidades e depoimento inferior.</span></div>

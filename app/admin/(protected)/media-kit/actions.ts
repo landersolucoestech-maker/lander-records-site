@@ -10,7 +10,7 @@ import { mediaAssets, mediaKitItems, mediaKitSections, mediaKitSettings } from "
 import { MEDIA_FIT_VALUES, MEDIA_POSITION_VALUES } from "./media-kit-contract";
 import { requireMediaKitMutationAdmin } from "./preview-auth";
 
-const SECTION_TYPES = new Set(["cover", "editorial", "metrics", "audience", "cards", "artists", "contact", "custom"]);
+const SECTION_TYPES = new Set(["cover", "editorial", "metrics", "audience", "cards", "application", "artists", "contact", "custom"]);
 const THEMES = new Set(["light", "dark"]);
 const ITEM_KINDS = new Set(["metric", "card", "bullet", "contact", "text", "release"]);
 const SOURCE_KEYS = new Set(["static", "artists_total", "releases_total", "posts_total", "media_total", "contact_email", "contact_phone", "location", "instagram", "website"]);
