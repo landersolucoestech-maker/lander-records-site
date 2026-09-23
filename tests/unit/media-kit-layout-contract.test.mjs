@@ -45,7 +45,7 @@ test("reference audience page contains the four expected information blocks",()=
 test("cover and about pages retain strong editorial hierarchy",()=>{
   assert.match(preview,/coverHeadline/);
   assert.match(css,/\.coverCopy h2\{[^}]*font-size:4\.15cqw/);
-  assert.match(css,/\.aboutMetrics\{[^}]*grid-template-columns:repeat\(5,1fr\)/);
+  assert.match(css,/\.aboutMetrics\{[^}]*grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/);
   assert.match(css,/\.aboutBanner\{/);
   assert.match(preview,/data-reference-slot="about-kpis"/);
 });
