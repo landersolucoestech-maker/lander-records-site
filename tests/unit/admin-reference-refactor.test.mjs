@@ -257,9 +257,9 @@ test("media kit is a persisted section builder with a controlled editorial previ
   assert.doesNotMatch(mediaKitStyles, /font-family:Impact,Haettenschweiler/);
   assert.match(mediaKitStyles, /font-family:Montserrat,Arial,sans-serif/);
   assert.match(mediaKitStyles, /\.refPartnerGrid\{[^}]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)[^}]*grid-template-rows:repeat\(2,minmax\(0,1fr\)\)/);
-  assert.match(mediaKitStyles, /\.quickSectionPanel\{/);
-  assert.match(mediaKitStyles, /\.quickSectionGrid\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
-  assert.match(mediaKitStyles, /\.quickSectionCard button\{/);
+  assert.match(mediaKitStyles, /\.createSectionPanel\{/);
+  assert.match(mediaKitStyles, /\.createSectionGrid\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(mediaKitStyles, /\.builderSection>summary\{[^}]*cursor:pointer/);
 });
 test("settings internal tabs use scoped mutations and preserve RBAC", () => {
   assert.match(settings, /data-testid="settings-manager"/);
