@@ -222,9 +222,9 @@ test("media kit is a persisted section builder with a controlled editorial previ
   assert.match(mediaKitReferenceMigration, /"group":"city"/);
 
   assert.match(mediaKitPreview, /visibleSections\s*=\s*visibleByPosition\(sections\)/);
-  assert.match(mediaKitPreview, /section\.type === "cover"/);
-  assert.match(mediaKitPreview, /section\.type === "cards"/);
-  assert.match(mediaKitPreview, /section\.type === "contact"/);
+  assert.match(mediaKitPreview, /section\.type\s*===\s*"cover"/);
+  assert.match(mediaKitPreview, /section\.type\s*===\s*"cards"/);
+  assert.match(mediaKitPreview, /section\.type\s*===\s*"contact"/);
   assert.match(mediaKitPreview, /PERFIL DO PÚBLICO/);
   assert.match(mediaKitPreview, /FAIXA ETÁRIA/);
   assert.match(mediaKitPreview, /PRINCIPAIS INTERESSES/);

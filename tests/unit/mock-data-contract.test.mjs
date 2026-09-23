@@ -21,7 +21,9 @@ test("central scenario has representative depth across every visible domain",()=
   assert.ok((read("lib/mocks/posts.ts").match(/id:\s*["']mock-post-/g)||[]).length>=10,"posts");
   assert.ok((read("lib/mocks/media.ts").match(/id:\s*["']mock-media-/g)||[]).length>=10,"media");
   assert.ok((read("lib/mocks/media-kit.ts").match(/\bid:/g)||[]).length>=20,"media kit");
-  assert.ok((read("lib/mocks/admin.ts").match(/id:["']mock-audit-/g)||[]).length>=10,"audit");
+  const adminMock = read("lib/mocks/admin.ts");
+  const auditActions = adminMock.match(/const actions = \[([\s\S]*?)\];/)?.[1] || "";
+  assert.ok((auditActions.match(/["'][^"']+["']/g)||[]).length>=10,"audit");
   assert.match(read("lib/mocks/integrations.ts"),/releases:\s*\[/);
   assert.match(read("lib/mocks/admin.ts"),/series:\s*\[/);
   assert.match(read("lib/mocks/admin.ts"),/devices:\s*\[/);
