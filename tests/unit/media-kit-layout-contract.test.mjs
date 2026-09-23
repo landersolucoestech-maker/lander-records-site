@@ -69,7 +69,7 @@ test("live preview is isolated from editor CSS and uses one stable landscape gri
   assert.match(preview, /MediaKitPreview\.module\.css/);
   assert.match(preview, /data-preview-version="clean-grid-v1"/);
   assert.match(css, /aspect-ratio:16\/9!important/);
-  assert.match(css, /grid-template-rows:5\.6cqw minmax\(0,1fr\) 3\.8cqw/);
+  assert.match(css, /grid-template-rows:4\.2cqw minmax\(0,1fr\) 2\.8cqw/);
   assert.match(css, /overflow:hidden/);
   assert.doesNotMatch(css, /Media Kit v3|Media Kit v4|Strict reference structure fixes/);
 });
@@ -99,4 +99,12 @@ test("specialized pages always have an editorial heading fallback", () => {
     "ARTISTAS E DESTAQUES",
     "VAMOS CONVERSAR",
   ]) assert.match(preview, new RegExp(label));
+});
+
+
+test("live preview padding stays compact so page content uses the available frame", () => {
+  assert.match(css, /padding-inline:2\.4cqw/);
+  assert.match(css, /\.refCover\{[^}]*padding:1\.15cqw 2\.4cqw \.9cqw/);
+  assert.match(css, /\.refAboutBody\{[^}]*padding:1\.15cqw 2\.4cqw \.8cqw/);
+  assert.match(css, /\.refAudienceBody\{[^}]*padding:1\.05cqw 2\.4cqw \.75cqw/);
 });
