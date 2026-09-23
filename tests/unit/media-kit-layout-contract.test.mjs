@@ -44,7 +44,7 @@ test("reference audience page contains the four expected information blocks",()=
 
 test("cover and about pages retain strong editorial hierarchy",()=>{
   assert.match(preview,/coverHeadline/);
-  assert.match(css,/\.coverCopy h2\{[^}]*font-size:4\.15cqw/);
+  assert.match(css,/\.coverCopy h2\{[^}]*font-size:3cqw/);
   assert.match(css,/\.aboutMetrics\{[^}]*grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/);
   assert.match(css,/\.aboutBanner\{/);
   assert.match(preview,/data-reference-slot="about-kpis"/);
@@ -79,14 +79,15 @@ test("persisted canonical deck is migrated to the same six-page reference sequen
 });
 
 
-test("reference deck typography stays proportionate inside the portrait preview",()=> {
-  assert.match(css,/\.heading h3,[^}]*font-size:3\.35cqw/);
-  assert.match(css,/\.headingCompact h3\{font-size:2\.7cqw/);
-  assert.match(css,/\.aboutMetrics b\{font-size:1\.25cqw/);
-  assert.match(css,/\.aboutMetrics strong\{[^}]*font-size:\.5cqw/);
-  assert.match(css,/\.aboutMetrics strong\{[^}]*overflow-wrap:anywhere/);
-  assert.match(css,/\.aboutBanner strong\{[^}]*font-size:1\.55cqw/);
-  assert.match(css,/\.contactMain \.heading h3\{font-size:3\.15cqw/);
-  assert.match(css,/\.coverCopy h2\{[^}]*font-size:4\.15cqw/);
-  assert.doesNotMatch(css,/font-size:6\.6cqw|font-size:5\.5cqw|font-size:5\.2cqw|font-size:5\.15cqw|font-size:4\.25cqw/);
+test("reference deck typography stays compact inside the portrait preview",()=> {
+  assert.match(css,/\.heading h3,[^}]*font-size:2\.35cqw/);
+  assert.match(css,/\.headingCompact h3\{font-size:1\.9cqw/);
+  assert.match(css,/\.aboutMetrics b\{font-size:\.72cqw/);
+  assert.match(css,/\.aboutMetrics strong\{[^}]*font-size:\.31cqw/);
+  assert.match(css,/\.aboutMetrics strong\{[^}]*white-space:nowrap[^}]*overflow-wrap:normal[^}]*hyphens:none/);
+  assert.match(css,/\.aboutMetrics small\{[^}]*font-size:\.27cqw[^}]*white-space:nowrap/);
+  assert.match(css,/\.aboutBanner strong\{[^}]*font-size:\.9cqw/);
+  assert.match(css,/\.contactMain \.heading h3\{font-size:2\.15cqw/);
+  assert.match(css,/\.coverCopy h2\{[^}]*font-size:3cqw/);
+  assert.doesNotMatch(css,/font-size:6\.6cqw|font-size:5\.5cqw|font-size:5\.2cqw|font-size:5\.15cqw|font-size:4\.25cqw|overflow-wrap:anywhere/);
 });
