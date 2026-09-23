@@ -95,7 +95,7 @@ test("Artists table reproduces the approved reference density and pagination", (
   assert.match(managerStyles, /\.statusBadge\{[\s\S]*min-height:22px[\s\S]*border-radius:7px/);
   assert.match(managerStyles, /\.actionMenu\{display:grid;min-width:158px/);
   assert.match(managerStyles, /\.modalBackdrop\{position:fixed;inset:0/);
-  assert.match(managerStyles, /\.editDialog\{width:min\(1320px,96vw\)/);
+  assert.match(managerStyles, /\.editDialog\{[^}]*width:min\(1320px,96vw\)/);
   assert.doesNotMatch(managerStyles, /checkboxColumn/);
   assert.match(managerStyles, /approved Artists reference/);
 });
