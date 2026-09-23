@@ -1,6 +1,7 @@
 import { and, asc, eq } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
+import { mockArtistEditor, mockArtistEditorOptions, mockDataEnabled } from "../../../../lib/mocks";
 import {
   artistGenreRelations,
   artistMetrics,
