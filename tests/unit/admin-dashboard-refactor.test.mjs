@@ -6,6 +6,7 @@ const dashboard = fs.readFileSync("app/admin/components/DashboardView.tsx", "utf
 const dashboardPage = fs.readFileSync("app/admin/(protected)/page.tsx", "utf8");
 const shell = fs.readFileSync("app/admin/components/AdminShell.tsx", "utf8");
 const protectedLayout = fs.readFileSync("app/admin/(protected)/layout.tsx", "utf8");
+const mockAdmin = fs.readFileSync("lib/mocks/admin.ts", "utf8");
 
 test("dashboard keeps the approved analytics-first sections", () => {
   for (const heading of ["Visitantes", "Visualizações", "Taxa de engajamento", "Leads / Conversões", "Desempenho do site", "Dispositivos", "Atividades recentes"]) {
@@ -18,10 +19,14 @@ test("dashboard reproduces the approved reference only in disposable development
   for (const rejected of ["Ações rápidas", "Pendências editoriais", "Status do conteúdo da Home", "Integrações de conteúdo", "Links úteis"]) {
     assert.ok(!dashboard.includes(rejected), rejected);
   }
-  for (const referenceValue of ["12842", "38421", "4.8", "284", "54.2", "38.7", "7.1"]) {
-    assert.ok(dashboard.includes(referenceValue), referenceValue);
-  }
-  assert.match(dashboard, /const dashboardData = demoMode \? referenceDashboard : data/);
+  assert.match(dashboard, /mockDashboardData/);
+  assert.match(mockAdmin, /visitors:28640/);
+  assert.match(mockAdmin, /views:87320/);
+  assert.match(mockAdmin, /engagementRate:6\.7/);
+  assert.match(mockAdmin, /conversions:486/);
+  assert.match(mockAdmin, /series:\[/);
+  assert.match(mockAdmin, /devices:\[/);
+  assert.match(dashboard, /const dashboardData = demoMode \? mockDashboardData : data/);
   assert.match(dashboardPage, /visitors: null, views: null, engagementRate: null/);
   assert.match(dashboardPage, /conversions: leadCount/);
   assert.match(dashboardPage, /demoMode=\{session\.source === "development-auth-bypass"\}/);
