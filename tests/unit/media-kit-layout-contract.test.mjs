@@ -44,7 +44,7 @@ test("reference audience page contains the four expected information blocks",()=
 
 test("cover and about pages retain strong editorial hierarchy",()=>{
   assert.match(preview,/coverHeadline/);
-  assert.match(css,/\.coverCopy h2\{[^}]*font-size:4\.15cqw/);
+  assert.match(css,/\.coverCopy h2\{[^}]*font-size:3\.55cqw/);
   assert.match(css,/\.aboutMetrics\{[^}]*grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/);
   assert.match(css,/\.aboutBanner\{/);
   assert.match(preview,/data-reference-slot="about-kpis"/);
@@ -80,14 +80,14 @@ test("persisted canonical deck is migrated to the same six-page reference sequen
 
 
 test("reference deck keeps the approved global typography while KPI labels wrap without clipping",()=> {
-  assert.match(css,/\.heading h3,[^}]*font-size:3\.35cqw/);
-  assert.match(css,/\.headingCompact h3\{font-size:2\.7cqw/);
-  assert.match(css,/\.coverCopy h2\{[^}]*font-size:4\.15cqw/);
-  assert.match(css,/\.audiencePanel h4\{[^}]*font-size:\.98cqw/);
-  assert.match(css,/\.adGrid h4\{[^}]*font-size:\.7cqw/);
-  assert.match(css,/\.contactMain \.heading h3\{font-size:3\.15cqw/);
-  assert.match(css,/\.aboutMetrics b\{font-size:\.78cqw/);
-  assert.match(css,/\.aboutMetrics strong\{[^}]*font-size:\.36cqw[^}]*white-space:normal[^}]*word-break:keep-all[^}]*overflow-wrap:normal[^}]*hyphens:none/);
-  assert.match(css,/\.aboutMetrics small\{[^}]*font-size:\.28cqw[^}]*white-space:normal[^}]*word-break:keep-all/);
+  assert.match(css,/\.heading h3,[^}]*font-size:2\.8cqw/);
+  assert.match(css,/\.headingCompact h3\{font-size:2\.35cqw/);
+  assert.match(css,/\.coverCopy h2\{[^}]*font-size:3\.55cqw/);
+  assert.match(css,/\.audiencePanel h4\{[^}]*font-size:\.88cqw/);
+  assert.match(css,/\.adGrid h4\{[^}]*font-size:\.82cqw/);
+  assert.match(css,/\.contactMain \.heading h3\{font-size:2\.65cqw/);
+  assert.match(css,/\.aboutMetrics b\{font-size:\.82cqw/);
+  assert.match(css,/\.aboutMetrics strong\{[^}]*font-size:\.48cqw[^}]*white-space:normal[^}]*word-break:keep-all[^}]*overflow-wrap:normal[^}]*hyphens:none/);
+  assert.match(css,/\.aboutMetrics small\{[^}]*font-size:\.4cqw[^}]*white-space:normal[^}]*word-break:keep-all/);
   assert.doesNotMatch(css,/\.aboutMetrics strong\{[^}]*white-space:nowrap|\.aboutMetrics strong\{[^}]*overflow-wrap:anywhere/);
 });
