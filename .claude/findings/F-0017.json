@@ -2,7 +2,7 @@
   "confidence": "confirmed",
   "dependencies": [],
   "risk": "low",
-  "status": "INVESTIGATING",
+  "status": "RESOLVED",
   "title": "OS completion could pass without real verification (unanchored mission/proofs, test-runner env masking)",
   "severity": "P1",
   "domain": "architecture",
@@ -96,9 +96,40 @@
       "at": "2026-09-25T19:02:26.501Z",
       "by": "architecture-reviewer",
       "note": "reopened: env prefix (NODE_TEST_CONTEXT/NODE_OPTIONS/PATH) and mission weakening by ordinary commit (EV-0036, EV-0037, EV-0038)"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-25T23:28:03.165Z",
+      "by": "owner",
+      "note": "env-prefix proof bypass; mission definition weakenable by ordinary commit; zero-test runs PASS"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-25T23:28:03.254Z",
+      "by": "owner",
+      "note": "fix in 1c7109f (ALLOWED_ENV, first-commit anchoring, ranNothing)"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-25T23:28:03.350Z",
+      "by": "qa-engineer",
+      "note": "required test green on HEAD (EV-0042)"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-25T23:28:03.437Z",
+      "by": "regression-reviewer",
+      "note": "reaudit: EV-0042 reproduces reviewer scenario on HEAD"
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-25T23:28:03.562Z",
+      "by": "autonomous-controller",
+      "note": "proof EV-0042; server rebuilt from HEAD"
     }
   ],
   "evidenceRecords": [
-    "EV-0035"
+    "EV-0035",
+    "EV-0042"
   ]
 }

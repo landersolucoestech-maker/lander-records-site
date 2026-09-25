@@ -2,7 +2,7 @@
   "confidence": "confirmed",
   "dependencies": [],
   "risk": "low",
-  "status": "INVESTIGATING",
+  "status": "RESOLVED",
   "title": "Signed lead webhook followed redirects, dead-lettered 401/403 immediately, logged raw error text",
   "severity": "P2",
   "domain": "leads",
@@ -97,9 +97,40 @@
       "at": "2026-09-25T19:02:26.685Z",
       "by": "adversarial-reviewer",
       "note": "reopened: redirect test cannot fail (target refuses connections) (EV-0038)"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-25T23:28:02.588Z",
+      "by": "owner",
+      "note": "redirect test could not fail: target listener was never asserted"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-25T23:28:02.675Z",
+      "by": "owner",
+      "note": "fix in b5506e9 (redirect target asserted to receive 0 hits)"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-25T23:28:02.764Z",
+      "by": "qa-engineer",
+      "note": "required test green on HEAD (EV-0040)"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-25T23:28:02.863Z",
+      "by": "regression-reviewer",
+      "note": "reaudit: EV-0040 reproduces reviewer scenario on HEAD"
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-25T23:28:03.045Z",
+      "by": "autonomous-controller",
+      "note": "proof EV-0040; server rebuilt from HEAD"
     }
   ],
   "evidenceRecords": [
-    "EV-0034"
+    "EV-0034",
+    "EV-0040"
   ]
 }

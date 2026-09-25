@@ -1,0 +1,29 @@
+{
+  "id": "EV-0039",
+  "kind": "command",
+  "findings": [
+    "F-0003"
+  ],
+  "criteria": [],
+  "mission": "M-20260925-002",
+  "summary": "env DATABASE_URL=postgresql://postgres@localhost:55432/lander_test node tests/integration/soundcharts-identity-sync.mjs -> PASS",
+  "command": "env DATABASE_URL=postgresql://postgres@localhost:55432/lander_test node tests/integration/soundcharts-identity-sync.mjs",
+  "argv": [
+    "env",
+    "DATABASE_URL=postgresql://postgres@localhost:55432/lander_test",
+    "node",
+    "tests/integration/soundcharts-identity-sync.mjs"
+  ],
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "1c7109f8e2a61a125c311c777a2f6aefa2ae53c3",
+  "dirty": false,
+  "fingerprint": "044e2b8592052746d3e785f1a067b86b634c2ba2ae85a9604a7c08f542d621a2",
+  "environment": "node v22.22.2 (outside engines >=24 <25) linux; duration 1511ms",
+  "outputSha256": "4a40b70ff37c372bf78d8881975961ebf904748c190e6dc7ceee4a15c0218219",
+  "excerpt": "Soundcharts identity sync checks passed: invalidated/replaced identities withdraw metrics, same-identity outages keep last known values, requests are time-bounded.\n(node:32680) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/lander-records-site/lib/integrations/sync.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to /home/user/lander-records-site/package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\n",
+  "recordedAt": "2026-09-25T23:26:45.448Z",
+  "producer": "claude-code",
+  "prevHash": "8d3e215bc22554494bc0e2463498fc40e150d0d9763229ca273d6b558a16a20e",
+  "hash": "c041123395f7355040d89f235dbc44f5a2dd8f07741e79b1967fb3f8ce366fdb"
+}

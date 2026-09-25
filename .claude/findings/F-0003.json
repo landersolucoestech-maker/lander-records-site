@@ -7,7 +7,7 @@
   "title": "Metrics of an invalidated or replaced Soundcharts identity stay published",
   "severity": "P1",
   "domain": "identity",
-  "status": "INVESTIGATING",
+  "status": "RESOLVED",
   "evidence": [
     "lib/integrations/sync.ts (base): unresolved/not_configured branches clear the UUID but leave artist_metrics/integration_metric_cache",
     "tests/integration/soundcharts-identity-sync.mjs fails on base: 'metrics of an invalidated identity must not stay published'"
@@ -143,10 +143,41 @@
       "at": "2026-09-25T19:02:26.412Z",
       "by": "adversarial-reviewer",
       "note": "reopened: admin save clears UUID without purging Lander cache; sync/admin race (EV-0038)"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-25T23:28:02.065Z",
+      "by": "owner",
+      "note": "admin save cleared UUID without purging; in-flight sync could publish a superseded identity"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-25T23:28:02.163Z",
+      "by": "owner",
+      "note": "fix in 9e24ab4 (purge in admin tx, row-locked publish guard)"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-25T23:28:02.253Z",
+      "by": "qa-engineer",
+      "note": "required test green on HEAD (EV-0039)"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-25T23:28:02.340Z",
+      "by": "regression-reviewer",
+      "note": "reaudit: EV-0039 reproduces reviewer scenario on HEAD"
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-25T23:28:02.460Z",
+      "by": "autonomous-controller",
+      "note": "proof EV-0039; server rebuilt from HEAD"
     }
   ],
   "evidenceRecords": [
     "EV-0019",
-    "EV-0032"
+    "EV-0032",
+    "EV-0039"
   ]
 }

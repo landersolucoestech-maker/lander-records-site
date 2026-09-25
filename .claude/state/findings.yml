@@ -4,9 +4,9 @@
   "derivedFrom": ".claude/findings/*.json",
   "totals": {
     "all": 19,
-    "open": 4,
+    "open": 0,
     "parked": 6,
-    "closed": 9,
+    "closed": 13,
     "ready": 0
   },
   "readyQueue": [],
@@ -40,12 +40,13 @@
       "title": "Metrics of an invalidated or replaced Soundcharts identity stay published",
       "severity": "P1",
       "domain": "identity",
-      "status": "INVESTIGATING",
+      "status": "RESOLVED",
       "priority": 660,
       "decision": null,
       "evidenceRecords": [
         "EV-0019",
-        "EV-0032"
+        "EV-0032",
+        "EV-0039"
       ]
     },
     {
@@ -176,11 +177,12 @@
       "title": "Signed lead webhook followed redirects, dead-lettered 401/403 immediately, logged raw error text",
       "severity": "P2",
       "domain": "leads",
-      "status": "INVESTIGATING",
+      "status": "RESOLVED",
       "priority": 380,
       "decision": null,
       "evidenceRecords": [
-        "EV-0034"
+        "EV-0034",
+        "EV-0040"
       ]
     },
     {
@@ -200,11 +202,12 @@
       "title": "OS completion could pass without real verification (unanchored mission/proofs, test-runner env masking)",
       "severity": "P1",
       "domain": "architecture",
-      "status": "INVESTIGATING",
+      "status": "RESOLVED",
       "priority": 560,
       "decision": null,
       "evidenceRecords": [
-        "EV-0035"
+        "EV-0035",
+        "EV-0042"
       ]
     },
     {
@@ -222,11 +225,12 @@
       "title": "Guardian hook and security gate had bypassable forms (force-with-lease, sh -c, string-only preview checks)",
       "severity": "P2",
       "domain": "security",
-      "status": "INVESTIGATING",
+      "status": "RESOLVED",
       "priority": 410,
       "decision": null,
       "evidenceRecords": [
-        "EV-0035"
+        "EV-0035",
+        "EV-0041"
       ]
     }
   ]

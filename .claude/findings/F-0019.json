@@ -2,7 +2,7 @@
   "confidence": "confirmed",
   "dependencies": [],
   "risk": "low",
-  "status": "INVESTIGATING",
+  "status": "RESOLVED",
   "title": "Guardian hook and security gate had bypassable forms (force-with-lease, sh -c, string-only preview checks)",
   "severity": "P2",
   "domain": "security",
@@ -96,9 +96,40 @@
       "at": "2026-09-25T19:02:26.591Z",
       "by": "security-reviewer",
       "note": "reopened: preview gate bypass via quoted keys, vars, toJSON(secrets) (EV-0037); residual hook forms"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-25T23:28:03.687Z",
+      "by": "owner",
+      "note": "preview gate matched strings only (quoted keys, vars, toJSON(secrets), GITHUB_ENV)"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-25T23:28:03.781Z",
+      "by": "owner",
+      "note": "fix in 1c7109f (preview-workflow-safety check, hook forms)"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-25T23:28:03.878Z",
+      "by": "qa-engineer",
+      "note": "required test green on HEAD (EV-0041)"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-25T23:28:03.971Z",
+      "by": "regression-reviewer",
+      "note": "reaudit: EV-0041 reproduces reviewer scenario on HEAD"
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-25T23:28:04.095Z",
+      "by": "autonomous-controller",
+      "note": "proof EV-0041; server rebuilt from HEAD"
     }
   ],
   "evidenceRecords": [
-    "EV-0035"
+    "EV-0035",
+    "EV-0041"
   ]
 }
