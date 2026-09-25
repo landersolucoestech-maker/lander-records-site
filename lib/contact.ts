@@ -2,6 +2,15 @@ import { createHmac, createHash } from "node:crypto";
 import { and, asc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import { getDb } from "./db";
 import { contactSubmissions, integrationOutbox } from "./db/schema";
+import { outboxFailureTransition } from "./contact-outbox-policy";
+
+class OutboxDeliveryError extends Error {
+  readonly httpStatus: number | null;
+  constructor(message: string, httpStatus: number | null) {
+    super(message);
+    this.httpStatus = httpStatus;
+  }
+}
 
 const OUTBOX_RETRY_BATCH_SIZE = 25;
 const OUTBOX_RETRY_MAX_BATCH_SIZE = 100;
@@ -117,7 +126,7 @@ export async function dispatchOutboxEvent(outboxId: string) {
     });
 
     if (!response.ok) {
-      throw new Error(`SaaS webhook returned ${response.status}`);
+      throw new OutboxDeliveryError(`SaaS webhook returned ${response.status}`, response.status);
     }
 
     await db
@@ -134,16 +143,21 @@ export async function dispatchOutboxEvent(outboxId: string) {
     return { delivered: true };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown webhook error";
+    const attempts = event.attempts + 1;
+    const transition = outboxFailureTransition(attempts, error instanceof OutboxDeliveryError ? error.httpStatus : null);
     await db
       .update(integrationOutbox)
       .set({
-        status: "failed",
-        attempts: event.attempts + 1,
+        status: transition.status,
+        attempts,
         lastError: message.slice(0, 2000),
-        nextAttemptAt: new Date(Date.now() + 15 * 60 * 1000),
+        nextAttemptAt: transition.nextAttemptAt,
         updatedAt: new Date(),
       })
       .where(eq(integrationOutbox.id, outboxId));
+    if (transition.status === "dead_letter") {
+      console.error("contact_outbox_dead_letter", JSON.stringify({ outboxId, attempts, error: message.slice(0, 300) }));
+    }
     return { delivered: false, reason: message };
   } finally {
     clearTimeout(timer);

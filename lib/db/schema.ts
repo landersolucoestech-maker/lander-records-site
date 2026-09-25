@@ -22,7 +22,7 @@ export const adminRole = pgEnum("admin_role", ["owner", "admin", "editor", "view
 export const contentStatus = pgEnum("content_status", ["draft", "published", "archived"]);
 export const mediaStatus = pgEnum("media_status", ["active", "archived"]);
 export const contactStatus = pgEnum("contact_status", ["new", "processing", "exported", "spam", "archived"]);
-export const outboxStatus = pgEnum("outbox_status", ["pending", "delivered", "failed", "disabled"]);
+export const outboxStatus = pgEnum("outbox_status", ["pending", "delivered", "failed", "disabled", "dead_letter"]);
 
 export const adminUsers = pgTable("admin_users", {
   id: uuid("id").defaultRandom().primaryKey(),

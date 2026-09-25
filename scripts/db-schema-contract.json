@@ -713,6 +713,7 @@
     "outbox_status|1|pending",
     "outbox_status|2|delivered",
     "outbox_status|3|failed",
-    "outbox_status|4|disabled"
+    "outbox_status|4|disabled",
+    "outbox_status|5|dead_letter"
   ]
 }
