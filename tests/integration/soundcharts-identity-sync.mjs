@@ -18,6 +18,7 @@ const newUrl = `https://instagram.com/identity-new-${suffix}`;
 
 // Provider double: only the HTTP boundary is replaced; persistence runs against real PostgreSQL.
 let provider = { resolveTo: null, metrics: {}, failMetrics: false };
+let metricsLatch = null; // when set, audience/listening requests wait for it (simulates a slow in-flight fetch)
 const seenSignals = [];
 globalThis.fetch = async (input, init = {}) => {
   seenSignals.push(init.signal);
@@ -30,6 +31,7 @@ globalThis.fetch = async (input, init = {}) => {
   if (url.pathname.endsWith("/identifiers")) return json(200, { items: [{ url: newUrl }] });
   const audience = url.pathname.match(/\/audience\/(\w+)$/);
   if (audience || url.pathname.endsWith("/streaming/spotify/listening")) {
+    if (metricsLatch) await metricsLatch.promise;
     if (provider.failMetrics) return json(503, {});
     const platform = audience ? audience[1] : "spotify";
     const value = provider.metrics[platform];
@@ -164,7 +166,58 @@ try {
   assert.equal((await syncArtistSoundcharts(artistId, false)).status, "synced", "unsynced identity is not considered fresh");
   assert.deepEqual((await metricRows()).map((row) => [row.platform, Number(row.value)]), [["instagram", 7]]);
 
-  // 8. Every provider request is bounded by a timeout signal.
+  // 8. The admin save clears the URLs (state written by saveLanderRecordsIntegrationSettings before this fix:
+  //    UUID already '' but cache still populated): the next sync must withdraw the metrics.
+  await client`
+    UPDATE lander_records_integration_settings
+    SET instagram_url='', youtube_url='', soundcharts_artist_uuid='', soundcharts_resolution_status='unresolved', soundcharts_matched_via=''
+    WHERE key='lander_records'
+  `;
+  await client`
+    INSERT INTO integration_metric_cache (entity_type, entity_id, platform, metric, value, source)
+    VALUES ('lander_records','lander_records','youtube','subscribers', 999, 'soundcharts')
+    ON CONFLICT (entity_type, entity_id, platform, metric) DO UPDATE SET value=999
+  `;
+  assert.equal((await syncLanderRecordsSoundcharts(false)).status, "not_configured");
+  assert.equal([...await client`SELECT 1 FROM integration_metric_cache WHERE entity_type='lander_records'`].length, 0, "cleared URLs must withdraw Home metrics");
+
+  // 9. Race: a sync fetches for identity X; meanwhile the identity is re-pointed to Y (admin save + forced sync).
+  //    The in-flight result for X must not be published under Y.
+  await client`
+    UPDATE lander_records_integration_settings
+    SET instagram_url=${newUrl}, soundcharts_artist_uuid=${NEW_UUID}, soundcharts_resolution_status='resolved',
+        soundcharts_matched_via=${`instagram:${newUrl}`}, soundcharts_last_synced_at=now() - interval '2 days'
+    WHERE key='lander_records'
+  `;
+  let release;
+  metricsLatch = { promise: new Promise((resolve) => { release = resolve; }) };
+  provider = { resolveTo: NEW_UUID, metrics: { instagram: 5000, youtube: 999 }, failMetrics: false };
+  const inFlight = syncLanderRecordsSoundcharts(true);
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  await client`UPDATE lander_records_integration_settings SET soundcharts_artist_uuid=${OLD_UUID}, soundcharts_matched_via=${`instagram:${newUrl}`} WHERE key='lander_records'`;
+  await client`DELETE FROM integration_metric_cache WHERE entity_type='lander_records'`;
+  await client`INSERT INTO integration_metric_cache (entity_type, entity_id, platform, metric, value, source) VALUES ('lander_records','lander_records','instagram','followers', 42, 'soundcharts')`;
+  release();
+  metricsLatch = null;
+  assert.equal((await inFlight).status, "superseded");
+  const raced = [...await client`SELECT platform, value FROM integration_metric_cache WHERE entity_type='lander_records' ORDER BY platform`];
+  assert.deepEqual(raced.map((r) => [r.platform, Number(r.value)]), [["instagram", 42]], "stale in-flight values must not be published");
+
+  // 10. Without provider credentials, changed URLs still withdraw the invalidated identity's metrics.
+  await client`
+    UPDATE lander_records_integration_settings
+    SET instagram_url=${newUrl}, soundcharts_artist_uuid=${OLD_UUID}, soundcharts_resolution_status='resolved', soundcharts_matched_via=${`instagram:${oldUrl}`}
+    WHERE key='lander_records'
+  `;
+  await client`INSERT INTO integration_metric_cache (entity_type, entity_id, platform, metric, value, source) VALUES ('lander_records','lander_records','youtube','subscribers', 999, 'soundcharts') ON CONFLICT (entity_type, entity_id, platform, metric) DO UPDATE SET value=999`;
+  const savedSecret = process.env.SOUNDCHARTS_CLIENT_SECRET;
+  delete process.env.SOUNDCHARTS_CLIENT_SECRET;
+  try {
+    assert.equal((await syncLanderRecordsSoundcharts(false)).status, "credentials_missing");
+  } finally { process.env.SOUNDCHARTS_CLIENT_SECRET = savedSecret; }
+  assert.equal([...await client`SELECT 1 FROM integration_metric_cache WHERE entity_type='lander_records'`].length, 0, "withdrawal must not depend on provider credentials");
+
+  // 11. Every provider request is bounded by a timeout signal.
   assert.ok(seenSignals.length > 0);
   assert.ok(seenSignals.every((signal) => signal instanceof AbortSignal), "every Soundcharts request must carry an AbortSignal timeout");
 

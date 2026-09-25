@@ -7,7 +7,7 @@ import { audit, requirePersistentAdmin } from "../../lib/auth";
 import { getDb } from "../../lib/db";
 import { landerRecordsIntegrationSettings, spotifyReleaseCache } from "../../lib/db/integration-schema";
 import { normalizeExternalUrl, normalizePlatformUrl, spotifyPlaylistIdFromUrl } from "../../lib/integrations/identity";
-import { syncAllIntegrations } from "../../lib/integrations/sync";
+import { purgeLanderRecordsSoundchartsMetrics, syncAllIntegrations } from "../../lib/integrations/sync";
 
 function text(formData: FormData, name: string) {
   return String(formData.get(name) || "").trim();
@@ -26,25 +26,12 @@ export async function saveLanderRecordsIntegrationSettings(formData: FormData) {
   const socialChanged = !current || current.instagramUrl !== instagramUrl || current.youtubeUrl !== youtubeUrl;
   const playlistChanged = !current || current.spotifyPlaylistId !== spotifyPlaylistId;
 
-  await db.insert(landerRecordsIntegrationSettings).values({
-    key: "lander_records",
-    instagramUrl,
-    youtubeUrl,
-    spotifyPlaylistUrl,
-    spotifyPlaylistId,
-    soundchartsArtistUuid: socialChanged ? "" : current?.soundchartsArtistUuid || "",
-    soundchartsResolutionStatus: socialChanged ? "unresolved" : current?.soundchartsResolutionStatus || "unresolved",
-    soundchartsMatchedVia: socialChanged ? "" : current?.soundchartsMatchedVia || "",
-    soundchartsLastResolvedAt: socialChanged ? null : current?.soundchartsLastResolvedAt || null,
-    soundchartsLastSyncedAt: socialChanged ? null : current?.soundchartsLastSyncedAt || null,
-    soundchartsLastError: socialChanged ? "" : current?.soundchartsLastError || "",
-    spotifyPlaylistSnapshotId: playlistChanged ? "" : current?.spotifyPlaylistSnapshotId || "",
-    spotifyLastSyncedAt: playlistChanged ? null : current?.spotifyLastSyncedAt || null,
-    spotifyLastError: playlistChanged ? "" : current?.spotifyLastError || "",
-    updatedAt: new Date(),
-  }).onConflictDoUpdate({
-    target: landerRecordsIntegrationSettings.key,
-    set: {
+  // Changing the official URLs invalidates the resolved identity: its published metrics are withdrawn in the same
+  // transaction (single purge implementation in lib/integrations/sync.ts).
+  await db.transaction(async (tx) => {
+    if (socialChanged) await purgeLanderRecordsSoundchartsMetrics(tx);
+    await tx.insert(landerRecordsIntegrationSettings).values({
+      key: "lander_records",
       instagramUrl,
       youtubeUrl,
       spotifyPlaylistUrl,
@@ -59,7 +46,25 @@ export async function saveLanderRecordsIntegrationSettings(formData: FormData) {
       spotifyLastSyncedAt: playlistChanged ? null : current?.spotifyLastSyncedAt || null,
       spotifyLastError: playlistChanged ? "" : current?.spotifyLastError || "",
       updatedAt: new Date(),
-    },
+    }).onConflictDoUpdate({
+      target: landerRecordsIntegrationSettings.key,
+      set: {
+        instagramUrl,
+        youtubeUrl,
+        spotifyPlaylistUrl,
+        spotifyPlaylistId,
+        soundchartsArtistUuid: socialChanged ? "" : current?.soundchartsArtistUuid || "",
+        soundchartsResolutionStatus: socialChanged ? "unresolved" : current?.soundchartsResolutionStatus || "unresolved",
+        soundchartsMatchedVia: socialChanged ? "" : current?.soundchartsMatchedVia || "",
+        soundchartsLastResolvedAt: socialChanged ? null : current?.soundchartsLastResolvedAt || null,
+        soundchartsLastSyncedAt: socialChanged ? null : current?.soundchartsLastSyncedAt || null,
+        soundchartsLastError: socialChanged ? "" : current?.soundchartsLastError || "",
+        spotifyPlaylistSnapshotId: playlistChanged ? "" : current?.spotifyPlaylistSnapshotId || "",
+        spotifyLastSyncedAt: playlistChanged ? null : current?.spotifyLastSyncedAt || null,
+        spotifyLastError: playlistChanged ? "" : current?.spotifyLastError || "",
+        updatedAt: new Date(),
+      },
+    });
   });
   if (playlistChanged) await db.delete(spotifyReleaseCache);
   await audit(session.user.id, "integration.lander_records.updated", "integration_settings", "lander_records", {
