@@ -2,7 +2,7 @@
   "confidence": "confirmed",
   "dependencies": [],
   "risk": "low",
-  "status": "RESOLVED",
+  "status": "INVESTIGATING",
   "title": "Guardian hook and security gate had bypassable forms (force-with-lease, sh -c, string-only preview checks)",
   "severity": "P2",
   "domain": "security",
@@ -90,6 +90,12 @@
       "at": "2026-09-25T18:52:07.818Z",
       "by": "product-flows-auditor",
       "note": "reaudit: detecting scenario/suite green on current code"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-25T19:02:26.591Z",
+      "by": "security-reviewer",
+      "note": "reopened: preview gate bypass via quoted keys, vars, toJSON(secrets) (EV-0037); residual hook forms"
     }
   ],
   "evidenceRecords": [

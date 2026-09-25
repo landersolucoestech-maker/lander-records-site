@@ -1,0 +1,20 @@
+{
+  "id": "EV-0037",
+  "kind": "review",
+  "findings": [],
+  "criteria": [],
+  "mission": "M-20260925-002",
+  "ticket": "6d3e532fe64c823aadfa8beec82b652c",
+  "summary": "confirmation: no CRITICAL/HIGH; G-1 partial (quoted keys/vars/toJSON bypass gate), G-9 env/NODE_OPTIONS proof bypass",
+  "result": "PASS",
+  "commit": "51358aa2464d2d00bb26bc816a2335e2bb74cf3a",
+  "dirty": false,
+  "fingerprint": "c1a0170085e13e6ad5a60fdbc9be227e86c852408e5669aea11d81508d60dd74",
+  "environment": "review by security-reviewer; report .claude/reports/reviews/2026-09-25-security-reviewer-confirmation.md",
+  "outputSha256": "9638f5ffc6f5583c605bba0a6a0cdb48a84645216a61b31fd59a453c97053846",
+  "excerpt": "# Review — security-reviewer (confirmation) — e673bf9..51358aa\n\nREVIEW-TICKET: 6d3e532fe64c823aadfa8beec82b652c\n\nClone at 51358aa: gate security PASS; verify-integrity PASS; test:claude-os 22/22; hook command from settings.json fails closed (garbage stdin, missing command, missing file → exit 2); 68 abuse commands against evaluate().\n\n- G-1 PARTIAL MEDIUM: quoted YAML keys (`\"DATABASE_URL\": ${{ vars.X }}`, `\"LANDER_MOCK_DATA\": \"0\"`), `toJSON(secrets)`, `vars.*`, $GITHUB_ENV writes and other workflow files setting DEV_PREVIEW_PUBLIC_ACCESS bypass the line-regex gate (reproduced: GATE security = PASS). F-0019 should be reopened.\n- G-2 CLOSED for reported case; LOW residuals: bash -lc / -c --, git -c alias, find -execdir rm, /var/tmp/../ prefix, cd .. && rm -rf <repo>, process.env.X reads, bare export, /proc/self/environ, python os.environ, globs.\n- G-3 CLOSED. G-4 OPEN MEDIUM tracked (F-0018/DEC-0006). G-5, G-6, G-7 CLOSED.\n- G-9 MEDIUM (0eec60b): env prefix accepts NODE_OPTIONS (e.g. --test-skip-pattern=.) → failing suite exits 0 and is accepted as proof; zero-test runs recorded PASS.\n- INFO: sync.ts purge scoped correctly; manifest does not pin dev-preview.yml / settings.json / lib/auth.\n\nVERDICT: PASS\n",
+  "recordedAt": "2026-09-25T18:58:42.945Z",
+  "producer": "security-reviewer",
+  "prevHash": "56d1ce7457f1c0afb2b627d950d58409de3537be680ed0c0aed537f069f96b5b",
+  "hash": "ac5f688ca79411aebe549e6edd8adb2ecc3c6a01bc6d62a59eaf13569c677894"
+}

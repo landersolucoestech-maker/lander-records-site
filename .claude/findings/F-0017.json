@@ -2,7 +2,7 @@
   "confidence": "confirmed",
   "dependencies": [],
   "risk": "low",
-  "status": "RESOLVED",
+  "status": "INVESTIGATING",
   "title": "OS completion could pass without real verification (unanchored mission/proofs, test-runner env masking)",
   "severity": "P1",
   "domain": "architecture",
@@ -90,6 +90,12 @@
       "at": "2026-09-25T18:52:07.533Z",
       "by": "product-flows-auditor",
       "note": "reaudit: detecting scenario/suite green on current code"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-25T19:02:26.501Z",
+      "by": "architecture-reviewer",
+      "note": "reopened: env prefix (NODE_TEST_CONTEXT/NODE_OPTIONS/PATH) and mission weakening by ordinary commit (EV-0036, EV-0037, EV-0038)"
     }
   ],
   "evidenceRecords": [

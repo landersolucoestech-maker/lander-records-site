@@ -1,0 +1,22 @@
+{
+  "id": "EV-0038",
+  "kind": "review",
+  "findings": [
+    "F-0003"
+  ],
+  "criteria": [],
+  "mission": "M-20260925-002",
+  "ticket": "451a13aacc13bfa208507615d359d3c9",
+  "summary": "confirmation: admin-save purge gap (F-0003), sync race, env prefix bypass, weak redirect test",
+  "result": "FAIL",
+  "commit": "51358aa2464d2d00bb26bc816a2335e2bb74cf3a",
+  "dirty": false,
+  "fingerprint": "c1a0170085e13e6ad5a60fdbc9be227e86c852408e5669aea11d81508d60dd74",
+  "environment": "review by adversarial-reviewer; report .claude/reports/reviews/2026-09-25-adversarial-reviewer-confirmation.md",
+  "outputSha256": "c0a0e26635629fe756d1bec7a335ae1f12b014cd735f54c66b16924c47fce48b",
+  "excerpt": "# Review — adversarial-reviewer (confirmation) — e673bf9..51358aa\n\nREVIEW-TICKET: 451a13aacc13bfa208507615d359d3c9\n\nClone at 51358aa, disposable DB. identity-sync test green at HEAD and red with 9f9dad1 sync.ts; outbox delivery green; npm test all pass; tsc 0; os:validate PASS; test:claude-os 22/22.\n\nPrior: (1) F-0003 PARTIAL — re-resolve+failed fetch fixed, admin save path not; (2) CLOSED; (3) PARTIAL (env prefix); (4) OPEN, no disposition (browser/probe criteria not bound to served build); (5) parked F-0018 acceptable.\n\n- A HIGH: app/admin/integration-actions.ts save clears soundcharts_artist_uuid without purging lander metric cache; sync no-links purge guarded by uuid → old metrics on Home forever after the admin clears the URLs (reproduced); changed URL keeps old metrics until next sync (forever without credentials).\n- B MEDIUM (pre-existing): cron/admin sync race — final upserts do not verify the stored identity is still the fetched one; old identity values published under the new identity permanently (reproduced on Lander path; artist path same shape).\n- C MEDIUM (0eec60b): env prefix accepts NODE_TEST_CONTEXT, NODE_OPTIONS, PATH → failing suites accepted as proof/verify and re-run as PASS (reproduced end to end).\n- D LOW: redirect test target refuses connections, so the test passes without redirect:\"error\".\n- E LOW: proofs not tied to the finding's requiredTests.\n\nVERDICT: FAIL\n",
+  "recordedAt": "2026-09-25T19:02:26.306Z",
+  "producer": "adversarial-reviewer",
+  "prevHash": "ac5f688ca79411aebe549e6edd8adb2ecc3c6a01bc6d62a59eaf13569c677894",
+  "hash": "8d3e215bc22554494bc0e2463498fc40e150d0d9763229ca273d6b558a16a20e"
+}

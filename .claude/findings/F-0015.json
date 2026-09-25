@@ -2,7 +2,7 @@
   "confidence": "confirmed",
   "dependencies": [],
   "risk": "low",
-  "status": "RESOLVED",
+  "status": "INVESTIGATING",
   "title": "Signed lead webhook followed redirects, dead-lettered 401/403 immediately, logged raw error text",
   "severity": "P2",
   "domain": "leads",
@@ -91,6 +91,12 @@
       "at": "2026-09-25T18:52:06.986Z",
       "by": "product-flows-auditor",
       "note": "reaudit: detecting scenario/suite green on current code"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-25T19:02:26.685Z",
+      "by": "adversarial-reviewer",
+      "note": "reopened: redirect test cannot fail (target refuses connections) (EV-0038)"
     }
   ],
   "evidenceRecords": [
