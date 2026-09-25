@@ -7,7 +7,7 @@
 | Authentication | HMAC-SHA256 over the exact JSON body; receiver must verify and dedupe on x-lander-event-id |
 | Client | lib/contact.ts#dispatchOutboxEvent (fetch POST, 4s abort timeout) |
 | Requests | POST {LANDER_SAAS_WEBHOOK_URL} body {id,type:'site.contact.submitted',aggregateType:'contact_submission',aggregateId,occurredAt,data} |
-| Raw response | any 2xx = delivered; non-2xx/network = failure classified by lib/contact-outbox-policy.ts |
+| Raw response | any 2xx = delivered; non-2xx/network = failure classified by lib/contact-outbox-policy.ts; redirects are refused (redirect: "error") |
 | Normalization | payload built at submission time (email lowercased, consent version 2026-08, attribution: source, pagePath, referrer, utm) |
 | Identity | event id = integration_outbox.id (stable across retries) → receiver idempotency key |
 | Persistence | integration_outbox (pending|delivered|failed|disabled|dead_letter, attempts, last_error, next_attempt_at, delivered_at) |

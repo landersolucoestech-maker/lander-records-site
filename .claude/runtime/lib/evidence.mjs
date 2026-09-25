@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { OsError, osPath, readJson, readYml, createRecord, nowIso, sha256, workspaceFingerprint, REPO_ROOT, RUN_DIR, splitCommand } from "./io.mjs";
+import { OsError, osPath, readJson, readYml, createRecord, nowIso, sha256, workspaceFingerprint, REPO_ROOT, RUN_DIR, splitCommand, childEnv } from "./io.mjs";
 import { validate } from "./schema.mjs";
 
 export const EVIDENCE_DIR = osPath("evidence");
@@ -30,9 +30,10 @@ export function verifyChain(records = loadEvidence()) {
 // Called under the evidence directory lock (createRecord), so the head cannot move while linking.
 const chainHead = (id) => loadEvidence({ except: id }).filter((r) => r.id < id).at(-1)?.hash ?? "GENESIS";
 
-/** Commands accepted as proof of a finding fix: real test suites, OS probes, schema audit — never `true`/echo. */
-export const PROOF_COMMAND = /(^|\s)(node\s+(--no-warnings\s+)?--test\b|node\s+(--no-warnings\s+)?tests\/|npm\s+(run\s+)?test(:[\w-]+)?\b|npx\s+playwright\s+test\b|node\s+\.claude\/runtime\/probes\/|node\s+scripts\/audit-db\.mjs\b)/;
-export const isProofCommand = (command = "") => PROOF_COMMAND.test(command);
+export { isProofArgv } from "./commands.mjs";
+import { isProofArgv as proofArgv } from "./commands.mjs";
+/** Proof check for a recorded command: uses the stored argv (legacy records: whitespace split). */
+export const isProofCommand = (command = "", argv) => proofArgv(argv || splitCommand(command), { requireFiles: false });
 
 function activeMission() {
   const file = osPath("state", "mission.yml");
@@ -81,10 +82,10 @@ function environment(extra = "") {
 export function runCommandEvidence({ argv, kind = "command", findings = [], criteria = [], summary, producer = "runtime", env = {}, timeoutMs = 600000 }) {
   if (!argv?.length) throw new OsError("USAGE", "a command is required after --");
   const mission = checkLinks(criteria, findings, argv);
-  if (findings.length && !isProofCommand(argv.join(" "))) throw new OsError("NOT_A_PROOF", "evidence naming a finding must run a real test suite, OS probe or schema audit");
+  if (findings.length && !proofArgv(argv)) throw new OsError("NOT_A_PROOF", "evidence naming a finding must run an allow-listed test suite, OS probe or schema audit (lib/commands.mjs)");
   const before = workspaceFingerprint();
   const started = Date.now();
-  const child = spawnSync(argv[0], argv.slice(1), { cwd: REPO_ROOT, env: { ...process.env, ...env }, encoding: "utf8", timeout: timeoutMs, maxBuffer: 64 * 1024 * 1024, shell: false });
+  const child = spawnSync(argv[0], argv.slice(1), { cwd: REPO_ROOT, env: childEnv(env), encoding: "utf8", timeout: timeoutMs, maxBuffer: 64 * 1024 * 1024, shell: false });
   const output = `${child.stdout || ""}${child.stderr || ""}`;
   // Missing binary / permission = environment gap (BLOCKED). A timeout is the command failing (FAIL).
   const blocked = child.error && ["ENOENT", "EACCES", "EPERM"].includes(child.error.code);
@@ -145,5 +146,5 @@ export function isFresh(record, ws = workspaceFingerprint()) {
 
 /** PASS evidence that is about this finding (names it) and describes the current workspace. */
 export function provesFinding(record, findingId, ws) {
-  return record.result === "PASS" && record.kind !== "review" && isProofCommand(record.command) && (record.findings || []).includes(findingId) && (!ws || isFresh(record, ws));
+  return record.result === "PASS" && record.kind !== "review" && isProofCommand(record.command, record.argv) && (record.findings || []).includes(findingId) && (!ws || isFresh(record, ws));
 }

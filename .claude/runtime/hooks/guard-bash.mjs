@@ -38,24 +38,40 @@ const bulkPath = (rest) => rest.some((t) => [".", "./", ":/", "*", ":(top)"].inc
 function gitRule({ sub, rest }) {
   if (sub === "reset" && has(rest, "--hard", "--merge", "--keep")) return "git-guardian: git reset --hard/--merge/--keep discards work";
   if (sub === "clean" && (shortFlag(rest, "f") || has(rest, "--force"))) return "git-guardian: git clean deletes untracked work";
-  if (sub === "push" && (has(rest, "--force", "-f", "--mirror", "--delete", "-d") || shortFlag(rest, "f") || rest.some((t) => t.startsWith("+") || t.startsWith(":")))) return "git-guardian: force push / remote deletion rewrites published history";
+  if (sub === "push" && (rest.some((t) => t.startsWith("--force")) || has(rest, "-f", "--mirror", "--delete", "-d", "--prune") || shortFlag(rest, "f") || rest.some((t) => t.startsWith("+") || t.startsWith(":") || /:\+?[\w/.-]*$/.test(t) && t.includes(":+")))) return "git-guardian: force push (incl. --force-with-lease) / remote deletion rewrites published history";
   if (sub === "branch" && (shortFlag(rest, "D") || (has(rest, "--delete", "-d") && has(rest, "--force", "-f")))) return "git-guardian: forced branch deletion";
   if (sub === "checkout" && (bulkPath(rest) || has(rest, "-f", "--force") || (has(rest, "--") && rest.slice(rest.indexOf("--") + 1).some((t) => [".", "./", ":/", "*"].includes(t))))) return "git-guardian: bulk checkout discards changes";
-  if (sub === "restore" && bulkPath(rest)) return "git-guardian: bulk restore discards changes";
+  // `git restore --staged <path>` only unstages; it discards nothing in the worktree.
+  const onlyUnstage = has(rest, "--staged", "-S") && !has(rest, "--worktree", "-W");
+  if (sub === "restore" && bulkPath(rest) && !onlyUnstage) return "git-guardian: bulk restore discards changes";
+  if (sub === "switch" && has(rest, "--discard-changes", "-f", "--force")) return "git-guardian: switch --discard-changes discards work";
   if (sub === "stash" && ["clear", "drop"].includes(rest[0])) return "git-guardian: stash clear/drop destroys saved work";
   if (["filter-branch", "filter-repo", "replace"].includes(sub) || (sub === "rebase" && has(rest, "-i", "--interactive", "--root")) || (sub === "update-ref" && has(rest, "-d")) || (sub === "reflog" && rest[0] === "expire") || (sub === "gc" && rest.some((t) => t.startsWith("--prune")))) return "git-guardian: history rewrite / reflog destruction";
   return null;
 }
 
+const REPO_ROOT = process.env.CLAUDE_PROJECT_DIR || process.cwd();
+function dangerousTarget(t) {
+  if (/(^|\/)(\.git|\.claude[^/]*|migrations|public\/uploads)(\/|$)|^\$\{?(PWD|HOME|CLAUDE_PROJECT_DIR|OLDPWD)\}?\/?$|^\/$|^\.\/?$|^\.\.(\/.*)?$|^\*$|^~\/?$/.test(t)) return true;
+  if (t.startsWith("/")) {
+    const target = t.replace(/\/+$/, "") || "/";
+    return REPO_ROOT === target || REPO_ROOT.startsWith(`${target}/`);
+  }
+  return false;
+}
 function rmRule(tok) {
-  const i = tok.indexOf("rm");
-  if (i < 0) return null;
-  const args = tok.slice(i + 1);
-  const recursive = args.some((t) => t === "--recursive" || (/^-[a-zA-Z]+$/.test(t) && /[rR]/.test(t)));
-  if (!recursive) return null;
-  const targets = args.filter((t) => !t.startsWith("-"));
-  const dangerous = targets.some((t) => /(^|\/)(\.git|\.claude[^/]*|migrations|public\/uploads)(\/|$)|^\$\{?(PWD|HOME|CLAUDE_PROJECT_DIR)\}?\/?$|^\/$|^\.\/?$|^\*$|^~\/?$/.test(t));
-  return dangerous ? "destructive-action-guardian: recursive delete of repository or home state" : null;
+  const i = tok.findIndex((t) => t === "rm" || t.endsWith("/rm"));
+  if (i >= 0) {
+    const args = tok.slice(i + 1);
+    const recursive = args.some((t) => t === "--recursive" || (/^-[a-zA-Z]+$/.test(t) && /[rR]/.test(t)));
+    if (recursive && args.filter((t) => !t.startsWith("-")).some(dangerousTarget)) return "destructive-action-guardian: recursive delete of repository or home state";
+  }
+  const f = tok.indexOf("find");
+  if (f >= 0 && (tok.includes("-delete") || (tok.includes("-exec") && tok.some((t) => t === "rm" || t.endsWith("/rm"))))) {
+    const start = tok[f + 1] && !tok[f + 1].startsWith("-") ? tok[f + 1] : ".";
+    if (!/^(\/var\/tmp|\/tmp)(\/|$)/.test(start) && !/(^|\/)(node_modules|\.next|test-results|playwright-report)(\/|$)/.test(start)) return "destructive-action-guardian: find -delete / -exec rm over repository state";
+  }
+  return null;
 }
 
 /** Connection targets referenced by a segment: postgres URLs and psql -h/-d flags. */
@@ -87,8 +103,11 @@ function sqlRule(segment, tok) {
   return null;
 }
 
-function secretRule(segment, tok) {
-  for (const m of segment.matchAll(/(?:^|[\s'"`(=/<])(\.env(?:\.[\w.-]+)?)(?=$|[\s'"`),;|&<>])/g)) if (m[1] !== ".env.example") return "secrets-guardian: env files hold credentials";
+function secretRule(rawSegment, tok) {
+  const segment = rawSegment.replace(/''|""/g, "");
+  for (const m of segment.matchAll(/(?:^|[\s'"`(=/<])(\.env(?:\.[\w.-]+)?)(?=$|[\s'"`),;|&<>])/g)) if (!m[1].endsWith(".example")) return "secrets-guardian: env files hold credentials";
+  if (tok.length === 1 && tok[0] === "set") return "secrets-guardian: dumping shell variables exposes credentials";
+  if (/\bprocess\.env\b(?!\s*\.\s*(NODE_ENV)\b)(?!\s*\.)/.test(segment) || /Object\.(keys|entries|values)\(\s*process\.env/.test(segment)) return "secrets-guardian: dumping process.env exposes credentials";
   if (tok[0] === "printenv" || tok.includes("printenv") || (tok[0] === "env" && tok.length === 1) || (["export", "declare", "typeset"].includes(tok[0]) && tok.some((t) => /^-[a-zA-Z]*[px]/.test(t)))) return "secrets-guardian: dumping the environment exposes credentials";
   if (/\b(echo|printf)\b[^#]*\$\{?[A-Z0-9_]*(SECRET|KEY|TOKEN|PASSWORD|DATABASE_URL|SALT)/.test(segment)) return "secrets-guardian: printing a credential variable";
   return null;
@@ -102,9 +121,21 @@ function migrationRule(segment) {
   return "migration-guardian: migrations run only against a local database (use the guarded release path for remote targets)";
 }
 
-export function evaluate(command) {
+/** Inner command strings a shell would execute: sh/bash/zsh -c "…", eval "…", $(…), `…`. */
+function nested(segment, tok) {
+  const inner = [];
+  const shell = tok.findIndex((t) => /^(\/[\w/]*\/)?(sh|bash|zsh|dash|ksh)$/.test(t));
+  if (shell >= 0 && tok[shell + 1] === "-c" && tok[shell + 2]) inner.push(tok[shell + 2]);
+  if (tok[0] === "eval") inner.push(tok.slice(1).join(" "));
+  for (const m of segment.matchAll(/\$\(([^()]*)\)|`([^`]*)`/g)) inner.push(m[1] ?? m[2]);
+  return inner;
+}
+
+export function evaluate(command, depth = 0) {
+  if (depth > 4) return "guard-bash: command nesting too deep to verify";
   for (const segment of segments(String(command))) {
     const tok = tokens(segment);
+    for (const inner of nested(segment, tok)) { const reason = evaluate(inner, depth + 1); if (reason) return reason; }
     const git = gitSubcommand(tok);
     const reason = (git && gitRule(git)) || rmRule(tok) || sqlRule(segment, tok) || secretRule(segment, tok) || migrationRule(segment);
     if (reason) return reason;

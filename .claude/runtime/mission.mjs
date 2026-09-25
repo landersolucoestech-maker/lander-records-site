@@ -6,6 +6,7 @@
 import fs from "node:fs";
 import { args, run, OsError, osPath, readYml, writeYml, git, nowIso, splitCommand } from "./lib/io.mjs";
 import { loadEvidence, isFresh } from "./lib/evidence.mjs";
+import { isVerifyArgv } from "./lib/commands.mjs";
 
 const FILE = osPath("state", "mission.yml");
 const HEADER = "Mission state — written by .claude/runtime/mission.mjs (contract: contracts/mission.schema.json)";
@@ -41,7 +42,7 @@ run(async () => {
     const requirement = current.requirements.find((r) => r.id === a.requirement);
     if (!requirement) throw new OsError("USAGE", "--requirement must name an existing requirement");
     if (!a.text || !a.verify) throw new OsError("USAGE", "--text and --verify \"<command>\" are required");
-    splitCommand(a.verify);
+    if (!isVerifyArgv(splitCommand(a.verify))) throw new OsError("NOT_A_VERIFY_COMMAND", "--verify must be an allow-listed test/probe/audit or npm typecheck|build|lint|os:validate command (lib/commands.mjs)");
     const total = current.requirements.reduce((n, r) => n + r.criteria.length, 0);
     const id = `C-${pad(total + 1)}`;
     requirement.criteria.push({ id, text: a.text, verify: a.verify });

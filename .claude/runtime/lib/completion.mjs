@@ -4,9 +4,11 @@
 // against the current workspace. Records are an audit trail; git is their anchor (pack.mjs gitAnchorErrors).
 import fs from "node:fs";
 import { osPath, readJson, readYml, git, workspaceFingerprint, splitCommand, RECORD_PATHS, GENERATED_PATHS } from "./io.mjs";
+import { porcelainPath } from "./io.mjs";
 import { loadFindings, OPEN_STATES, PARKED_STATES, validateFinding } from "./findings.mjs";
 import { loadEvidence, provesFinding, verifyChain, runCommandEvidence } from "./evidence.mjs";
 import { validatePack } from "./pack.mjs";
+import { isVerifyArgv } from "./commands.mjs";
 import { runCheck } from "./checks.mjs";
 
 export const VERDICT_LABELS = {
@@ -29,7 +31,10 @@ export async function evaluateCompletion({ execute = true } = {}) {
   add("active mission exists", mission?.status === "ACTIVE", mission ? `${mission.id} ${mission.status}` : "none");
   const requirements = (mission?.requirements || []).filter((r) => !r.nonRequirement);
   const criteria = requirements.flatMap((r) => r.criteria);
-  add("requirements each have criteria with declared verify commands", requirements.length > 0 && requirements.every((r) => r.criteria.length) && criteria.every((c) => c.verify), `${requirements.length} requirement(s), ${criteria.length} criteria`);
+  add("requirements each have criteria with allow-listed verify commands", requirements.length > 0 && requirements.every((r) => r.criteria.length) && criteria.every((c) => c.verify && isVerifyArgv(splitCommand(c.verify))), `${requirements.length} requirement(s), ${criteria.length} criteria`);
+  // The mission definition (requirements, criteria, verify commands) must be committed as-is: state/ is a record
+  // directory outside the workspace fingerprint, so git is what anchors it (ADR-0007).
+  add("mission definition committed unchanged", missionDefinitionCommitted(mission), "commit state/mission.yml after defining requirements and criteria");
 
   // Structural integrity first (cheap).
   const invalid = findings.flatMap((f) => validateFinding(f, evidence));
@@ -42,7 +47,7 @@ export async function evaluateCompletion({ execute = true } = {}) {
   add("no READY findings remain", ready.length === 0, ready.map((f) => f.id).join(", "));
   const inFlight = findings.filter((f) => OPEN_STATES.includes(f.status) && f.status !== "READY");
   add("no in-flight findings", inFlight.length === 0, inFlight.map((f) => `${f.id}:${f.status}`).join(", "));
-  const dirty = git(["status", "--porcelain"], { allowFail: true }).split("\n").filter(Boolean).map((l) => l.slice(3)).filter((file) => ![...RECORD_PATHS, ...GENERATED_PATHS].some((p) => file.startsWith(p)));
+  const dirty = git(["status", "--porcelain"], { allowFail: true }).split("\n").filter(Boolean).map(porcelainPath).filter((file) => ![...RECORD_PATHS, ...GENERATED_PATHS].some((p) => file.startsWith(p)));
   add("product and OS code committed", dirty.length === 0, dirty.slice(0, 10).join(", "));
 
   // Reviews: the latest record per role must not be FAIL (regardless of freshness); required roles need a
@@ -52,7 +57,9 @@ export async function evaluateCompletion({ execute = true } = {}) {
   const roles = [...new Set(reviews.map((e) => e.producer))];
   const failing = roles.filter((role) => reviews.filter((e) => e.producer === role).at(-1)?.result === "FAIL");
   add("no role's latest review is FAIL", failing.length === 0, failing.join(", "));
-  const missionFindings = findings.filter((f) => (mission?.findings || []).includes(f.id));
+  // Findings worked in this mission are derived from their (git-anchored, append-only) history, not from an
+  // editable list: any finding with a transition at or after the mission start.
+  const missionFindings = findings.filter((f) => (mission?.findings || []).includes(f.id) || (mission && f.history.some((h) => Date.parse(h.at) >= Date.parse(mission.startedAt))));
   const required = [ALWAYS_REVIEWER, ...(missionFindings.some((f) => f.impactLevel === "L5") ? [L5_REVIEWER] : [])];
   for (const role of required) {
     const latest = reviews.filter((e) => e.producer === role).at(-1);
@@ -63,15 +70,12 @@ export async function evaluateCompletion({ execute = true } = {}) {
   if (!execute) {
     add("re-execution of criteria, finding proofs and regression gate", false, "skipped (--no-exec): verdict cannot be better than D");
   } else if (conditions.every((c) => c.ok)) {
-    for (const c of criteria) {
-      const ev = attempt(() => runCommandEvidence({ argv: splitCommand(c.verify), criteria: [c.id], kind: "command", summary: `completion re-run ${c.id}`, producer: "completion" }));
-      add(`criterion ${c.id} re-executed`, ev.result === "PASS", `${ev.id} ${ev.result}: ${c.verify}${ev.error ? ` (${ev.error})` : ""}`);
-    }
+    for (const r of reexecuteCriteria(criteria)) add(`criterion ${r.id} re-executed`, r.ok, r.detail);
     const proofs = new Map();
     for (const f of missionFindings.filter((x) => x.status === "RESOLVED")) {
       const proof = (f.evidenceRecords || []).map((id) => evidence.find((e) => e.id === id)).filter((e) => e && provesFinding(e, f.id)).at(-1);
       if (!proof) { add(`finding ${f.id} has a proof to re-run`, false); continue; }
-      const argv = proof.argv || proof.command.split(" ");
+      const argv = proof.argv || splitCommand(proof.command);
       const key = JSON.stringify(argv);
       if (!proofs.has(key)) proofs.set(key, { argv, findings: [] });
       proofs.get(key).findings.push(f.id);
@@ -93,4 +97,23 @@ export async function evaluateCompletion({ execute = true } = {}) {
   const parked = findings.filter((f) => PARKED_STATES.includes(f.status));
   const verdict = failed.length ? "D" : parked.some((f) => f.status === "NEEDS_PRODUCT_DECISION") ? "C" : parked.some((f) => f.status === "BLOCKED_EXTERNAL") ? "B" : "A";
   return { verdict, label: VERDICT_LABELS[verdict], conditions };
+}
+
+/** Re-runs each criterion's declared command now; recorded evidence is ignored (a forged PASS cannot help). */
+export function reexecuteCriteria(criteria) {
+  return criteria.map((c) => {
+    let ev;
+    try { ev = runCommandEvidence({ argv: splitCommand(c.verify), criteria: [c.id], kind: "command", summary: `completion re-run ${c.id}`, producer: "completion" }); } catch (error) { ev = { id: "-", result: "FAIL", error: `${error.code || "ERROR"}: ${error.message}` }; }
+    return { id: c.id, ok: ev.result === "PASS", detail: `${ev.id} ${ev.result}: ${c.verify}${ev.error ? ` (${ev.error})` : ""}` };
+  });
+}
+
+function missionDefinitionCommitted(mission) {
+  if (!mission) return false;
+  const committed = git(["show", "HEAD:.claude/state/mission.yml"], { allowFail: true });
+  if (!committed) return false;
+  let head;
+  try { head = JSON.parse(committed.split("\n").filter((l) => !l.startsWith("#")).join("\n")).current; } catch { return false; }
+  const shape = (m) => JSON.stringify({ id: m?.id, startedAt: m?.startedAt, requirements: (m?.requirements || []).map((r) => ({ id: r.id, text: r.text, non: Boolean(r.nonRequirement), criteria: r.criteria.map((c) => ({ id: c.id, text: c.text, verify: c.verify })) })) });
+  return shape(head) === shape(mission);
 }

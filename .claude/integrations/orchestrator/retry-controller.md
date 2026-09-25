@@ -7,4 +7,4 @@
 | Lead webhook | none | `retryDueOutboxEvents` each cron | exponential 15 min ×2 cap 24h, 8 attempts, then dead_letter (ADR-0004) |
 | Supabase Storage | none | user retry | — |
 
-Rules: retries must be idempotent (outbox event id stable; sync upserts), bounded, and must never retry permanent failures (4xx except 408/425/429).
+Rules: retries must be idempotent (outbox event id stable; sync upserts), bounded, and must never retry permanent failures (4xx except 401/403/408/425/429).

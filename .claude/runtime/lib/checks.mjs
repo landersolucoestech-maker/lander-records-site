@@ -2,7 +2,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import fs2 from "node:fs";
-import { REPO_ROOT, walk, rel, git, osPath, readYml, workspaceFingerprint } from "./io.mjs";
+import { REPO_ROOT, walk, rel, git, osPath, readYml, workspaceFingerprint, childEnv } from "./io.mjs";
+import { porcelainPath } from "./io.mjs";
 import { loadFindings, OPEN_STATES, PARKED_STATES } from "./findings.mjs";
 import { runCommandEvidence, loadEvidence, isFresh, provesFinding } from "./evidence.mjs";
 
@@ -27,7 +28,7 @@ export async function runCheck(check, { record = false, context = "gate" } = {})
     case "command": {
       if (!record) {
         const { spawnSync } = await import("node:child_process");
-        const child = spawnSync(check.argv[0], check.argv.slice(1), { cwd: REPO_ROOT, encoding: "utf8", shell: false, maxBuffer: 64 * 1024 * 1024 });
+        const child = spawnSync(check.argv[0], check.argv.slice(1), { cwd: REPO_ROOT, env: childEnv(), encoding: "utf8", shell: false, maxBuffer: 64 * 1024 * 1024 });
         return { status: child.status === 0 ? "PASS" : child.error?.code === "ENOENT" ? "BLOCKED" : "FAIL", detail: `${check.argv.join(" ")} exit=${child.status}${child.status ? `\n${`${child.stdout}${child.stderr}`.slice(-1200)}` : ""}` };
       }
       const ev = runCommandEvidence({ argv: check.argv, kind: check.evidenceKind || "command", summary: `${context}: ${check.argv.join(" ")}`, producer: context });
@@ -61,7 +62,7 @@ export async function runCheck(check, { record = false, context = "gate" } = {})
       return { status: bad.length ? "FAIL" : "PASS", detail: bad.length ? `RESOLVED without qualifying proof: ${bad.map((f) => f.id).join(", ")}` : "every RESOLVED finding carries PASS evidence that names it (fresh for this mission)" };
     }
     case "git-clean-except": {
-      const dirty = git(["status", "--porcelain"], { allowFail: true }).split("\n").filter(Boolean).map((line) => line.slice(3)).filter((file) => !(check.allow || []).some((prefix) => file.startsWith(prefix)));
+      const dirty = git(["status", "--porcelain"], { allowFail: true }).split("\n").filter(Boolean).map(porcelainPath).filter((file) => !(check.allow || []).some((prefix) => file.startsWith(prefix)));
       return { status: dirty.length ? "FAIL" : "PASS", detail: dirty.length ? `uncommitted: ${dirty.join(", ")}` : "working tree clean" };
     }
     case "fresh-evidence-for": {

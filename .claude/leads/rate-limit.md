@@ -1,3 +1,3 @@
 # Rate limit
 
-Key: sha256(CONTACT_IP_HASH_SALT + ':' + ip) where ip = X-Real-IP, else last X-Forwarded-For hop, else 'unknown' (`lib/contact-client-ip.ts`, fix F-0002). Reference proxy sets X-Real-IP $remote_addr and appends XFF. Deployments behind another proxy must set X-Real-IP or be the last XFF hop. Window: 10 min, limit 5, response 429 PT-BR.
+Key: sha256(CONTACT_IP_HASH_SALT + ':' + ip) where ip = X-Real-IP, else last X-Forwarded-For hop, else 'unknown' (`lib/contact-client-ip.ts`, fix F-0002). Reference proxy **overwrites** X-Real-IP with $remote_addr and appends XFF. X-Real-IP is trusted unconditionally, so any deployment where the nearest proxy does not overwrite it (app exposed directly, a platform that passes client headers through, the cloudflared preview) lets a client choose its rate-limit identity; behind a CDN, `$remote_addr` is the edge and visitors share a bucket. Topology decision: DEC-0006 / F-0018. Window: 10 min, limit 5, response 429 PT-BR.

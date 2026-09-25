@@ -9,7 +9,7 @@
 
 ## Decision
 
-- Pure policy in `lib/contact-outbox-policy.ts`: delay = 15 min × 2^(attempts−1), capped at 24 h; non-transient 4xx (all except 408/425/429) or attempt 8 ⇒ `dead_letter`.
+- Pure policy in `lib/contact-outbox-policy.ts`: delay = 15 min × 2^(attempts−1), capped at 24 h; non-transient 4xx (all except 401/403/408/425/429) or attempt 8 ⇒ `dead_letter`.
 - Migration `0018_outbox_dead_letter.sql` adds the enum value only (additive; no row changes). Retry selection never picks `dead_letter`.
 - `contact_outbox_dead_letter` is logged with outbox id, attempts and truncated error (no payload/PII).
 

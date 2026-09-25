@@ -145,13 +145,16 @@ test("a decided DEC unblocks its findings; an open DEC keeps them parked", () =>
 test("criteria close only with their declared command, within their mission", () => {
   const box = sandbox();
   try {
+    fs.mkdirSync(path.join(box.root, "tests", "unit"), { recursive: true });
+    fs.writeFileSync(path.join(box.root, "tests", "unit", "ok.test.mjs"), "import test from 'node:test'; test('ok', () => {});\n");
+    box.git("add", "-A"); box.git("commit", "-qm", "suite");
     box.run("mission.mjs", ["abort", "--note", "sandbox"]);
     assert.equal(box.run("mission.mjs", ["start", "--objective", "sandbox"]).status, 0);
     box.run("mission.mjs", ["requirement", "--text", "r"]);
     assert.match(box.run("mission.mjs", ["criterion", "--requirement", "R-001", "--text", "c"]).stderr, /--verify/);
-    const c = box.run("mission.mjs", ["criterion", "--requirement", "R-001", "--text", "c", "--verify", `${process.execPath} -e 0`]).stdout.trim();
+    const c = box.run("mission.mjs", ["criterion", "--requirement", "R-001", "--text", "c", "--verify", "node --test tests/unit/ok.test.mjs"]).stdout.trim();
     assert.match(box.run("evidence.mjs", ["run", "--criterion", c, "--", "true"]).stderr, /CRITERION_COMMAND_MISMATCH/);
-    assert.equal(box.run("evidence.mjs", ["run", "--criterion", c, "--", process.execPath, "-e", "0"]).status, 0);
+    assert.equal(box.run("evidence.mjs", ["run", "--criterion", c, "--", "node", "--test", "tests/unit/ok.test.mjs"]).status, 0);
     const status = JSON.parse(box.run("mission.mjs", ["status"]).stdout);
     assert.deepEqual(status.open, []);
   } finally { box.cleanup(); }

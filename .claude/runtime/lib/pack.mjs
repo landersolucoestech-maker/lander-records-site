@@ -17,6 +17,10 @@ const CHECK_TYPES = new Set(["command", "forbidden-pattern", "required-pattern",
 const SENSOR_KINDS = new Set(["sql", "env-contract", "env-presence", "git", "check"]);
 const SCHEMA_KEYWORDS = new Set(["$schema", "$id", "title", "description", "type", "enum", "const", "required", "properties", "additionalProperties", "items", "minItems", "minLength", "maxLength", "pattern", "minimum", "format"]);
 // Files allowed to mention the out-of-architecture Codex pack, all non-operational (ADR-0005). Single source for pack.mjs and tests.
+// Record directories hold data about runs (command output, reports), never configuration or code; scanning
+// them made the OS fail on its own test output. Independence is enforced on everything else.
+export const RECORD_DIRS = ["state/", "evidence/", "findings/", "reports/"];
+export const isRecordPath = (r) => RECORD_DIRS.some((d) => r.startsWith(d));
 export const NON_OPERATIONAL = new Set(["decisions/ADR-0001-claude-codex-boundary.md", "decisions/ADR-0005-self-contained-claude-os.md", "runtime/tests/independence.test.mjs", "runtime/lib/pack.mjs"]);
 
 /** Top-level keys of the zod payloadSchema in app/api/contact/route.ts. */
@@ -54,7 +58,7 @@ export function validatePack() {
   for (const file of all) {
     const r = osRel(file);
     const text = fs.readFileSync(file, "utf8");
-    if (/\.codex|codex/i.test(text) && !NON_OPERATIONAL.has(r)) errors.push(`independence: ${r} references the out-of-architecture Codex pack`);
+    if (/\.codex|codex/i.test(text) && !NON_OPERATIONAL.has(r) && !isRecordPath(r)) errors.push(`independence: ${r} references the out-of-architecture Codex pack`);
     if (r.endsWith(".yml")) { try { readYml(file); } catch (error) { errors.push(error.message); } }
     if (r.endsWith(".json")) { try { JSON.parse(text); } catch (error) { errors.push(`${r}: invalid JSON ${error.message}`); } }
   }

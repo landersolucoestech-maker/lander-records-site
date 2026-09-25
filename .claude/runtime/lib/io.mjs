@@ -77,6 +77,16 @@ export function workspaceFingerprint() {
   return { head, fingerprint: hash.digest("hex"), dirty: Boolean(staged || unstaged || untracked.length) };
 }
 
+/** Path from a `git status --porcelain` line (robust to the trimmed first line). */
+export const porcelainPath = (line) => line.replace(/^[ MADRCUT?!]{1,2}\s+/, "").replace(/^.* -> /, "");
+
+/** Environment for executed checks: never leak a parent test-runner context (it would mask child exit codes). */
+export function childEnv(extra = {}) {
+  const env = { ...process.env, ...extra };
+  delete env.NODE_TEST_CONTEXT;
+  return env;
+}
+
 export function args(argv = process.argv.slice(2)) {
   const out = { _: [] };
   for (let index = 0; index < argv.length; index += 1) {

@@ -19,9 +19,14 @@ const blocked = [
   "node -e \"console.log(require('fs').readFileSync('.env','utf8'))\"", "echo $SOUNDCHARTS_CLIENT_SECRET",
   "DATABASE_URL=postgres://u@db.prod.example:5432/x npm run db:migrate", "npm run db:migrate",
   "DATABASE_URL=postgres://localhost@prod.example.com/db npm run db:migrate",
+  "git push origin HEAD:main --force-with-lease", "git push --force-if-includes --force-with-lease", "sh -c \"git reset --hard\"",
+  "bash -c 'rm -rf .git'", "x=$(git reset --hard)", "echo `git clean -fdx`", "eval \"git reset --hard\"", "/bin/rm -rf .git",
+  "rm -rf ..", "find . -delete", "find . -name .git -exec rm -rf {} +", "git switch --discard-changes main",
+  "cat .en''v", "node -e 'console.log(process.env)'", "set",
 ];
 const allowed = [
-  "git status", "git push -u origin claude/x", "git push --force-with-lease origin claude/x", "git checkout -b new", "git checkout dev",
+  "git status", "git push -u origin claude/x", "git checkout -b new", "git checkout dev", "git restore --staged .", "cat .env.production.example",
+  "find /var/tmp/x -delete", "node -e 'console.log(process.env.NODE_ENV)'", "git commit -m \"fix #12\"",
   "git log --grep='git reset --hard'", "grep -r TRUNCATE lib", "git diff -- .", "git add .", "git restore --staged lib/x.ts",
   "cat .env.example", "rm -rf /var/tmp/pw-results", "rm -rf node_modules/.cache", "npm test",
   "psql -h /var/tmp/lander-pg -p 55432 -U postgres -c 'drop database if exists lander_path_test'",
@@ -52,4 +57,12 @@ test("hook fails closed and works through paths with spaces and symlinks", () =>
       assert.equal(run("not json").status, 2, "bad input must fail closed");
     }
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("rm of the repository root or its ancestors by absolute path is blocked", () => {
+  const root = process.env.CLAUDE_PROJECT_DIR || process.cwd();
+  assert.ok(evaluate(`rm -rf ${root}`));
+  assert.ok(evaluate(`rm -rf ${root}/`));
+  assert.ok(evaluate("rm -rf /"));
+  assert.equal(evaluate(`rm -rf ${root}/node_modules/.cache`), null);
 });

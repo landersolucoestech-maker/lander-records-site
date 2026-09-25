@@ -5,12 +5,12 @@ import path from "node:path";
 import test from "node:test";
 import { sandbox, OS_SOURCE } from "./helpers.mjs";
 import { walk } from "../lib/io.mjs";
-import { NON_OPERATIONAL } from "../lib/pack.mjs";
+import { NON_OPERATIONAL, isRecordPath } from "../lib/pack.mjs";
 
 const FORBIDDEN = /\.codex|codex/i;
 
 test("no operational reference to the out-of-architecture Codex pack", () => {
-  const offenders = walk(OS_SOURCE).map((f) => path.relative(OS_SOURCE, f).split(path.sep).join("/")).filter((r) => !NON_OPERATIONAL.has(r) && FORBIDDEN.test(fs.readFileSync(path.join(OS_SOURCE, r), "utf8")));
+  const offenders = walk(OS_SOURCE).map((f) => path.relative(OS_SOURCE, f).split(path.sep).join("/")).filter((r) => !NON_OPERATIONAL.has(r) && !isRecordPath(r) && FORBIDDEN.test(fs.readFileSync(path.join(OS_SOURCE, r), "utf8")));
   assert.deepEqual(offenders, []);
   assert.match(fs.readFileSync(path.join(OS_SOURCE, "decisions", "ADR-0001-claude-codex-boundary.md"), "utf8"), /SUPERSEDED — NON-OPERATIONAL/);
 });
