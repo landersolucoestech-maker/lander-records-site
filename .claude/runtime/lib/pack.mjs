@@ -1,6 +1,7 @@
 // Pack integrity validation (control-plane/capability-registry.md). Pure checks, no side effects.
 import fs from "node:fs";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import { OS_DIR, osPath, readJson, readYml, walk } from "./io.mjs";
 import { validate } from "./schema.mjs";
 import { loadFindings, validateFinding, buildIndex, buildDecisions } from "./findings.mjs";
@@ -179,23 +180,75 @@ export function validatePack() {
  * Git is the trust anchor for records: once committed, an evidence record is immutable and a finding's
  * history is append-only. New (uncommitted) history entries may not be marked reconstructed.
  */
+/** Reads many `<rev>:<path>` blobs through one `git cat-file --batch` process; missing blobs map to null. */
+function catFiles(specs) {
+  const out = new Map();
+  if (!specs.length) return out;
+  const res = spawnSync("git", ["cat-file", "--batch"], { cwd: REPO_ROOT, input: `${specs.join("\n")}\n`, maxBuffer: 256 * 1024 * 1024 });
+  const buf = res.stdout || Buffer.alloc(0);
+  let pos = 0;
+  for (const spec of specs) {
+    const nl = buf.indexOf(10, pos);
+    if (nl < 0) break;
+    const header = buf.subarray(pos, nl).toString("utf8");
+    pos = nl + 1;
+    const m = header.match(/^\S+ blob (\d+)$/);
+    if (!m) { out.set(spec, null); continue; }
+    out.set(spec, buf.subarray(pos, pos + Number(m[1])).toString("utf8"));
+    pos += Number(m[1]) + 1;
+  }
+  return out;
+}
+
+/**
+ * Records are anchored in git history, not only against HEAD (ADR-0007 §3): from the commit that introduced
+ * ADR-0007 on, every committed version of an evidence record equals its first version, and every committed version
+ * of a finding keeps the previous version's history as a prefix and its requiredTests as a subset. The working copy
+ * is checked against the last committed version the same way.
+ */
 export function gitAnchorErrors() {
   const errors = [];
   if (!git(["rev-parse", "--verify", "HEAD"], { allowFail: true })) return errors;
-  const tracked = (dir) => git(["ls-tree", "-r", "--name-only", "HEAD", "--", `.claude/${dir}`], { allowFail: true }).split("\n").filter((f) => /\/(EV|F)-\d{4}\.json$/.test(f));
-  const committed = (file) => git(["show", `HEAD:${file}`], { allowFail: true });
-  for (const file of tracked("evidence")) {
-    const full = path.join(REPO_ROOT, file);
-    if (!fs.existsSync(full)) { errors.push(`${file}: committed evidence was deleted`); continue; }
-    if (JSON.stringify(JSON.parse(committed(file))) !== JSON.stringify(JSON.parse(fs.readFileSync(full, "utf8")))) errors.push(`${file}: committed evidence was modified`);
+  const cutoff = git(["log", "--diff-filter=A", "--format=%H", "--", ".claude/decisions/ADR-0007-trust-model.md"], { allowFail: true }).split("\n").filter(Boolean).at(-1);
+  const range = cutoff ? [`${cutoff}^!`, `${cutoff}..HEAD`] : ["HEAD"];
+  const versions = new Map(); // file -> ordered commits touching it (cutoff first)
+  for (const spec of range) {
+    let commit = null;
+    for (const line of git(["log", "--reverse", "--format=C %H", "--name-only", spec, "--", ".claude/evidence", ".claude/findings"], { allowFail: true }).split("\n")) {
+      if (line.startsWith("C ")) { commit = line.slice(2); continue; }
+      if (!/\/(EV|F)-\d{4}\.json$/.test(line)) continue;
+      if (!versions.has(line)) versions.set(line, []);
+      versions.get(line).push(commit);
+    }
   }
-  for (const file of tracked("findings")) {
+  // A file present at the cutoff but untouched since still needs its cutoff version as the baseline.
+  if (cutoff) for (const file of git(["ls-tree", "-r", "--name-only", cutoff, "--", ".claude/evidence", ".claude/findings"], { allowFail: true }).split("\n").filter((f) => /\/(EV|F)-\d{4}\.json$/.test(f))) {
+    if (!versions.has(file)) versions.set(file, []);
+    if (versions.get(file)[0] !== cutoff) versions.get(file).unshift(cutoff);
+  }
+  const blobs = catFiles([...versions].flatMap(([file, commits]) => commits.map((c) => `${c}:${file}`)));
+  const parse = (text) => { try { return text == null ? null : JSON.parse(text); } catch { return undefined; } };
+  for (const [file, commits] of versions) {
+    const chain = commits.map((c) => ({ at: c.slice(0, 7), value: parse(blobs.get(`${c}:${file}`)) }));
     const full = path.join(REPO_ROOT, file);
-    if (!fs.existsSync(full)) { errors.push(`${file}: committed finding was deleted`); continue; }
-    const before = JSON.parse(committed(file)).history || [];
-    const now = JSON.parse(fs.readFileSync(full, "utf8")).history || [];
-    if (JSON.stringify(now.slice(0, before.length)) !== JSON.stringify(before)) errors.push(`${file}: committed history was rewritten (history is append-only)`);
-    if (now.slice(before.length).some((h) => h.reconstructed)) errors.push(`${file}: new history entries cannot be marked reconstructed`);
+    chain.push({ at: "working copy", value: fs.existsSync(full) ? parse(fs.readFileSync(full, "utf8")) : null });
+    const first = chain.findIndex((v) => v.value);
+    if (first < 0) continue;
+    for (let i = first + 1; i < chain.length; i += 1) {
+      const before = chain[first + (file.includes("/evidence/") ? 0 : i - first - 1)].value;
+      const now = chain[i].value;
+      if (now === null) { errors.push(`${file}: committed record was deleted (${chain[i].at})`); break; }
+      if (now === undefined || !before) { errors.push(`${file}: unreadable record (${chain[i].at})`); break; }
+      if (file.includes("/evidence/")) {
+        if (JSON.stringify(now) !== JSON.stringify(before)) { errors.push(`${file}: committed evidence was modified (${chain[i].at})`); break; }
+        continue;
+      }
+      const h0 = before.history || [], h1 = now.history || [];
+      if (JSON.stringify(h1.slice(0, h0.length)) !== JSON.stringify(h0)) { errors.push(`${file}: committed history was rewritten (${chain[i].at}; history is append-only)`); break; }
+      if (h1.slice(h0.length).some((h) => h.reconstructed)) { errors.push(`${file}: new history entries cannot be marked reconstructed (${chain[i].at})`); break; }
+      const lost = (before.requiredTests || []).filter((t) => !(now.requiredTests || []).includes(t));
+      if (lost.length) { errors.push(`${file}: requiredTests entries removed (${chain[i].at}): ${lost.join(", ")}`); break; }
+    }
   }
   const untrackedFindings = git(["ls-files", "--others", "--exclude-standard", "--", ".claude/findings"], { allowFail: true }).split("\n").filter(Boolean);
   for (const file of untrackedFindings) {

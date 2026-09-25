@@ -110,6 +110,7 @@
     "artist_external_identities": {
       "definedIn": "lib/db/integration-schema.ts",
       "readers": [
+        "app/admin/artist-actions.ts",
         "lib/integrations/sync.ts"
       ],
       "writers": [

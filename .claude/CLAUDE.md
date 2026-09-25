@@ -37,7 +37,7 @@ Known baseline failures are listed with evidence in `state/known-failures.yml`; 
 
 ## Non-negotiable invariants
 
-1. **NO EVIDENCE = NO CLAIM.** "fixed", "healthy", "delivered", "no regression" require evidence from `runtime/evidence.mjs` — an allow-listed test/probe/audit command (`lib/commands.mjs`) that names the finding for RESOLVED, the declared verify command for a criterion. Completion re-executes those commands (ADR-0007); records are an audit trail anchored in git, not proof by themselves.
+1. **NO EVIDENCE = NO CLAIM.** "fixed", "healthy", "delivered", "no regression" require evidence from `runtime/evidence.mjs` — an allow-listed test/probe/audit command (`lib/commands.mjs`) that names the finding and runs one of its `requiredTests` for RESOLVED, the declared verify command for a criterion. Completion re-executes those commands (ADR-0007); records are an audit trail anchored in git, not proof by themselves.
 2. **ZERO ≠ NULL ≠ ERROR ≠ STALE ≠ WRONG IDENTITY.** Never `value || 0`; render unavailable (`—`) when no verified value exists.
 3. **Identities never merge by text similarity.** `artists.id` ≠ Soundcharts UUID ≠ Spotify artist ID ≠ platform URLs. Only deterministic resolution in `lib/integrations/soundcharts.ts` + identifier verification may link them.
 4. **Leads are never lost.** Contact submissions persist before any delivery; delivery goes through `integration_outbox` (bounded retry → `dead_letter`).

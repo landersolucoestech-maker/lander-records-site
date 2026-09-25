@@ -27,7 +27,8 @@
   "risk": "low",
   "correction": "re-pin the 9 font-size values to the ff2756e values",
   "requiredTests": [
-    "tests/unit/media-kit-layout-contract.test.mjs"
+    "tests/unit/media-kit-layout-contract.test.mjs",
+    "npm test"
   ],
   "regressionRisk": "none",
   "impactLevel": "L1",

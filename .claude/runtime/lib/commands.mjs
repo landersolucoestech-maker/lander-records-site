@@ -67,6 +67,9 @@ export const isVerifyArgv = (argv, { requireFiles = true } = {}) => withFiles(re
  * True when a test run executed nothing: a zero-count summary, Playwright's "No tests found", or a node:test
  * file-level entry (a file with no test() calls is reported as one passing "test" named after the file).
  */
-export function ranNothing(output) {
-  return /^# tests 0$/m.test(output) || /No tests found/i.test(output) || /^\s*ok \d+ - [\w./-]+\.(test|spec)\.(mjs|cjs|js|ts)\s*$/m.test(output);
+export function ranNothing(output, argv = []) {
+  // A direct `node --test` run must also show a positive TAP summary (empty output is not a pass).
+  if (argv.includes("--test") && !/^# tests [1-9]\d*$/m.test(output)) return true;
+  // "# pass 0": every test was skipped or todo.
+  return /^# tests 0$/m.test(output) || /^# pass 0$/m.test(output) || /No tests found/i.test(output) || /^\s*ok \d+ - [\w./-]+\.(test|spec)\.(mjs|cjs|js|ts)\s*$/m.test(output);
 }

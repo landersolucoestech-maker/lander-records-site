@@ -8,7 +8,7 @@ import { validate } from "../lib/schema.mjs";
 import { reportVerdict, verifyChain, recordHash } from "../lib/evidence.mjs";
 
 const evId = (result) => result.stdout.match(/^(EV-\d{4}) /m)?.[1];
-const draft = (overrides = {}) => ({ title: "sandbox defect", severity: "P2", domain: "backend", status: "DISCOVERED", confidence: "high", evidence: ["x:1"], rootCause: "r", producer: ["p"], consumers: ["c"], affectedFlow: "f", invariantViolated: "i", blastRadius: "b", dependencies: [], autofix: { eligible: true, reason: "r" }, risk: "low", correction: "c", requiredTests: ["t"], regressionRisk: "r", impactLevel: "L2", producerAgent: "test", ...overrides });
+const draft = (overrides = {}) => ({ title: "sandbox defect", severity: "P2", domain: "backend", status: "DISCOVERED", confidence: "high", evidence: ["x:1"], rootCause: "r", producer: ["p"], consumers: ["c"], affectedFlow: "f", invariantViolated: "i", blastRadius: "b", dependencies: [], autofix: { eligible: true, reason: "r" }, risk: "low", correction: "c", requiredTests: ["tests/ok.test.mjs"], regressionRisk: "r", impactLevel: "L2", producerAgent: "test", ...overrides });
 
 test("kernel/state-machine.md documents exactly the enforced transition table", () => {
   const doc = fs.readFileSync(path.join(OS_SOURCE, "kernel", "state-machine.md"), "utf8");
@@ -110,6 +110,12 @@ test("lifecycle: proof must name the finding; mission close never takes a caller
     assert.doesNotMatch(again.stdout, /-> F-\d{4}/, "an open finding is not duplicated");
     for (const to of ["TRIAGED", "READY", "INVESTIGATING", "ROOT_CAUSE_CONFIRMED", "FIXING", "VALIDATING"]) box.run("findings.mjs", ["transition", signalFinding, "--to", to, "--note", "n"]);
     const p2 = evId(box.run("evidence.mjs", ["run", "--finding", signalFinding, "--", "node", "--test", "tests/ok.test.mjs"]));
+    // Sensor findings carry no test until triage names one: verification fails closed until then.
+    assert.match(box.run("findings.mjs", ["transition", signalFinding, "--to", "REAUDITING", "--note", "n", "--evidence", p2]).stderr, /PROOF_REQUIRED/);
+    const signalFile = path.join(box.root, ".claude", "findings", `${signalFinding}.json`);
+    const withTest = JSON.parse(fs.readFileSync(signalFile, "utf8"));
+    withTest.requiredTests.push("tests/ok.test.mjs");
+    fs.writeFileSync(signalFile, JSON.stringify(withTest, null, 2));
     box.run("findings.mjs", ["transition", signalFinding, "--to", "REAUDITING", "--note", "n", "--evidence", p2]);
     assert.equal(box.run("findings.mjs", ["transition", signalFinding, "--to", "RESOLVED", "--note", "n", "--evidence", p2]).status, 0);
     const regression = box.run("sensors.mjs", ["run", "--only", "sandbox-sensor", "--emit-findings"]);

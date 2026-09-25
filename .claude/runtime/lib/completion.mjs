@@ -4,13 +4,13 @@
 // against the current workspace. Records are an audit trail; git is their anchor (pack.mjs gitAnchorErrors).
 import fs from "node:fs";
 import path from "node:path";
-import { osPath, readJson, readYml, git, workspaceFingerprint, splitCommand, RECORD_PATHS, GENERATED_PATHS, REPO_ROOT } from "./io.mjs";
+import { osPath, readJson, git, workspaceFingerprint, splitCommand, RECORD_PATHS, GENERATED_PATHS, REPO_ROOT } from "./io.mjs";
 import { porcelainPath } from "./io.mjs";
-import { loadFindings, OPEN_STATES, PARKED_STATES, validateFinding } from "./findings.mjs";
+import { loadFindings, matchesRequiredTests, OPEN_STATES, PARKED_STATES, validateFinding } from "./findings.mjs";
 import { loadEvidence, provesFinding, verifyChain, runCommandEvidence } from "./evidence.mjs";
 import { validatePack } from "./pack.mjs";
 import { isVerifyArgv } from "./commands.mjs";
-import { missionAnchorErrors, missionFindingIds, missionHash } from "./mission-def.mjs";
+import { currentMission, missionAnchorErrors, missionFindingIds, missionHash } from "./mission-def.mjs";
 import { runCheck } from "./checks.mjs";
 
 export const VERDICT_LABELS = {
@@ -28,18 +28,17 @@ export async function evaluateCompletion({ execute = true } = {}) {
   const attempt = (fn) => { try { return fn(); } catch (error) { return { result: "FAIL", id: "-", error: `${error.code || "ERROR"}: ${error.message}` }; } };
   const findings = loadFindings();
   const evidence = loadEvidence();
-  const missionFile = osPath("state", "mission.yml");
-  const mission = fs.existsSync(missionFile) ? readYml(missionFile).current : null;
+  const mission = currentMission();
   add("active mission exists", mission?.status === "ACTIVE", mission ? `${mission.id} ${mission.status}` : "none");
   const requirements = (mission?.requirements || []).filter((r) => !r.nonRequirement);
   const criteria = requirements.flatMap((r) => r.criteria);
   add("requirements each have criteria with allow-listed verify commands", requirements.length > 0 && requirements.every((r) => r.criteria.length) && criteria.every((c) => c.verify && isVerifyArgv(splitCommand(c.verify))), `${requirements.length} requirement(s), ${criteria.length} criteria`);
-  // The mission definition (requirements, criteria, verify commands) must be committed as-is: state/ is a record
-  // directory outside the workspace fingerprint, so git is what anchors it (ADR-0007).
-  // Criteria that exercise a running server must see a build at least as new as the committed product code.
-  if (criteria.some((c) => /PLAYWRIGHT_BASE_URL=|OS_BASE_URL=/.test(c.verify || ""))) {
+  // Criteria that exercise a running server (browser specs, HTTP probes) must see a build at least as new as the
+  // committed product code. Limit: mtime and commit time are both writer-controlled, and this does not prove the
+  // running process serves this build (ADR-0007 Consequences).
+  if (criteria.some((c) => /PLAYWRIGHT_BASE_URL=|OS_BASE_URL=|\bplaywright\s+test\b|test:browser|\.claude\/runtime\/probes\//.test(c.verify || ""))) {
     const buildId = path.join(REPO_ROOT, ".next", "BUILD_ID");
-    const lastProductCommit = Number(git(["log", "-1", "--format=%ct", "--", "app", "lib", "modules", "styles", "public", "next.config.mjs", "package.json", "package-lock.json", "proxy.ts"], { allowFail: true }) || 0) * 1000;
+    const lastProductCommit = Number(git(["log", "-1", "--format=%ct", "--", "app", "lib", "modules", "styles", "public", "assets", "migrations", "next.config.mjs", "tsconfig.json", "package.json", "package-lock.json", "proxy.ts"], { allowFail: true }) || 0) * 1000;
     const built = fs.existsSync(buildId) ? fs.statSync(buildId).mtimeMs : 0;
     add("server-backed criteria: production build newer than the last product commit", built >= lastProductCommit, built ? `build ${new Date(built).toISOString()} vs product commit ${new Date(lastProductCommit).toISOString()} (the running server must be restarted from this build)` : "no .next/BUILD_ID");
   }
@@ -67,8 +66,8 @@ export async function evaluateCompletion({ execute = true } = {}) {
   const roles = [...new Set(reviews.map((e) => e.producer))];
   const failing = roles.filter((role) => reviews.filter((e) => e.producer === role).at(-1)?.result === "FAIL");
   add("no role's latest review is FAIL", failing.length === 0, failing.join(", "));
-  // Findings worked in this mission are derived from their (git-anchored, append-only) history, not from an
-  // editable list: any finding with a transition at or after the mission start.
+  // Mission scope comes from git-anchored findings history (lib/mission-def.mjs missionFindingIds), not from an
+  // editable list; abort + restart cannot shrink it.
   const scope = missionFindingIds(mission, findings);
   const missionFindings = findings.filter((f) => scope.has(f.id));
   const required = [ALWAYS_REVIEWER, ...(missionFindings.some((f) => f.impactLevel === "L5") ? [L5_REVIEWER] : [])];
@@ -84,8 +83,8 @@ export async function evaluateCompletion({ execute = true } = {}) {
     for (const r of reexecuteCriteria(criteria)) add(`criterion ${r.id} re-executed`, r.ok, r.detail);
     const proofs = new Map();
     for (const f of missionFindings.filter((x) => x.status === "RESOLVED")) {
-      const proof = (f.evidenceRecords || []).map((id) => evidence.find((e) => e.id === id)).filter((e) => e && provesFinding(e, f.id)).at(-1);
-      if (!proof) { add(`finding ${f.id} has a proof to re-run`, false); continue; }
+      const proof = (f.evidenceRecords || []).map((id) => evidence.find((e) => e.id === id)).filter((e) => e && provesFinding(e, f.id) && matchesRequiredTests(f, e)).at(-1);
+      if (!proof) { add(`finding ${f.id} has a proof that runs one of its requiredTests`, false); continue; }
       const argv = proof.argv || splitCommand(proof.command);
       const key = JSON.stringify(argv);
       if (!proofs.has(key)) proofs.set(key, { argv, findings: [] });

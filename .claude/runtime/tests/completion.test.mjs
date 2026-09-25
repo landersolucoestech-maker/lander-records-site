@@ -127,5 +127,99 @@ test("environment overrides and runs that execute no tests never yield PASS", ()
     ]) assert.match(box.run("evidence.mjs", ["run", "--finding", "F-0001", "--", ...argv]).stderr, /NOT_A_PROOF/, argv.join(" "));
     const out = box.run("evidence.mjs", ["run", "--finding", "F-0001", "--", "node", "--test", "tests/unit/empty.test.mjs"]);
     assert.match(out.stdout + out.stderr, /FAIL/, "a suite that ran zero tests must be FAIL");
+    fs.writeFileSync(path.join(box.root, "tests", "unit", "skipped.test.mjs"), "import test from 'node:test'; test.skip('s', () => {}); test('t', { todo: true }, () => {});\n");
+    box.git("add", "-A"); box.git("commit", "-qm", "skipped suite");
+    const skipped = box.run("evidence.mjs", ["run", "--finding", "F-0001", "--", "node", "--test", "tests/unit/skipped.test.mjs"]);
+    assert.match(skipped.stdout + skipped.stderr, /FAIL/, "a suite whose tests were all skipped/todo must be FAIL");
+  } finally { box.cleanup(); }
+});
+
+function scope(box) {
+  const lib = path.join(box.root, ".claude", "runtime", "lib", "mission-def.mjs");
+  const findingsLib = path.join(box.root, ".claude", "runtime", "lib", "findings.mjs");
+  const script = `Promise.all([import(${JSON.stringify(lib)}), import(${JSON.stringify(findingsLib)})]).then(([m, f]) => console.log(JSON.stringify([...m.missionFindingIds(m.currentMission(), f.loadFindings())].sort())))`;
+  const out = spawnSync(process.execPath, ["--input-type=module", "-e", script], { cwd: box.root, encoding: "utf8" });
+  assert.equal(out.status, 0, out.stderr);
+  return JSON.parse(out.stdout.trim().split("\n").at(-1));
+}
+
+test("abort + restart cannot shrink the finding scope; only a successful close resets it", () => {
+  const box = sandbox();
+  try {
+    const all = fs.readdirSync(path.join(box.root, ".claude", "findings")).filter((n) => /^F-\d{4}\.json$/.test(n)).map((n) => n.slice(0, 6)).sort();
+    assert.ok(all.length > 0);
+    box.run("mission.mjs", ["abort", "--note", "sandbox"]);
+    box.git("add", "-A"); box.git("commit", "-qm", "abort");
+    box.run("mission.mjs", ["start", "--objective", "fresh"]);
+    box.git("add", "-A"); box.git("commit", "-qm", "restart");
+    assert.deepEqual(scope(box), all, "with no successful close, every finding is in scope");
+
+    // A successfully closed mission becomes the base: afterwards only findings changed since then are in scope.
+    editMission(box, () => {});
+    const file = path.join(box.root, ".claude", "state", "mission.yml");
+    const text = fs.readFileSync(file, "utf8");
+    const header = text.split("\n").filter((l) => l.startsWith("#")).join("\n");
+    const state = JSON.parse(text.split("\n").filter((l) => !l.startsWith("#")).join("\n"));
+    state.history.push({ ...state.current, status: "COMPLETED", verdict: "C", closedAt: new Date().toISOString() });
+    state.current = null;
+    fs.writeFileSync(file, `${header}\n${JSON.stringify(state, null, 2)}\n`);
+    box.git("add", "-A"); box.git("commit", "-qm", "close");
+    box.run("mission.mjs", ["start", "--objective", "next"]);
+    box.git("add", "-A"); box.git("commit", "-qm", "next");
+    assert.deepEqual(scope(box), []);
+    const f = path.join(box.root, ".claude", "findings", `${all[0]}.json`);
+    fs.appendFileSync(f, "\n");
+    box.git("add", "-A"); box.git("commit", "-qm", "touch finding");
+    assert.deepEqual(scope(box), [all[0]]);
+    // Aborting again does not move the base.
+    box.run("mission.mjs", ["abort", "--note", "again"]);
+    box.run("mission.mjs", ["start", "--objective", "again"]);
+    box.git("add", "-A"); box.git("commit", "-qm", "restart again");
+    assert.deepEqual(scope(box), [all[0]]);
+  } finally { box.cleanup(); }
+});
+
+test("a user npmrc cannot turn a failing npm suite into PASS", () => {
+  const box = sandbox();
+  const home = fs.mkdtempSync(path.join(box.root, "..", "lander-home-"));
+  try {
+    fs.mkdirSync(path.join(box.root, "tests", "unit"), { recursive: true });
+    fs.writeFileSync(path.join(box.root, "tests", "unit", "fail.test.mjs"), "import test from 'node:test'; import assert from 'node:assert'; test('fails', () => assert.fail('x'));\n");
+    fs.writeFileSync(path.join(box.root, "package.json"), JSON.stringify({ name: "sandbox", private: true, scripts: { test: "node --test tests/unit/fail.test.mjs" } }));
+    fs.writeFileSync(path.join(home, ".npmrc"), "script-shell=/bin/true\n");
+    box.git("add", "-A"); box.git("commit", "-qm", "failing npm suite");
+    const out = box.run("evidence.mjs", ["run", "--finding", "F-0001", "--", "npm", "test"], { HOME: home });
+    assert.match(out.stdout + out.stderr, /FAIL/, out.stdout + out.stderr);
+  } finally { box.cleanup(); fs.rmSync(home, { recursive: true, force: true }); }
+});
+
+test("requiredTests binding and ticket mission binding", () => {
+  const box = sandbox();
+  try {
+    const lib = path.join(box.root, ".claude", "runtime", "lib", "findings.mjs");
+    const script = `import(${JSON.stringify(lib)}).then((m) => console.log(JSON.stringify([
+      m.matchesRequiredTests({ requiredTests: ["tests/unit/a.test.mjs"] }, { command: "node --test tests/unit/a.test.mjs" }),
+      m.matchesRequiredTests({ requiredTests: ["tests/unit/a.test.mjs"] }, { command: "node --test tests/unit/b.test.mjs" }),
+      m.matchesRequiredTests({ requiredTests: ["npm run test:claude-os"] }, { command: "npm run test:unit" }),
+      m.matchesRequiredTests({ requiredTests: ["tests/integration/x.mjs"] }, { argv: ["env", "DATABASE_URL=tests/integration/x.mjs", "node", "--test", "tests/unit/y.test.mjs"] }),
+      m.matchesRequiredTests({ requiredTests: [] }, { command: "npm test" }),
+      m.matchesRequiredTests({ requiredTests: ["tests/integration/x.mjs"] }, { argv: ["env", "DATABASE_URL=postgres://h/db_test", "node", "tests/integration/x.mjs"] }),
+    ])))`;
+    const out = spawnSync(process.execPath, ["--input-type=module", "-e", script], { cwd: box.root, encoding: "utf8" });
+    assert.equal(out.status, 0, out.stderr);
+    assert.deepEqual(JSON.parse(out.stdout.trim()), [true, false, false, false, false, true], "env values never satisfy requiredTests; an empty list fails closed");
+
+    // A review dispatched for one mission definition cannot be recorded after the definition changes.
+    box.run("mission.mjs", ["abort", "--note", "sandbox"]);
+    box.run("mission.mjs", ["start", "--objective", "sandbox"]);
+    box.run("mission.mjs", ["requirement", "--text", "r"]);
+    const prompt = box.run("dispatch.mjs", ["adversarial-reviewer"]).stdout;
+    const ticket = prompt.match(/REVIEW-TICKET: ([0-9a-f]{32})/)[1];
+    box.run("mission.mjs", ["requirement", "--text", "r2"]);
+    const report = path.join(box.root, "report.md");
+    fs.writeFileSync(report, `REVIEW-TICKET: ${ticket}\n\nVERDICT: PASS\n`);
+    const rec = box.run("evidence.mjs", ["review", "--reviewer", "adversarial-reviewer", "--verdict", "PASS", "--report", report]);
+    assert.notEqual(rec.status, 0);
+    assert.match(rec.stdout + rec.stderr, /TICKET_STALE|mission definition changed/);
   } finally { box.cleanup(); }
 });

@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { OsError, osPath, readJson, writeJson, writeYml, nowIso, decisionStatus, workspaceFingerprint } from "./io.mjs";
+import { OsError, osPath, readJson, writeJson, writeYml, nowIso, decisionStatus, workspaceFingerprint, splitCommand } from "./io.mjs";
 import { loadEvidence, provesFinding } from "./evidence.mjs";
 import { validate } from "./schema.mjs";
 
@@ -82,12 +82,18 @@ export function readyQueue(all = loadFindings()) {
   return all.filter((f) => f.status === "READY" && !isBlocked(f, all)).sort((a, b) => priorityScore(b) - priorityScore(a) || a.id.localeCompare(b.id));
 }
 
-/** A proof must run one of the suites the finding names in requiredTests (paths or npm commands). */
+/**
+ * A proof must run one of the suites the finding names in requiredTests: a named file must be an argument of the
+ * executed program (not merely appear in an env value), a named npm command must be the executed command. Fails
+ * closed: a finding without a parsable requiredTests entry cannot be verified.
+ */
 export function matchesRequiredTests(finding, record) {
   const wanted = (finding.requiredTests || []).flatMap((t) => [...String(t).matchAll(/(tests\/[\w./-]+|\.claude\/runtime\/[\w./-]+|scripts\/[\w./-]+|npm (?:run )?[\w:-]+)/g)].map((m) => m[1]));
-  if (!wanted.length) return true;
-  const command = record.command || "";
-  return wanted.some((w) => command.includes(w));
+  if (!wanted.length) return false;
+  const argv = [...(record.argv || splitCommand(record.command || ""))];
+  if (argv[0] === "env") { argv.shift(); while (argv.length && /^[A-Za-z_][A-Za-z0-9_]*=/.test(argv[0])) argv.shift(); }
+  const program = argv.join(" ");
+  return wanted.some((w) => (w.startsWith("npm ") ? program === w || (w === "npm test" && program === "npm run test") : argv.slice(1).includes(w)));
 }
 
 // Transitions that claim verification need fresh PASS evidence about this finding.

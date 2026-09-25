@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { OsError, osPath, readJson, readYml, createRecord, nowIso, sha256, workspaceFingerprint, REPO_ROOT, RUN_DIR, splitCommand, childEnv } from "./io.mjs";
+import { OsError, osPath, readJson, createRecord, nowIso, sha256, workspaceFingerprint, REPO_ROOT, RUN_DIR, splitCommand, childEnv, resolveArgv } from "./io.mjs";
 import { validate } from "./schema.mjs";
 
 export const EVIDENCE_DIR = osPath("evidence");
@@ -37,9 +37,8 @@ import { currentMission, missionHash } from "./mission-def.mjs";
 export const isProofCommand = (command = "", argv) => proofArgv(argv || splitCommand(command), { requireFiles: false });
 
 function activeMission() {
-  const file = osPath("state", "mission.yml");
-  const state = fs.existsSync(file) ? readYml(file) : null;
-  return state?.current?.status === "ACTIVE" ? state.current : null;
+  const current = currentMission();
+  return current?.status === "ACTIVE" ? current : null;
 }
 
 function persist(build) {
@@ -86,12 +85,13 @@ export function runCommandEvidence({ argv, kind = "command", findings = [], crit
   if (findings.length && !proofArgv(argv)) throw new OsError("NOT_A_PROOF", "evidence naming a finding must run an allow-listed test suite, OS probe or schema audit (lib/commands.mjs)");
   const before = workspaceFingerprint();
   const started = Date.now();
-  const child = spawnSync(argv[0], argv.slice(1), { cwd: REPO_ROOT, env: childEnv(env), encoding: "utf8", timeout: timeoutMs, maxBuffer: 64 * 1024 * 1024, shell: false });
+  const [bin, ...rest] = resolveArgv(argv);
+  const child = spawnSync(bin, rest, { cwd: REPO_ROOT, env: childEnv(env), encoding: "utf8", timeout: timeoutMs, maxBuffer: 64 * 1024 * 1024, shell: false });
   const output = `${child.stdout || ""}${child.stderr || ""}`;
   // Missing binary / permission = environment gap (BLOCKED). A timeout is the command failing (FAIL).
   const blocked = child.error && ["ENOENT", "EACCES", "EPERM"].includes(child.error.code);
   // A test run that executed nothing proves nothing.
-  const result = blocked ? "BLOCKED" : child.status === 0 && !ranNothing(output) ? "PASS" : "FAIL";
+  const result = blocked ? "BLOCKED" : child.status === 0 && !ranNothing(output, argv) ? "PASS" : "FAIL";
   const after = workspaceFingerprint();
   if (after.fingerprint !== before.fingerprint) throw new OsError("WORKSPACE_CHANGED", "the workspace changed while the command ran; evidence would not describe a single state");
   return persist((id) => ({

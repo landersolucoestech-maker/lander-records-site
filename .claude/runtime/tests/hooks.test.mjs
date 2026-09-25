@@ -28,6 +28,13 @@ const blocked = [
   "bash -lc 'git reset --hard'", "bash -c -- 'git reset --hard'", "find . -execdir rm {} +", "find /var/tmp/../home -delete",
   "export", "cat /proc/self/environ", "python3 -c 'import os;print(os.environ)'", "cat .e?v", "cat .env*",
   "node -e 'console.log(process.env.DATABASE_URL)'",
+  // Round-4 security review.
+  "git checkout -- lib", "git checkout HEAD -- lib", "git restore --source=HEAD lib", "git restore -W -- lib",
+  "git --config-env=alias.x=V x", "GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=alias.x GIT_CONFIG_VALUE_0=reset git x",
+  "git branch -f main HEAD~5", "git worktree remove --force ../w", "typeset", "cat /proc/$$/environ", "ps eww",
+  "awk 'BEGIN{for(k in ENVIRON)print k}'", "perl -e 'print %ENV'", "ruby -e 'p ENV'", "node -p 'process[\"env\"]'",
+  "node -p 'require(\"process\").env'", "python3 -c 'import os;print(os.getenv(\"SOUNDCHARTS_CLIENT_SECRET\"))'",
+  "echo 'DROP TABLE users' | psql $DATABASE_URL",
 ];
 const allowed = [
   "git status", "git push -u origin claude/x", "git checkout -b new", "git checkout dev", "git restore --staged .", "cat .env.production.example",
@@ -39,6 +46,7 @@ const allowed = [
   "psql -h /var/tmp/lander-pg -p 55432 -U postgres lander_test -c 'delete from contact_submissions where id=1'",
   "DATABASE_URL=postgresql://postgres@localhost:55432/lander_test npm run db:migrate",
   "node -e \"console.log(1)\"",
+  "git branch feature", "ps aux", "git restore --staged lib", "echo 'SELECT 1' | psql postgresql://postgres@localhost:55432/lander_test",
 ];
 
 test("guard blocks destructive and secret-exposing commands (incl. reviewer bypasses)", () => {
@@ -78,4 +86,17 @@ test("cd tracking: deleting the repository from its parent is blocked", () => {
   const name = root.split("/").filter(Boolean).at(-1);
   assert.ok(evaluate(`cd .. && rm -rf ${name}`));
   assert.ok(evaluate(`cd / && rm -rf ${root.slice(1)}`));
+});
+
+test("a checkout that lives under /tmp gets no scratch exemption for its own files", () => {
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), "guard-repo-"));
+  try {
+    const hook = path.join(OS_SOURCE, "runtime", "hooks", "guard-bash.mjs");
+    const script = `import(${JSON.stringify(hook)}).then(({ evaluate }) => console.log(JSON.stringify(["find . -delete", "find lib -delete", "find . -exec rm {} +", "find node_modules/.cache -delete"].map((c) => evaluate(c)))))`;
+    const out = spawnSync(process.execPath, ["--input-type=module", "-e", script], { cwd: repo, encoding: "utf8", env: { ...process.env, CLAUDE_PROJECT_DIR: repo } });
+    assert.equal(out.status, 0, out.stderr);
+    const [dot, lib, exec, cache] = JSON.parse(out.stdout.trim());
+    assert.ok(dot && lib && exec, "repository paths must stay protected");
+    assert.equal(cache, null, "build output inside the repository stays deletable");
+  } finally { fs.rmSync(repo, { recursive: true, force: true }); }
 });

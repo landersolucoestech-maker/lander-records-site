@@ -2,11 +2,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import fs2 from "node:fs";
-import { REPO_ROOT, walk, rel, git, osPath, readYml, workspaceFingerprint, childEnv } from "./io.mjs";
+import { REPO_ROOT, walk, rel, git, workspaceFingerprint, childEnv, resolveArgv } from "./io.mjs";
 import { porcelainPath } from "./io.mjs";
 import { loadFindings, OPEN_STATES, PARKED_STATES } from "./findings.mjs";
 import { runCommandEvidence, loadEvidence, isFresh, provesFinding } from "./evidence.mjs";
 import { ranNothing } from "./commands.mjs";
+import { currentMission, missionFindingIds } from "./mission-def.mjs";
 
 const SOURCE_EXT = /\.(ts|tsx|mjs|js|cjs|sql|css|yml|yaml)$/;
 
@@ -29,8 +30,9 @@ export async function runCheck(check, { record = false, context = "gate" } = {})
     case "command": {
       if (!record) {
         const { spawnSync } = await import("node:child_process");
-        const child = spawnSync(check.argv[0], check.argv.slice(1), { cwd: REPO_ROOT, env: childEnv(), encoding: "utf8", shell: false, maxBuffer: 64 * 1024 * 1024 });
-        return { status: child.status === 0 && !ranNothing(`${child.stdout}${child.stderr}`) ? "PASS" : child.error?.code === "ENOENT" ? "BLOCKED" : "FAIL", detail: `${check.argv.join(" ")} exit=${child.status}${child.status ? `\n${`${child.stdout}${child.stderr}`.slice(-1200)}` : ""}` };
+        const [bin, ...rest] = resolveArgv(check.argv);
+        const child = spawnSync(bin, rest, { cwd: REPO_ROOT, env: childEnv(), encoding: "utf8", shell: false, maxBuffer: 64 * 1024 * 1024 });
+        return { status: child.status === 0 && !ranNothing(`${child.stdout}${child.stderr}`, check.argv) ? "PASS" : child.error?.code === "ENOENT" ? "BLOCKED" : "FAIL", detail: `${check.argv.join(" ")} exit=${child.status}${child.status ? `\n${`${child.stdout}${child.stderr}`.slice(-1200)}` : ""}` };
       }
       const ev = runCommandEvidence({ argv: check.argv, kind: check.evidenceKind || "command", summary: `${context}: ${check.argv.join(" ")}`, producer: context });
       return { status: ev.result, detail: `${ev.id} exit=${ev.exitCode}`, evidence: ev.id };
@@ -57,9 +59,9 @@ export async function runCheck(check, { record = false, context = "gate" } = {})
       // Every RESOLVED finding needs PASS evidence naming it; findings worked in the active mission need it fresh.
       const evidence = loadEvidence();
       const ws = workspaceFingerprint();
-      const missionFile = osPath("state", "mission.yml");
-      const missionFindings = new Set(fs2.existsSync(missionFile) ? readYml(missionFile).current?.findings || [] : []);
-      const bad = loadFindings().filter((f) => f.status === "RESOLVED" && (!check.domains || check.domains.includes(f.domain))).filter((f) => !(f.evidenceRecords || []).some((id) => { const e = evidence.find((r) => r.id === id); return e && provesFinding(e, f.id, missionFindings.has(f.id) ? ws : null); }));
+      const all = loadFindings();
+      const missionFindings = missionFindingIds(currentMission(), all);
+      const bad = all.filter((f) => f.status === "RESOLVED" && (!check.domains || check.domains.includes(f.domain))).filter((f) => !(f.evidenceRecords || []).some((id) => { const e = evidence.find((r) => r.id === id); return e && provesFinding(e, f.id, missionFindings.has(f.id) ? ws : null); }));
       return { status: bad.length ? "FAIL" : "PASS", detail: bad.length ? `RESOLVED without qualifying proof: ${bad.map((f) => f.id).join(", ")}` : "every RESOLVED finding carries PASS evidence that names it (fresh for this mission)" };
     }
     case "git-clean-except": {
@@ -74,15 +76,25 @@ export async function runCheck(check, { record = false, context = "gate" } = {})
       // Structured check of the public preview (owner-level auth bypass): ADR-0006 / rules/security.md.
       const dir = path.join(REPO_ROOT, ".github", "workflows");
       const problems = [];
-      const unquoteKeys = (text) => text.replace(/(["'])([A-Za-z_][A-Za-z0-9_]*)\1(\s*:)/g, "$2$3");
+      // YAML double-quoted scalars may spell a name with escapes ("DATABASE\x5FURL"); decode before matching.
+      const decode = (text) => text.replace(/"((?:[^"\\\n]|\\.)*)"/g, (m, inner) => `"${inner.replace(/\\(x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/g, (e, hex) => String.fromCodePoint(parseInt(hex.slice(1), 16))).replace(/\\"/g, "'")}"`);
+      const unquoteKeys = (text) => decode(text).replace(/(["'])([A-Za-z_][A-Za-z0-9_]*)\1(\s*:)/g, "$2$3");
       for (const name of fs2.existsSync(dir) ? fs2.readdirSync(dir).filter((n) => /\.ya?ml$/.test(n)) : []) {
-        const text = fs2.readFileSync(path.join(dir, name), "utf8");
+        const text = decode(fs2.readFileSync(path.join(dir, name), "utf8"));
         if (`.github/workflows/${name}` !== check.file && /DEV_PREVIEW_PUBLIC_ACCESS/.test(text)) problems.push(`${name} enables the preview bypass flag; only ${check.file} may`);
       }
       const previewFile = path.join(REPO_ROOT, check.file);
       if (!fs2.existsSync(previewFile)) return { status: "FAIL", detail: `${check.file} missing` };
       const preview = unquoteKeys(fs2.readFileSync(previewFile, "utf8"));
-      if (/\$\{\{[^}]*\b(secrets|vars)\b[^}]*\}\}/.test(preview)) problems.push("an expression references the secrets/vars context");
+      // The public preview takes no values from Actions contexts at all (secrets, vars, github.token, format(), …).
+      if (/\$\{\{/.test(preview)) problems.push("the public preview may not use ${{ }} expressions");
+      if (/^\s*secrets\s*:/m.test(preview)) problems.push("the public preview may not pass secrets to a called workflow");
+      if (/^\s*(-\s+)?["'][^"'\n]*["']\s*:/m.test(preview)) problems.push("quoted keys that are not plain names are not allowed");
+      // Shell indirection that can set or unset variables without naming them literally.
+      for (const word of ["eval", "unset", "declare", "typeset", "export", "source", "tee", "set -a"]) if (new RegExp(`(^|[\\s;&|(])${word.replace(" ", "\\s+")}(\\s|$)`, "m").test(preview)) problems.push(`shell construct not allowed in the public preview: ${word}`);
+      for (const line of preview.split("\n").filter((l) => />/.test(l) && /\$\{?[A-Za-z_]/.test(l.slice(l.indexOf(">"))))) {
+        if (!/>>\s*"\$(GITHUB_ENV|GITHUB_OUTPUT|GITHUB_STEP_SUMMARY)"\s*$/.test(line)) problems.push(`redirection to a variable target: ${line.trim().slice(0, 80)}`);
+      }
       for (const line of preview.split("\n").filter((l) => /GITHUB_ENV/.test(l))) {
         const name = line.match(/echo\s+["']?([A-Za-z_][A-Za-z0-9_]*)=/)?.[1];
         if (!name || !(check.allowedEnvWrites || []).includes(name)) problems.push(`GITHUB_ENV write not in the allow-list: ${line.trim().slice(0, 80)}`);

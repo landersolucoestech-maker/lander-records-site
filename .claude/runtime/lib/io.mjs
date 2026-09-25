@@ -80,11 +80,29 @@ export function workspaceFingerprint() {
 /** Path from a `git status --porcelain` line (robust to the trimmed first line). */
 export const porcelainPath = (line) => line.replace(/^[ MADRCUT?!]{1,2}\s+/, "").replace(/^.* -> /, "");
 
-/** Environment for executed checks: never leak a test-runner context or node/npm option overrides (they can mask failures). */
+/**
+ * Environment for executed checks: never leak a test-runner context or node/npm option overrides (they can mask
+ * failures). npm user/global config files are neutralised and `script-shell` is pinned (a `script-shell` in any
+ * npmrc turns every script into a no-op). PATH and HOME are inherited; node/npm/npx are resolved by resolveArgv.
+ */
 export function childEnv(extra = {}) {
   const env = { ...process.env, ...extra };
   for (const name of Object.keys(env)) if (name === "NODE_TEST_CONTEXT" || name === "NODE_OPTIONS" || /^npm_config_/i.test(name)) delete env[name];
+  env.npm_config_userconfig = "/dev/null";
+  env.npm_config_globalconfig = "/dev/null/npmrc"; // cannot exist (npm rejects loading /dev/null twice)
+  env.npm_config_script_shell = "/bin/sh"; // environment config outranks a project .npmrc script-shell
   return env;
+}
+
+/** argv with node/npm/npx resolved next to the running node binary, not looked up on PATH. */
+export function resolveArgv(argv) {
+  const out = [...argv];
+  let i = 0;
+  if (out[0] === "env") { i = 1; while (i < out.length && /^[A-Za-z_][A-Za-z0-9_]*=/.test(out[i])) i += 1; }
+  const dir = path.dirname(process.execPath);
+  if (out[i] === "node") out[i] = process.execPath;
+  else if (["npm", "npx"].includes(out[i]) && fs.existsSync(path.join(dir, out[i]))) out[i] = path.join(dir, out[i]);
+  return out;
 }
 
 export function args(argv = process.argv.slice(2)) {

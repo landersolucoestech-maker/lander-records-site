@@ -35,7 +35,8 @@
   "correction": "canonical required; resolveCanonicalUrl(cms, route) per page",
   "requiredTests": [
     "tests/unit/seo-canonical.test.mjs",
-    "built-server curl of <link rel=canonical>"
+    "built-server curl of <link rel=canonical>",
+    ".claude/runtime/probes/seo-canonical.mjs"
   ],
   "regressionRisk": "low — CMS overrides preserved",
   "impactLevel": "L2",

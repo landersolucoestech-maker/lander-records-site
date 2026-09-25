@@ -4,6 +4,7 @@ import fs from "node:fs";
 import { git, osPath, readYml, sha256 } from "./io.mjs";
 
 const MISSION_FILE = ".claude/state/mission.yml";
+// Same format as io.readYml, applied to `git show` output rather than a file.
 const parse = (text) => JSON.parse(text.split("\n").filter((l) => !l.startsWith("#")).join("\n"));
 
 export function currentMission() {
@@ -52,14 +53,34 @@ export function missionAnchorErrors(mission) {
   return errors;
 }
 
-/** Findings in mission scope: listed, touched in history since start, or whose file changed since the anchor. */
+/**
+ * Commit that closed the last successful mission (COMPLETED, verdict not D): the first commit whose committed
+ * mission history carries it. Aborting a mission never moves this base, so abort + restart cannot shrink scope.
+ */
+export function scopeBase() {
+  let head;
+  try { head = parse(git(["show", `HEAD:${MISSION_FILE}`], { allowFail: true })); } catch { return null; }
+  const last = (head?.history || []).filter((m) => m.status === "COMPLETED" && m.verdict && m.verdict !== "D").at(-1);
+  if (!last) return null;
+  const commits = git(["log", "--format=%H", "--reverse", "--", MISSION_FILE], { allowFail: true }).split("\n").filter(Boolean);
+  for (const commit of commits) {
+    try { if ((parse(git(["show", `${commit}:${MISSION_FILE}`], { allowFail: true })).history || []).some((m) => m.id === last.id && m.status === "COMPLETED")) return commit; } catch { /* not JSON at that commit */ }
+  }
+  return null;
+}
+
+/**
+ * Findings in mission scope (the single definition; completion and gates use it): listed ones, those with history
+ * since start, and every finding file changed since the last successful mission closed — all findings if none has.
+ */
 export function missionFindingIds(mission, findings) {
   if (!mission) return new Set();
   const ids = new Set(mission.findings || []);
   for (const f of findings) if (f.history.some((h) => Date.parse(h.at) >= Date.parse(mission.startedAt))) ids.add(f.id);
-  const anchor = missionAnchor(mission.id);
+  const base = scopeBase();
+  if (!base) { for (const f of findings) ids.add(f.id); return ids; }
   const changed = [
-    ...(anchor ? git(["diff", "--name-only", anchor.commit, "--", ".claude/findings"], { allowFail: true }).split("\n") : []),
+    ...git(["diff", "--name-only", base, "--", ".claude/findings"], { allowFail: true }).split("\n"),
     ...git(["ls-files", "--others", "--exclude-standard", "--", ".claude/findings"], { allowFail: true }).split("\n"),
   ];
   for (const file of changed) { const m = file.match(/(F-\d{4})\.json$/); if (m) ids.add(m[1]); }
