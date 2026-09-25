@@ -42,6 +42,29 @@ async function upsertCachedMetric(input: {
   });
 }
 
+type Db = ReturnType<typeof getDb>;
+type DbExecutor = Db | Parameters<Parameters<Db["transaction"]>[0]>[0];
+
+// Metrics are only valid for the identity that produced them. When an identity is
+// cleared or replaced, values observed for the previous Soundcharts artist must not
+// stay published under this entity (ZERO != NULL != STALE != WRONG IDENTITY).
+async function purgeArtistSoundchartsMetrics(executor: DbExecutor, artistId: string) {
+  await executor.delete(artistMetrics).where(and(eq(artistMetrics.artistId, artistId), eq(artistMetrics.source, "soundcharts")));
+  await executor.delete(integrationMetricCache).where(and(
+    eq(integrationMetricCache.entityType, "artist"),
+    eq(integrationMetricCache.entityId, artistId),
+    eq(integrationMetricCache.source, "soundcharts"),
+  ));
+}
+
+async function purgeLanderRecordsSoundchartsMetrics(executor: DbExecutor) {
+  await executor.delete(integrationMetricCache).where(and(
+    eq(integrationMetricCache.entityType, "lander_records"),
+    eq(integrationMetricCache.entityId, LANDER_ENTITY_ID),
+    eq(integrationMetricCache.source, "soundcharts"),
+  ));
+}
+
 function resolutionStillMatches(identity: typeof artistExternalIdentities.$inferSelect | undefined, links: Array<{ platform: string; url: string }>) {
   if (!identity?.soundchartsArtistUuid || identity.resolutionStatus !== "resolved") return false;
   if (identity.matchedViaPlatform === "spotify") {
@@ -64,9 +87,23 @@ export async function syncLanderRecordsSoundcharts(force = false) {
     settings.instagramUrl ? { platform: "instagram", url: settings.instagramUrl } : null,
     settings.youtubeUrl ? { platform: "youtube", url: settings.youtubeUrl } : null,
   ].filter((item): item is { platform: string; url: string } => Boolean(item));
-  if (!links.length) return { status: "not_configured" as const, metrics: 0 };
+  if (!links.length) {
+    if (settings.soundchartsArtistUuid) {
+      await db.transaction(async (tx) => {
+        await purgeLanderRecordsSoundchartsMetrics(tx);
+        await tx.update(landerRecordsIntegrationSettings).set({
+          soundchartsArtistUuid: "",
+          soundchartsResolutionStatus: "unresolved",
+          soundchartsMatchedVia: "",
+          updatedAt: new Date(),
+        }).where(eq(landerRecordsIntegrationSettings.key, LANDER_ENTITY_ID));
+      });
+    }
+    return { status: "not_configured" as const, metrics: 0 };
+  }
 
   try {
+    const previousUuid = settings.soundchartsArtistUuid;
     let uuid = settings.soundchartsArtistUuid;
     let matchedVia = settings.soundchartsMatchedVia;
     const stillMatches = uuid && links.some((link) => {
@@ -75,14 +112,17 @@ export async function syncLanderRecordsSoundcharts(force = false) {
     if (!stillMatches) {
       const resolved = await resolveSoundchartsArtist(links);
       if (!resolved) {
-        await db.update(landerRecordsIntegrationSettings).set({
-          soundchartsArtistUuid: "",
-          soundchartsResolutionStatus: "needs_review",
-          soundchartsMatchedVia: "",
-          soundchartsLastResolvedAt: new Date(),
-          soundchartsLastError: "Nenhuma identidade de artista Soundcharts foi encontrada para as URLs oficiais informadas.",
-          updatedAt: new Date(),
-        }).where(eq(landerRecordsIntegrationSettings.key, LANDER_ENTITY_ID));
+        await db.transaction(async (tx) => {
+          await purgeLanderRecordsSoundchartsMetrics(tx);
+          await tx.update(landerRecordsIntegrationSettings).set({
+            soundchartsArtistUuid: "",
+            soundchartsResolutionStatus: "needs_review",
+            soundchartsMatchedVia: "",
+            soundchartsLastResolvedAt: new Date(),
+            soundchartsLastError: "Nenhuma identidade de artista Soundcharts foi encontrada para as URLs oficiais informadas.",
+            updatedAt: new Date(),
+          }).where(eq(landerRecordsIntegrationSettings.key, LANDER_ENTITY_ID));
+        });
         return { status: "unresolved" as const, metrics: 0 };
       }
       uuid = resolved.uuid;
@@ -98,6 +138,7 @@ export async function syncLanderRecordsSoundcharts(force = false) {
     }
 
     const metrics = (await fetchSoundchartsArtistMetrics(uuid)).filter((metric) => metric.platform === "instagram" || metric.platform === "youtube");
+    if (uuid !== previousUuid) await purgeLanderRecordsSoundchartsMetrics(db);
     for (const metric of metrics) {
       await upsertCachedMetric({ entityType: "lander_records", entityId: LANDER_ENTITY_ID, ...metric });
     }
@@ -128,9 +169,12 @@ export async function syncArtistSoundcharts(artistId: string, force = false) {
   ]);
   const links = linkRows.map((link) => ({ platform: link.platform.toLowerCase(), url: link.url })).filter((link) => link.url);
   if (!links.length) {
-    await db.insert(artistExternalIdentities).values({ artistId, resolutionStatus: "unresolved", lastError: "Nenhuma URL de plataforma configurada." }).onConflictDoUpdate({
-      target: artistExternalIdentities.artistId,
-      set: { resolutionStatus: "unresolved", soundchartsArtistUuid: "", lastError: "Nenhuma URL de plataforma configurada.", updatedAt: new Date() },
+    await db.transaction(async (tx) => {
+      await purgeArtistSoundchartsMetrics(tx, artistId);
+      await tx.insert(artistExternalIdentities).values({ artistId, resolutionStatus: "unresolved", lastError: "Nenhuma URL de plataforma configurada." }).onConflictDoUpdate({
+        target: artistExternalIdentities.artistId,
+        set: { resolutionStatus: "unresolved", soundchartsArtistUuid: "", matchedViaPlatform: "", matchedViaIdentifier: "", lastError: "Nenhuma URL de plataforma configurada.", updatedAt: new Date() },
+      });
     });
     return { status: "not_configured" as const, metrics: 0 };
   }
@@ -143,22 +187,25 @@ export async function syncArtistSoundcharts(artistId: string, force = false) {
     if (!resolutionStillMatches(identity, links)) {
       const resolved = await resolveSoundchartsArtist(links);
       if (!resolved) {
-        await db.insert(artistExternalIdentities).values({
-          artistId,
-          resolutionStatus: "needs_review",
-          lastResolvedAt: new Date(),
-          lastError: "Nenhuma identidade Soundcharts determinística encontrada para as URLs cadastradas.",
-        }).onConflictDoUpdate({
-          target: artistExternalIdentities.artistId,
-          set: {
-            soundchartsArtistUuid: "",
+        await db.transaction(async (tx) => {
+          await purgeArtistSoundchartsMetrics(tx, artistId);
+          await tx.insert(artistExternalIdentities).values({
+            artistId,
             resolutionStatus: "needs_review",
-            matchedViaPlatform: "",
-            matchedViaIdentifier: "",
             lastResolvedAt: new Date(),
             lastError: "Nenhuma identidade Soundcharts determinística encontrada para as URLs cadastradas.",
-            updatedAt: new Date(),
-          },
+          }).onConflictDoUpdate({
+            target: artistExternalIdentities.artistId,
+            set: {
+              soundchartsArtistUuid: "",
+              resolutionStatus: "needs_review",
+              matchedViaPlatform: "",
+              matchedViaIdentifier: "",
+              lastResolvedAt: new Date(),
+              lastError: "Nenhuma identidade Soundcharts determinística encontrada para as URLs cadastradas.",
+              updatedAt: new Date(),
+            },
+          });
         });
         return { status: "unresolved" as const, metrics: 0 };
       }
@@ -168,7 +215,9 @@ export async function syncArtistSoundcharts(artistId: string, force = false) {
     }
 
     const metrics = await fetchSoundchartsArtistMetrics(resolvedUuid);
+    const identityChanged = resolvedUuid !== (identity?.soundchartsArtistUuid || "");
     await db.transaction(async (tx) => {
+      if (identityChanged) await purgeArtistSoundchartsMetrics(tx, artistId);
       await tx.insert(artistExternalIdentities).values({
         artistId,
         soundchartsArtistUuid: resolvedUuid,

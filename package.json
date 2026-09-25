@@ -23,7 +23,7 @@
     "test": "npm run test:auth && npm run test:spotify && npm run test:database && npm run test:unit",
     "db:migrate": "node scripts/migrate.mjs",
     "db:seed": "node scripts/seed.mjs",
-    "test:integration": "node tests/integration/cms.mjs && node tests/integration/integrations-db.mjs && node tests/integration/authorization-db.mjs",
+    "test:integration": "node tests/integration/cms.mjs && node tests/integration/integrations-db.mjs && node --no-warnings tests/integration/soundcharts-identity-sync.mjs && node tests/integration/authorization-db.mjs",
     "admin:bootstrap": "node scripts/bootstrap-admin.mjs"
   },
   "dependencies": {
