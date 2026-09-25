@@ -4,7 +4,7 @@
   "kind": "env-contract",
   "domain": "security",
   "feeds": "configuration",
-  "invariant": "every environment variable read by code is documented by name in .env.example",
+  "invariant": "every environment variable read by code is documented by name in the environment contract documents",
   "paths": [
     "app",
     "lib",
@@ -13,10 +13,11 @@
   ],
   "ignore": [
     "NODE_ENV",
-    "GITHUB_ACTIONS",
-    "DEV_PREVIEW_PUBLIC_ACCESS",
-    "TEST_DATABASE_URL",
-    "MIGRATION_RELEASE_GUARD",
-    "PLAYWRIGHT_BASE_URL"
+    "GITHUB_ACTIONS"
+  ],
+  "documents": [
+    ".env.example",
+    "docs/ENVIRONMENT_CONTRACT.md",
+    "infra/env/production.env.example"
   ]
 }

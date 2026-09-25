@@ -29,13 +29,21 @@ async function sqlSensor(sensor) {
 }
 
 function envContractSensor(sensor) {
-  const documented = new Set(fs.readFileSync(path.join(REPO_ROOT, ".env.example"), "utf8").split("\n").map((l) => l.match(/^([A-Z0-9_]+)=/)?.[1]).filter(Boolean));
+  // A variable is documented when any declared contract document names it (KEY= line or `KEY` mention).
+  const documented = new Set();
+  for (const doc of sensor.documents || [".env.example"]) {
+    const file = path.join(REPO_ROOT, doc);
+    if (!fs.existsSync(file)) continue;
+    const text = fs.readFileSync(file, "utf8");
+    for (const m of text.matchAll(/^([A-Z][A-Z0-9_]+)=/gm)) documented.add(m[1]);
+    for (const m of text.matchAll(/`([A-Z][A-Z0-9_]+)`/g)) documented.add(m[1]);
+  }
   const used = new Map();
   for (const dir of sensor.paths) for (const file of walk(path.join(REPO_ROOT, dir), (f) => /\.(ts|tsx|mjs)$/.test(f))) {
     for (const match of fs.readFileSync(file, "utf8").matchAll(/process\.env\.([A-Z0-9_]+)/g)) if (!used.has(match[1])) used.set(match[1], rel(file));
   }
   const ignore = new Set(sensor.ignore || []);
-  const signals = [...used].filter(([name]) => !documented.has(name) && !ignore.has(name)).map(([name, file]) => ({ severity: "P3", domain: sensor.domain, message: `environment variable ${name} is read (${file}) but not documented in .env.example`, key: name }));
+  const signals = [...used].filter(([name]) => !documented.has(name) && !ignore.has(name)).map(([name, file]) => ({ severity: "P3", domain: sensor.domain, message: `environment variable ${name} is read (${file}) but not documented in ${(sensor.documents || [".env.example"]).join(" / ")}`, key: name }));
   return { status: signals.length ? "SIGNAL" : "PASS", signals };
 }
 
