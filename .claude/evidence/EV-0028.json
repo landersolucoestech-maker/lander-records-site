@@ -1,0 +1,20 @@
+{
+  "id": "EV-0028",
+  "kind": "review",
+  "findings": [],
+  "criteria": [],
+  "mission": "M-20260925-002",
+  "ticket": "48f0ba33377c42002487c1b7d5f90302",
+  "summary": "final security review e673bf9..9f9dad1: no CRITICAL/HIGH; G-1,G-2,G-4 MEDIUM; G-3,G-5,G-6,G-7 LOW",
+  "result": "PASS",
+  "commit": "9f9dad1386fc168c83e3d07974a090578b0dd3f1",
+  "dirty": false,
+  "fingerprint": "b8a4220e3f9b2e959c13e276ef7286ff867716cf65e091af002bcd41ad93d533",
+  "environment": "review by security-reviewer; report .claude/reports/reviews/2026-09-25-security-reviewer-final.md",
+  "outputSha256": "b25f2c3f6912a9f1e866ae98bb36f6851ac0551e7a10cd9d2e1ee1c39eb9bb06",
+  "excerpt": "# Review — security-reviewer — e673bf9..9f9dad1\n\nREVIEW-TICKET: 48f0ba33377c42002487c1b7d5f90302\n\nRead-only review in a clone pinned to 9f9dad1. Checks: verify-integrity PASS (only package.json and cms-ci.yml entries changed); gate security PASS 8/8; client-ip + outbox policy tests 10/10; hook tests 3/3; scripted guard evaluate() and hook stdin tests; clone-only edit of dev-preview.yml to test the gate.\n\n## Findings\n- G-1 MEDIUM (introduced control): gates/security.json preview-bypass checks are string-presence only; step-level `DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}`, `secrets['…']` syntax and `LANDER_MOCK_DATA: \"0\"` still PASS; bypass function could gain an extra `||` clause; rules/security.md overstates enforcement.\n- G-2 MEDIUM (introduced): guard hook allows `git push --force-with-lease` / `--force-if-includes` to protected branches, contradicting ADR-0007 point 3; wrapper bypasses (bash -c, eval, /bin/rm, find -exec, git switch --discard-changes, quoted `.en''v`, node -e process.env, set) accepted per \"guardrail not sandbox\".\n- G-3 LOW: hook missing/crashing exits 1 (non-blocking in Claude Code); false positives: `git restore --staged .`, `.env.*.example` variants.\n- G-4 MEDIUM (residual, improved): X-Real-IP trusted unconditionally; safe in reference nginx topology; spoofable where a proxy does not overwrite it; CDN edge shares bucket; 'unknown' shared bucket. Suggest explicit trusted-proxy config failing closed in production; leads/rate-limit.md should say \"must overwrite\".\n- G-5 LOW: dead-letter log includes error.message; malformed webhook URL message includes full URL (token in query would be logged).\n- G-6 LOW: 401/403 dead-letter immediately; one-sided secret rotation dead-letters every lead with no replay command.\n- G-7 LOW (pre-existing): webhook fetch lacks redirect:\"error\"; 307/308 re-POSTs signed PII body.\n- G-8 INFO: Soundcharts redirect/timeouts correct; no token in errors.\nNo issues: migration 0018 additive; ContactForm renders errors as text; CI adds only OS checks.\n\nVERDICT: PASS\n",
+  "recordedAt": "2026-09-25T15:26:21.570Z",
+  "producer": "security-reviewer",
+  "prevHash": "80f46c31894978f0875975e3531f0695b99ea4502ef04900f883e0ca2eb80ae8",
+  "hash": "e4505266d0a540566b8d1ff9e07bf3362ae6125db72e963eabd8a6040ae487c8"
+}

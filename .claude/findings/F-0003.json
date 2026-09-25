@@ -101,9 +101,46 @@
       "at": "2026-09-25T15:22:03.535Z",
       "by": "product-flows-auditor",
       "note": "reaudit: DB-backed identity sync (red on base)"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-25T15:27:52.964Z",
+      "by": "adversarial-reviewer",
+      "note": "reopened: Lander identity path — UUID persisted before fetch; fetch failure leaves old-identity metrics permanently (EV-0029 review)"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-25T18:51:19.677Z",
+      "by": "identity-auditor",
+      "note": "new identity persisted before fetch; purge only after successful fetch — reproduced in tests/integration/soundcharts-identity-sync.mjs scenarios 6/7 (red on 9f9dad1)"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-25T18:51:19.769Z",
+      "by": "backend-lead",
+      "note": "persist identity + purge atomically before fetching (both paths); commit 2efe304"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-25T18:51:19.858Z",
+      "by": "qa-lead",
+      "note": "DB-backed scenarios green"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-25T18:52:06.604Z",
+      "by": "qa-lead",
+      "note": "proof re-run on current code"
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-25T18:52:06.737Z",
+      "by": "product-flows-auditor",
+      "note": "reaudit: detecting scenario/suite green on current code"
     }
   ],
   "evidenceRecords": [
-    "EV-0019"
+    "EV-0019",
+    "EV-0032"
   ]
 }

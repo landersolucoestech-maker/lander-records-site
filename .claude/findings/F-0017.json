@@ -1,0 +1,98 @@
+{
+  "confidence": "confirmed",
+  "dependencies": [],
+  "risk": "low",
+  "status": "RESOLVED",
+  "title": "OS completion could pass without real verification (unanchored mission/proofs, test-runner env masking)",
+  "severity": "P1",
+  "domain": "architecture",
+  "evidence": [
+    "architecture final review N2/N3/M-NEW-2",
+    "adversarial final review finding 3",
+    "new completion test: failing child suite reported PASS under NODE_TEST_CONTEXT"
+  ],
+  "rootCause": "Verify/proof commands matched by substring; mission.yml outside the fingerprint and git anchoring; executed commands inherited the parent test-runner context.",
+  "producer": [
+    ".claude/runtime/lib/evidence.mjs",
+    ".claude/runtime/lib/completion.mjs",
+    ".claude/runtime/mission.mjs"
+  ],
+  "consumers": [
+    "completion verdict"
+  ],
+  "affectedFlow": "mission completion",
+  "invariantViolated": "NO EVIDENCE = NO CLAIM",
+  "blastRadius": "a mission verdict not backed by re-executed checks",
+  "autofix": {
+    "eligible": true,
+    "reason": "runtime-only change with sandbox tests"
+  },
+  "correction": "lib/commands.mjs anchored allow-list; committed mission definition; derived mission findings; childEnv scrubbing; completion tests",
+  "requiredTests": [
+    "npm run test:claude-os"
+  ],
+  "regressionRisk": "medium — stricter policy may reject legitimate commands (covered by tests)",
+  "impactLevel": "L4",
+  "producerAgent": "architecture-reviewer",
+  "id": "F-0017",
+  "discoveredAt": "2026-09-25T18:51:05.144Z",
+  "history": [
+    {
+      "status": "DISCOVERED",
+      "at": "2026-09-25T18:51:05.144Z",
+      "by": "architecture-reviewer",
+      "note": "independent architecture review"
+    },
+    {
+      "status": "TRIAGED",
+      "at": "2026-09-25T18:51:21.169Z",
+      "by": "autonomous-controller",
+      "note": "confirmed from independent review report"
+    },
+    {
+      "status": "READY",
+      "at": "2026-09-25T18:51:21.259Z",
+      "by": "autonomous-controller",
+      "note": "autofix eligible"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-25T18:51:21.353Z",
+      "by": "owner",
+      "note": "traced in code"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-25T18:51:21.441Z",
+      "by": "owner",
+      "note": "root cause per finding"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-25T18:51:21.539Z",
+      "by": "owner",
+      "note": "fix in commits 9221b77 / 0eec60b"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-25T18:51:21.631Z",
+      "by": "qa-lead",
+      "note": "tests added and green locally"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-25T18:52:07.381Z",
+      "by": "qa-lead",
+      "note": "proof re-run on current code"
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-25T18:52:07.533Z",
+      "by": "product-flows-auditor",
+      "note": "reaudit: detecting scenario/suite green on current code"
+    }
+  ],
+  "evidenceRecords": [
+    "EV-0035"
+  ]
+}

@@ -3,10 +3,10 @@
 {
   "derivedFrom": ".claude/findings/*.json",
   "totals": {
-    "all": 14,
+    "all": 19,
     "open": 0,
-    "parked": 5,
-    "closed": 9,
+    "parked": 6,
+    "closed": 13,
     "ready": 0
   },
   "readyQueue": [],
@@ -44,7 +44,8 @@
       "priority": 660,
       "decision": null,
       "evidenceRecords": [
-        "EV-0019"
+        "EV-0019",
+        "EV-0032"
       ]
     },
     {
@@ -169,6 +170,64 @@
       "priority": 110,
       "decision": "DEC-0005",
       "evidenceRecords": []
+    },
+    {
+      "id": "F-0015",
+      "title": "Signed lead webhook followed redirects, dead-lettered 401/403 immediately, logged raw error text",
+      "severity": "P2",
+      "domain": "leads",
+      "status": "RESOLVED",
+      "priority": 380,
+      "decision": null,
+      "evidenceRecords": [
+        "EV-0034"
+      ]
+    },
+    {
+      "id": "F-0016",
+      "title": "OS independence scan read its own evidence excerpts and failed os:validate/CI at HEAD",
+      "severity": "P1",
+      "domain": "architecture",
+      "status": "RESOLVED",
+      "priority": 560,
+      "decision": null,
+      "evidenceRecords": [
+        "EV-0035"
+      ]
+    },
+    {
+      "id": "F-0017",
+      "title": "OS completion could pass without real verification (unanchored mission/proofs, test-runner env masking)",
+      "severity": "P1",
+      "domain": "architecture",
+      "status": "RESOLVED",
+      "priority": 560,
+      "decision": null,
+      "evidenceRecords": [
+        "EV-0035"
+      ]
+    },
+    {
+      "id": "F-0018",
+      "title": "Contact rate limit trusts X-Real-IP unconditionally; correct only behind a proxy that overwrites it",
+      "severity": "P2",
+      "domain": "security",
+      "status": "NEEDS_PRODUCT_DECISION",
+      "priority": 370,
+      "decision": "DEC-0006",
+      "evidenceRecords": []
+    },
+    {
+      "id": "F-0019",
+      "title": "Guardian hook and security gate had bypassable forms (force-with-lease, sh -c, string-only preview checks)",
+      "severity": "P2",
+      "domain": "security",
+      "status": "RESOLVED",
+      "priority": 410,
+      "decision": null,
+      "evidenceRecords": [
+        "EV-0035"
+      ]
     }
   ]
 }

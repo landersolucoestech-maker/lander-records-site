@@ -1,0 +1,31 @@
+{
+  "id": "EV-0033",
+  "kind": "test",
+  "findings": [
+    "F-0005",
+    "F-0015"
+  ],
+  "criteria": [
+    "C-004"
+  ],
+  "mission": "M-20260925-002",
+  "summary": "node --test tests/unit/contact-outbox-policy.test.mjs -> PASS",
+  "command": "node --test tests/unit/contact-outbox-policy.test.mjs",
+  "argv": [
+    "node",
+    "--test",
+    "tests/unit/contact-outbox-policy.test.mjs"
+  ],
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "0eec60bb0feef287737cd8aa5ecd2e00a1bc5bb1",
+  "dirty": false,
+  "fingerprint": "c1a0170085e13e6ad5a60fdbc9be227e86c852408e5669aea11d81508d60dd74",
+  "environment": "node v22.22.2 (outside engines >=24 <25) linux; duration 291ms",
+  "outputSha256": "73eb7c92563ed89920e462c53aa6f496272c0e3858afe941a0beda9ed38259a7",
+  "excerpt": "TAP version 13\n# (node:9134) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/lander-records-site/lib/contact-outbox-policy.ts is not specified and it doesn't parse as CommonJS.\n# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.\n# To eliminate this warning, add \"type\": \"module\" to /home/user/lander-records-site/package.json.\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# Subtest: transient failures back off exponentially and stay retryable\nok 1 - transient failures back off exponentially and stay retryable\n  ---\n  duration_ms: 2.465684\n  type: 'test'\n  ...\n# Subtest: backoff is capped\nok 2 - backoff is capped\n  ---\n  duration_ms: 0.238545\n  type: 'test'\n  ...\n# Subtest: the retry budget ends in dead letter instead of retrying forever\nok 3 - the retry budget ends in dead letter instead of retrying forever\n  ---\n  duration_ms: 0.15134\n  type: 'test'\n  ...\n# Subtest: permanent receiver rejections dead-letter immediately; throttling does not\nok 4 - permanent receiver rejections dead-letter immediately; throttling does not\n  ---\n  duration_ms: 0.271149\n  type: 'test'\n  ...\n# Subtest: credential rejections stay retryable within the budget (one-sided secret rotation)\nok 5 - credential rejections stay retryable within the budget (one-sided secret rotation)\n  ---\n  duration_ms: 0.31207\n  type: 'test'\n  ...\n# Subtest: webhook delivery refuses redirects and never logs the raw error text\nok 6 - webhook delivery refuses redirects and never logs the raw error text\n  ---\n  duration_ms: 0.662813\n  type: 'test'\n  ...\n# Subtest: dispatch persists the policy decision and schema/migration expose dead_letter\nok 7 - dispatch persists the policy decision and schema/migration expose dead_letter\n  ---\n  duration_ms: 0.600998\n  type: 'test'\n  ...\n1..7\n# tests 7\n# suites 0\n# pass 7\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 186.301656\n",
+  "recordedAt": "2026-09-25T18:51:32.083Z",
+  "producer": "claude-code",
+  "prevHash": "335067e1d154d20df007c8641ef20ae3ac6b602de44eb1fc4a7f17b147e06dbc",
+  "hash": "29b866608a80802cb411ac7da393b1b3786f89c127ef40619c4f14d5e23fad02"
+}

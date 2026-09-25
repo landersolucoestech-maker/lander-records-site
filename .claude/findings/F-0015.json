@@ -1,0 +1,99 @@
+{
+  "confidence": "confirmed",
+  "dependencies": [],
+  "risk": "low",
+  "status": "RESOLVED",
+  "title": "Signed lead webhook followed redirects, dead-lettered 401/403 immediately, logged raw error text",
+  "severity": "P2",
+  "domain": "leads",
+  "evidence": [
+    "security-reviewer final report G-5/G-6/G-7 (.claude/reports/reviews/2026-09-25-security-reviewer-final.md)",
+    "lib/contact.ts (9f9dad1): fetch without redirect option; dead-letter log with error.message",
+    "lib/contact-outbox-policy.ts (9f9dad1): 401/403 permanent"
+  ],
+  "rootCause": "Delivery hardening covered timeouts and status classes but not redirect policy, credential-rejection semantics or log redaction.",
+  "producer": [
+    "lib/contact.ts#dispatchOutboxEvent",
+    "lib/contact-outbox-policy.ts"
+  ],
+  "consumers": [
+    "webhook receiver",
+    "operators reading logs"
+  ],
+  "affectedFlow": "contact → outbox → receiver",
+  "invariantViolated": "signed personal data only goes to the configured receiver; operational auth faults are recoverable; no secrets in logs",
+  "blastRadius": "PII re-posted to redirect targets; all leads dead-lettered on one-sided secret rotation; URL tokens in logs",
+  "autofix": {
+    "eligible": true,
+    "reason": "local policy/transport change with tests"
+  },
+  "correction": "redirect:'error'; 401/403 retryable within budget; status-class-only dead-letter log",
+  "requiredTests": [
+    "tests/unit/contact-outbox-policy.test.mjs",
+    "tests/integration/contact-outbox-delivery.mjs"
+  ],
+  "regressionRisk": "low",
+  "impactLevel": "L5",
+  "producerAgent": "security-reviewer",
+  "id": "F-0015",
+  "discoveredAt": "2026-09-25T18:51:04.973Z",
+  "history": [
+    {
+      "status": "DISCOVERED",
+      "at": "2026-09-25T18:51:04.973Z",
+      "by": "security-reviewer",
+      "note": "independent security review"
+    },
+    {
+      "status": "TRIAGED",
+      "at": "2026-09-25T18:51:19.970Z",
+      "by": "autonomous-controller",
+      "note": "confirmed from independent review report"
+    },
+    {
+      "status": "READY",
+      "at": "2026-09-25T18:51:20.060Z",
+      "by": "autonomous-controller",
+      "note": "autofix eligible"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-25T18:51:20.160Z",
+      "by": "owner",
+      "note": "traced in code"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-25T18:51:20.261Z",
+      "by": "owner",
+      "note": "root cause per finding"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-25T18:51:20.360Z",
+      "by": "owner",
+      "note": "fix in commits 9221b77 / 0eec60b"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-25T18:51:20.456Z",
+      "by": "qa-lead",
+      "note": "tests added and green locally"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-25T18:52:06.860Z",
+      "by": "qa-lead",
+      "note": "proof re-run on current code"
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-25T18:52:06.986Z",
+      "by": "product-flows-auditor",
+      "note": "reaudit: detecting scenario/suite green on current code"
+    }
+  ],
+  "evidenceRecords": [
+    "EV-0034"
+  ]
+}

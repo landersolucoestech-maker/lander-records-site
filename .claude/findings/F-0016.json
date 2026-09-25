@@ -1,0 +1,97 @@
+{
+  "confidence": "confirmed",
+  "dependencies": [],
+  "risk": "low",
+  "status": "RESOLVED",
+  "title": "OS independence scan read its own evidence excerpts and failed os:validate/CI at HEAD",
+  "severity": "P1",
+  "domain": "architecture",
+  "evidence": [
+    "adversarial + architecture final reviews (N1)",
+    "EV-0027 excerpt contains a test title naming the other pack"
+  ],
+  "rootCause": "The scan covered record directories (run output), not only configuration/code.",
+  "producer": [
+    ".claude/runtime/lib/pack.mjs"
+  ],
+  "consumers": [
+    "npm run os:validate",
+    "npm run test:claude-os",
+    "cms-ci"
+  ],
+  "affectedFlow": "OS integrity / CI",
+  "invariantViolated": "the OS passes its own validation after recording evidence",
+  "blastRadius": "CI red on every commit carrying such evidence",
+  "autofix": {
+    "eligible": true,
+    "reason": "scope the scan to non-record paths; test"
+  },
+  "correction": "skip record directories in the independence scan (single RECORD_DIRS definition shared with tests)",
+  "requiredTests": [
+    "npm run test:claude-os"
+  ],
+  "regressionRisk": "low",
+  "impactLevel": "L4",
+  "producerAgent": "adversarial-reviewer",
+  "id": "F-0016",
+  "discoveredAt": "2026-09-25T18:51:05.061Z",
+  "history": [
+    {
+      "status": "DISCOVERED",
+      "at": "2026-09-25T18:51:05.061Z",
+      "by": "adversarial-reviewer",
+      "note": "independent adversarial/architecture review"
+    },
+    {
+      "status": "TRIAGED",
+      "at": "2026-09-25T18:51:20.568Z",
+      "by": "autonomous-controller",
+      "note": "confirmed from independent review report"
+    },
+    {
+      "status": "READY",
+      "at": "2026-09-25T18:51:20.659Z",
+      "by": "autonomous-controller",
+      "note": "autofix eligible"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-25T18:51:20.745Z",
+      "by": "owner",
+      "note": "traced in code"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-25T18:51:20.842Z",
+      "by": "owner",
+      "note": "root cause per finding"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-25T18:51:20.962Z",
+      "by": "owner",
+      "note": "fix in commits 9221b77 / 0eec60b"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-25T18:51:21.071Z",
+      "by": "qa-lead",
+      "note": "tests added and green locally"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-25T18:52:07.114Z",
+      "by": "qa-lead",
+      "note": "proof re-run on current code"
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-25T18:52:07.256Z",
+      "by": "product-flows-auditor",
+      "note": "reaudit: detecting scenario/suite green on current code"
+    }
+  ],
+  "evidenceRecords": [
+    "EV-0035"
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "confidence": "confirmed",
+  "dependencies": [],
+  "risk": "low",
+  "status": "RESOLVED",
+  "title": "Guardian hook and security gate had bypassable forms (force-with-lease, sh -c, string-only preview checks)",
+  "severity": "P2",
+  "domain": "security",
+  "evidence": [
+    "security final review G-1/G-2/G-3",
+    "architecture final review N4"
+  ],
+  "rootCause": "Regex over the whole command/file instead of parsing command segments and checking exact code/config shapes.",
+  "producer": [
+    ".claude/runtime/hooks/guard-bash.mjs",
+    ".claude/gates/security.json",
+    ".claude/settings.json"
+  ],
+  "consumers": [
+    "Claude Code sessions",
+    "release/security gates"
+  ],
+  "affectedFlow": "guardian enforcement",
+  "invariantViolated": "documented guardian rules are enforced for ordinary command forms",
+  "blastRadius": "destructive git/history rewrite; secrets reaching the public preview unnoticed",
+  "autofix": {
+    "eligible": true,
+    "reason": "OS-only change with tests"
+  },
+  "correction": "segment/subcommand parsing with recursion into wrappers; exact bypass-function bodies and no-secret checks in the gate; || exit 2",
+  "requiredTests": [
+    "npm run test:claude-os"
+  ],
+  "regressionRisk": "low (false-positive tests included)",
+  "impactLevel": "L5",
+  "producerAgent": "security-reviewer",
+  "id": "F-0019",
+  "discoveredAt": "2026-09-25T18:51:05.330Z",
+  "history": [
+    {
+      "status": "DISCOVERED",
+      "at": "2026-09-25T18:51:05.330Z",
+      "by": "security-reviewer",
+      "note": "independent security/architecture review"
+    },
+    {
+      "status": "TRIAGED",
+      "at": "2026-09-25T18:51:21.724Z",
+      "by": "autonomous-controller",
+      "note": "confirmed from independent review report"
+    },
+    {
+      "status": "READY",
+      "at": "2026-09-25T18:51:21.826Z",
+      "by": "autonomous-controller",
+      "note": "autofix eligible"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-25T18:51:21.918Z",
+      "by": "owner",
+      "note": "traced in code"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-25T18:51:22.010Z",
+      "by": "owner",
+      "note": "root cause per finding"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-25T18:51:22.128Z",
+      "by": "owner",
+      "note": "fix in commits 9221b77 / 0eec60b"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-25T18:51:22.227Z",
+      "by": "qa-lead",
+      "note": "tests added and green locally"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-25T18:52:07.680Z",
+      "by": "qa-lead",
+      "note": "proof re-run on current code"
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-25T18:52:07.818Z",
+      "by": "product-flows-auditor",
+      "note": "reaudit: detecting scenario/suite green on current code"
+    }
+  ],
+  "evidenceRecords": [
+    "EV-0035"
+  ]
+}

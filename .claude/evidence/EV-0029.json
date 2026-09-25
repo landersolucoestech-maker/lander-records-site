@@ -1,0 +1,22 @@
+{
+  "id": "EV-0029",
+  "kind": "review",
+  "findings": [
+    "F-0003"
+  ],
+  "criteria": [],
+  "mission": "M-20260925-002",
+  "ticket": "14a70d0afb35bebe7307187673fd92a1",
+  "summary": "final adversarial review: F-0003 Lander path still reproduces; OS independence scan breaks on evidence excerpts",
+  "result": "FAIL",
+  "commit": "9f9dad1386fc168c83e3d07974a090578b0dd3f1",
+  "dirty": false,
+  "fingerprint": "b8a4220e3f9b2e959c13e276ef7286ff867716cf65e091af002bcd41ad93d533",
+  "environment": "review by adversarial-reviewer; report .claude/reports/reviews/2026-09-25-adversarial-reviewer-final.md",
+  "outputSha256": "325a94faa46cc6f778f7a18702e7daa2b5ffa42446b3ffacfc09c4237bd9259f",
+  "excerpt": "# Review — adversarial-reviewer — e673bf9..9f9dad1\n\nREVIEW-TICKET: 14a70d0afb35bebe7307187673fd92a1\n\nRead-only; experiments in a clone and the disposable DB. tsc exit 0; npm test 165/165; os:validate exit 1 and test:claude-os 16/18 at HEAD (independence scan hits EV-0027 excerpt); completion --no-exec D; live server canonicals/og:url match sitemap.\n\n## Findings\n1. HIGH — F-0003 not fixed for the Lander Records identity (lib/integrations/sync.ts:106,130,141): new UUID persisted before metrics fetch; if the fetch fails (503/429/timeout) old-identity cache rows remain, and the next sync no longer sees a UUID change, so stale youtube:subscribers from the old identity stays on Home indefinitely. Reproduced against the real DB. Test only covers the Lander unresolved path.\n2. HIGH — HEAD fails its own OS gates/CI: independence regex scans evidence excerpts; EV-0027 (test:claude-os output) contains the test name mentioning the other pack; every completion re-run re-creates it.\n3. MEDIUM — PROOF_COMMAND unanchored: `echo npm test`, `true npm test`, `node tests/../x`, `node --test --test-name-pattern=__nothing__` pass; criterion --verify unrestricted; ADR-0007 overclaims.\n4. LOW — browser/probe criteria not bound to the build the server runs.\n5. LOW (pre-existing assumption) — X-Real-IP trusted without source check; cloudflared preview tunnels directly.\nNo issues: buildMetadata callers, sitemap/canonical, ContactForm, outbox selection/classification, migration 0018, artist identity path, schema contract, review verdict parsing.\n\nVERDICT: FAIL\n",
+  "recordedAt": "2026-09-25T15:27:52.874Z",
+  "producer": "adversarial-reviewer",
+  "prevHash": "e4505266d0a540566b8d1ff9e07bf3362ae6125db72e963eabd8a6040ae487c8",
+  "hash": "5e8034f8e325d07db91b338203397fb63fa50eae3f2de13469860abceac47f5e"
+}

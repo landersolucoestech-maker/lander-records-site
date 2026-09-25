@@ -1,0 +1,20 @@
+{
+  "id": "EV-0030",
+  "kind": "review",
+  "findings": [],
+  "criteria": [],
+  "mission": "M-20260925-002",
+  "ticket": "2fbb5f05153b7faf0c2d38d4c7739228",
+  "summary": "third OS review: N1 independence scan vs records, N2 mission.yml unanchored, N3 proof pattern, N4 hook forms, no completion execute test",
+  "result": "FAIL",
+  "commit": "9f9dad1386fc168c83e3d07974a090578b0dd3f1",
+  "dirty": false,
+  "fingerprint": "b8a4220e3f9b2e959c13e276ef7286ff867716cf65e091af002bcd41ad93d533",
+  "environment": "review by architecture-reviewer; report .claude/reports/reviews/2026-09-25-architecture-reviewer-final.md",
+  "outputSha256": "e0a47d7b636eb7f7ff506021378d88d1dc83847a2bf4a5c4a43dd425ba5c7744",
+  "excerpt": "# Review — architecture-reviewer (third) — e673bf9..9f9dad1\n\nREVIEW-TICKET: 2fbb5f05153b7faf0c2d38d4c7739228\n\nRead-only; experiments in a clone. os:validate exit 1 (EV-0027 excerpt), OS tests 16/18, completion --no-exec D. Execute path not runnable in the clone (no node_modules/DB/server).\n\nPrior items: H1 PARTIAL (gate re-run CLOSED; reviews CLOSED under ADR-0007 §5; criteria can be `true` OPEN), H3 PARTIAL, H5 PARTIAL, H7 PARTIAL (14 prior bypasses blocked; false positives gone), M1 CLOSED, M2 PARTIAL, M4 CLOSED, M9 CLOSED, new-1 CLOSED, new-2 CLOSED, new-5 PARTIAL, new-6 CLOSED under ADR.\n\nNew:\n- N1 HIGH: independence scan reads record excerpts; EV-0027 breaks os:validate/test:claude-os/CI; recurs on each completion run.\n- N2 HIGH: criterion --verify unconstrained; state/mission.yml is a record path (outside fingerprint, commit check and git anchoring) so criteria/finding list can be hand-edited to `true` / emptied before completion.\n- N3 MEDIUM: PROOF_COMMAND unanchored (`true npm test`, `node -e 0 \"node --test\"`); proofs are not finding-specific and docs call them \"real\".\n- N4 MEDIUM: hook allows `git push origin HEAD:main --force-with-lease`, `sh -c`/`bash -c`, `$( )`, `rm -rf <absolute repo root>`, `rm -rf ..`, `find . -delete`.\n- M-NEW-2 MEDIUM: no test exercises completion re-execution.\n- L1 LOW: argv fallback splits on spaces. L2 LOW: completion accepts any ticket string (consistent with ADR-0007).\n\nVERDICT: FAIL\n",
+  "recordedAt": "2026-09-25T15:28:56.170Z",
+  "producer": "architecture-reviewer",
+  "prevHash": "5e8034f8e325d07db91b338203397fb63fa50eae3f2de13469860abceac47f5e",
+  "hash": "89136271194b9558aade9dee364a7fdb7b23983bf43310048facc7db0592023f"
+}

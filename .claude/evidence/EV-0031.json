@@ -1,0 +1,36 @@
+{
+  "id": "EV-0031",
+  "kind": "browser",
+  "findings": [
+    "F-0001",
+    "F-0010"
+  ],
+  "criteria": [
+    "C-001"
+  ],
+  "mission": "M-20260925-002",
+  "summary": "env E2E_CONTACT_SUBMIT=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3100 PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium-1194/chrome-linux/chrome npx playwright test tests/browser/contact-form.spec.ts -> PASS",
+  "command": "env E2E_CONTACT_SUBMIT=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3100 PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium-1194/chrome-linux/chrome npx playwright test tests/browser/contact-form.spec.ts",
+  "argv": [
+    "env",
+    "E2E_CONTACT_SUBMIT=1",
+    "PLAYWRIGHT_BASE_URL=http://127.0.0.1:3100",
+    "PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+    "npx",
+    "playwright",
+    "test",
+    "tests/browser/contact-form.spec.ts"
+  ],
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "0eec60bb0feef287737cd8aa5ecd2e00a1bc5bb1",
+  "dirty": false,
+  "fingerprint": "c1a0170085e13e6ad5a60fdbc9be227e86c852408e5669aea11d81508d60dd74",
+  "environment": "node v22.22.2 (outside engines >=24 <25) linux; duration 7564ms",
+  "outputSha256": "6ce3b473cd93e66501f47b4ce98cdf97bd8d09bf60fe5f10c8f8ba4094db86d7",
+  "excerpt": "\nRunning 2 tests using 1 worker\n\n  ✓  1 [chromium] › tests/browser/contact-form.spec.ts:13:5 › a valid contact submission is confirmed to the visitor and the form resets (3.1s)\n  ✓  2 [chromium] › tests/browser/contact-form.spec.ts:38:5 › a server rejection is shown as a readable message, not a parser error (1.3s)\n\n  2 passed (6.2s)\n",
+  "recordedAt": "2026-09-25T18:51:30.178Z",
+  "producer": "claude-code",
+  "prevHash": "89136271194b9558aade9dee364a7fdb7b23983bf43310048facc7db0592023f",
+  "hash": "ae0a8bb4dfd8f61361b012bf019bc95d31f48c90420d0654e308a1f99ef0c939"
+}

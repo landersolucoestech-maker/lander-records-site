@@ -1,0 +1,61 @@
+{
+  "confidence": "high",
+  "dependencies": [
+    "DEC-0006"
+  ],
+  "risk": "medium",
+  "status": "NEEDS_PRODUCT_DECISION",
+  "title": "Contact rate limit trusts X-Real-IP unconditionally; correct only behind a proxy that overwrites it",
+  "severity": "P2",
+  "domain": "security",
+  "evidence": [
+    "security-reviewer G-4, adversarial finding 5",
+    "lib/contact-client-ip.ts",
+    "infra/nginx/lander-records.conf.example (overwrites X-Real-IP)",
+    "docs/PRODUCTION_INFRASTRUCTURE.md (topology not decided)"
+  ],
+  "rootCause": "Trust in the client-IP header depends on an undecided deployment topology.",
+  "producer": [
+    "lib/contact-client-ip.ts"
+  ],
+  "consumers": [
+    "app/api/contact/route.ts rate limit"
+  ],
+  "affectedFlow": "contact spam protection",
+  "invariantViolated": "abuse controls key on a proxy-verified identity",
+  "blastRadius": "unbounded submissions where the header passes through; shared bucket behind a CDN",
+  "autofix": {
+    "eligible": false,
+    "reason": "the trusted proxy/header depends on the production topology (DEC-0006)"
+  },
+  "correction": "per DEC-0006: explicit trusted-header setting failing closed in production",
+  "requiredTests": [
+    "tests/unit/contact-client-ip.test.mjs"
+  ],
+  "regressionRisk": "n/a until decided",
+  "impactLevel": "L5",
+  "producerAgent": "security-reviewer",
+  "id": "F-0018",
+  "discoveredAt": "2026-09-25T18:51:05.237Z",
+  "history": [
+    {
+      "status": "DISCOVERED",
+      "at": "2026-09-25T18:51:05.237Z",
+      "by": "security-reviewer",
+      "note": "independent security review"
+    },
+    {
+      "status": "TRIAGED",
+      "at": "2026-09-25T18:51:22.329Z",
+      "by": "autonomous-controller",
+      "note": "P2 security, depends on deployment topology"
+    },
+    {
+      "status": "NEEDS_PRODUCT_DECISION",
+      "at": "2026-09-25T18:51:22.424Z",
+      "by": "autonomous-controller",
+      "note": "DEC-0006 opened"
+    }
+  ],
+  "decision": "DEC-0006"
+}
