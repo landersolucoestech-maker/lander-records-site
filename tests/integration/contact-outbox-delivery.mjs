@@ -17,11 +17,15 @@ const server = createServer((request, response) => {
   request.on("data", (chunk) => { body += chunk; });
   request.on("end", () => {
     received.push({ headers: request.headers, body });
-    response.writeHead(nextStatus, nextStatus === 308 ? { location: "http://127.0.0.1:9/elsewhere" } : { "content-type": "application/json" });
+    response.writeHead(nextStatus, nextStatus === 308 ? { location: `http://127.0.0.1:${redirectTarget.address().port}/elsewhere` } : { "content-type": "application/json" });
     response.end("{}");
   });
 });
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+// Redirect target: must never receive the signed body.
+let redirectHits = 0;
+const redirectTarget = createServer((request, response) => { redirectHits += 1; request.resume(); response.writeHead(200); response.end("{}"); });
+await new Promise((resolve) => redirectTarget.listen(0, "127.0.0.1", resolve));
 const secret = `outbox-secret-${randomUUID()}`;
 process.env.LANDER_SAAS_WEBHOOK_URL = `http://127.0.0.1:${server.address().port}/leads`;
 process.env.LANDER_SAAS_WEBHOOK_SECRET = secret;
@@ -85,7 +89,8 @@ try {
   const redirected = await outboxEvent();
   const before308 = received.length;
   await dispatchOutboxEvent(redirected);
-  assert.equal(received.length, before308 + 1, "the signed body is not re-sent to a redirect target");
+  assert.equal(received.length, before308 + 1);
+  assert.equal(redirectHits, 0, "the signed body must not be re-sent to a redirect target");
   assert.equal((await state(redirected)).status, "failed");
 
   // Retry budget exhausted: dead letter.
@@ -112,4 +117,5 @@ try {
   await client.end();
   await globalThis.__landerRecordsDb?.client?.end();
   server.close();
+  redirectTarget.close();
 }
