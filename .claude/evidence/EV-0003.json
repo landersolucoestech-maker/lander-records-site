@@ -1,0 +1,23 @@
+{
+  "id": "EV-0003",
+  "kind": "integration",
+  "findings": [
+    "F-0003",
+    "F-0004"
+  ],
+  "criteria": [
+    "C-003"
+  ],
+  "summary": "identity sync against real PostgreSQL: purge on invalidation/replacement, keep on same-identity outage, timeouts",
+  "command": "node --no-warnings tests/integration/soundcharts-identity-sync.mjs",
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "bf968dd42591de8e530d909b0fc18be00cdf95d3",
+  "dirty": false,
+  "fingerprint": "be1ab704d8c9bb7a58a60ee180d858a1209c0c7b6b5339f7e6c76bdd1c1196c2",
+  "environment": "node v22.22.2 linux; duration 1123ms",
+  "outputSha256": "d38a21d9a07324fdf1c6d150f2a7650a7762f73a3872564d90c12f6640351c5b",
+  "excerpt": "Soundcharts identity sync checks passed: invalidated/replaced identities withdraw metrics, same-identity outages keep last known values, requests are time-bounded.\n",
+  "recordedAt": "2026-09-25T14:41:16.452Z",
+  "producer": "claude-code"
+}

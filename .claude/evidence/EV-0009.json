@@ -1,0 +1,23 @@
+{
+  "id": "EV-0009",
+  "kind": "runtime",
+  "findings": [
+    "F-0009",
+    "F-0010"
+  ],
+  "criteria": [
+    "C-006"
+  ],
+  "summary": "built server: every sitemap URL 200 and self-canonical",
+  "command": "env OS_BASE_URL=http://127.0.0.1:3100 node .claude/runtime/probes/seo-canonical.mjs",
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "bf968dd42591de8e530d909b0fc18be00cdf95d3",
+  "dirty": false,
+  "fingerprint": "be1ab704d8c9bb7a58a60ee180d858a1209c0c7b6b5339f7e6c76bdd1c1196c2",
+  "environment": "node v22.22.2 linux; duration 701ms",
+  "outputSha256": "38bbd0aac16ccfa74791fb70028e49e2d8b8ec3b08baae318f5b882efbda5b18",
+  "excerpt": "{\n  \"checked\": 11,\n  \"failures\": []\n}\n",
+  "recordedAt": "2026-09-25T14:41:20.680Z",
+  "producer": "claude-code"
+}

@@ -1,0 +1,54 @@
+{
+  "title": "npm run lint reports 12 react-hooks errors in admin managers (lint not in CI)",
+  "severity": "P3",
+  "domain": "frontend",
+  "status": "NEEDS_PRODUCT_DECISION",
+  "confidence": "confirmed",
+  "evidence": [
+    "npx eslint . on base e673bf9: 12 errors (react-hooks/set-state-in-effect ×11, immutability ×1) in ArtistManager, MediaLibrary, PageContentWorkbench, PostManager, AdminShell"
+  ],
+  "rootCause": "eslint-config-next 16 enables React Compiler hook rules; existing intentional client-hydration patterns predate them.",
+  "producer": [
+    "app/admin/(protected)/artists/ArtistManager.tsx",
+    "app/admin/components/AdminShell.tsx"
+  ],
+  "consumers": [
+    "developers running npm run lint"
+  ],
+  "affectedFlow": "code quality gate",
+  "invariantViolated": "lint passes",
+  "blastRadius": "lint unusable as a gate",
+  "dependencies": [
+    "DEC-0004"
+  ],
+  "autofix": {
+    "eligible": false,
+    "reason": "refactor of five admin managers with limited browser coverage vs scoping the rule is an owner policy decision"
+  },
+  "risk": "medium",
+  "correction": "per DEC-0004",
+  "requiredTests": [
+    "npm run lint",
+    "tests/browser/cms-preview.spec.ts"
+  ],
+  "regressionRisk": "hydration regressions in admin UI if refactored",
+  "impactLevel": "L2",
+  "producerAgent": "consistency-lead",
+  "id": "F-0013",
+  "discoveredAt": "2026-09-25T14:43:42.943Z",
+  "history": [
+    {
+      "status": "TRIAGED",
+      "at": "2026-09-25T14:43:42.943Z",
+      "by": "consistency-lead",
+      "note": "baseline failure KF-002 reproduced on base"
+    },
+    {
+      "status": "NEEDS_PRODUCT_DECISION",
+      "at": "2026-09-25T14:43:43.026Z",
+      "by": "autonomous-controller",
+      "note": "DEC-0004 opened: lint policy for admin hydration patterns"
+    }
+  ],
+  "decision": "DEC-0004"
+}

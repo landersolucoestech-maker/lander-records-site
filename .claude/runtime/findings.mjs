@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// Finding lifecycle CLI: list | show ID | transition ID --to STATE --note TEXT [--by AGENT] [--evidence EV-0001] | index | validate
-import { args, run, OsError } from "./lib/io.mjs";
-import { loadFindings, priorityScore, saveFinding, transition, validateFinding, writeIndex, readyQueue } from "./lib/findings.mjs";
+// Finding lifecycle CLI: list | ready | create --file F | show ID | transition ID --to STATE --note TEXT [--by AGENT] [--evidence EV-0001] | index | validate
+import fs from "node:fs";
+import { args, run, OsError, nextId, nowIso } from "./lib/io.mjs";
+import { FINDINGS_DIR, loadFindings, priorityScore, saveFinding, transition, validateFinding, writeIndex, readyQueue } from "./lib/findings.mjs";
 
 run(() => {
   const a = args();
@@ -21,6 +22,18 @@ run(() => {
     console.log(`FINDINGS_VALID=${all.length}`);
     return;
   }
+  if (command === "create") {
+    // create --file draft.json : assigns the next id, stamps discovery, validates the contract.
+    if (!a.file) throw new OsError("USAGE", "create --file <draft.json> (see templates/finding.json)");
+    const draft = JSON.parse(fs.readFileSync(a.file, "utf8"));
+    const at = nowIso();
+    const finding = { ...draft, id: nextId(FINDINGS_DIR, "F"), discoveredAt: at, history: [{ status: draft.status, at, by: draft.producerAgent, note: draft.createNote || "created" }] };
+    delete finding.createNote;
+    saveFinding(finding);
+    writeIndex();
+    console.log(finding.id);
+    return;
+  }
   if (command === "index") { writeIndex(); console.log("state/findings.yml regenerated"); return; }
   if (command === "transition") {
     const f = all.find((item) => item.id === a._[1]);
@@ -35,5 +48,5 @@ run(() => {
     console.log(`${next.id}: ${f.status} -> ${next.status}`);
     return;
   }
-  throw new OsError("USAGE", "usage: findings.mjs list|ready|show|validate|index|transition");
+  throw new OsError("USAGE", "usage: findings.mjs list|ready|show|validate|index|create|transition");
 });

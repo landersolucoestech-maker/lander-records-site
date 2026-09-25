@@ -1,0 +1,81 @@
+{
+  "title": "Media Kit layout contract test pins typography values superseded by ff2756e",
+  "severity": "P3",
+  "domain": "frontend",
+  "status": "REAUDITING",
+  "confidence": "confirmed",
+  "evidence": [
+    "npm test on base e673bf9: 2 failures in tests/unit/media-kit-layout-contract.test.mjs",
+    "git show ff2756e ('make live preview typography readable at editor scale') changes exactly the 9 pinned font-size values; test not updated"
+  ],
+  "rootCause": "Deliberate design commit ff2756e updated MediaKitPreview.module.css without updating the pinned contract values.",
+  "producer": [
+    "commit ff2756e"
+  ],
+  "consumers": [
+    "npm test",
+    "CI 'Security and hardening tests' step"
+  ],
+  "affectedFlow": "unit suite / CI",
+  "invariantViolated": "contract tests reflect the current approved design",
+  "blastRadius": "npm test red on dev; CI step fails",
+  "dependencies": [],
+  "autofix": {
+    "eligible": true,
+    "reason": "later explicit design intent; only values changed by that commit are re-pinned; wrap/no-clip rules untouched"
+  },
+  "risk": "low",
+  "correction": "re-pin the 9 font-size values to the ff2756e values",
+  "requiredTests": [
+    "tests/unit/media-kit-layout-contract.test.mjs"
+  ],
+  "regressionRisk": "none",
+  "impactLevel": "L1",
+  "producerAgent": "regression-lead",
+  "id": "F-0012",
+  "discoveredAt": "2026-09-25T14:43:42.844Z",
+  "history": [
+    {
+      "status": "TRIAGED",
+      "at": "2026-09-25T14:43:42.844Z",
+      "by": "regression-lead",
+      "note": "baseline failure KF-001 reproduced on base"
+    },
+    {
+      "status": "READY",
+      "at": "2026-09-25T14:43:43.107Z",
+      "by": "regression-lead",
+      "note": "READY: see finding evidence; re-pinned values from ff2756e"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-25T14:43:43.181Z",
+      "by": "regression-lead",
+      "note": "INVESTIGATING: see finding evidence; re-pinned values from ff2756e"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-25T14:43:43.274Z",
+      "by": "regression-lead",
+      "note": "ROOT_CAUSE_CONFIRMED: see finding evidence; re-pinned values from ff2756e"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-25T14:43:43.366Z",
+      "by": "regression-lead",
+      "note": "FIXING: see finding evidence; re-pinned values from ff2756e"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-25T14:43:43.454Z",
+      "by": "regression-lead",
+      "note": "VALIDATING: see finding evidence; re-pinned values from ff2756e"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-25T14:43:43.537Z",
+      "by": "regression-lead",
+      "note": "REAUDITING: see finding evidence; re-pinned values from ff2756e"
+    }
+  ]
+}

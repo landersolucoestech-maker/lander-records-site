@@ -1,0 +1,22 @@
+{
+  "id": "EV-0005",
+  "kind": "integration",
+  "findings": [
+    "F-0005"
+  ],
+  "criteria": [
+    "C-004"
+  ],
+  "summary": "signed delivery, backoff, dead letter, no replay (real PostgreSQL + loopback receiver)",
+  "command": "node --no-warnings tests/integration/contact-outbox-delivery.mjs",
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "bf968dd42591de8e530d909b0fc18be00cdf95d3",
+  "dirty": false,
+  "fingerprint": "be1ab704d8c9bb7a58a60ee180d858a1209c0c7b6b5339f7e6c76bdd1c1196c2",
+  "environment": "node v22.22.2 linux; duration 1227ms",
+  "outputSha256": "9e5cd7c832092d3c29e663771894490bb2ea58ccb3b5cf259dc4eedc56b020ef",
+  "excerpt": "Contact outbox delivery checks passed: signed delivery, exponential retry, permanent-rejection and exhausted-budget dead letter, no dead-letter replay.\ncontact_outbox_dead_letter {\"outboxId\":\"a6605857-94d4-4555-a3f8-30820bc0e168\",\"attempts\":1,\"error\":\"SaaS webhook returned 422\"}\ncontact_outbox_dead_letter {\"outboxId\":\"ace68fde-fb16-4bf6-9aee-eb29d20bf21b\",\"attempts\":8,\"error\":\"SaaS webhook returned 503\"}\n",
+  "recordedAt": "2026-09-25T14:41:18.127Z",
+  "producer": "claude-code"
+}

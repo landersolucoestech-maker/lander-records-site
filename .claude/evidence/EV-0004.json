@@ -1,0 +1,22 @@
+{
+  "id": "EV-0004",
+  "kind": "test",
+  "findings": [
+    "F-0005"
+  ],
+  "criteria": [
+    "C-004"
+  ],
+  "summary": "outbox policy unit tests",
+  "command": "node --test tests/unit/contact-outbox-policy.test.mjs",
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "bf968dd42591de8e530d909b0fc18be00cdf95d3",
+  "dirty": false,
+  "fingerprint": "be1ab704d8c9bb7a58a60ee180d858a1209c0c7b6b5339f7e6c76bdd1c1196c2",
+  "environment": "node v22.22.2 linux; duration 263ms",
+  "outputSha256": "f0b2e4eddaa7d0ad0028f3190ead274db220148d5e722439c0e18680558161f1",
+  "excerpt": "TAP version 13\n# (node:3849) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/lander-records-site/lib/contact-outbox-policy.ts is not specified and it doesn't parse as CommonJS.\n# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.\n# To eliminate this warning, add \"type\": \"module\" to /home/user/lander-records-site/package.json.\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# Subtest: transient failures back off exponentially and stay retryable\nok 1 - transient failures back off exponentially and stay retryable\n  ---\n  duration_ms: 2.224263\n  type: 'test'\n  ...\n# Subtest: backoff is capped\nok 2 - backoff is capped\n  ---\n  duration_ms: 0.215636\n  type: 'test'\n  ...\n# Subtest: the retry budget ends in dead letter instead of retrying forever\nok 3 - the retry budget ends in dead letter instead of retrying forever\n  ---\n  duration_ms: 0.159906\n  type: 'test'\n  ...\n# Subtest: permanent receiver rejections dead-letter immediately; throttling does not\nok 4 - permanent receiver rejections dead-letter immediately; throttling does not\n  ---\n  duration_ms: 0.175935\n  type: 'test'\n  ...\n# Subtest: dispatch persists the policy decision and schema/migration expose dead_letter\nok 5 - dispatch persists the policy decision and schema/migration expose dead_letter\n  ---\n  duration_ms: 0.94176\n  type: 'test'\n  ...\n1..5\n# tests 5\n# suites 0\n# pass 5\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 181.752958\n",
+  "recordedAt": "2026-09-25T14:41:16.804Z",
+  "producer": "claude-code"
+}

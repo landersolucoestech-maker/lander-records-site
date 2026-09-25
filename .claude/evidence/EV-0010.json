@@ -1,0 +1,20 @@
+{
+  "id": "EV-0010",
+  "kind": "test",
+  "findings": [],
+  "criteria": [
+    "C-007"
+  ],
+  "summary": "OS pack/findings/graphs validation",
+  "command": "npm run os:validate",
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "bf968dd42591de8e530d909b0fc18be00cdf95d3",
+  "dirty": false,
+  "fingerprint": "be1ab704d8c9bb7a58a60ee180d858a1209c0c7b6b5339f7e6c76bdd1c1196c2",
+  "environment": "node v22.22.2 linux; duration 637ms",
+  "outputSha256": "ae775717abe738084e06dbf9d6fb413f1f4153717f7388489615cbd802619705",
+  "excerpt": "\n> lander-records-site@1.0.0 os:validate\n> node .claude/runtime/pack.mjs && node .claude/runtime/findings.mjs validate && node .claude/runtime/graph.mjs check\n\n{\"files\":435,\"findings\":11,\"evidence\":9,\"registered\":181}\nPACK_VALID=PASS\nFINDINGS_VALID=11\nGRAPHS_CURRENT=PASS\n",
+  "recordedAt": "2026-09-25T14:41:21.447Z",
+  "producer": "claude-code"
+}

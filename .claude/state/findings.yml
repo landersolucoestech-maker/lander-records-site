@@ -3,9 +3,9 @@
 {
   "derivedFrom": ".claude/findings/*.json",
   "totals": {
-    "all": 11,
-    "open": 8,
-    "parked": 3,
+    "all": 13,
+    "open": 9,
+    "parked": 4,
     "closed": 0,
     "ready": 0
   },
@@ -119,6 +119,26 @@
       "status": "NEEDS_PRODUCT_DECISION",
       "priority": 110,
       "decision": "DEC-0003",
+      "evidenceRecords": []
+    },
+    {
+      "id": "F-0012",
+      "title": "Media Kit layout contract test pins typography values superseded by ff2756e",
+      "severity": "P3",
+      "domain": "frontend",
+      "status": "REAUDITING",
+      "priority": 110,
+      "decision": null,
+      "evidenceRecords": []
+    },
+    {
+      "id": "F-0013",
+      "title": "npm run lint reports 12 react-hooks errors in admin managers (lint not in CI)",
+      "severity": "P3",
+      "domain": "frontend",
+      "status": "NEEDS_PRODUCT_DECISION",
+      "priority": 90,
+      "decision": "DEC-0004",
       "evidenceRecords": []
     }
   ]

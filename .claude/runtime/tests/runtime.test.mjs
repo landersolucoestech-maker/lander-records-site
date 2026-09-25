@@ -42,7 +42,8 @@ test("evidence cannot be asserted and records the real exit code", () => {
     assert.match(asserted.stderr, /POLICY_BLOCKED/);
     const failing = box.run("evidence.mjs", ["run", "--summary", "must fail", "--", process.execPath, "-e", "process.exit(3)"]);
     assert.equal(failing.status, 1);
-    const record = JSON.parse(fs.readFileSync(path.join(box.root, ".claude", "evidence", "EV-0001.json"), "utf8"));
+    const id = failing.stdout.match(/^(EV-\d{4}) /)[1];
+    const record = JSON.parse(fs.readFileSync(path.join(box.root, ".claude", "evidence", `${id}.json`), "utf8"));
     assert.equal(record.result, "FAIL");
     assert.equal(record.exitCode, 3);
     assert.match(record.fingerprint, /^[0-9a-f]{64}$/);
@@ -52,18 +53,15 @@ test("evidence cannot be asserted and records the real exit code", () => {
 test("workspace fingerprint ignores OS records and commits, but tracks product changes", () => {
   const box = sandbox();
   try {
-    const fp = () => JSON.parse(box.run("controller.mjs", ["status"]).stdout).workspace;
-    const probe = () => box.run("evidence.mjs", ["run", "--", process.execPath, "-e", "0"]);
-    probe();
-    const first = JSON.parse(fs.readFileSync(path.join(box.root, ".claude", "evidence", "EV-0001.json"), "utf8")).fingerprint;
+    const record = () => {
+      const out = box.run("evidence.mjs", ["run", "--", process.execPath, "-e", "0"]);
+      const id = out.stdout.match(/^(EV-\d{4}) /)[1];
+      return JSON.parse(fs.readFileSync(path.join(box.root, ".claude", "evidence", `${id}.json`), "utf8")).fingerprint;
+    };
+    const first = record();
     box.git("add", "-A"); box.git("commit", "-qm", "record evidence");
-    probe();
-    const afterCommit = JSON.parse(fs.readFileSync(path.join(box.root, ".claude", "evidence", "EV-0002.json"), "utf8")).fingerprint;
-    assert.equal(afterCommit, first, "committing records must not change the fingerprint");
+    assert.equal(record(), first, "committing records must not change the fingerprint");
     fs.writeFileSync(path.join(box.root, "product.ts"), "export const x = 1;\n");
-    probe();
-    const afterChange = JSON.parse(fs.readFileSync(path.join(box.root, ".claude", "evidence", "EV-0003.json"), "utf8")).fingerprint;
-    assert.notEqual(afterChange, first, "product changes must change the fingerprint");
-    void fp;
+    assert.notEqual(record(), first, "product changes must change the fingerprint");
   } finally { box.cleanup(); }
 });

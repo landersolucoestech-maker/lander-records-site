@@ -1,0 +1,23 @@
+{
+  "id": "EV-0008",
+  "kind": "test",
+  "findings": [
+    "F-0009",
+    "F-0010"
+  ],
+  "criteria": [
+    "C-006"
+  ],
+  "summary": "SEO canonical/sitemap contract",
+  "command": "node --test tests/unit/seo-canonical.test.mjs",
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "bf968dd42591de8e530d909b0fc18be00cdf95d3",
+  "dirty": false,
+  "fingerprint": "be1ab704d8c9bb7a58a60ee180d858a1209c0c7b6b5339f7e6c76bdd1c1196c2",
+  "environment": "node v22.22.2 linux; duration 317ms",
+  "outputSha256": "9b15b3e44eb113967947ec8302aaa2dcf150e18151d683c64c5a78f4bca040ef",
+  "excerpt": "TAP version 13\n# (node:3967) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/lander-records-site/lib/seo.ts is not specified and it doesn't parse as CommonJS.\n# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.\n# To eliminate this warning, add \"type\": \"module\" to /home/user/lander-records-site/package.json.\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# Subtest: canonical URLs use the configured site route when no valid override exists\nok 1 - canonical URLs use the configured site route when no valid override exists\n  ---\n  duration_ms: 1.168737\n  type: 'test'\n  ...\n# Subtest: canonical overrides preserve valid HTTP(S) URLs but remove fragments\nok 2 - canonical overrides preserve valid HTTP(S) URLs but remove fragments\n  ---\n  duration_ms: 0.240192\n  type: 'test'\n  ...\n# Subtest: static public pages never inherit the homepage canonical\nok 3 - static public pages never inherit the homepage canonical\n  ---\n  duration_ms: 1.727207\n  type: 'test'\n  ...\n# Subtest: sitemap lists the served trailing-slash URLs instead of redirecting forms\nok 4 - sitemap lists the served trailing-slash URLs instead of redirecting forms\n  ---\n  duration_ms: 0.559866\n  type: 'test'\n  ...\n1..4\n# tests 4\n# suites 0\n# pass 4\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 226.935417\n",
+  "recordedAt": "2026-09-25T14:41:19.850Z",
+  "producer": "claude-code"
+}

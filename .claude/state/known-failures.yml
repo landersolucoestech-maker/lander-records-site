@@ -11,21 +11,24 @@
         "reference deck keeps the approved global typography while KPI labels wrap without clipping"
       ],
       "reproducedOnBase": true,
-      "finding": "F-0012"
+      "finding": "F-0012",
+      "status": "FIXED_ON_BRANCH (F-0012)"
     },
     {
       "id": "KF-002",
       "check": "npm run lint",
       "detail": "12 errors react-hooks/set-state-in-effect (+1 immutability) in admin managers/AdminShell; lint is not part of CI",
       "reproducedOnBase": true,
-      "finding": "F-0013"
+      "finding": "F-0013",
+      "status": "OPEN (DEC-0004)"
     },
     {
       "id": "KF-003",
       "check": "tests/browser/public-routes.spec.ts",
       "detail": "favicon 404 on every route",
       "reproducedOnBase": true,
-      "finding": "F-0011"
+      "finding": "F-0011",
+      "status": "OPEN (DEC-0003)"
     },
     {
       "id": "KF-004",

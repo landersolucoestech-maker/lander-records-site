@@ -1,0 +1,23 @@
+{
+  "id": "EV-0007",
+  "kind": "integration",
+  "findings": [
+    "F-0007",
+    "F-0005"
+  ],
+  "criteria": [
+    "C-005"
+  ],
+  "summary": "schema contract equals migrated DB",
+  "command": "node scripts/audit-db.mjs",
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "bf968dd42591de8e530d909b0fc18be00cdf95d3",
+  "dirty": false,
+  "fingerprint": "be1ab704d8c9bb7a58a60ee180d858a1209c0c7b6b5339f7e6c76bdd1c1196c2",
+  "environment": "node v22.22.2 linux; duration 252ms",
+  "outputSha256": "e264df3cb663f51e5aa7089d50661698db514ae56472aad4d2225aa74319381d",
+  "excerpt": "PROJECT=lander-records-site-portal\nDATABASE_URL_PRESENT=true\nDATABASE_URL_PROTOCOL=postgresql\nDATABASE_URL_HOST=loc***\nTABLES_EXPECTED=47\nTABLES_ACTUAL=47\nTABLES_MISSING=[]\nTABLES_UNEXPECTED=[]\nCOLUMNS_EXPECTED=439\nCOLUMNS_ACTUAL=439\nCOLUMNS_MISSING=[]\nCOLUMNS_UNEXPECTED=[]\nCONSTRAINTS_EXPECTED=120\nCONSTRAINTS_ACTUAL=120\nCONSTRAINTS_MISSING=[]\nCONSTRAINTS_UNEXPECTED=[]\nINDEXES_EXPECTED=82\nINDEXES_ACTUAL=82\nINDEXES_MISSING=[]\nINDEXES_UNEXPECTED=[]\nENUMS_EXPECTED=19\nENUMS_ACTUAL=19\nENUMS_MISSING=[]\nENUMS_UNEXPECTED=[]\nMIGRATIONS_EXPECTED=18\nMIGRATIONS_APPLIED=18\nMIGRATIONS_MISSING=[]\nMIGRATIONS_UNKNOWN=[]\nMIGRATION_CHECKSUM_DRIFT=[]\nSCHEMA_DRIFT=PASS\n",
+  "recordedAt": "2026-09-25T14:41:19.399Z",
+  "producer": "claude-code"
+}
