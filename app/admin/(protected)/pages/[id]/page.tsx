@@ -1,5 +1,5 @@
 import { asc, eq, inArray } from "drizzle-orm";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { requireAdmin } from "../../../../../lib/auth";
 import { getDb } from "../../../../../lib/db";
 import { mediaAssets, pageSectionItems, pageSections, pages } from "../../../../../lib/db/schema";
@@ -17,7 +17,7 @@ function sectionMediaId(settings: Record<string, unknown> | null | undefined) {
 
 export default async function PageContentEditor({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ section?: string }> }) {
   const session = await requireAdmin("editor");
-  if (session.source !== "session") redirect("/admin/pages");
+  // Development preview sessions may inspect the section editor; mutations remain guarded by the existing server actions.
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const db = getDb();
   const [pageRows, sections, mediaRows] = await Promise.all([
