@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getDb } from "../../../lib/db";
 import { contactSubmissions, contactTopics, integrationOutbox } from "../../../lib/db/schema";
 import { dispatchOutboxEvent, hashIp, isContactRateLimited } from "../../../lib/contact";
+import { resolveContactClientIp } from "../../../lib/contact-client-ip";
 
 const payloadSchema = z.object({
   idempotencyKey: z.string().uuid(),
@@ -34,9 +35,7 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "Revise os campos obrigatórios do formulário.", details: parsed.error.flatten() }, { status: 422 });
     }
 
-    const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-    const ip = forwardedFor || request.headers.get("x-real-ip") || "unknown";
-    const ipHash = hashIp(ip);
+    const ipHash = hashIp(resolveContactClientIp(request.headers));
 
     if (await isContactRateLimited(ipHash)) {
       return Response.json({ error: "Muitas tentativas em pouco tempo. Tente novamente em alguns minutos." }, { status: 429 });

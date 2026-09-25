@@ -18,7 +18,9 @@ export function ContactForm({ topics }: { topics: Topic[] }) {
     if (state.status === "sending") return;
     setState({ status: "sending", message: "Enviando..." });
 
-    const form = new FormData(event.currentTarget);
+    // React clears event.currentTarget once the handler yields; keep the element so it can be reset after the request.
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const params = new URLSearchParams(window.location.search);
     const payload = {
       idempotencyKey: idempotencyKey.current,
@@ -47,13 +49,16 @@ export function ContactForm({ topics }: { topics: Topic[] }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Não foi possível enviar a mensagem.");
-      event.currentTarget.reset();
+      const result = await response.json().catch(() => null) as { error?: unknown } | null;
+      if (!response.ok) {
+        throw new Error(typeof result?.error === "string" && result.error ? result.error : "Não foi possível enviar a mensagem. Tente novamente em instantes.");
+      }
+      formElement.reset();
       idempotencyKey.current = idempotencyKeyAfterAttempt(idempotencyKey.current, true);
       setState({ status: "success", message: "Mensagem enviada com sucesso. Nossa equipe recebeu seu contato." });
     } catch (error) {
-      setState({ status: "error", message: error instanceof Error ? error.message : "Falha ao enviar a mensagem." });
+      const offline = error instanceof TypeError;
+      setState({ status: "error", message: offline ? "Falha de conexão ao enviar a mensagem. Verifique sua internet e tente novamente." : error instanceof Error ? error.message : "Falha ao enviar a mensagem." });
     }
   }
 
