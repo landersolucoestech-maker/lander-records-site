@@ -1,0 +1,21 @@
+{
+  "id": "EV-0044",
+  "kind": "review",
+  "findings": [],
+  "criteria": [],
+  "mission": "M-20260925-002",
+  "missionHash": "7fa733e8bec7637c40ba7324efd1e72c6269265ee9c8e20de3540427e626fa28",
+  "ticket": "4b361fa0b6c28cc32e0f25aa4dcb8f5b",
+  "summary": "round 4: F-0003 pre-fetch identity write race; F-0017 npmrc vacuous PASS; admin purge before lock; requiredTests binding bypassable",
+  "result": "FAIL",
+  "commit": "71e8a4c2ebddb3eed40906ce0ff5aa3fcd07299a",
+  "dirty": true,
+  "fingerprint": "a01d321c00348f77e9479ddd890bb8a43bd9b1941a2d2ea1f3ac33fc16304ccc",
+  "environment": "review by adversarial-reviewer; report .claude/reports/reviews/2026-09-25-adversarial-reviewer-round4.md",
+  "outputSha256": "41b0e2a7d8c5facbd74f72ee6047b04c617225b5b7a3def046f1ead8b64995af",
+  "excerpt": "# Review — adversarial-reviewer — round 4 (51358aa..71e8a4c)\n\nIndependent read-only review dispatched by the mission controller (clone /var/tmp/adv4 at 71e8a4c, disposable DB restored afterwards). Reproduced from the reviewer's hand-back (condensed; findings and verdict verbatim in substance).\n\nREVIEW-TICKET: 4b361fa0b6c28cc32e0f25aa4dcb8f5b\n\nRan: soundcharts-identity-sync.mjs exit 0 on HEAD, exit 1 with base sync.ts; contact-outbox-delivery.mjs exit 0, exit 1 without `redirect: \"error\"`; contact-outbox-policy 7/7; runtime tests 21/21 (hooks fails only in /var/tmp clone).\n\nPrior items: A admin-save purge PARTIAL; B sync/admin race PARTIAL; C env-prefix bypass PARTIAL (npm config files); D redirect test CLOSED; E requiredTests binding PARTIAL.\n\n## HIGH\n1. F-0003 — `lib/integrations/sync.ts` Lander (~145-155) and artist (~247-257): the pre-fetch identity write is unconditional; a sync that resolved old URL A, released after an admin save to URL B and a forced sync of B, overwrites the identity with X (matched via A) and publishes X's metrics (artist history keeps them).\n2. F-0017 — `lib/io.mjs` childEnv: user `~/.npmrc` (via HOME) or project `.npmrc` with `script-shell=/bin/true` makes `npm run test:claude-os` / `typecheck` record PASS with no tests; completion re-runs the same way; `npm config set` passes the hook.\n\n## MEDIUM\n1. `app/admin/integration-actions.ts` purge runs before the settings row lock (uncommitted publish rows survive); a cleared identity with cached metrics is never withdrawn while credentials are missing (withdrawal only when `uuid && !stillMatches`); `app/admin/artist-actions.ts` same shape.\n2. `lib/findings.mjs` matchesRequiredTests: substring match over the whole command (env value can carry the path); completion does not apply it; requiredTests not anchored in git; fails open when empty.\n\n## LOW\n1. ranNothing misses all-skipped/todo runs (`# pass 0`).\n2. Build freshness compares BUILD_ID mtime only.\n3. Hook quote-concatenation / expansion bypasses (pre-existing).\n\n## INFO\nMission weakening by abort + new mission id (visible in history).\n\nVERDICT: FAIL\n",
+  "recordedAt": "2026-09-25T23:39:13.054Z",
+  "producer": "adversarial-reviewer",
+  "prevHash": "7a291542ec6f2274ef8e21f402bbaa720730e04432fc934c301366404ba43384",
+  "hash": "3baccd7f7323b6c323851eb25bf0ef214396be37f668a0db638dec1edb3d9b3d"
+}

@@ -2,7 +2,7 @@
   "confidence": "confirmed",
   "dependencies": [],
   "risk": "low",
-  "status": "RESOLVED",
+  "status": "INVESTIGATING",
   "title": "OS completion could pass without real verification (unanchored mission/proofs, test-runner env masking)",
   "severity": "P1",
   "domain": "architecture",
@@ -126,6 +126,12 @@
       "at": "2026-09-25T23:28:03.562Z",
       "by": "autonomous-controller",
       "note": "proof EV-0042; server rebuilt from HEAD"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-25T23:39:13.233Z",
+      "by": "architecture-reviewer",
+      "note": "reopened: abort+restart empties scope (EV-0043); npmrc vacuous PASS and requiredTests binding bypass (EV-0044)"
     }
   ],
   "evidenceRecords": [

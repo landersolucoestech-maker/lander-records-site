@@ -2,7 +2,7 @@
   "confidence": "confirmed",
   "dependencies": [],
   "risk": "low",
-  "status": "RESOLVED",
+  "status": "INVESTIGATING",
   "title": "Guardian hook and security gate had bypassable forms (force-with-lease, sh -c, string-only preview checks)",
   "severity": "P2",
   "domain": "security",
@@ -126,6 +126,12 @@
       "at": "2026-09-25T23:28:04.095Z",
       "by": "autonomous-controller",
       "note": "proof EV-0041; server rebuilt from HEAD"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-25T23:39:13.321Z",
+      "by": "security-reviewer",
+      "note": "reopened: find rule scratch exemption for /tmp checkouts (EV-0043); preview gate escapes/format()/shell indirection; hook gaps (round-4 security report)"
     }
   ],
   "evidenceRecords": [

@@ -1,0 +1,21 @@
+{
+  "id": "EV-0043",
+  "kind": "review",
+  "findings": [],
+  "criteria": [],
+  "mission": "M-20260925-002",
+  "missionHash": "7fa733e8bec7637c40ba7324efd1e72c6269265ee9c8e20de3540427e626fa28",
+  "ticket": "2b7ecb58628a64f0e5a3ebcf148dd32d",
+  "summary": "round 4: H1 abort/restart empties finding scope; M1 find rule /tmp regression; M2 duplicated scope rule; M3 test gaps; L1-L4 doc drift",
+  "result": "FAIL",
+  "commit": "71e8a4c2ebddb3eed40906ce0ff5aa3fcd07299a",
+  "dirty": false,
+  "fingerprint": "044e2b8592052746d3e785f1a067b86b634c2ba2ae85a9604a7c08f542d621a2",
+  "environment": "review by architecture-reviewer; report .claude/reports/reviews/2026-09-25-architecture-reviewer-round4.md",
+  "outputSha256": "2bc9e74a98ed03581f6b8d5cb44166f88f365ddfae6599d5c71389b061eb1fdd",
+  "excerpt": "# Review — architecture-reviewer — round 4 (51358aa..71e8a4c)\n\nIndependent read-only review dispatched by the mission controller (clone /var/tmp/arch4 at 71e8a4c). Reproduced from the reviewer's hand-back (condensed; findings and verdict verbatim in substance).\n\nREVIEW-TICKET: 2b7ecb58628a64f0e5a3ebcf148dd32d\n\nCommands: `npm run os:validate` exit 0; `npm run test:claude-os` exit 1 (25/26, hooks.test.mjs:44 `find . -delete` in a /var/tmp checkout).\n\nPrior items: N5 CLOSED; N7 CLOSED; N6 PARTIAL (abort+restart path, H1); N4 mostly CLOSED; M-NEW-2 PARTIAL; layout unchanged; `.codex` mentions only in allow-listed historical files.\n\n## HIGH\n1. H1 (pre-existing N6 residual) — `lib/mission-def.mjs` `missionFindingIds`: `mission.mjs abort` + `start` + commit gives a new mission whose finding scope is empty although L5 findings were RESOLVED on the branch; completion then re-runs no proofs and no longer requires security-reviewer.\n\n## MEDIUM\n1. M1 (introduced 1c7109f) — `hooks/guard-bash.mjs` find rule resolves the start path before the /tmp exemption, so in a checkout under /tmp or /var/tmp `find . -delete` / `-exec rm` are allowed; test:claude-os depends on checkout location.\n2. M2 — `lib/checks.mjs` `resolved-have-fresh-evidence` uses the editable `current.findings` list instead of `missionFindingIds`; mission.yml read by several copies.\n3. M3 — no tests for `missionFindingIds`, proof re-execution, `matchesRequiredTests`, BUILD_ID freshness, ticket missionHash binding.\n\n## LOW\n1. L1 — build-freshness check applies only to criteria with inline `PLAYWRIGHT_BASE_URL=`/`OS_BASE_URL=`; product-path list omits assets/, migrations/, tsconfig.json; mtime vs committer date are writer-controlled. ADR-0007 overstates it.\n2. L2 — ADR-0007 says PATH is scrubbed; childEnv does not (correctly) scrub PATH.\n3. L3 — ADR-0006 says directory checkout/restore is blocked; only a trailing `/` form is.\n4. L4 — stale comments in completion.mjs.\n\nProduct commits 9e24ab4 / b5506e9: no architecture defect.\n\nVERDICT: FAIL\n",
+  "recordedAt": "2026-09-25T23:33:25.903Z",
+  "producer": "architecture-reviewer",
+  "prevHash": "1dd2ce31ba19e659611ec5ba2d6c2ef74322f9c10eb72d0a80905250e32ba45a",
+  "hash": "7a291542ec6f2274ef8e21f402bbaa720730e04432fc934c301366404ba43384"
+}

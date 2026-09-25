@@ -4,9 +4,9 @@
   "derivedFrom": ".claude/findings/*.json",
   "totals": {
     "all": 19,
-    "open": 0,
+    "open": 3,
     "parked": 6,
-    "closed": 13,
+    "closed": 10,
     "ready": 0
   },
   "readyQueue": [],
@@ -40,7 +40,7 @@
       "title": "Metrics of an invalidated or replaced Soundcharts identity stay published",
       "severity": "P1",
       "domain": "identity",
-      "status": "RESOLVED",
+      "status": "INVESTIGATING",
       "priority": 660,
       "decision": null,
       "evidenceRecords": [
@@ -202,7 +202,7 @@
       "title": "OS completion could pass without real verification (unanchored mission/proofs, test-runner env masking)",
       "severity": "P1",
       "domain": "architecture",
-      "status": "RESOLVED",
+      "status": "INVESTIGATING",
       "priority": 560,
       "decision": null,
       "evidenceRecords": [
@@ -225,7 +225,7 @@
       "title": "Guardian hook and security gate had bypassable forms (force-with-lease, sh -c, string-only preview checks)",
       "severity": "P2",
       "domain": "security",
-      "status": "RESOLVED",
+      "status": "INVESTIGATING",
       "priority": 410,
       "decision": null,
       "evidenceRecords": [
