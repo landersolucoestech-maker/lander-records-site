@@ -29,13 +29,24 @@ test("the retry budget ends in dead letter instead of retrying forever", () => {
 });
 
 test("permanent receiver rejections dead-letter immediately; throttling does not", () => {
-  for (const status of [400, 401, 403, 404, 410, 422]) {
+  for (const status of [400, 404, 410, 422]) {
     assert.equal(isPermanentDeliveryStatus(status), true, String(status));
     assert.equal(outboxFailureTransition(1, status, now).status, "dead_letter");
   }
-  for (const status of [408, 425, 429, 500, 502, 503, null]) {
+  for (const status of [401, 403, 408, 425, 429, 500, 502, 503, null]) {
     assert.equal(isPermanentDeliveryStatus(status), false, String(status));
   }
+});
+
+test("credential rejections stay retryable within the budget (one-sided secret rotation)", () => {
+  assert.equal(outboxFailureTransition(1, 401, now).status, "failed");
+  assert.equal(outboxFailureTransition(OUTBOX_MAX_ATTEMPTS, 403, now).status, "dead_letter");
+});
+
+test("webhook delivery refuses redirects and never logs the raw error text", () => {
+  const contact = fs.readFileSync(new URL("../../lib/contact.ts", import.meta.url), "utf8");
+  assert.match(contact, /redirect: "error"/);
+  assert.doesNotMatch(contact, /contact_outbox_dead_letter", JSON\.stringify\(\{ outboxId, attempts, error: message/);
 });
 
 test("dispatch persists the policy decision and schema/migration expose dead_letter", () => {

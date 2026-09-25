@@ -122,6 +122,8 @@ export async function dispatchOutboxEvent(outboxId: string) {
         "x-lander-signature": `sha256=${signature}`,
       },
       body,
+      // Never re-send the signed personal data to a redirect target.
+      redirect: "error",
       signal: controller.signal,
     });
 
@@ -156,7 +158,9 @@ export async function dispatchOutboxEvent(outboxId: string) {
       })
       .where(eq(integrationOutbox.id, outboxId));
     if (transition.status === "dead_letter") {
-      console.error("contact_outbox_dead_letter", JSON.stringify({ outboxId, attempts, error: message.slice(0, 300) }));
+      // Only the HTTP status class is logged; full error text (which can embed the receiver URL) stays in last_error.
+      const logged = /^SaaS webhook returned \d{3}$/.test(message) ? message : "delivery error (see integration_outbox.last_error)";
+      console.error("contact_outbox_dead_letter", JSON.stringify({ outboxId, attempts, error: logged }));
     }
     return { delivered: false, reason: message };
   } finally {

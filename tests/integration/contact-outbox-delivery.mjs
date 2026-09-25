@@ -17,7 +17,7 @@ const server = createServer((request, response) => {
   request.on("data", (chunk) => { body += chunk; });
   request.on("end", () => {
     received.push({ headers: request.headers, body });
-    response.writeHead(nextStatus, { "content-type": "application/json" });
+    response.writeHead(nextStatus, nextStatus === 308 ? { location: "http://127.0.0.1:9/elsewhere" } : { "content-type": "application/json" });
     response.end("{}");
   });
 });
@@ -73,6 +73,20 @@ try {
   assert.equal(rejectedState.status, "dead_letter");
   assert.equal(rejectedState.next_attempt_at, null);
   assert.match(rejectedState.last_error, /422/);
+
+  // Credential rejection (e.g. one-sided secret rotation) stays retryable.
+  nextStatus = 401;
+  const unauthorized = await outboxEvent();
+  await dispatchOutboxEvent(unauthorized);
+  assert.equal((await state(unauthorized)).status, "failed");
+
+  // A redirecting receiver never receives a second signed POST.
+  nextStatus = 308;
+  const redirected = await outboxEvent();
+  const before308 = received.length;
+  await dispatchOutboxEvent(redirected);
+  assert.equal(received.length, before308 + 1, "the signed body is not re-sent to a redirect target");
+  assert.equal((await state(redirected)).status, "failed");
 
   // Retry budget exhausted: dead letter.
   nextStatus = 503;

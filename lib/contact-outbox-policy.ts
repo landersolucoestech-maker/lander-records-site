@@ -2,9 +2,10 @@ export const OUTBOX_BASE_RETRY_DELAY_MS = 15 * 60 * 1000;
 export const OUTBOX_MAX_RETRY_DELAY_MS = 24 * 60 * 60 * 1000;
 export const OUTBOX_MAX_ATTEMPTS = 8;
 
-// 408/425/429 are transient by definition; every other 4xx means the receiver rejected
-// this exact payload and repeating it cannot succeed.
-const TRANSIENT_CLIENT_STATUSES = new Set([408, 425, 429]);
+// 408/425/429 are transient by definition. 401/403 mean the receiver rejected our credentials (e.g. a webhook
+// secret rotated on one side only): an operational fault that recovers once fixed, so they stay retryable within
+// the bounded budget instead of dead-lettering every lead. Every other 4xx rejects this exact payload for good.
+const TRANSIENT_CLIENT_STATUSES = new Set([401, 403, 408, 425, 429]);
 
 export type OutboxFailureTransition =
   | { status: "failed"; nextAttemptAt: Date }
