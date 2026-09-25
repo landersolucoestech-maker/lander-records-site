@@ -229,6 +229,10 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
       })));
 
       if (soundchartsLinksChanged) {
+        // Lock the identity row first: an in-flight sync publish holds the same lock, so the purge below runs
+        // after it commits (and the publish, seeing the changed links, is superseded) — never beside it.
+        await tx.insert(artistExternalIdentities).values({ artistId: resolvedId, resolutionStatus: "unresolved" }).onConflictDoNothing();
+        await tx.select({ artistId: artistExternalIdentities.artistId }).from(artistExternalIdentities).where(eq(artistExternalIdentities.artistId, resolvedId)).for("update");
         await tx.delete(artistMetrics).where(eq(artistMetrics.artistId, resolvedId));
         await tx.delete(integrationMetricCache).where(and(eq(integrationMetricCache.entityType, "artist"), eq(integrationMetricCache.entityId, resolvedId)));
         await tx.insert(artistExternalIdentities).values({ artistId: resolvedId, resolutionStatus: "unresolved", soundchartsArtistUuid: "", matchedViaPlatform: "", matchedViaIdentifier: "", lastError: "", updatedAt: new Date() }).onConflictDoUpdate({

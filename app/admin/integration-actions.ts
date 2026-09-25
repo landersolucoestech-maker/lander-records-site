@@ -22,13 +22,14 @@ export async function saveLanderRecordsIntegrationSettings(formData: FormData) {
   const youtubeUrl = youtubeRaw ? normalizePlatformUrl("youtube", youtubeRaw) : "";
   const spotifyPlaylistId = spotifyPlaylistUrl ? spotifyPlaylistIdFromUrl(spotifyPlaylistUrl) : "";
   const db = getDb();
-  const current = (await db.select().from(landerRecordsIntegrationSettings).where(eq(landerRecordsIntegrationSettings.key, "lander_records")).limit(1))[0];
-  const socialChanged = !current || current.instagramUrl !== instagramUrl || current.youtubeUrl !== youtubeUrl;
-  const playlistChanged = !current || current.spotifyPlaylistId !== spotifyPlaylistId;
 
   // Changing the official URLs invalidates the resolved identity: its published metrics are withdrawn in the same
-  // transaction (single purge implementation in lib/integrations/sync.ts).
-  await db.transaction(async (tx) => {
+  // transaction (single purge implementation in lib/integrations/sync.ts). The settings row is locked first, so the
+  // purge serializes with an in-flight sync publish (which locks the same row) instead of running beside it.
+  const { playlistChanged } = await db.transaction(async (tx) => {
+    const current = (await tx.select().from(landerRecordsIntegrationSettings).where(eq(landerRecordsIntegrationSettings.key, "lander_records")).for("update"))[0];
+    const socialChanged = !current || current.instagramUrl !== instagramUrl || current.youtubeUrl !== youtubeUrl;
+    const playlistChanged = !current || current.spotifyPlaylistId !== spotifyPlaylistId;
     if (socialChanged) await purgeLanderRecordsSoundchartsMetrics(tx);
     await tx.insert(landerRecordsIntegrationSettings).values({
       key: "lander_records",
@@ -65,6 +66,7 @@ export async function saveLanderRecordsIntegrationSettings(formData: FormData) {
         updatedAt: new Date(),
       },
     });
+    return { playlistChanged };
   });
   if (playlistChanged) await db.delete(spotifyReleaseCache);
   await audit(session.user.id, "integration.lander_records.updated", "integration_settings", "lander_records", {

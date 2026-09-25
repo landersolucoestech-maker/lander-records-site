@@ -76,6 +76,15 @@ function resolutionStillMatches(identity: typeof artistExternalIdentities.$infer
   });
 }
 
+// Every identity/metric write below is a compare-and-set under the settings row lock: it applies only if the official
+// URLs (and, where relevant, the stored identity) are still the ones this run read. An admin save or another sync
+// that changed them in the meantime wins; this run reports "superseded" instead of overwriting newer state.
+async function lockLanderSettings(tx: DbExecutor) {
+  return (await tx.select().from(landerRecordsIntegrationSettings).where(eq(landerRecordsIntegrationSettings.key, LANDER_ENTITY_ID)).for("update"))[0];
+}
+const sameLanderUrls = (a: { instagramUrl: string; youtubeUrl: string } | undefined, b: { instagramUrl: string; youtubeUrl: string }) =>
+  Boolean(a) && a!.instagramUrl === b.instagramUrl && a!.youtubeUrl === b.youtubeUrl;
+
 export async function syncLanderRecordsSoundcharts(force = false) {
   const db = getDb();
   const settings = (await db.select().from(landerRecordsIntegrationSettings).where(eq(landerRecordsIntegrationSettings.key, LANDER_ENTITY_ID)).limit(1))[0];
@@ -89,7 +98,8 @@ export async function syncLanderRecordsSoundcharts(force = false) {
   ].filter((item): item is { platform: string; url: string } => Boolean(item));
   if (!links.length) {
     // No official URLs means no identity: always withdraw (idempotent), whatever state earlier writers left.
-    await db.transaction(async (tx) => {
+    const applied = await db.transaction(async (tx) => {
+      if (!sameLanderUrls(await lockLanderSettings(tx), settings)) return false;
       await purgeLanderRecordsSoundchartsMetrics(tx);
       await tx.update(landerRecordsIntegrationSettings).set({
         soundchartsArtistUuid: "",
@@ -97,8 +107,9 @@ export async function syncLanderRecordsSoundcharts(force = false) {
         soundchartsMatchedVia: "",
         updatedAt: new Date(),
       }).where(eq(landerRecordsIntegrationSettings.key, LANDER_ENTITY_ID));
+      return true;
     });
-    return { status: "not_configured" as const, metrics: 0 };
+    return applied ? { status: "not_configured" as const, metrics: 0 } : { status: "superseded" as const, metrics: 0 };
   }
 
   let uuid = settings.soundchartsArtistUuid;
@@ -106,14 +117,21 @@ export async function syncLanderRecordsSoundcharts(force = false) {
   const stillMatches = Boolean(uuid) && links.some((link) => {
     try { return matchedVia === `${link.platform}:${normalizeExternalUrl(link.url)}`; } catch { return false; }
   });
-  if (uuid && !stillMatches) {
-    // The official URLs no longer match the stored identity: withdraw it and its metrics now.
-    await db.transaction(async (tx) => {
+  if (!stillMatches) {
+    // No valid identity for the current URLs: withdraw any stored identity and every cached metric now (also when
+    // the identity was already cleared but metrics remain, e.g. rows committed by a sync that raced an admin save).
+    const applied = await db.transaction(async (tx) => {
+      const current = await lockLanderSettings(tx);
+      if (!sameLanderUrls(current, settings) || current!.soundchartsArtistUuid !== uuid) return false;
       await purgeLanderRecordsSoundchartsMetrics(tx);
-      await tx.update(landerRecordsIntegrationSettings).set({
-        soundchartsArtistUuid: "", soundchartsResolutionStatus: "unresolved", soundchartsMatchedVia: "", soundchartsLastSyncedAt: null, updatedAt: new Date(),
-      }).where(eq(landerRecordsIntegrationSettings.key, LANDER_ENTITY_ID));
+      if (uuid) {
+        await tx.update(landerRecordsIntegrationSettings).set({
+          soundchartsArtistUuid: "", soundchartsResolutionStatus: "unresolved", soundchartsMatchedVia: "", soundchartsLastSyncedAt: null, updatedAt: new Date(),
+        }).where(eq(landerRecordsIntegrationSettings.key, LANDER_ENTITY_ID));
+      }
+      return true;
     });
+    if (!applied) return { status: "superseded" as const, metrics: 0 };
     uuid = "";
     matchedVia = "";
   }
@@ -125,7 +143,9 @@ export async function syncLanderRecordsSoundcharts(force = false) {
     if (!stillMatches) {
       const resolved = await resolveSoundchartsArtist(links);
       if (!resolved) {
-        await db.transaction(async (tx) => {
+        const applied = await db.transaction(async (tx) => {
+          const current = await lockLanderSettings(tx);
+          if (!sameLanderUrls(current, settings) || current!.soundchartsArtistUuid !== previousUuid) return false;
           await purgeLanderRecordsSoundchartsMetrics(tx);
           await tx.update(landerRecordsIntegrationSettings).set({
             soundchartsArtistUuid: "",
@@ -135,15 +155,19 @@ export async function syncLanderRecordsSoundcharts(force = false) {
             soundchartsLastError: "Nenhuma identidade de artista Soundcharts foi encontrada para as URLs oficiais informadas.",
             updatedAt: new Date(),
           }).where(eq(landerRecordsIntegrationSettings.key, LANDER_ENTITY_ID));
+          return true;
         });
-        return { status: "unresolved" as const, metrics: 0 };
+        return applied ? { status: "unresolved" as const, metrics: 0 } : { status: "superseded" as const, metrics: 0 };
       }
       uuid = resolved.uuid;
       matchedVia = `${resolved.matchedViaPlatform}:${resolved.matchedViaIdentifier}`;
       // Re-point the identity and withdraw the previous identity's metrics atomically, before fetching:
       // a failed fetch must leave "no data", never the old identity's values under the new one.
       const identityChanged = uuid !== previousUuid;
-      await db.transaction(async (tx) => {
+      const applied = await db.transaction(async (tx) => {
+        // Only for the URLs this resolution used, and only over the identity this run started from.
+        const current = await lockLanderSettings(tx);
+        if (!sameLanderUrls(current, settings) || current!.soundchartsArtistUuid !== previousUuid) return false;
         if (identityChanged) await purgeLanderRecordsSoundchartsMetrics(tx);
         await tx.update(landerRecordsIntegrationSettings).set({
           soundchartsArtistUuid: uuid,
@@ -154,15 +178,17 @@ export async function syncLanderRecordsSoundcharts(force = false) {
           soundchartsLastError: "",
           updatedAt: new Date(),
         }).where(eq(landerRecordsIntegrationSettings.key, LANDER_ENTITY_ID));
+        return true;
       });
+      if (!applied) return { status: "superseded" as const, metrics: 0 };
     }
 
     const metrics = (await fetchSoundchartsArtistMetrics(uuid)).filter((metric) => metric.platform === "instagram" || metric.platform === "youtube");
     // Publish only if the identity is still the one we fetched for: a concurrent admin save or forced sync may
     // have re-pointed it while the fetch was in flight (row lock serializes with those writers).
     const published = await db.transaction(async (tx) => {
-      const current = (await tx.select({ uuid: landerRecordsIntegrationSettings.soundchartsArtistUuid }).from(landerRecordsIntegrationSettings).where(eq(landerRecordsIntegrationSettings.key, LANDER_ENTITY_ID)).for("update"))[0];
-      if (!current || current.uuid !== uuid) return false;
+      const current = await lockLanderSettings(tx);
+      if (!sameLanderUrls(current, settings) || current!.soundchartsArtistUuid !== uuid) return false;
       for (const metric of metrics) {
         await upsertCachedMetric(tx, { entityType: "lander_records", entityId: LANDER_ENTITY_ID, ...metric });
       }
@@ -183,35 +209,56 @@ export async function syncLanderRecordsSoundcharts(force = false) {
   }
 }
 
+async function readArtistLinks(executor: DbExecutor, artistId: string) {
+  const rows = await executor.select({ platform: artistLinks.platform, url: artistLinks.url }).from(artistLinks).where(and(
+    eq(artistLinks.artistId, artistId),
+    eq(artistLinks.active, true),
+    inArray(artistLinks.platform, ARTIST_PLATFORMS),
+  ));
+  return rows.map((link) => ({ platform: link.platform.toLowerCase(), url: link.url })).filter((link) => link.url);
+}
+const linksKey = (links: Array<{ platform: string; url: string }>) => links.map((l) => `${l.platform}|${l.url}`).sort().join("\n");
+
+// Same compare-and-set rule as the Lander path: the identity row is locked (the admin save locks it too) and a
+// write applies only while the artist's links and stored identity are still the ones this run read.
+async function lockArtistIdentity(tx: DbExecutor, artistId: string, links: Array<{ platform: string; url: string }>, expectedUuid: string) {
+  // Ensure the row exists so there is something to lock (a missing row would let two writers interleave).
+  await tx.insert(artistExternalIdentities).values({ artistId, resolutionStatus: "unresolved" }).onConflictDoNothing();
+  const current = (await tx.select().from(artistExternalIdentities).where(eq(artistExternalIdentities.artistId, artistId)).for("update"))[0];
+  if ((current?.soundchartsArtistUuid || "") !== expectedUuid) return false;
+  return linksKey(await readArtistLinks(tx, artistId)) === linksKey(links);
+}
+
 export async function syncArtistSoundcharts(artistId: string, force = false) {
   const db = getDb();
-  const [identity, linkRows] = await Promise.all([
+  const [identity, links] = await Promise.all([
     db.select().from(artistExternalIdentities).where(eq(artistExternalIdentities.artistId, artistId)).limit(1).then((rows) => rows[0]),
-    db.select({ platform: artistLinks.platform, url: artistLinks.url }).from(artistLinks).where(and(
-      eq(artistLinks.artistId, artistId),
-      eq(artistLinks.active, true),
-      inArray(artistLinks.platform, ARTIST_PLATFORMS),
-    )),
+    readArtistLinks(db, artistId),
   ]);
-  const links = linkRows.map((link) => ({ platform: link.platform.toLowerCase(), url: link.url })).filter((link) => link.url);
+  const startUuid = identity?.soundchartsArtistUuid || "";
   if (!links.length) {
-    await db.transaction(async (tx) => {
+    const applied = await db.transaction(async (tx) => {
+      if (!(await lockArtistIdentity(tx, artistId, links, startUuid))) return false;
       await purgeArtistSoundchartsMetrics(tx, artistId);
       await tx.insert(artistExternalIdentities).values({ artistId, resolutionStatus: "unresolved", lastError: "Nenhuma URL de plataforma configurada." }).onConflictDoUpdate({
         target: artistExternalIdentities.artistId,
         set: { resolutionStatus: "unresolved", soundchartsArtistUuid: "", matchedViaPlatform: "", matchedViaIdentifier: "", lastError: "Nenhuma URL de plataforma configurada.", updatedAt: new Date() },
       });
+      return true;
     });
-    return { status: "not_configured" as const, metrics: 0 };
+    return applied ? { status: "not_configured" as const, metrics: 0 } : { status: "superseded" as const, metrics: 0 };
   }
-  if (identity?.soundchartsArtistUuid && !resolutionStillMatches(identity, links)) {
-    // Links no longer match the stored identity: withdraw it and its metrics before anything that needs the provider.
-    await db.transaction(async (tx) => {
+  if (!resolutionStillMatches(identity, links)) {
+    // No valid identity for the current links: withdraw any stored identity and every Soundcharts metric before
+    // anything that needs the provider (also when the identity was already cleared but metrics remain).
+    const applied = await db.transaction(async (tx) => {
+      if (!(await lockArtistIdentity(tx, artistId, links, startUuid))) return false;
       await purgeArtistSoundchartsMetrics(tx, artistId);
-      await tx.update(artistExternalIdentities).set({ soundchartsArtistUuid: "", resolutionStatus: "unresolved", matchedViaPlatform: "", matchedViaIdentifier: "", lastSyncedAt: null, updatedAt: new Date() }).where(eq(artistExternalIdentities.artistId, artistId));
+      if (startUuid) await tx.update(artistExternalIdentities).set({ soundchartsArtistUuid: "", resolutionStatus: "unresolved", matchedViaPlatform: "", matchedViaIdentifier: "", lastSyncedAt: null, updatedAt: new Date() }).where(eq(artistExternalIdentities.artistId, artistId));
+      return true;
     });
-    identity.soundchartsArtistUuid = "";
-    identity.resolutionStatus = "unresolved";
+    if (!applied) return { status: "superseded" as const, metrics: 0 };
+    if (identity) { identity.soundchartsArtistUuid = ""; identity.resolutionStatus = "unresolved"; }
   }
   if (!soundchartsCredentialsConfigured()) return { status: "credentials_missing" as const, metrics: 0 };
   if (!force && identity && isFresh(identity.lastSyncedAt, SOUNDCHARTS_TTL_MS) && resolutionStillMatches(identity, links)) return { status: "fresh" as const, metrics: 0 };
@@ -223,7 +270,8 @@ export async function syncArtistSoundcharts(artistId: string, force = false) {
     if (!resolutionStillMatches(identity, links)) {
       const resolved = await resolveSoundchartsArtist(links);
       if (!resolved) {
-        await db.transaction(async (tx) => {
+        const applied = await db.transaction(async (tx) => {
+          if (!(await lockArtistIdentity(tx, artistId, links, ""))) return false;
           await purgeArtistSoundchartsMetrics(tx, artistId);
           await tx.insert(artistExternalIdentities).values({
             artistId,
@@ -242,16 +290,19 @@ export async function syncArtistSoundcharts(artistId: string, force = false) {
               updatedAt: new Date(),
             },
           });
+          return true;
         });
-        return { status: "unresolved" as const, metrics: 0 };
+        return applied ? { status: "unresolved" as const, metrics: 0 } : { status: "superseded" as const, metrics: 0 };
       }
       resolvedUuid = resolved.uuid;
       matchedViaPlatform = resolved.matchedViaPlatform;
       matchedViaIdentifier = resolved.matchedViaIdentifier;
       // Links no longer match the stored identity. If the resolved identity differs, persist it and withdraw
       // the previous identity's metrics atomically before fetching, so a failed fetch leaves "no data".
+      // Only for the links this resolution used, and only over the (cleared) identity this run left.
       if (resolvedUuid !== (identity?.soundchartsArtistUuid || "")) {
-        await db.transaction(async (tx) => {
+        const applied = await db.transaction(async (tx) => {
+          if (!(await lockArtistIdentity(tx, artistId, links, identity?.soundchartsArtistUuid || ""))) return false;
           await purgeArtistSoundchartsMetrics(tx, artistId);
           await tx.insert(artistExternalIdentities).values({
             artistId, soundchartsArtistUuid: resolvedUuid, resolutionStatus: "resolved", matchedViaPlatform, matchedViaIdentifier, lastResolvedAt: new Date(), lastSyncedAt: null, lastError: "",
@@ -259,7 +310,9 @@ export async function syncArtistSoundcharts(artistId: string, force = false) {
             target: artistExternalIdentities.artistId,
             set: { soundchartsArtistUuid: resolvedUuid, resolutionStatus: "resolved", matchedViaPlatform, matchedViaIdentifier, lastResolvedAt: new Date(), lastSyncedAt: null, lastError: "", updatedAt: new Date() },
           });
+          return true;
         });
+        if (!applied) return { status: "superseded" as const, metrics: 0 };
       }
     }
 
@@ -267,8 +320,7 @@ export async function syncArtistSoundcharts(artistId: string, force = false) {
     const identityChanged = resolvedUuid !== (identity?.soundchartsArtistUuid || "");
     const published = await db.transaction(async (tx) => {
       // Same guard as the Lander path: never publish values fetched for an identity that was replaced meanwhile.
-      const current = (await tx.select({ uuid: artistExternalIdentities.soundchartsArtistUuid }).from(artistExternalIdentities).where(eq(artistExternalIdentities.artistId, artistId)).for("update"))[0];
-      if (!current || current.uuid !== resolvedUuid) return false;
+      if (!resolvedUuid || !(await lockArtistIdentity(tx, artistId, links, resolvedUuid))) return false;
       if (identityChanged) await purgeArtistSoundchartsMetrics(tx, artistId);
       await tx.insert(artistExternalIdentities).values({
         artistId,
