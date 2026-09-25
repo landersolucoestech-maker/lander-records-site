@@ -1,0 +1,28 @@
+# Metric semantics and freshness
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "producer": "soundcharts",
+  "stores": [
+    "artist_metrics",
+    "artist_metric_history",
+    "integration_metric_cache"
+  ],
+  "freshness": {
+    "soundchartsTtlHours": 24,
+    "spotifyTtlHours": 6,
+    "spotifyStaleMaxDays": 7,
+    "cronEveryHours": 6
+  },
+  "states": [
+    "VALUE",
+    "ZERO",
+    "NULL",
+    "ERROR",
+    "STALE"
+  ],
+  "render": {
+    "home": "'—' when absent",
+    "artistPage": "only value > 0"
+  },
+  "lastFreshnessCheck": null
+}

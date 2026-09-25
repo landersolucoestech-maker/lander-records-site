@@ -1,0 +1,37 @@
+{
+  "id": "implementation",
+  "title": "Implementation gate — compiles and unit-tested",
+  "checks": [
+    {
+      "name": "typecheck",
+      "type": "command",
+      "argv": [
+        "npm",
+        "run",
+        "typecheck"
+      ]
+    },
+    {
+      "name": "unit suites",
+      "type": "command",
+      "argv": [
+        "npm",
+        "test"
+      ],
+      "evidenceKind": "test"
+    },
+    {
+      "name": "no zero-fallback on metric/lead values",
+      "type": "forbidden-pattern",
+      "paths": [
+        "lib/integrations",
+        "modules/artists",
+        "app/(public)",
+        "lib/contact.ts",
+        "app/api/contact"
+      ],
+      "pattern": "(value|metric|metrics|followers|subscribers|listeners)[\\w\\]\\[\"'.:]*\\s*(\\|\\||\\?\\?)\\s*0\\b",
+      "message": "ZERO≠NULL: do not default metric values to 0"
+    }
+  ]
+}

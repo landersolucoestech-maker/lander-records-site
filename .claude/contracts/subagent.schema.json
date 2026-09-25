@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lander-os/subagent",
+  "title": "Subagent definition",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "parent",
+    "scope",
+    "checks",
+    "mode"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "mode": {
+      "enum": [
+        "read"
+      ]
+    }
+  }
+}

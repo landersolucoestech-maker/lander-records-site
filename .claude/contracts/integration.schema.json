@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lander-os/integration",
+  "title": "Integration health record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "provider",
+    "mode",
+    "health",
+    "dimensions",
+    "evidence",
+    "findings",
+    "observedAt"
+  ],
+  "properties": {
+    "provider": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "enum": [
+        "api-client",
+        "via-soundcharts",
+        "url-and-embed",
+        "outbound-webhook",
+        "storage-sdk"
+      ]
+    },
+    "health": {
+      "enum": [
+        "HEALTHY",
+        "DEGRADED",
+        "UNHEALTHY",
+        "BLOCKED_EXTERNAL",
+        "UNKNOWN"
+      ]
+    },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": {
+        "enum": [
+          "PASS",
+          "FAIL",
+          "PARTIAL",
+          "NOT_APPLICABLE",
+          "UNKNOWN",
+          "BLOCKED_EXTERNAL"
+        ]
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "observedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

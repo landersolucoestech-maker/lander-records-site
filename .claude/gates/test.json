@@ -1,0 +1,38 @@
+{
+  "id": "test",
+  "title": "Test gate",
+  "checks": [
+    {
+      "name": "unit suites",
+      "type": "command",
+      "argv": [
+        "npm",
+        "test"
+      ],
+      "evidenceKind": "test"
+    },
+    {
+      "name": "DB integration suites",
+      "type": "command",
+      "argv": [
+        "npm",
+        "run",
+        "test:integration"
+      ],
+      "requiresEnv": [
+        "DATABASE_URL"
+      ],
+      "evidenceKind": "test"
+    },
+    {
+      "name": "OS runtime tests",
+      "type": "command",
+      "argv": [
+        "npm",
+        "run",
+        "test:claude-os"
+      ],
+      "evidenceKind": "test"
+    }
+  ]
+}

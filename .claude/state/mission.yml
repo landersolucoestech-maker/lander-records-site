@@ -1,0 +1,6 @@
+# Mission state — written by .claude/runtime/mission.mjs (contract: contracts/mission.schema.json)
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "current": null,
+  "history": []
+}

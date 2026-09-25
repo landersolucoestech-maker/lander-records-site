@@ -1,0 +1,34 @@
+{
+  "id": "accessibility",
+  "title": "Accessibility gate",
+  "checks": [
+    {
+      "name": "contact form live regions",
+      "type": "required-pattern",
+      "file": "app/(public)/contato/ContactForm.tsx",
+      "pattern": "role=\\{state\\.status === \"error\" \\? \"alert\" : \"status\"\\}",
+      "message": "status/alert live region required"
+    },
+    {
+      "name": "skip link present",
+      "type": "required-pattern",
+      "file": "app/components/SkipLink.tsx",
+      "pattern": "main-content",
+      "message": "skip link must target main-content"
+    },
+    {
+      "name": "browser contact journey",
+      "type": "command",
+      "argv": [
+        "npx",
+        "playwright",
+        "test",
+        "tests/browser/contact-form.spec.ts"
+      ],
+      "requiresEnv": [
+        "PLAYWRIGHT_BASE_URL"
+      ],
+      "evidenceKind": "browser"
+    }
+  ]
+}

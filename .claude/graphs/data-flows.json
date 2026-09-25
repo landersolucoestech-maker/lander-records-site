@@ -1,0 +1,628 @@
+{
+  "generatedBy": ".claude/runtime/graph.mjs",
+  "tables": {
+    "artist_profiles": {
+      "definedIn": "lib/db/artist-management-schema.ts",
+      "readers": [
+        "app/admin/(protected)/artists/editor-data.ts",
+        "app/admin/(protected)/artists/page.tsx",
+        "modules/artists/repository.ts"
+      ],
+      "writers": [
+        "app/admin/artist-actions.ts"
+      ]
+    },
+    "artist_roles": {
+      "definedIn": "lib/db/artist-management-schema.ts",
+      "readers": [
+        "app/admin/(protected)/artists/editor-data.ts",
+        "app/admin/(protected)/artists/page.tsx",
+        "modules/artists/repository.ts"
+      ],
+      "writers": []
+    },
+    "artist_role_relations": {
+      "definedIn": "lib/db/artist-management-schema.ts",
+      "readers": [
+        "app/admin/(protected)/artists/editor-data.ts",
+        "app/admin/(protected)/artists/page.tsx",
+        "modules/artists/repository.ts"
+      ],
+      "writers": [
+        "app/admin/artist-actions.ts"
+      ]
+    },
+    "music_genres": {
+      "definedIn": "lib/db/artist-management-schema.ts",
+      "readers": [
+        "app/admin/(protected)/artists/editor-data.ts",
+        "app/admin/(protected)/artists/page.tsx",
+        "modules/artists/repository.ts"
+      ],
+      "writers": []
+    },
+    "artist_genre_relations": {
+      "definedIn": "lib/db/artist-management-schema.ts",
+      "readers": [
+        "app/admin/(protected)/artists/editor-data.ts",
+        "app/admin/(protected)/artists/page.tsx",
+        "modules/artists/repository.ts"
+      ],
+      "writers": [
+        "app/admin/artist-actions.ts"
+      ]
+    },
+    "artist_metrics": {
+      "definedIn": "lib/db/artist-management-schema.ts",
+      "readers": [
+        "app/admin/(protected)/artists/editor-data.ts",
+        "app/admin/(protected)/artists/page.tsx",
+        "modules/artists/repository.ts",
+        "scripts/release/db-0010-release.mjs"
+      ],
+      "writers": [
+        "app/admin/artist-actions.ts",
+        "lib/integrations/sync.ts"
+      ]
+    },
+    "artist_metric_history": {
+      "definedIn": "lib/db/artist-management-schema.ts",
+      "readers": [],
+      "writers": [
+        "lib/integrations/sync.ts"
+      ]
+    },
+    "artist_publication_destinations": {
+      "definedIn": "lib/db/artist-management-schema.ts",
+      "readers": [
+        "app/admin/(protected)/artists/editor-data.ts",
+        "app/admin/(protected)/artists/page.tsx",
+        "app/admin/artist-actions.ts",
+        "modules/artists/repository.ts"
+      ],
+      "writers": []
+    },
+    "artist_publication_placements": {
+      "definedIn": "lib/db/artist-management-schema.ts",
+      "readers": [
+        "app/admin/(protected)/artists/editor-data.ts",
+        "app/admin/(protected)/artists/page.tsx",
+        "modules/artists/repository.ts"
+      ],
+      "writers": [
+        "app/admin/artist-actions.ts"
+      ]
+    },
+    "lander_records_integration_settings": {
+      "definedIn": "lib/db/integration-schema.ts",
+      "readers": [
+        "app/admin/(protected)/settings/lander-records/page.tsx",
+        "app/admin/integration-actions.ts",
+        "lib/integrations/spotify.ts",
+        "lib/integrations/sync.ts"
+      ],
+      "writers": [
+        "app/admin/integration-actions.ts",
+        "lib/integrations/spotify.ts",
+        "lib/integrations/sync.ts"
+      ]
+    },
+    "artist_external_identities": {
+      "definedIn": "lib/db/integration-schema.ts",
+      "readers": [
+        "lib/integrations/sync.ts"
+      ],
+      "writers": [
+        "app/admin/artist-actions.ts",
+        "lib/integrations/sync.ts"
+      ]
+    },
+    "integration_metric_cache": {
+      "definedIn": "lib/db/integration-schema.ts",
+      "readers": [
+        "app/admin/(protected)/artists/page.tsx",
+        "app/admin/(protected)/settings/lander-records/page.tsx",
+        "lib/integrations/sync.ts"
+      ],
+      "writers": [
+        "app/admin/artist-actions.ts",
+        "lib/integrations/sync.ts"
+      ]
+    },
+    "spotify_release_cache": {
+      "definedIn": "lib/db/integration-schema.ts",
+      "readers": [
+        "lib/integrations/sync.ts"
+      ],
+      "writers": [
+        "app/admin/integration-actions.ts",
+        "lib/integrations/sync.ts"
+      ]
+    },
+    "spotify_oauth_states": {
+      "definedIn": "lib/db/integration-schema.ts",
+      "readers": [
+        "lib/integrations/spotify.ts"
+      ],
+      "writers": [
+        "lib/integrations/spotify.ts"
+      ]
+    },
+    "post_profiles": {
+      "definedIn": "lib/db/news-management-schema.ts",
+      "readers": [
+        "app/admin/(protected)/posts/page.tsx",
+        "lib/news-content.ts"
+      ],
+      "writers": [
+        "app/admin/post-actions.ts"
+      ]
+    },
+    "post_links": {
+      "definedIn": "lib/db/news-management-schema.ts",
+      "readers": [
+        "app/admin/(protected)/posts/page.tsx",
+        "lib/news-content.ts"
+      ],
+      "writers": [
+        "app/admin/post-actions.ts"
+      ]
+    },
+    "section_definitions": {
+      "definedIn": "lib/db/page-management-schema.ts",
+      "readers": [
+        "app/admin/(protected)/pages/[id]/view/page.tsx",
+        "app/admin/page-actions.ts"
+      ],
+      "writers": [
+        "app/admin/page-actions.ts"
+      ]
+    },
+    "page_section_bindings": {
+      "definedIn": "lib/db/page-management-schema.ts",
+      "readers": [
+        "app/admin/(protected)/pages/[id]/view/page.tsx"
+      ],
+      "writers": [
+        "app/admin/page-actions.ts"
+      ]
+    },
+    "admin_users": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/admin/(protected)/audit/page.tsx",
+        "app/admin/(protected)/layout.tsx",
+        "app/admin/(protected)/users/page.tsx",
+        "app/admin/actions.ts",
+        "app/admin/login/actions.ts",
+        "lib/auth/index.ts",
+        "lib/db/integration-schema.ts"
+      ],
+      "writers": [
+        "app/admin/actions.ts",
+        "app/admin/login/actions.ts"
+      ]
+    },
+    "admin_sessions": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "lib/auth/index.ts"
+      ],
+      "writers": [
+        "app/admin/actions.ts",
+        "lib/auth/index.ts"
+      ]
+    },
+    "audit_logs": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/admin/(protected)/audit/page.tsx",
+        "app/admin/(protected)/layout.tsx",
+        "app/admin/(protected)/page.tsx"
+      ],
+      "writers": [
+        "lib/auth/index.ts"
+      ]
+    },
+    "media_assets": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/admin/(protected)/artists/editor-data.ts",
+        "app/admin/(protected)/artists/page.tsx",
+        "app/admin/(protected)/media-kit/actions.ts",
+        "app/admin/(protected)/media-kit/page.tsx",
+        "app/admin/(protected)/media/page.tsx",
+        "app/admin/(protected)/pages/[id]/hero-media-actions.ts",
+        "app/admin/(protected)/pages/[id]/page.tsx",
+        "app/admin/(protected)/posts/page.tsx",
+        "app/admin/(protected)/settings/page.tsx",
+        "app/admin/page-content-actions.ts",
+        "lib/db/news-management-schema.ts",
+        "lib/news-content.ts",
+        "modules/artists/repository.ts",
+        "modules/media/repository.ts",
+        "modules/pages/repository.ts",
+        "modules/posts/repository.ts",
+        "modules/settings/repository.ts"
+      ],
+      "writers": [
+        "app/admin/(protected)/media-kit/actions.ts",
+        "app/admin/(protected)/pages/[id]/hero-media-actions.ts",
+        "app/admin/actions.ts",
+        "app/admin/artist-actions.ts",
+        "app/admin/post-actions.ts"
+      ]
+    },
+    "artist_categories": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/admin/(protected)/artists/editor-data.ts",
+        "app/admin/(protected)/categories/CategoryManager.tsx",
+        "app/admin/(protected)/categories/page.tsx",
+        "modules/artists/repository.ts"
+      ],
+      "writers": [
+        "app/admin/actions.ts"
+      ]
+    },
+    "artists": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/(public)/artistas/ArtistFilterGrid.tsx",
+        "app/(public)/artistas/[slug]/page.tsx",
+        "app/(public)/artistas/page.tsx",
+        "app/(public)/page.tsx",
+        "app/admin/(protected)/artists/ArtistForm.tsx",
+        "app/admin/(protected)/artists/ArtistManager.tsx",
+        "app/admin/(protected)/artists/[id]/page.tsx",
+        "app/admin/(protected)/artists/[id]/view/page.tsx",
+        "app/admin/(protected)/artists/editor-data.ts",
+        "app/admin/(protected)/artists/new/page.tsx",
+        "app/admin/(protected)/artists/page.tsx",
+        "app/admin/(protected)/audit/page.tsx",
+        "app/admin/(protected)/categories/CategoryManager.tsx",
+        "app/admin/(protected)/categories/page.tsx",
+        "app/admin/(protected)/home/page.tsx",
+        "app/admin/(protected)/media-kit/actions.ts",
+        "app/admin/(protected)/media-kit/components/MediaKitBuilder.tsx",
+        "app/admin/(protected)/media-kit/components/MediaKitPreviewDeck.tsx",
+        "app/admin/(protected)/media-kit/page.tsx",
+        "app/admin/(protected)/page.tsx",
+        "app/admin/(protected)/pages/PageManager.tsx",
+        "app/admin/(protected)/pages/[id]/view/page.tsx",
+        "app/admin/(protected)/pages/site-page-contract.ts",
+        "app/admin/artist-actions.ts",
+        "app/admin/components/AdminIcon.tsx",
+        "app/admin/components/AdminShell.tsx",
+        "app/admin/components/HomeManagerView.tsx",
+        "app/admin/components/admin-navigation.ts",
+        "app/admin/integration-actions.ts",
+        "app/cms-preview/AdminPreview.tsx",
+        "app/components/SiteChrome.tsx",
+        "app/sitemap.ts",
+        "lib/content.ts",
+        "lib/db/artist-management-schema.ts",
+        "lib/db/integration-schema.ts",
+        "lib/integrations/spotify.ts",
+        "lib/integrations/sync.ts",
+        "lib/mocks/admin.ts",
+        "lib/mocks/artists.ts",
+        "lib/mocks/index.ts",
+        "lib/mocks/media-kit.ts",
+        "lib/mocks/preview.ts",
+        "lib/mocks/site.ts",
+        "modules/artists/repository.ts",
+        "modules/artists/service.ts",
+        "scripts/validate-content.mjs"
+      ],
+      "writers": [
+        "app/admin/artist-actions.ts"
+      ]
+    },
+    "artist_category_relations": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/admin/(protected)/artists/editor-data.ts",
+        "app/admin/(protected)/artists/page.tsx",
+        "app/admin/actions.ts",
+        "modules/artists/repository.ts"
+      ],
+      "writers": [
+        "app/admin/artist-actions.ts"
+      ]
+    },
+    "artist_links": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/admin/(protected)/artists/editor-data.ts",
+        "app/admin/(protected)/artists/page.tsx",
+        "app/admin/artist-actions.ts",
+        "lib/integrations/sync.ts",
+        "modules/artists/repository.ts"
+      ],
+      "writers": [
+        "app/admin/artist-actions.ts"
+      ]
+    },
+    "artist_embeds": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/admin/(protected)/artists/editor-data.ts",
+        "app/admin/(protected)/artists/page.tsx",
+        "modules/artists/repository.ts"
+      ],
+      "writers": [
+        "app/admin/artist-actions.ts"
+      ]
+    },
+    "post_categories": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/admin/(protected)/categories/CategoryManager.tsx",
+        "app/admin/(protected)/categories/page.tsx",
+        "app/admin/(protected)/posts/PostManager.tsx",
+        "app/admin/(protected)/posts/page.tsx",
+        "modules/posts/repository.ts"
+      ],
+      "writers": [
+        "app/admin/actions.ts"
+      ]
+    },
+    "tags": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/admin/(protected)/categories/CategoryManager.tsx",
+        "app/admin/components/AdminIcon.tsx"
+      ],
+      "writers": []
+    },
+    "posts": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/(public)/noticias/NewsFilterGrid.tsx",
+        "app/(public)/noticias/[slug]/page.tsx",
+        "app/(public)/noticias/page.tsx",
+        "app/(public)/page.tsx",
+        "app/admin/(protected)/audit/page.tsx",
+        "app/admin/(protected)/categories/CategoryManager.tsx",
+        "app/admin/(protected)/home/page.tsx",
+        "app/admin/(protected)/media-kit/actions.ts",
+        "app/admin/(protected)/media-kit/components/MediaKitBuilder.tsx",
+        "app/admin/(protected)/media-kit/components/MediaKitPreviewDeck.tsx",
+        "app/admin/(protected)/media-kit/page.tsx",
+        "app/admin/(protected)/page.tsx",
+        "app/admin/(protected)/pages/site-page-contract.ts",
+        "app/admin/(protected)/posts/PostManager.tsx",
+        "app/admin/(protected)/posts/[id]/page.tsx",
+        "app/admin/(protected)/posts/[id]/view/page.tsx",
+        "app/admin/(protected)/posts/page.tsx",
+        "app/admin/actions.ts",
+        "app/admin/components/AdminIcon.tsx",
+        "app/admin/components/AdminShell.tsx",
+        "app/admin/components/DashboardView.tsx",
+        "app/admin/components/HomeManagerView.tsx",
+        "app/admin/components/admin-navigation.ts",
+        "app/admin/post-actions.ts",
+        "app/cms-preview/AdminPreview.tsx",
+        "app/sitemap.ts",
+        "lib/content.ts",
+        "lib/db/news-management-schema.ts",
+        "lib/mocks/admin.ts",
+        "lib/mocks/index.ts",
+        "lib/mocks/posts.ts",
+        "lib/mocks/preview.ts",
+        "modules/posts/repository.ts",
+        "scripts/validate-content.mjs"
+      ],
+      "writers": [
+        "app/admin/post-actions.ts"
+      ]
+    },
+    "post_tags": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [],
+      "writers": []
+    },
+    "releases": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/(public)/page.tsx",
+        "app/admin/(protected)/home/page.tsx",
+        "app/admin/(protected)/media-kit/components/MediaKitPreviewDeck.tsx",
+        "app/admin/(protected)/media-kit/page.tsx",
+        "app/admin/(protected)/pages/PageManager.tsx",
+        "app/admin/(protected)/pages/site-page-contract.ts",
+        "app/admin/components/AdminShell.tsx",
+        "app/admin/components/HomeManagerView.tsx",
+        "app/admin/components/admin-navigation.ts",
+        "lib/integrations/spotify.ts",
+        "lib/integrations/sync.ts",
+        "lib/mocks/integrations.ts",
+        "lib/mocks/media-kit.ts",
+        "lib/mocks/posts.ts",
+        "lib/mocks/preview.ts",
+        "lib/mocks/site.ts",
+        "modules/media/repository.ts"
+      ],
+      "writers": []
+    },
+    "pages": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/(public)/artistas/page.tsx",
+        "app/(public)/contato/page.tsx",
+        "app/(public)/noticias/page.tsx",
+        "app/(public)/page.tsx",
+        "app/(public)/politica-de-privacidade/page.tsx",
+        "app/(public)/sobre-nos/page.tsx",
+        "app/(public)/termos-e-condicoes/page.tsx",
+        "app/admin/(protected)/header/HeaderManagerView.tsx",
+        "app/admin/(protected)/header/HeaderPreview.tsx",
+        "app/admin/(protected)/home/page.tsx",
+        "app/admin/(protected)/media-kit/actions.ts",
+        "app/admin/(protected)/media-kit/components/MediaKitBuilder.tsx",
+        "app/admin/(protected)/media-kit/components/MediaKitPreviewDeck.tsx",
+        "app/admin/(protected)/media-kit/page.tsx",
+        "app/admin/(protected)/navigation/NavigationManager.tsx",
+        "app/admin/(protected)/page.tsx",
+        "app/admin/(protected)/pages/PageManager.tsx",
+        "app/admin/(protected)/pages/[id]/hero-media-actions.ts",
+        "app/admin/(protected)/pages/[id]/page.tsx",
+        "app/admin/(protected)/pages/[id]/view/page.tsx",
+        "app/admin/(protected)/pages/page.tsx",
+        "app/admin/(protected)/pages/site-page-contract.ts",
+        "app/admin/components/AdminIcon.tsx",
+        "app/admin/components/AdminShell.tsx",
+        "app/admin/components/HomeManagerView.tsx",
+        "app/admin/components/admin-navigation.ts",
+        "app/admin/page-actions.ts",
+        "app/admin/page-content-actions.ts",
+        "app/admin/page-content-contract.ts",
+        "app/cms-preview/AdminPreview.tsx",
+        "app/components/SiteChrome.tsx",
+        "lib/content.ts",
+        "lib/integrations/spotify.ts",
+        "lib/mocks/admin.ts",
+        "lib/mocks/media-kit.ts",
+        "lib/mocks/preview.ts",
+        "modules/pages/repository.ts",
+        "scripts/check-legacy-origin.mjs",
+        "scripts/validate-content.mjs"
+      ],
+      "writers": [
+        "app/admin/page-actions.ts"
+      ]
+    },
+    "page_sections": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/admin/(protected)/pages/[id]/hero-media-actions.ts",
+        "app/admin/(protected)/pages/[id]/page.tsx",
+        "app/admin/(protected)/pages/[id]/view/page.tsx",
+        "app/admin/(protected)/pages/page.tsx",
+        "app/admin/page-actions.ts",
+        "app/admin/page-content-actions.ts",
+        "lib/db/page-management-schema.ts",
+        "modules/pages/repository.ts"
+      ],
+      "writers": [
+        "app/admin/(protected)/pages/[id]/hero-media-actions.ts",
+        "app/admin/page-actions.ts",
+        "app/admin/page-content-actions.ts"
+      ]
+    },
+    "page_section_items": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/admin/(protected)/pages/[id]/page.tsx",
+        "app/admin/page-content-actions.ts",
+        "modules/pages/repository.ts"
+      ],
+      "writers": [
+        "app/admin/page-content-actions.ts"
+      ]
+    },
+    "navigation_items": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/admin/(protected)/navigation/page.tsx",
+        "app/admin/actions.ts",
+        "modules/settings/repository.ts"
+      ],
+      "writers": [
+        "app/admin/actions.ts"
+      ]
+    },
+    "site_settings": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/admin/(protected)/media-kit/page.tsx",
+        "app/admin/(protected)/settings/page.tsx",
+        "modules/settings/repository.ts"
+      ],
+      "writers": [
+        "app/admin/actions.ts"
+      ]
+    },
+    "social_links": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/admin/(protected)/media-kit/page.tsx",
+        "app/admin/(protected)/posts/PostManager.tsx",
+        "app/admin/(protected)/settings/page.tsx",
+        "modules/settings/repository.ts"
+      ],
+      "writers": [
+        "app/admin/actions.ts"
+      ]
+    },
+    "media_kit_settings": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/admin/(protected)/media-kit/page.tsx"
+      ],
+      "writers": [
+        "app/admin/(protected)/media-kit/actions.ts"
+      ]
+    },
+    "media_kit_sections": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/admin/(protected)/media-kit/actions.ts",
+        "app/admin/(protected)/media-kit/page.tsx"
+      ],
+      "writers": [
+        "app/admin/(protected)/media-kit/actions.ts"
+      ]
+    },
+    "media_kit_items": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/admin/(protected)/media-kit/actions.ts",
+        "app/admin/(protected)/media-kit/page.tsx"
+      ],
+      "writers": [
+        "app/admin/(protected)/media-kit/actions.ts"
+      ]
+    },
+    "contact_topics": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/api/contact/route.ts",
+        "modules/contacts/repository.ts"
+      ],
+      "writers": []
+    },
+    "contact_submissions": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "app/admin/(protected)/page.tsx",
+        "app/api/contact/route.ts",
+        "lib/contact.ts"
+      ],
+      "writers": [
+        "app/api/contact/route.ts"
+      ]
+    },
+    "integration_outbox": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "lib/contact.ts"
+      ],
+      "writers": [
+        "app/api/contact/route.ts",
+        "lib/contact.ts"
+      ]
+    },
+    "slug_redirects": {
+      "definedIn": "lib/db/schema.ts",
+      "readers": [
+        "modules/settings/repository.ts"
+      ],
+      "writers": [
+        "app/admin/artist-actions.ts",
+        "app/admin/post-actions.ts"
+      ]
+    }
+  }
+}

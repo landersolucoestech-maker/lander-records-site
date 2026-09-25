@@ -1,0 +1,71 @@
+{
+  "id": "release",
+  "title": "Release gate",
+  "checks": [
+    {
+      "name": "legacy origin check",
+      "type": "command",
+      "argv": [
+        "node",
+        "scripts/check-legacy-origin.mjs"
+      ]
+    },
+    {
+      "name": "typecheck",
+      "type": "command",
+      "argv": [
+        "npm",
+        "run",
+        "typecheck"
+      ]
+    },
+    {
+      "name": "unit suites",
+      "type": "command",
+      "argv": [
+        "npm",
+        "test"
+      ],
+      "evidenceKind": "test"
+    },
+    {
+      "name": "DB integration suites",
+      "type": "command",
+      "argv": [
+        "npm",
+        "run",
+        "test:integration"
+      ],
+      "requiresEnv": [
+        "DATABASE_URL"
+      ],
+      "evidenceKind": "test"
+    },
+    {
+      "name": "production build",
+      "type": "command",
+      "argv": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "evidenceKind": "build"
+    },
+    {
+      "name": "no open P0/P1 findings",
+      "type": "no-open-findings"
+    },
+    {
+      "name": "resolved findings proven",
+      "type": "resolved-have-fresh-evidence"
+    },
+    {
+      "name": "OS pack integrity",
+      "type": "command",
+      "argv": [
+        "node",
+        ".claude/runtime/pack.mjs"
+      ]
+    }
+  ]
+}

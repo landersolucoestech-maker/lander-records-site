@@ -1,0 +1,488 @@
+{
+  "generatedBy": ".claude/runtime/graph.mjs",
+  "coveredFiles": {
+    "lib/auth/development-bypass.ts": [
+      "tests/auth/development-bypass.test.mjs"
+    ],
+    "app/admin/(protected)/artists/editor-data.ts": [
+      "tests/auth/guards.test.mjs"
+    ],
+    "app/admin/actions.ts": [
+      "tests/auth/guards.test.mjs",
+      "tests/unit/admin-dashboard-visual-contract.test.mjs",
+      "tests/unit/navigation-manager-contract.test.mjs",
+      "tests/unit/page-content-action-contract.test.mjs"
+    ],
+    "app/api/integrations/spotify/callback/route.ts": [
+      "tests/auth/guards.test.mjs",
+      "tests/spotify-security.test.cjs"
+    ],
+    "app/api/integrations/spotify/connect/route.ts": [
+      "tests/auth/guards.test.mjs",
+      "tests/unit/admin-dashboard-visual-contract.test.mjs"
+    ],
+    "app/admin/artist-actions.ts": [
+      "tests/auth/guards.test.mjs",
+      "tests/unit/artist-action-integrity.test.mjs",
+      "tests/unit/integration-identity-url.test.mjs",
+      "tests/unit/mock-admin-crud.test.mjs"
+    ],
+    "app/admin/post-actions.ts": [
+      "tests/auth/guards.test.mjs",
+      "tests/unit/admin-dashboard-visual-contract.test.mjs",
+      "tests/unit/mock-admin-crud.test.mjs",
+      "tests/unit/post-action-integrity.test.mjs"
+    ],
+    "app/admin/page-actions.ts": [
+      "tests/auth/guards.test.mjs",
+      "tests/unit/pages-canonical-structure-guard.test.mjs",
+      "tests/unit/pages-manager-contract.test.mjs"
+    ],
+    "app/admin/integration-actions.ts": [
+      "tests/auth/guards.test.mjs",
+      "tests/unit/admin-dashboard-visual-contract.test.mjs"
+    ],
+    "app/api/admin/status/route.ts": [
+      "tests/auth/guards.test.mjs"
+    ],
+    "app/admin/(protected)/home/page.tsx": [
+      "tests/auth/guards.test.mjs",
+      "tests/unit/home-manager-contract.test.mjs"
+    ],
+    "app/admin/(protected)/artists/page.tsx": [
+      "tests/auth/guards.test.mjs",
+      "tests/unit/admin-navigation.test.mjs",
+      "tests/unit/artists-manager-contract.test.mjs",
+      "tests/unit/mock-admin-crud.test.mjs",
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "app/admin/(protected)/posts/page.tsx": [
+      "tests/auth/guards.test.mjs",
+      "tests/unit/admin-dashboard-visual-contract.test.mjs",
+      "tests/unit/mock-admin-crud.test.mjs",
+      "tests/unit/mock-data-contract.test.mjs",
+      "tests/unit/news-manager-contract.test.mjs"
+    ],
+    "app/admin/(protected)/pages/page.tsx": [
+      "tests/auth/guards.test.mjs",
+      "tests/unit/mock-data-contract.test.mjs",
+      "tests/unit/pages-manager-contract.test.mjs"
+    ],
+    "app/admin/(protected)/pages/[id]/page.tsx": [
+      "tests/auth/guards.test.mjs",
+      "tests/unit/hero-media-contract.test.mjs",
+      "tests/unit/pages-manager-contract.test.mjs"
+    ],
+    "app/admin/(protected)/pages/[id]/view/page.tsx": [
+      "tests/auth/guards.test.mjs",
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "app/admin/(protected)/navigation/page.tsx": [
+      "tests/auth/guards.test.mjs",
+      "tests/unit/mock-data-contract.test.mjs",
+      "tests/unit/navigation-manager-contract.test.mjs"
+    ],
+    "app/admin/(protected)/header/page.tsx": [
+      "tests/auth/guards.test.mjs",
+      "tests/unit/header-manager-contract.test.mjs"
+    ],
+    "lib/auth/policy.ts": [
+      "tests/auth/policy.test.mjs"
+    ],
+    "scripts/migration-utils.mjs": [
+      "tests/database/hardening.test.mjs"
+    ],
+    "scripts/db-catalog.mjs": [
+      "tests/database/hardening.test.mjs"
+    ],
+    "migrations/0007_external_integrations.sql": [
+      "tests/database/hardening.test.mjs"
+    ],
+    "migrations/0008_local_media_storage.sql": [
+      "tests/database/hardening.test.mjs"
+    ],
+    "migrations/0010_preserve_integration_history.sql": [
+      "tests/database/hardening.test.mjs"
+    ],
+    "migrations/0011_authorization_boundary_hardening.sql": [
+      "tests/database/hardening.test.mjs"
+    ],
+    "lib/db/schema.ts": [
+      "tests/database/hardening.test.mjs",
+      "tests/unit/admin-reference-refactor.test.mjs",
+      "tests/unit/contact-outbox-policy.test.mjs"
+    ],
+    "lib/integrations/sync.ts": [
+      "tests/database/hardening.test.mjs",
+      "tests/integration/soundcharts-identity-sync.mjs",
+      "tests/unit/mock-data-contract.test.mjs",
+      "tests/unit/pages-manager-contract.test.mjs"
+    ],
+    "scripts/audit-db.mjs": [
+      "tests/database/hardening.test.mjs"
+    ],
+    "scripts/migrate.mjs": [
+      "tests/database/migration-path.integration.mjs"
+    ],
+    "lib/contact.ts": [
+      "tests/integration/contact-outbox-delivery.mjs",
+      "tests/unit/contact-outbox-policy.test.mjs",
+      "tests/unit/contact-outbox-retry.test.mjs"
+    ],
+    "lib/integrations/spotify.ts": [
+      "tests/spotify-security.test.cjs",
+      "tests/unit/pages-manager-contract.test.mjs"
+    ],
+    "app/admin/components/DashboardView.tsx": [
+      "tests/unit/admin-dashboard-refactor.test.mjs"
+    ],
+    "app/admin/(protected)/page.tsx": [
+      "tests/unit/admin-dashboard-refactor.test.mjs"
+    ],
+    "app/admin/components/AdminShell.tsx": [
+      "tests/unit/admin-dashboard-refactor.test.mjs",
+      "tests/unit/admin-dashboard-visual-contract.test.mjs",
+      "tests/unit/admin-reference-refactor.test.mjs",
+      "tests/unit/pages-manager-contract.test.mjs"
+    ],
+    "app/admin/(protected)/layout.tsx": [
+      "tests/unit/admin-dashboard-refactor.test.mjs",
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "lib/mocks/admin.ts": [
+      "tests/unit/admin-dashboard-refactor.test.mjs",
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "app/admin/(protected)/artists/ArtistManager.tsx": [
+      "tests/unit/admin-dashboard-visual-contract.test.mjs",
+      "tests/unit/admin-modal-scroll-contract.test.mjs",
+      "tests/unit/admin-reference-refactor.test.mjs",
+      "tests/unit/artists-manager-contract.test.mjs",
+      "tests/unit/mock-admin-crud.test.mjs"
+    ],
+    "app/admin/(protected)/posts/PostManager.tsx": [
+      "tests/unit/admin-dashboard-visual-contract.test.mjs",
+      "tests/unit/admin-modal-scroll-contract.test.mjs",
+      "tests/unit/admin-reference-refactor.test.mjs",
+      "tests/unit/mock-admin-crud.test.mjs",
+      "tests/unit/news-manager-contract.test.mjs"
+    ],
+    "app/admin/(protected)/posts/[id]/page.tsx": [
+      "tests/unit/admin-dashboard-visual-contract.test.mjs"
+    ],
+    "app/admin/(protected)/posts/[id]/view/page.tsx": [
+      "tests/unit/admin-dashboard-visual-contract.test.mjs"
+    ],
+    "app/admin/components/HomeManagerView.tsx": [
+      "tests/unit/admin-dashboard-visual-contract.test.mjs",
+      "tests/unit/home-manager-contract.test.mjs",
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "app/admin/(protected)/media/MediaLibrary.tsx": [
+      "tests/unit/admin-dashboard-visual-contract.test.mjs",
+      "tests/unit/admin-modal-scroll-contract.test.mjs",
+      "tests/unit/admin-reference-refactor.test.mjs"
+    ],
+    "app/admin/(protected)/header/HeaderManagerView.tsx": [
+      "tests/unit/admin-dashboard-visual-contract.test.mjs",
+      "tests/unit/header-manager-contract.test.mjs"
+    ],
+    "app/admin/(protected)/media-kit/page.tsx": [
+      "tests/unit/admin-dashboard-visual-contract.test.mjs",
+      "tests/unit/admin-reference-refactor.test.mjs",
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "app/admin/(protected)/settings/page.tsx": [
+      "tests/unit/admin-dashboard-visual-contract.test.mjs",
+      "tests/unit/admin-reference-refactor.test.mjs",
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "app/admin/(protected)/settings/lander-records/page.tsx": [
+      "tests/unit/admin-dashboard-visual-contract.test.mjs",
+      "tests/unit/admin-reference-refactor.test.mjs",
+      "tests/unit/mock-data-contract.test.mjs",
+      "tests/unit/pages-manager-contract.test.mjs"
+    ],
+    "app/admin/(protected)/pages/PageManager.tsx": [
+      "tests/unit/admin-modal-scroll-contract.test.mjs",
+      "tests/unit/pages-canonical-structure-guard.test.mjs",
+      "tests/unit/pages-manager-contract.test.mjs"
+    ],
+    "app/admin/components/AdminMediaPicker.tsx": [
+      "tests/unit/admin-modal-scroll-contract.test.mjs"
+    ],
+    "app/admin/components/admin-navigation.ts": [
+      "tests/unit/admin-navigation.test.mjs",
+      "tests/unit/admin-reference-refactor.test.mjs"
+    ],
+    "app/admin/(protected)/${route}/page.tsx": [
+      "tests/unit/admin-navigation.test.mjs"
+    ],
+    "app/admin/(protected)/media/page.tsx": [
+      "tests/unit/admin-reference-refactor.test.mjs",
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "app/admin/(protected)/media-kit/components/MediaKitPreviewDeck.tsx": [
+      "tests/unit/admin-reference-refactor.test.mjs",
+      "tests/unit/media-kit-layout-contract.test.mjs"
+    ],
+    "app/admin/(protected)/media-kit/components/MediaKitBuilder.tsx": [
+      "tests/unit/admin-reference-refactor.test.mjs",
+      "tests/unit/media-kit-layout-contract.test.mjs"
+    ],
+    "app/admin/(protected)/media-kit/actions.ts": [
+      "tests/unit/admin-reference-refactor.test.mjs",
+      "tests/unit/media-kit-layout-contract.test.mjs",
+      "tests/unit/production-readiness.test.mjs"
+    ],
+    "app/admin/(protected)/media-kit/preview-auth.ts": [
+      "tests/unit/admin-reference-refactor.test.mjs",
+      "tests/unit/production-readiness.test.mjs"
+    ],
+    "migrations/0015_media_kit_builder.sql": [
+      "tests/unit/admin-reference-refactor.test.mjs"
+    ],
+    "migrations/0016_media_kit_reference_layout.sql": [
+      "tests/unit/admin-reference-refactor.test.mjs"
+    ],
+    "app/admin/(protected)/settings/SettingsTabs.tsx": [
+      "tests/unit/admin-reference-refactor.test.mjs"
+    ],
+    "app/admin/(protected)/users/page.tsx": [
+      "tests/unit/admin-reference-refactor.test.mjs",
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "app/admin/components/AdminPagination.tsx": [
+      "tests/unit/admin-reference-refactor.test.mjs",
+      "tests/unit/artists-manager-contract.test.mjs",
+      "tests/unit/news-manager-contract.test.mjs"
+    ],
+    "app/(public)/artistas/[slug]/page.tsx": [
+      "tests/unit/artist-action-integrity.test.mjs",
+      "tests/unit/public-link-safety.test.mjs"
+    ],
+    "app/admin/(protected)/artists/[id]/page.tsx": [
+      "tests/unit/artists-manager-contract.test.mjs",
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "app/admin/(protected)/artists/new/page.tsx": [
+      "tests/unit/artists-manager-contract.test.mjs",
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "app/cms-preview/AdminPreview.tsx": [
+      "tests/unit/artists-manager-contract.test.mjs",
+      "tests/unit/cms-preview-boundary.test.mjs",
+      "tests/unit/header-manager-contract.test.mjs",
+      "tests/unit/mock-data-contract.test.mjs",
+      "tests/unit/navigation-manager-contract.test.mjs",
+      "tests/unit/news-manager-contract.test.mjs"
+    ],
+    "app/cms-preview/[[...section]]/page.tsx": [
+      "tests/unit/cms-preview-boundary.test.mjs"
+    ],
+    "app/cms-preview/layout.tsx": [
+      "tests/unit/cms-preview-boundary.test.mjs"
+    ],
+    "lib/contact-client-ip.ts": [
+      "tests/unit/contact-client-ip.test.mjs"
+    ],
+    "app/api/contact/route.ts": [
+      "tests/unit/contact-client-ip.test.mjs"
+    ],
+    "app/(public)/contato/ContactForm.tsx": [
+      "tests/unit/contact-client-ip.test.mjs"
+    ],
+    "lib/contact-idempotency.ts": [
+      "tests/unit/contact-idempotency.test.mjs"
+    ],
+    "lib/contact-outbox-policy.ts": [
+      "tests/unit/contact-outbox-policy.test.mjs"
+    ],
+    "migrations/0018_outbox_dead_letter.sql": [
+      "tests/unit/contact-outbox-policy.test.mjs"
+    ],
+    "app/api/cron/integrations/route.ts": [
+      "tests/unit/contact-outbox-retry.test.mjs"
+    ],
+    "app/components/SiteChrome.tsx": [
+      "tests/unit/header-manager-contract.test.mjs",
+      "tests/unit/navigation-manager-contract.test.mjs",
+      "tests/unit/public-link-safety.test.mjs"
+    ],
+    "app/components/MobileNavigation.tsx": [
+      "tests/unit/header-manager-contract.test.mjs",
+      "tests/unit/public-link-safety.test.mjs"
+    ],
+    "modules/settings/repository.ts": [
+      "tests/unit/header-manager-contract.test.mjs",
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "app/admin/(protected)/header/HeaderPreview.tsx": [
+      "tests/unit/header-manager-contract.test.mjs"
+    ],
+    "app/admin/(protected)/pages/site-page-contract.ts": [
+      "tests/unit/hero-media-contract.test.mjs",
+      "tests/unit/pages-manager-contract.test.mjs"
+    ],
+    "app/admin/(protected)/pages/[id]/PageContentWorkbench.tsx": [
+      "tests/unit/hero-media-contract.test.mjs",
+      "tests/unit/pages-manager-contract.test.mjs"
+    ],
+    "app/admin/(protected)/pages/[id]/hero-media-actions.ts": [
+      "tests/unit/hero-media-contract.test.mjs"
+    ],
+    "modules/pages/repository.ts": [
+      "tests/unit/hero-media-contract.test.mjs",
+      "tests/unit/mock-data-contract.test.mjs",
+      "tests/unit/pages-manager-contract.test.mjs"
+    ],
+    "app/(public)/page.tsx": [
+      "tests/unit/hero-media-contract.test.mjs",
+      "tests/unit/lander-records-content-fidelity.test.mjs",
+      "tests/unit/pages-manager-contract.test.mjs",
+      "tests/unit/seo-canonical.test.mjs"
+    ],
+    "lib/mocks/preview.ts": [
+      "tests/unit/home-manager-contract.test.mjs",
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "lib/integrations/identity.ts": [
+      "tests/unit/integration-identity-url.test.mjs"
+    ],
+    "lib/integrations/soundcharts.ts": [
+      "tests/unit/integration-identity-url.test.mjs"
+    ],
+    "migrations/0002_initial_content.sql": [
+      "tests/unit/lander-records-content-fidelity.test.mjs"
+    ],
+    "migrations/0014_home_lander_records_editorial_identity.sql": [
+      "tests/unit/lander-records-content-fidelity.test.mjs"
+    ],
+    "lib/media-embed.ts": [
+      "tests/unit/media-embed.test.mjs"
+    ],
+    "lib/mocks/media-kit.ts": [
+      "tests/unit/media-kit-layout-contract.test.mjs",
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "migrations/0017_media_kit_reference_sequence.sql": [
+      "tests/unit/media-kit-layout-contract.test.mjs"
+    ],
+    "app/admin/(protected)/artists/ArtistForm.tsx": [
+      "tests/unit/mock-admin-crud.test.mjs"
+    ],
+    "lib/mocks/artists.ts": [
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "lib/mocks/config.ts": [
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "lib/mocks/integrations.ts": [
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "lib/mocks/media.ts": [
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "lib/mocks/posts.ts": [
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "lib/mocks/site.ts": [
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "modules/artists/repository.ts": [
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "modules/posts/repository.ts": [
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "modules/contacts/repository.ts": [
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "lib/news-content.ts": [
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "app/admin/(protected)/categories/page.tsx": [
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "app/admin/(protected)/audit/page.tsx": [
+      "tests/unit/mock-data-contract.test.mjs"
+    ],
+    "app/admin/navigation-contract.ts": [
+      "tests/unit/navigation-manager-contract.test.mjs"
+    ],
+    "app/admin/(protected)/navigation/NavigationManager.tsx": [
+      "tests/unit/navigation-manager-contract.test.mjs"
+    ],
+    "app/admin/page-content-contract.ts": [
+      "tests/unit/page-content-action-contract.test.mjs"
+    ],
+    "app/admin/page-content-actions.ts": [
+      "tests/unit/page-content-action-contract.test.mjs"
+    ],
+    "app/admin/(protected)/pages/page-contract.ts": [
+      "tests/unit/pages-manager-contract.test.mjs"
+    ],
+    "app/(public)/sobre-nos/page.tsx": [
+      "tests/unit/pages-manager-contract.test.mjs",
+      "tests/unit/seo-canonical.test.mjs"
+    ],
+    "app/(public)/artistas/page.tsx": [
+      "tests/unit/pages-manager-contract.test.mjs",
+      "tests/unit/seo-canonical.test.mjs"
+    ],
+    "app/(public)/noticias/page.tsx": [
+      "tests/unit/pages-manager-contract.test.mjs",
+      "tests/unit/seo-canonical.test.mjs"
+    ],
+    "app/(public)/contato/page.tsx": [
+      "tests/unit/pages-manager-contract.test.mjs",
+      "tests/unit/seo-canonical.test.mjs"
+    ],
+    "app/(public)/politica-de-privacidade/page.tsx": [
+      "tests/unit/pages-manager-contract.test.mjs",
+      "tests/unit/seo-canonical.test.mjs"
+    ],
+    "app/(public)/termos-e-condicoes/page.tsx": [
+      "tests/unit/pages-manager-contract.test.mjs",
+      "tests/unit/seo-canonical.test.mjs"
+    ],
+    "app/sitemap.ts": [
+      "tests/unit/pages-manager-contract.test.mjs",
+      "tests/unit/seo-canonical.test.mjs"
+    ],
+    "migrations/0012_lander_site_cms_alignment.sql": [
+      "tests/unit/pages-manager-contract.test.mjs"
+    ],
+    "migrations/0013_home_latest_releases_playlist.sql": [
+      "tests/unit/pages-manager-contract.test.mjs"
+    ],
+    "app/(public)/noticias/[slug]/page.tsx": [
+      "tests/unit/post-action-integrity.test.mjs"
+    ],
+    "scripts/deploy/runtime-smoke.mjs": [
+      "tests/unit/production-readiness.test.mjs"
+    ],
+    "app/(public)/error.tsx": [
+      "tests/unit/public-boundaries.test.mjs"
+    ],
+    "app/global-error.tsx": [
+      "tests/unit/public-boundaries.test.mjs"
+    ],
+    "app/components/PublicRouteLoading.tsx": [
+      "tests/unit/public-boundaries.test.mjs"
+    ],
+    "app/(public)/artistas/loading.tsx": [
+      "tests/unit/public-boundaries.test.mjs"
+    ],
+    "app/(public)/noticias/loading.tsx": [
+      "tests/unit/public-boundaries.test.mjs"
+    ],
+    "lib/public-link.ts": [
+      "tests/unit/public-link-safety.test.mjs"
+    ],
+    "lib/seo.ts": [
+      "tests/unit/seo-canonical.test.mjs"
+    ]
+  },
+  "uncoveredCritical": []
+}

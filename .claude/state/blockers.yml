@@ -1,0 +1,19 @@
+# External blockers (BLOCKED_EXTERNAL findings and environment limits)
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "blockers": [],
+  "environmentLimits": [
+    {
+      "id": "ENV-001",
+      "what": "no provider credentials (Soundcharts, Spotify, Supabase) in the engineering environment",
+      "effect": "live integration dimensions stay UNKNOWN",
+      "unblock": "run integration-health-check where credentials exist"
+    },
+    {
+      "id": "ENV-002",
+      "what": "no outbound internet for browser tests",
+      "effect": "embed iframe test times out",
+      "unblock": "run public-routes spec with network"
+    }
+  ]
+}

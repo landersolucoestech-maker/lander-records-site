@@ -1,0 +1,66 @@
+# Workflow integration-full-audit — Audit every provider chain
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "id": "integration-full-audit",
+  "title": "Audit every provider chain",
+  "trigger": "operator or sensor",
+  "phases": [
+    {
+      "id": "audit",
+      "agents": [
+        "integrations-auditor",
+        "identity-auditor"
+      ],
+      "skills": [
+        "integration-audit",
+        "contract-audit"
+      ],
+      "gates": [
+        "integration"
+      ],
+      "transition": "provider findings"
+    },
+    {
+      "id": "health",
+      "agents": [
+        "observability-lead"
+      ],
+      "skills": [
+        "integration-health-check"
+      ],
+      "gates": [],
+      "transition": "state/integrations.yml updated"
+    },
+    {
+      "id": "reconcile",
+      "agents": [
+        "integrity-lead"
+      ],
+      "skills": [
+        "cross-provider-reconciliation",
+        "metric-freshness"
+      ],
+      "gates": [
+        "identity"
+      ],
+      "transition": "identity findings"
+    }
+  ],
+  "stopConditions": [
+    "product decision required (DEC)",
+    "destructive/data-loss risk",
+    "external system or credential unavailable (BLOCKED_EXTERNAL)",
+    "unresolvable ambiguity",
+    "irreversible architectural change",
+    "contradictory requirements"
+  ],
+  "outputs": [
+    "findings/*.json updated",
+    "evidence/EV-*.json",
+    "atomic commits"
+  ],
+  "stateTransitions": [
+    "READY → INVESTIGATING → ROOT_CAUSE_CONFIRMED → FIXING → VALIDATING → REAUDITING → RESOLVED"
+  ],
+  "rollback": "revert only this workflow's own commits (git revert); never reset/clean pre-existing work; data side effects need compensation per ADR/incident workflow"
+}

@@ -1,0 +1,89 @@
+{
+  "confidence": "confirmed",
+  "dependencies": [],
+  "risk": "low",
+  "discoveredAt": "2026-09-25T13:50:00.000Z",
+  "id": "F-0004",
+  "title": "Soundcharts requests have no timeout",
+  "severity": "P2",
+  "domain": "integrations",
+  "status": "REAUDITING",
+  "evidence": [
+    "lib/integrations/soundcharts.ts (base): fetch without signal in getAccessToken and soundchartsRequest; Spotify client uses AbortSignal.timeout(10s)"
+  ],
+  "rootCause": "Client written without abort signal; a hung provider holds the cron request indefinitely.",
+  "producer": [
+    "lib/integrations/soundcharts.ts"
+  ],
+  "consumers": [
+    "app/api/cron/integrations/route.ts",
+    "admin sync actions"
+  ],
+  "affectedFlow": "scheduled sync",
+  "invariantViolated": "Every outbound request is time-bounded",
+  "blastRadius": "cron runs and admin actions hanging; lead outbox retry shares the cron request",
+  "autofix": {
+    "eligible": true,
+    "reason": "mirrors existing Spotify pattern"
+  },
+  "correction": "AbortSignal.timeout(10s) + redirect:'error' on token and API requests",
+  "requiredTests": [
+    "tests/integration/soundcharts-identity-sync.mjs (signal assertion)"
+  ],
+  "regressionRisk": "low",
+  "impactLevel": "L3",
+  "producerAgent": "integrations-auditor",
+  "commits": [
+    "48b1f3f"
+  ],
+  "history": [
+    {
+      "status": "DISCOVERED",
+      "at": "2026-09-25T13:50:00.000Z",
+      "by": "leads-auditor",
+      "note": "provider client review"
+    },
+    {
+      "status": "TRIAGED",
+      "at": "2026-09-25T13:51:00.000Z",
+      "by": "autonomous-controller",
+      "note": "severity and domain assigned"
+    },
+    {
+      "status": "READY",
+      "at": "2026-09-25T13:52:00.000Z",
+      "by": "autonomous-controller",
+      "note": "root cause traceable in repo; autofix eligible"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-25T13:53:00.000Z",
+      "by": "owner lead",
+      "note": "tracing producer → consumer"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-25T13:54:00.000Z",
+      "by": "owner lead",
+      "note": "missing abort signal"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-25T13:55:00.000Z",
+      "by": "owner lead",
+      "note": "timeout + redirect policy"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-25T13:56:00.000Z",
+      "by": "qa-lead",
+      "note": "tests added; commits 48b1f3f"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-25T13:57:00.000Z",
+      "by": "auditor",
+      "note": "re-running the detecting check on the fixed code"
+    }
+  ]
+}

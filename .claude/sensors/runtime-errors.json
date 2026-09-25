@@ -1,0 +1,19 @@
+{
+  "id": "runtime-errors",
+  "title": "Runtime health endpoint",
+  "kind": "check",
+  "domain": "observability",
+  "feeds": "all",
+  "invariant": "/api/health/ reports application and database ok",
+  "severity": "P0",
+  "check": {
+    "type": "command",
+    "argv": [
+      "node",
+      ".claude/runtime/probes/http-health.mjs"
+    ],
+    "requiresEnv": [
+      "OS_BASE_URL"
+    ]
+  }
+}

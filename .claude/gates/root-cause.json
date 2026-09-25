@@ -1,0 +1,30 @@
+{
+  "id": "root-cause",
+  "title": "Root cause gate — no symptom masking",
+  "checks": [
+    {
+      "name": "no zero-fallback on metric/lead values",
+      "type": "forbidden-pattern",
+      "paths": [
+        "lib/integrations",
+        "modules/artists",
+        "app/(public)",
+        "lib/contact.ts",
+        "app/api/contact"
+      ],
+      "pattern": "(value|metric|metrics|followers|subscribers|listeners)[\\w\\]\\[\"'.:]*\\s*(\\|\\||\\?\\?)\\s*0\\b",
+      "message": "ZERO≠NULL: do not default metric values to 0"
+    },
+    {
+      "name": "no empty catch blocks in server code",
+      "type": "forbidden-pattern",
+      "paths": [
+        "lib",
+        "app/api",
+        "modules"
+      ],
+      "pattern": "catch\\s*(\\(\\w*\\))?\\s*\\{\\s*\\}",
+      "message": "empty catch hides errors"
+    }
+  ]
+}

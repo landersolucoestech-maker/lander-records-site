@@ -1,0 +1,32 @@
+{
+  "id": "architecture",
+  "title": "Architecture gate",
+  "checks": [
+    {
+      "name": "lib never imports app",
+      "type": "forbidden-pattern",
+      "paths": [
+        "lib"
+      ],
+      "pattern": "from [\"'](\\.\\./)+app/|from [\"']@/app/",
+      "message": "lib/ must not depend on app/"
+    },
+    {
+      "name": "pack integrity",
+      "type": "command",
+      "argv": [
+        "node",
+        ".claude/runtime/pack.mjs"
+      ]
+    },
+    {
+      "name": "graphs current",
+      "type": "command",
+      "argv": [
+        "node",
+        ".claude/runtime/graph.mjs",
+        "check"
+      ]
+    }
+  ]
+}

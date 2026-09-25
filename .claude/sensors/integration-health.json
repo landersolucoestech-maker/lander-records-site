@@ -1,0 +1,28 @@
+{
+  "id": "integration-health",
+  "title": "Persisted provider errors",
+  "kind": "sql",
+  "domain": "integrations",
+  "feeds": "artist/lander metrics, home releases",
+  "invariant": "providers sync without persisted errors",
+  "probes": [
+    {
+      "name": "artist-identity-errors",
+      "severity": "P2",
+      "message": "artists with a persisted Soundcharts error",
+      "sql": "SELECT artist_id, left(last_error, 120) AS error FROM artist_external_identities WHERE last_error <> ''"
+    },
+    {
+      "name": "lander-soundcharts-error",
+      "severity": "P2",
+      "message": "Lander Records Soundcharts sync error persisted",
+      "sql": "SELECT left(soundcharts_last_error, 120) AS error FROM lander_records_integration_settings WHERE soundcharts_last_error <> ''"
+    },
+    {
+      "name": "spotify-error",
+      "severity": "P2",
+      "message": "Spotify release sync error persisted",
+      "sql": "SELECT left(spotify_last_error, 120) AS error FROM lander_records_integration_settings WHERE spotify_last_error <> ''"
+    }
+  ]
+}

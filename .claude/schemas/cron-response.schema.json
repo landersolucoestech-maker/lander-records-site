@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GET /api/cron/integrations/",
+  "type": "object",
+  "required": [
+    "ok"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean"
+    },
+    "result": {
+      "type": "object",
+      "required": [
+        "spotify",
+        "landerSoundcharts",
+        "artistsSoundcharts"
+      ],
+      "properties": {
+        "spotify": {
+          "type": "object"
+        },
+        "landerSoundcharts": {
+          "type": "object"
+        },
+        "artistsSoundcharts": {
+          "type": "array"
+        }
+      }
+    },
+    "outbox": {
+      "type": "object",
+      "required": [
+        "claimed",
+        "delivered",
+        "failed",
+        "disabled"
+      ],
+      "properties": {
+        "claimed": {
+          "type": "integer"
+        },
+        "delivered": {
+          "type": "integer"
+        },
+        "failed": {
+          "type": "integer"
+        },
+        "disabled": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

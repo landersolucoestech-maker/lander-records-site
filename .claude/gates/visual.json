@@ -1,0 +1,30 @@
+{
+  "id": "visual",
+  "title": "Visual gate",
+  "checks": [
+    {
+      "name": "admin visual contracts",
+      "type": "command",
+      "argv": [
+        "node",
+        "--test",
+        "tests/unit/admin-dashboard-visual-contract.test.mjs",
+        "tests/unit/admin-modal-scroll-contract.test.mjs"
+      ]
+    },
+    {
+      "name": "public routes across viewports",
+      "type": "command",
+      "argv": [
+        "npx",
+        "playwright",
+        "test",
+        "tests/browser/public-routes.spec.ts"
+      ],
+      "requiresEnv": [
+        "PLAYWRIGHT_BASE_URL"
+      ],
+      "evidenceKind": "browser"
+    }
+  ]
+}

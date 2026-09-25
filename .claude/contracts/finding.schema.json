@@ -1,0 +1,267 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lander-os/finding",
+  "title": "Finding",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "severity",
+    "domain",
+    "status",
+    "confidence",
+    "evidence",
+    "rootCause",
+    "producer",
+    "consumers",
+    "affectedFlow",
+    "invariantViolated",
+    "blastRadius",
+    "dependencies",
+    "autofix",
+    "risk",
+    "correction",
+    "requiredTests",
+    "regressionRisk",
+    "impactLevel",
+    "producerAgent",
+    "discoveredAt",
+    "history"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^F-\\d{4}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "severity": {
+      "enum": [
+        "P0",
+        "P1",
+        "P2",
+        "P3"
+      ]
+    },
+    "domain": {
+      "enum": [
+        "architecture",
+        "frontend",
+        "backend",
+        "database",
+        "integrations",
+        "identity",
+        "leads",
+        "seo",
+        "content",
+        "accessibility",
+        "performance",
+        "security",
+        "observability",
+        "dependencies",
+        "product-flows",
+        "release"
+      ]
+    },
+    "status": {
+      "enum": [
+        "DISCOVERED",
+        "TRIAGED",
+        "READY",
+        "INVESTIGATING",
+        "ROOT_CAUSE_CONFIRMED",
+        "FIXING",
+        "VALIDATING",
+        "REAUDITING",
+        "RESOLVED",
+        "BLOCKED_EXTERNAL",
+        "NEEDS_PRODUCT_DECISION",
+        "DUPLICATED",
+        "OBSOLETE",
+        "FALSE_POSITIVE"
+      ]
+    },
+    "confidence": {
+      "enum": [
+        "confirmed",
+        "high",
+        "medium",
+        "low"
+      ]
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "file:line references, command outputs or evidence record ids"
+    },
+    "rootCause": {
+      "type": "string",
+      "minLength": 1
+    },
+    "producer": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "consumers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "affectedFlow": {
+      "type": "string",
+      "minLength": 1
+    },
+    "invariantViolated": {
+      "type": "string",
+      "minLength": 1
+    },
+    "blastRadius": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^(F|DEC)-\\d{4}$"
+      }
+    },
+    "autofix": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eligible",
+        "reason"
+      ],
+      "properties": {
+        "eligible": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "risk": {
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "correction": {
+      "type": "string",
+      "minLength": 1
+    },
+    "requiredTests": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "regressionRisk": {
+      "type": "string",
+      "minLength": 1
+    },
+    "impactLevel": {
+      "enum": [
+        "L0",
+        "L1",
+        "L2",
+        "L3",
+        "L4",
+        "L5"
+      ]
+    },
+    "producerAgent": {
+      "type": "string",
+      "minLength": 1
+    },
+    "discoveredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "commits": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "evidenceRecords": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^EV-\\d{4}$"
+      }
+    },
+    "decision": {
+      "type": "string",
+      "pattern": "^DEC-\\d{4}$"
+    },
+    "signal": {
+      "type": "string",
+      "description": "sensor signal fingerprint that produced this finding"
+    },
+    "history": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "at",
+          "by",
+          "note"
+        ],
+        "properties": {
+          "status": {
+            "enum": [
+              "DISCOVERED",
+              "TRIAGED",
+              "READY",
+              "INVESTIGATING",
+              "ROOT_CAUSE_CONFIRMED",
+              "FIXING",
+              "VALIDATING",
+              "REAUDITING",
+              "RESOLVED",
+              "BLOCKED_EXTERNAL",
+              "NEEDS_PRODUCT_DECISION",
+              "DUPLICATED",
+              "OBSOLETE",
+              "FALSE_POSITIVE"
+            ]
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "by": {
+            "type": "string",
+            "minLength": 1
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

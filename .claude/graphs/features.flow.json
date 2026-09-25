@@ -1,0 +1,100 @@
+{
+  "id": "features",
+  "curated": true,
+  "nodes": [
+    {
+      "id": "Home",
+      "code": [
+        "app/(public)/page.tsx"
+      ]
+    },
+    {
+      "id": "Artists",
+      "code": [
+        "app/(public)/artistas/page.tsx",
+        "modules/artists/server.ts"
+      ]
+    },
+    {
+      "id": "News",
+      "code": [
+        "app/(public)/noticias/page.tsx",
+        "modules/posts/server.ts"
+      ]
+    },
+    {
+      "id": "Contact",
+      "code": [
+        "app/(public)/contato/page.tsx"
+      ]
+    },
+    {
+      "id": "About",
+      "code": [
+        "app/(public)/sobre-nos/page.tsx"
+      ]
+    },
+    {
+      "id": "AdminCMS",
+      "code": [
+        "app/admin/(protected)/layout.tsx",
+        "lib/auth/index.ts#requireAdmin"
+      ]
+    },
+    {
+      "id": "SEO",
+      "code": [
+        "lib/seo.ts#buildMetadata",
+        "app/sitemap.ts"
+      ]
+    },
+    {
+      "id": "IntegrationsSettings",
+      "code": [
+        "app/admin/(protected)/settings/lander-records/page.tsx"
+      ]
+    }
+  ],
+  "edges": [
+    [
+      "Home",
+      "links",
+      "Artists"
+    ],
+    [
+      "Home",
+      "links",
+      "News"
+    ],
+    [
+      "Home",
+      "links",
+      "Contact"
+    ],
+    [
+      "AdminCMS",
+      "edits",
+      "Home"
+    ],
+    [
+      "AdminCMS",
+      "edits",
+      "Artists"
+    ],
+    [
+      "AdminCMS",
+      "edits",
+      "News"
+    ],
+    [
+      "IntegrationsSettings",
+      "configures",
+      "Home"
+    ],
+    [
+      "SEO",
+      "annotates",
+      "Home"
+    ]
+  ]
+}

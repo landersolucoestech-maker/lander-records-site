@@ -20,6 +20,8 @@
     "test:unit": "node --test tests/unit/*.test.mjs",
     "test:browser": "playwright test",
     "test:engineering-os": "node --test --test-concurrency=1 .codex/runtime/tests/*.test.mjs",
+    "os:validate": "node .claude/runtime/pack.mjs && node .claude/runtime/findings.mjs validate && node .claude/runtime/graph.mjs check",
+    "test:claude-os": "node --test --test-concurrency=1 .claude/runtime/tests/*.test.mjs",
     "test": "npm run test:auth && npm run test:spotify && npm run test:database && npm run test:unit",
     "db:migrate": "node scripts/migrate.mjs",
     "db:seed": "node scripts/seed.mjs",

@@ -1,0 +1,13 @@
+# Release state
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "lastReleasedCommit": null,
+  "pendingMigrations": [
+    "0018_outbox_dead_letter.sql (additive enum value; remote apply via guarded release)"
+  ],
+  "gate": "gates/release.json",
+  "runbooks": [
+    "docs/DEPLOYMENT_RUNBOOK.md",
+    "docs/ROLLBACK_RUNBOOK.md"
+  ]
+}

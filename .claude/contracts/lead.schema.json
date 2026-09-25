@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lander-os/lead",
+  "title": "Lead (contact submission) as implemented by app/api/contact/route.ts",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "idempotencyKey",
+    "name",
+    "email",
+    "topicSlug",
+    "message",
+    "consent",
+    "source"
+  ],
+  "properties": {
+    "idempotencyKey": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 180
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "maxLength": 320
+    },
+    "phone": {
+      "type": "string",
+      "maxLength": 80
+    },
+    "topicSlug": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 180
+    },
+    "message": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 5000
+    },
+    "consent": {
+      "const": true
+    },
+    "website": {
+      "type": "string",
+      "maxLength": 0
+    },
+    "source": {
+      "const": "lander-records-site"
+    },
+    "pagePath": {
+      "type": "string",
+      "maxLength": 1000
+    },
+    "referrer": {
+      "type": "string",
+      "maxLength": 2000
+    },
+    "utm": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "medium": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "campaign": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "term": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "content": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
+    }
+  }
+}

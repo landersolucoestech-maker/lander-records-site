@@ -1,0 +1,72 @@
+# Workflow security — Security audit and hardening (L5)
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "id": "security",
+  "title": "Security audit and hardening (L5)",
+  "trigger": "security finding / release",
+  "phases": [
+    {
+      "id": "audit",
+      "agents": [
+        "security-auditor",
+        "security-lead",
+        "auth-lead",
+        "secret-lead",
+        "privacy-lead"
+      ],
+      "skills": [
+        "security-audit"
+      ],
+      "gates": [
+        "security"
+      ],
+      "transition": "findings"
+    },
+    {
+      "id": "fix",
+      "agents": [
+        "backend-lead"
+      ],
+      "skills": [
+        "autofix",
+        "regression-generation"
+      ],
+      "gates": [
+        "security",
+        "implementation"
+      ],
+      "transition": "negative tests added"
+    },
+    {
+      "id": "review",
+      "agents": [
+        "security-reviewer",
+        "adversarial-reviewer"
+      ],
+      "skills": [
+        "adversarial-review"
+      ],
+      "gates": [
+        "security"
+      ],
+      "transition": "→ RESOLVED"
+    }
+  ],
+  "stopConditions": [
+    "product decision required (DEC)",
+    "destructive/data-loss risk",
+    "external system or credential unavailable (BLOCKED_EXTERNAL)",
+    "unresolvable ambiguity",
+    "irreversible architectural change",
+    "contradictory requirements"
+  ],
+  "outputs": [
+    "findings/*.json updated",
+    "evidence/EV-*.json",
+    "atomic commits"
+  ],
+  "stateTransitions": [
+    "READY → INVESTIGATING → ROOT_CAUSE_CONFIRMED → FIXING → VALIDATING → REAUDITING → RESOLVED"
+  ],
+  "rollback": "revert only this workflow's own commits (git revert); never reset/clean pre-existing work; data side effects need compensation per ADR/incident workflow"
+}

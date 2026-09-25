@@ -1,0 +1,66 @@
+# Workflow lead-delivery — Outbox delivery health
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "id": "lead-delivery",
+  "title": "Outbox delivery health",
+  "trigger": "lead-delivery signal",
+  "phases": [
+    {
+      "id": "inspect",
+      "agents": [
+        "leads-auditor"
+      ],
+      "skills": [
+        "lead-delivery-audit"
+      ],
+      "gates": [
+        "lead-delivery"
+      ],
+      "transition": "dead letters classified"
+    },
+    {
+      "id": "fix",
+      "agents": [
+        "backend-lead",
+        "idempotency-auditor",
+        "concurrency-auditor"
+      ],
+      "skills": [
+        "root-cause-analysis",
+        "autofix"
+      ],
+      "gates": [
+        "lead-delivery"
+      ],
+      "transition": "code or receiver-side cause"
+    },
+    {
+      "id": "reconcile",
+      "agents": [
+        "integrity-lead"
+      ],
+      "skills": [
+        "lead-reconciliation"
+      ],
+      "gates": [],
+      "transition": "discrepancies explained"
+    }
+  ],
+  "stopConditions": [
+    "product decision required (DEC)",
+    "destructive/data-loss risk",
+    "external system or credential unavailable (BLOCKED_EXTERNAL)",
+    "unresolvable ambiguity",
+    "irreversible architectural change",
+    "contradictory requirements"
+  ],
+  "outputs": [
+    "findings/*.json updated",
+    "evidence/EV-*.json",
+    "atomic commits"
+  ],
+  "stateTransitions": [
+    "READY → INVESTIGATING → ROOT_CAUSE_CONFIRMED → FIXING → VALIDATING → REAUDITING → RESOLVED"
+  ],
+  "rollback": "re-queue dead letters only through an audited statement (leads/dead-letter-controller.md)"
+}

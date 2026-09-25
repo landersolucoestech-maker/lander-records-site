@@ -1,0 +1,22 @@
+{
+  "id": "env-contract",
+  "title": "Environment contract",
+  "kind": "env-contract",
+  "domain": "security",
+  "feeds": "configuration",
+  "invariant": "every environment variable read by code is documented by name in .env.example",
+  "paths": [
+    "app",
+    "lib",
+    "modules",
+    "scripts"
+  ],
+  "ignore": [
+    "NODE_ENV",
+    "GITHUB_ACTIONS",
+    "DEV_PREVIEW_PUBLIC_ACCESS",
+    "TEST_DATABASE_URL",
+    "MIGRATION_RELEASE_GUARD",
+    "PLAYWRIGHT_BASE_URL"
+  ]
+}

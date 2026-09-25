@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "POST /api/contact/ response",
+  "type": "object",
+  "required": [],
+  "properties": {
+    "ok": {
+      "type": "boolean"
+    },
+    "id": {
+      "type": "string"
+    },
+    "duplicate": {
+      "type": "boolean"
+    },
+    "integration": {
+      "enum": [
+        "delivered",
+        "queued"
+      ]
+    },
+    "error": {
+      "type": "string"
+    },
+    "details": {
+      "type": "object"
+    }
+  }
+}

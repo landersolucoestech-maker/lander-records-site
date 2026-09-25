@@ -1,0 +1,42 @@
+{
+  "id": "security",
+  "title": "Security gate (L5)",
+  "checks": [
+    {
+      "name": "auth tests",
+      "type": "command",
+      "argv": [
+        "npm",
+        "run",
+        "test:auth"
+      ]
+    },
+    {
+      "name": "spotify security tests",
+      "type": "command",
+      "argv": [
+        "npm",
+        "run",
+        "test:spotify"
+      ]
+    },
+    {
+      "name": "no secret exposed via NEXT_PUBLIC",
+      "type": "forbidden-pattern",
+      "paths": [
+        "app",
+        "lib",
+        "modules"
+      ],
+      "pattern": "NEXT_PUBLIC_\\w*(SECRET|KEY|TOKEN|PASSWORD)",
+      "message": "secrets must not be public env"
+    },
+    {
+      "name": "no open P0/P1 security findings",
+      "type": "no-open-findings",
+      "domains": [
+        "security"
+      ]
+    }
+  ]
+}

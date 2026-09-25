@@ -1,0 +1,19 @@
+{
+  "id": "contract-drift",
+  "title": "Schema contract drift",
+  "kind": "check",
+  "domain": "database",
+  "feeds": "persistence",
+  "invariant": "migrations, Drizzle and scripts/db-schema-contract.json agree",
+  "severity": "P1",
+  "check": {
+    "type": "command",
+    "argv": [
+      "node",
+      "scripts/audit-db.mjs"
+    ],
+    "requiresEnv": [
+      "DATABASE_URL"
+    ]
+  }
+}

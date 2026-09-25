@@ -1,0 +1,221 @@
+# Integration health — HEALTHY only with live-call evidence (integrations/orchestrator/health-controller.md)
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "observedAt": "2026-09-25T14:30:00.000Z",
+  "providers": {
+    "soundcharts": {
+      "mode": "api-client",
+      "health": "UNKNOWN",
+      "dimensions": {
+        "configuration": "PASS",
+        "credentials": "UNKNOWN",
+        "auth": "UNKNOWN",
+        "connectivity": "UNKNOWN",
+        "request": "UNKNOWN",
+        "responseSchema": "UNKNOWN",
+        "semanticValidation": "UNKNOWN",
+        "identity": "PASS",
+        "normalization": "PASS",
+        "persistence": "PASS",
+        "consumers": "PASS",
+        "frontend": "PASS",
+        "freshness": "UNKNOWN",
+        "retry": "PARTIAL",
+        "rateLimit": "PARTIAL",
+        "observability": "PARTIAL"
+      },
+      "evidence": [
+        "tests/integration/soundcharts-identity-sync.mjs",
+        "tests/unit/integration-identity-url.test.mjs"
+      ],
+      "findings": [
+        "F-0003",
+        "F-0004"
+      ],
+      "note": "no credentials in engineering environment (ENV-001)"
+    },
+    "spotify": {
+      "mode": "api-client",
+      "health": "UNKNOWN",
+      "dimensions": {
+        "configuration": "PASS",
+        "credentials": "UNKNOWN",
+        "auth": "PASS",
+        "connectivity": "UNKNOWN",
+        "request": "UNKNOWN",
+        "responseSchema": "UNKNOWN",
+        "semanticValidation": "UNKNOWN",
+        "identity": "UNKNOWN",
+        "normalization": "PASS",
+        "persistence": "PASS",
+        "consumers": "PASS",
+        "frontend": "PASS",
+        "freshness": "UNKNOWN",
+        "retry": "PASS",
+        "rateLimit": "PASS",
+        "observability": "PARTIAL"
+      },
+      "evidence": [
+        "tests/spotify-security.test.cjs",
+        "tests/integration/integrations-db.mjs"
+      ],
+      "findings": [],
+      "note": "ENV-001"
+    },
+    "instagram": {
+      "mode": "via-soundcharts",
+      "health": "UNKNOWN",
+      "dimensions": {
+        "configuration": "PASS",
+        "credentials": "UNKNOWN",
+        "auth": "UNKNOWN",
+        "connectivity": "UNKNOWN",
+        "request": "UNKNOWN",
+        "responseSchema": "UNKNOWN",
+        "semanticValidation": "UNKNOWN",
+        "identity": "PASS",
+        "normalization": "PASS",
+        "persistence": "UNKNOWN",
+        "consumers": "PASS",
+        "frontend": "PASS",
+        "freshness": "UNKNOWN",
+        "retry": "UNKNOWN",
+        "rateLimit": "UNKNOWN",
+        "observability": "UNKNOWN"
+      },
+      "evidence": [
+        "tests/unit/integration-identity-url.test.mjs"
+      ],
+      "findings": []
+    },
+    "youtube": {
+      "mode": "via-soundcharts",
+      "health": "UNKNOWN",
+      "dimensions": {
+        "configuration": "PASS",
+        "credentials": "UNKNOWN",
+        "auth": "UNKNOWN",
+        "connectivity": "UNKNOWN",
+        "request": "UNKNOWN",
+        "responseSchema": "UNKNOWN",
+        "semanticValidation": "UNKNOWN",
+        "identity": "PASS",
+        "normalization": "PASS",
+        "persistence": "UNKNOWN",
+        "consumers": "PASS",
+        "frontend": "PASS",
+        "freshness": "UNKNOWN",
+        "retry": "UNKNOWN",
+        "rateLimit": "UNKNOWN",
+        "observability": "UNKNOWN"
+      },
+      "evidence": [
+        "tests/unit/media-embed.test.mjs"
+      ],
+      "findings": []
+    },
+    "tiktok": {
+      "mode": "via-soundcharts",
+      "health": "UNKNOWN",
+      "dimensions": {
+        "configuration": "PASS",
+        "credentials": "UNKNOWN",
+        "auth": "UNKNOWN",
+        "connectivity": "UNKNOWN",
+        "request": "UNKNOWN",
+        "responseSchema": "UNKNOWN",
+        "semanticValidation": "UNKNOWN",
+        "identity": "PASS",
+        "normalization": "PASS",
+        "persistence": "UNKNOWN",
+        "consumers": "UNKNOWN",
+        "frontend": "UNKNOWN",
+        "freshness": "UNKNOWN",
+        "retry": "UNKNOWN",
+        "rateLimit": "UNKNOWN",
+        "observability": "UNKNOWN"
+      },
+      "evidence": [],
+      "findings": []
+    },
+    "soundcloud": {
+      "mode": "via-soundcharts",
+      "health": "UNKNOWN",
+      "dimensions": {
+        "configuration": "PASS",
+        "credentials": "UNKNOWN",
+        "auth": "UNKNOWN",
+        "connectivity": "UNKNOWN",
+        "request": "UNKNOWN",
+        "responseSchema": "UNKNOWN",
+        "semanticValidation": "UNKNOWN",
+        "identity": "PASS",
+        "normalization": "PASS",
+        "persistence": "UNKNOWN",
+        "consumers": "UNKNOWN",
+        "frontend": "UNKNOWN",
+        "freshness": "UNKNOWN",
+        "retry": "UNKNOWN",
+        "rateLimit": "UNKNOWN",
+        "observability": "UNKNOWN"
+      },
+      "evidence": [],
+      "findings": []
+    },
+    "saas-webhook": {
+      "mode": "outbound-webhook",
+      "health": "UNKNOWN",
+      "dimensions": {
+        "configuration": "PASS",
+        "credentials": "NOT_APPLICABLE",
+        "auth": "UNKNOWN",
+        "connectivity": "UNKNOWN",
+        "request": "PASS",
+        "responseSchema": "UNKNOWN",
+        "semanticValidation": "UNKNOWN",
+        "identity": "UNKNOWN",
+        "normalization": "UNKNOWN",
+        "persistence": "PASS",
+        "consumers": "UNKNOWN",
+        "frontend": "UNKNOWN",
+        "freshness": "UNKNOWN",
+        "retry": "PASS",
+        "rateLimit": "PASS",
+        "observability": "PARTIAL"
+      },
+      "evidence": [
+        "tests/integration/contact-outbox-delivery.mjs"
+      ],
+      "findings": [
+        "F-0005",
+        "F-0008"
+      ],
+      "note": "receiver intentionally unconfigured (ADR-0003, DEC-0001)"
+    },
+    "supabase-storage": {
+      "mode": "storage-sdk",
+      "health": "UNKNOWN",
+      "dimensions": {
+        "configuration": "PASS",
+        "credentials": "UNKNOWN",
+        "auth": "UNKNOWN",
+        "connectivity": "UNKNOWN",
+        "request": "UNKNOWN",
+        "responseSchema": "UNKNOWN",
+        "semanticValidation": "UNKNOWN",
+        "identity": "UNKNOWN",
+        "normalization": "PASS",
+        "persistence": "PASS",
+        "consumers": "UNKNOWN",
+        "frontend": "UNKNOWN",
+        "freshness": "UNKNOWN",
+        "retry": "UNKNOWN",
+        "rateLimit": "UNKNOWN",
+        "observability": "UNKNOWN"
+      },
+      "evidence": [],
+      "findings": [],
+      "note": "no explicit timeout on storage calls (accepted risk, see integrations/supabase-storage/rules.md)"
+    }
+  }
+}

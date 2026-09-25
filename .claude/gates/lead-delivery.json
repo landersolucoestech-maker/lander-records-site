@@ -1,0 +1,46 @@
+{
+  "id": "lead-delivery",
+  "title": "Lead delivery gate",
+  "checks": [
+    {
+      "name": "submission + outbox in one transaction",
+      "type": "required-pattern",
+      "file": "app/api/contact/route.ts",
+      "pattern": "db\\.transaction\\(async \\(tx\\) => \\{[\\s\\S]*tx\\.insert\\(contactSubmissions\\)[\\s\\S]*tx\\.insert\\(integrationOutbox\\)",
+      "message": "lead and outbox must be atomic"
+    },
+    {
+      "name": "bounded retry policy used",
+      "type": "required-pattern",
+      "file": "lib/contact.ts",
+      "pattern": "outboxFailureTransition\\(",
+      "message": "outbox failures must use the bounded policy"
+    },
+    {
+      "name": "rate limit on trusted client IP",
+      "type": "required-pattern",
+      "file": "app/api/contact/route.ts",
+      "pattern": "hashIp\\(resolveContactClientIp\\(request\\.headers\\)\\)",
+      "message": "use lib/contact-client-ip.ts"
+    },
+    {
+      "name": "outbox delivery integration test",
+      "type": "command",
+      "argv": [
+        "node",
+        "--no-warnings",
+        "tests/integration/contact-outbox-delivery.mjs"
+      ],
+      "requiresEnv": [
+        "DATABASE_URL"
+      ]
+    },
+    {
+      "name": "no open P0/P1 lead findings",
+      "type": "no-open-findings",
+      "domains": [
+        "leads"
+      ]
+    }
+  ]
+}

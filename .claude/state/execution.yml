@@ -1,0 +1,24 @@
+# Execution policy for the autonomous loop
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "autonomy": "highest safe",
+  "loop": [
+    "DISCOVER",
+    "AUDIT",
+    "FIND",
+    "TRACE",
+    "ROOT CAUSE",
+    "PLAN",
+    "CORRECT",
+    "TEST",
+    "ADVERSARIAL REVIEW",
+    "REAUDIT",
+    "COMMIT",
+    "CONTINUE"
+  ],
+  "parallelism": "read-only audits in parallel; writers on disjoint paths",
+  "localValidation": {
+    "database": "disposable local PostgreSQL *_test database",
+    "browser": "built server + Playwright"
+  }
+}

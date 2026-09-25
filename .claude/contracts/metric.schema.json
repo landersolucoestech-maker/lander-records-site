@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lander-os/metric",
+  "title": "Metric observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "entityType",
+    "entityId",
+    "platform",
+    "metric",
+    "value",
+    "state",
+    "source",
+    "fetchedAt",
+    "identity"
+  ],
+  "properties": {
+    "entityType": {
+      "enum": [
+        "artist",
+        "lander_records"
+      ]
+    },
+    "entityId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "platform": {
+      "enum": [
+        "instagram",
+        "youtube",
+        "tiktok",
+        "soundcloud",
+        "spotify"
+      ]
+    },
+    "metric": {
+      "enum": [
+        "followers",
+        "subscribers",
+        "monthly_listeners"
+      ]
+    },
+    "value": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "state": {
+      "enum": [
+        "VALUE",
+        "ZERO",
+        "NULL",
+        "ERROR",
+        "STALE"
+      ]
+    },
+    "source": {
+      "const": "soundcharts"
+    },
+    "observedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fetchedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "identity": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

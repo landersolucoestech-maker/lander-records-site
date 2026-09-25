@@ -1,0 +1,66 @@
+# Workflow dependency-upgrade — Upgrade a dependency
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "id": "dependency-upgrade",
+  "title": "Upgrade a dependency",
+  "trigger": "operator / security advisory",
+  "phases": [
+    {
+      "id": "assess",
+      "agents": [
+        "dependency-lead",
+        "dependencies-auditor"
+      ],
+      "skills": [
+        "impact-analysis"
+      ],
+      "gates": [],
+      "transition": "changelog/breaking changes reviewed"
+    },
+    {
+      "id": "upgrade",
+      "agents": [
+        "dependency-lead"
+      ],
+      "skills": [
+        "autofix"
+      ],
+      "gates": [
+        "implementation",
+        "test"
+      ],
+      "transition": "lockfile updated"
+    },
+    {
+      "id": "verify",
+      "agents": [
+        "regression-reviewer"
+      ],
+      "skills": [
+        "release-validation"
+      ],
+      "gates": [
+        "regression",
+        "release"
+      ],
+      "transition": "PASS"
+    }
+  ],
+  "stopConditions": [
+    "product decision required (DEC)",
+    "destructive/data-loss risk",
+    "external system or credential unavailable (BLOCKED_EXTERNAL)",
+    "unresolvable ambiguity",
+    "irreversible architectural change",
+    "contradictory requirements"
+  ],
+  "outputs": [
+    "findings/*.json updated",
+    "evidence/EV-*.json",
+    "atomic commits"
+  ],
+  "stateTransitions": [
+    "READY → INVESTIGATING → ROOT_CAUSE_CONFIRMED → FIXING → VALIDATING → REAUDITING → RESOLVED"
+  ],
+  "rollback": "revert only this workflow's own commits (git revert); never reset/clean pre-existing work; data side effects need compensation per ADR/incident workflow"
+}

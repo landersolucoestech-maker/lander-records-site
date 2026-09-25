@@ -1,0 +1,15 @@
+{
+  "id": "trace",
+  "title": "Trace gate — the defect is traced producer → consumer",
+  "checks": [
+    {
+      "name": "curated flows reference existing code",
+      "type": "command",
+      "argv": [
+        "node",
+        ".claude/runtime/graph.mjs",
+        "check"
+      ]
+    }
+  ]
+}

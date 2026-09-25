@@ -1,0 +1,78 @@
+# Workflow incident — Live problem handling
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "id": "incident",
+  "title": "Live problem handling",
+  "trigger": "live symptom",
+  "phases": [
+    {
+      "id": "detect-contain",
+      "agents": [
+        "incident-lead"
+      ],
+      "skills": [
+        "incident-recovery"
+      ],
+      "gates": [],
+      "transition": "INC opened, contained"
+    },
+    {
+      "id": "diagnose",
+      "agents": [
+        "incident-lead",
+        "backend-lead"
+      ],
+      "skills": [
+        "root-cause-analysis"
+      ],
+      "gates": [
+        "trace",
+        "root-cause"
+      ],
+      "transition": "root cause"
+    },
+    {
+      "id": "recover",
+      "agents": [
+        "backend-lead",
+        "database-lead"
+      ],
+      "skills": [
+        "autofix"
+      ],
+      "gates": [
+        "regression"
+      ],
+      "transition": "service restored"
+    },
+    {
+      "id": "prevent",
+      "agents": [
+        "incident-lead"
+      ],
+      "skills": [
+        "regression-generation",
+        "finding-classification"
+      ],
+      "gates": [],
+      "transition": "prevention findings"
+    }
+  ],
+  "stopConditions": [
+    "product decision required (DEC)",
+    "destructive/data-loss risk",
+    "external system or credential unavailable (BLOCKED_EXTERNAL)",
+    "unresolvable ambiguity",
+    "irreversible architectural change",
+    "contradictory requirements"
+  ],
+  "outputs": [
+    "incidents/INC-*.md",
+    "findings",
+    "evidence"
+  ],
+  "stateTransitions": [
+    "INC DETECTED → CONTAINED → MITIGATED → RESOLVED → POSTMORTEM_DONE"
+  ],
+  "rollback": "revert only this workflow's own commits (git revert); never reset/clean pre-existing work; data side effects need compensation per ADR/incident workflow"
+}

@@ -1,0 +1,40 @@
+{
+  "id": "lead-reconciliation",
+  "title": "Lead reconciliation",
+  "kind": "sql",
+  "domain": "leads",
+  "feeds": "contact_submissions × integration_outbox",
+  "invariant": "exactly one outbox event per submission; no stuck or inconsistent events",
+  "probes": [
+    {
+      "name": "submission-without-event",
+      "severity": "P0",
+      "message": "contact submissions without an outbox event",
+      "sql": "SELECT s.id FROM contact_submissions s WHERE NOT EXISTS (SELECT 1 FROM integration_outbox o WHERE o.aggregate_type = 'contact_submission' AND o.aggregate_id = s.id)"
+    },
+    {
+      "name": "event-without-submission",
+      "severity": "P2",
+      "message": "contact outbox events without a submission",
+      "sql": "SELECT o.id FROM integration_outbox o WHERE o.aggregate_type = 'contact_submission' AND NOT EXISTS (SELECT 1 FROM contact_submissions s WHERE s.id = o.aggregate_id)"
+    },
+    {
+      "name": "duplicate-events",
+      "severity": "P1",
+      "message": "submissions with more than one outbox event",
+      "sql": "SELECT aggregate_id, count(*) AS events FROM integration_outbox WHERE aggregate_type = 'contact_submission' GROUP BY aggregate_id HAVING count(*) > 1"
+    },
+    {
+      "name": "stuck-pending",
+      "severity": "P1",
+      "message": "pending lead events older than 30 minutes",
+      "sql": "SELECT id, created_at FROM integration_outbox WHERE status = 'pending' AND created_at < now() - interval '30 minutes'"
+    },
+    {
+      "name": "delivered-without-timestamp",
+      "severity": "P2",
+      "message": "delivered events without delivered_at",
+      "sql": "SELECT id FROM integration_outbox WHERE status = 'delivered' AND delivered_at IS NULL"
+    }
+  ]
+}

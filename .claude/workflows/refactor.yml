@@ -1,0 +1,68 @@
+# Workflow refactor — Behavior-preserving restructuring
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "id": "refactor",
+  "title": "Behavior-preserving restructuring",
+  "trigger": "finding with refactor correction",
+  "phases": [
+    {
+      "id": "characterize",
+      "agents": [
+        "qa-lead"
+      ],
+      "skills": [
+        "regression-generation"
+      ],
+      "gates": [
+        "test"
+      ],
+      "transition": "characterization tests green"
+    },
+    {
+      "id": "refactor",
+      "agents": [
+        "backend-lead",
+        "frontend-lead"
+      ],
+      "skills": [
+        "dependency-trace"
+      ],
+      "gates": [
+        "implementation",
+        "architecture"
+      ],
+      "transition": "→ VALIDATING"
+    },
+    {
+      "id": "review",
+      "agents": [
+        "architecture-reviewer",
+        "regression-reviewer"
+      ],
+      "skills": [
+        "adversarial-review"
+      ],
+      "gates": [
+        "regression"
+      ],
+      "transition": "→ RESOLVED"
+    }
+  ],
+  "stopConditions": [
+    "product decision required (DEC)",
+    "destructive/data-loss risk",
+    "external system or credential unavailable (BLOCKED_EXTERNAL)",
+    "unresolvable ambiguity",
+    "irreversible architectural change",
+    "contradictory requirements"
+  ],
+  "outputs": [
+    "findings/*.json updated",
+    "evidence/EV-*.json",
+    "atomic commits"
+  ],
+  "stateTransitions": [
+    "READY → INVESTIGATING → ROOT_CAUSE_CONFIRMED → FIXING → VALIDATING → REAUDITING → RESOLVED"
+  ],
+  "rollback": "revert only this workflow's own commits (git revert); never reset/clean pre-existing work; data side effects need compensation per ADR/incident workflow"
+}

@@ -1,0 +1,92 @@
+{
+  "confidence": "confirmed",
+  "dependencies": [],
+  "risk": "low",
+  "discoveredAt": "2026-09-25T13:50:00.000Z",
+  "id": "F-0003",
+  "title": "Metrics of an invalidated or replaced Soundcharts identity stay published",
+  "severity": "P1",
+  "domain": "identity",
+  "status": "REAUDITING",
+  "evidence": [
+    "lib/integrations/sync.ts (base): unresolved/not_configured branches clear the UUID but leave artist_metrics/integration_metric_cache",
+    "tests/integration/soundcharts-identity-sync.mjs fails on base: 'metrics of an invalidated identity must not stay published'"
+  ],
+  "rootCause": "Identity lifecycle and metric lifecycle were not coupled: invalidation updated only the identity row; upserts only overwrote platforms returned by the new identity.",
+  "producer": [
+    "lib/integrations/sync.ts#syncArtistSoundcharts",
+    "lib/integrations/sync.ts#syncLanderRecordsSoundcharts"
+  ],
+  "consumers": [
+    "app/(public)/artistas/[slug]/page.tsx",
+    "app/(public)/page.tsx social cards",
+    "modules/artists/repository.ts"
+  ],
+  "affectedFlow": "artist links → identity → metrics → public pages",
+  "invariantViolated": "Metrics belong to the identity that produced them (ZERO≠NULL≠STALE≠WRONG IDENTITY)",
+  "blastRadius": "public follower/listener numbers of the wrong or unverified artist after link edits",
+  "autofix": {
+    "eligible": true,
+    "reason": "root cause proven by DB-backed test; purge is scoped to source='soundcharts' of that entity"
+  },
+  "correction": "purge entity soundcharts metrics atomically when identity is cleared or its UUID changes; keep values on same-identity outages",
+  "requiredTests": [
+    "tests/integration/soundcharts-identity-sync.mjs"
+  ],
+  "regressionRisk": "low — same-identity outage path covered by test",
+  "impactLevel": "L3",
+  "producerAgent": "identity-auditor",
+  "commits": [
+    "48b1f3f"
+  ],
+  "history": [
+    {
+      "status": "DISCOVERED",
+      "at": "2026-09-25T13:50:00.000Z",
+      "by": "leads-auditor",
+      "note": "identity lifecycle trace"
+    },
+    {
+      "status": "TRIAGED",
+      "at": "2026-09-25T13:51:00.000Z",
+      "by": "autonomous-controller",
+      "note": "severity and domain assigned"
+    },
+    {
+      "status": "READY",
+      "at": "2026-09-25T13:52:00.000Z",
+      "by": "autonomous-controller",
+      "note": "root cause traceable in repo; autofix eligible"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-25T13:53:00.000Z",
+      "by": "owner lead",
+      "note": "tracing producer → consumer"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-25T13:54:00.000Z",
+      "by": "owner lead",
+      "note": "identity invalidation did not withdraw metrics"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-25T13:55:00.000Z",
+      "by": "owner lead",
+      "note": "atomic purge on clear/replace"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-25T13:56:00.000Z",
+      "by": "qa-lead",
+      "note": "tests added; commits 48b1f3f"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-25T13:57:00.000Z",
+      "by": "auditor",
+      "note": "re-running the detecting check on the fixed code"
+    }
+  ]
+}

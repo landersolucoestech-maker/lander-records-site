@@ -1,0 +1,31 @@
+{
+  "id": "contract",
+  "title": "Contract gate",
+  "checks": [
+    {
+      "name": "schema contract matches migrated DB",
+      "type": "command",
+      "argv": [
+        "node",
+        "scripts/audit-db.mjs"
+      ],
+      "requiresEnv": [
+        "DATABASE_URL"
+      ]
+    },
+    {
+      "name": "contact route validates with zod before logic",
+      "type": "required-pattern",
+      "file": "app/api/contact/route.ts",
+      "pattern": "payloadSchema\\.safeParse\\(raw\\)",
+      "message": "zod validation must stay first"
+    },
+    {
+      "name": "outbox envelope fields stable",
+      "type": "required-pattern",
+      "file": "lib/contact.ts",
+      "pattern": "id: event\\.id,\\s*type: event\\.eventType,\\s*aggregateType: event\\.aggregateType,\\s*aggregateId: event\\.aggregateId,\\s*occurredAt:",
+      "message": "outbox envelope changed — version it and update schemas/outbox-event.schema.json"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "generatedBy": ".claude/runtime/graph.mjs",
+  "touchpoints": {
+    "saas-webhook": [
+      "lib/contact.ts"
+    ],
+    "soundcharts": [
+      "lib/integrations/soundcharts.ts"
+    ],
+    "spotify": [
+      "lib/integrations/spotify.ts"
+    ],
+    "youtube": [
+      "lib/media-embed.ts"
+    ],
+    "supabase-storage": [
+      "lib/storage/supabase-storage.ts"
+    ]
+  }
+}

@@ -1,0 +1,1113 @@
+{
+  "schemaVersion": 1,
+  "components": {
+    "agents": [
+      {
+        "id": "architecture-lead",
+        "path": "agents/architecture/architecture-lead.md",
+        "domain": "architecture",
+        "mode": "read"
+      },
+      {
+        "id": "codebase-cartographer",
+        "path": "agents/architecture/codebase-cartographer.md",
+        "domain": "architecture",
+        "mode": "read"
+      },
+      {
+        "id": "dependency-lead",
+        "path": "agents/dependencies/dependency-lead.md",
+        "domain": "dependencies",
+        "mode": "read"
+      },
+      {
+        "id": "source-of-truth-lead",
+        "path": "agents/architecture/source-of-truth-lead.md",
+        "domain": "architecture",
+        "mode": "read"
+      },
+      {
+        "id": "frontend-lead",
+        "path": "agents/frontend/frontend-lead.md",
+        "domain": "frontend",
+        "mode": "write"
+      },
+      {
+        "id": "design-system-lead",
+        "path": "agents/frontend/design-system-lead.md",
+        "domain": "frontend",
+        "mode": "read"
+      },
+      {
+        "id": "visual-lead",
+        "path": "agents/frontend/visual-lead.md",
+        "domain": "frontend",
+        "mode": "read"
+      },
+      {
+        "id": "responsive-lead",
+        "path": "agents/frontend/responsive-lead.md",
+        "domain": "frontend",
+        "mode": "read"
+      },
+      {
+        "id": "accessibility-lead",
+        "path": "agents/accessibility/accessibility-lead.md",
+        "domain": "accessibility",
+        "mode": "read"
+      },
+      {
+        "id": "backend-lead",
+        "path": "agents/backend/backend-lead.md",
+        "domain": "backend",
+        "mode": "write"
+      },
+      {
+        "id": "api-lead",
+        "path": "agents/backend/api-lead.md",
+        "domain": "backend",
+        "mode": "read"
+      },
+      {
+        "id": "service-lead",
+        "path": "agents/backend/service-lead.md",
+        "domain": "backend",
+        "mode": "read"
+      },
+      {
+        "id": "validation-lead",
+        "path": "agents/backend/validation-lead.md",
+        "domain": "backend",
+        "mode": "read"
+      },
+      {
+        "id": "database-lead",
+        "path": "agents/database/database-lead.md",
+        "domain": "database",
+        "mode": "write"
+      },
+      {
+        "id": "schema-lead",
+        "path": "agents/database/schema-lead.md",
+        "domain": "database",
+        "mode": "read"
+      },
+      {
+        "id": "migration-lead",
+        "path": "agents/database/migration-lead.md",
+        "domain": "database",
+        "mode": "read"
+      },
+      {
+        "id": "integrity-lead",
+        "path": "agents/database/integrity-lead.md",
+        "domain": "database",
+        "mode": "read"
+      },
+      {
+        "id": "seo-lead",
+        "path": "agents/seo/seo-lead.md",
+        "domain": "seo",
+        "mode": "write"
+      },
+      {
+        "id": "metadata-lead",
+        "path": "agents/seo/metadata-lead.md",
+        "domain": "seo",
+        "mode": "read"
+      },
+      {
+        "id": "structured-data-lead",
+        "path": "agents/seo/structured-data-lead.md",
+        "domain": "seo",
+        "mode": "read"
+      },
+      {
+        "id": "indexing-lead",
+        "path": "agents/seo/indexing-lead.md",
+        "domain": "seo",
+        "mode": "read"
+      },
+      {
+        "id": "content-lead",
+        "path": "agents/content/content-lead.md",
+        "domain": "content",
+        "mode": "read"
+      },
+      {
+        "id": "cms-lead",
+        "path": "agents/content/cms-lead.md",
+        "domain": "content",
+        "mode": "write"
+      },
+      {
+        "id": "media-lead",
+        "path": "agents/content/media-lead.md",
+        "domain": "content",
+        "mode": "read"
+      },
+      {
+        "id": "security-lead",
+        "path": "agents/security/security-lead.md",
+        "domain": "security",
+        "mode": "read"
+      },
+      {
+        "id": "auth-lead",
+        "path": "agents/security/auth-lead.md",
+        "domain": "security",
+        "mode": "read"
+      },
+      {
+        "id": "privacy-lead",
+        "path": "agents/security/privacy-lead.md",
+        "domain": "security",
+        "mode": "read"
+      },
+      {
+        "id": "secret-lead",
+        "path": "agents/security/secret-lead.md",
+        "domain": "security",
+        "mode": "read"
+      },
+      {
+        "id": "qa-lead",
+        "path": "agents/quality/qa-lead.md",
+        "domain": "quality",
+        "mode": "read"
+      },
+      {
+        "id": "regression-lead",
+        "path": "agents/quality/regression-lead.md",
+        "domain": "quality",
+        "mode": "read"
+      },
+      {
+        "id": "performance-lead",
+        "path": "agents/performance/performance-lead.md",
+        "domain": "performance",
+        "mode": "read"
+      },
+      {
+        "id": "consistency-lead",
+        "path": "agents/quality/consistency-lead.md",
+        "domain": "quality",
+        "mode": "read"
+      },
+      {
+        "id": "release-lead",
+        "path": "agents/release/release-lead.md",
+        "domain": "release",
+        "mode": "read"
+      },
+      {
+        "id": "observability-lead",
+        "path": "agents/observability/observability-lead.md",
+        "domain": "observability",
+        "mode": "read"
+      },
+      {
+        "id": "incident-lead",
+        "path": "agents/release/incident-lead.md",
+        "domain": "release",
+        "mode": "read"
+      },
+      {
+        "id": "git-lead",
+        "path": "agents/release/git-lead.md",
+        "domain": "release",
+        "mode": "read"
+      }
+    ],
+    "subagents": [
+      {
+        "id": "typography-auditor",
+        "path": "subagents/typography-auditor.md",
+        "parent": "frontend-lead"
+      },
+      {
+        "id": "spacing-auditor",
+        "path": "subagents/spacing-auditor.md",
+        "parent": "frontend-lead"
+      },
+      {
+        "id": "layout-auditor",
+        "path": "subagents/layout-auditor.md",
+        "parent": "frontend-lead"
+      },
+      {
+        "id": "modal-auditor",
+        "path": "subagents/modal-auditor.md",
+        "parent": "frontend-lead"
+      },
+      {
+        "id": "table-auditor",
+        "path": "subagents/table-auditor.md",
+        "parent": "frontend-lead"
+      },
+      {
+        "id": "interaction-auditor",
+        "path": "subagents/interaction-auditor.md",
+        "parent": "frontend-lead"
+      },
+      {
+        "id": "loading-state-auditor",
+        "path": "subagents/loading-state-auditor.md",
+        "parent": "frontend-lead"
+      },
+      {
+        "id": "empty-state-auditor",
+        "path": "subagents/empty-state-auditor.md",
+        "parent": "frontend-lead"
+      },
+      {
+        "id": "error-state-auditor",
+        "path": "subagents/error-state-auditor.md",
+        "parent": "frontend-lead"
+      },
+      {
+        "id": "responsive-breakpoint-auditor",
+        "path": "subagents/responsive-breakpoint-auditor.md",
+        "parent": "responsive-lead"
+      },
+      {
+        "id": "dto-auditor",
+        "path": "subagents/dto-auditor.md",
+        "parent": "backend-lead"
+      },
+      {
+        "id": "input-validation-auditor",
+        "path": "subagents/input-validation-auditor.md",
+        "parent": "validation-lead"
+      },
+      {
+        "id": "error-mapping-auditor",
+        "path": "subagents/error-mapping-auditor.md",
+        "parent": "backend-lead"
+      },
+      {
+        "id": "concurrency-auditor",
+        "path": "subagents/concurrency-auditor.md",
+        "parent": "backend-lead"
+      },
+      {
+        "id": "transaction-auditor",
+        "path": "subagents/transaction-auditor.md",
+        "parent": "backend-lead"
+      },
+      {
+        "id": "idempotency-auditor",
+        "path": "subagents/idempotency-auditor.md",
+        "parent": "backend-lead"
+      },
+      {
+        "id": "index-auditor",
+        "path": "subagents/index-auditor.md",
+        "parent": "database-lead"
+      },
+      {
+        "id": "constraint-auditor",
+        "path": "subagents/constraint-auditor.md",
+        "parent": "database-lead"
+      },
+      {
+        "id": "foreign-key-auditor",
+        "path": "subagents/foreign-key-auditor.md",
+        "parent": "database-lead"
+      },
+      {
+        "id": "nullability-auditor",
+        "path": "subagents/nullability-auditor.md",
+        "parent": "database-lead"
+      },
+      {
+        "id": "migration-order-auditor",
+        "path": "subagents/migration-order-auditor.md",
+        "parent": "migration-lead"
+      },
+      {
+        "id": "data-integrity-auditor",
+        "path": "subagents/data-integrity-auditor.md",
+        "parent": "integrity-lead"
+      }
+    ],
+    "auditors": [
+      {
+        "id": "architecture-auditor",
+        "path": "auditors/architecture-auditor.md",
+        "domain": "architecture"
+      },
+      {
+        "id": "frontend-auditor",
+        "path": "auditors/frontend-auditor.md",
+        "domain": "frontend"
+      },
+      {
+        "id": "backend-auditor",
+        "path": "auditors/backend-auditor.md",
+        "domain": "backend"
+      },
+      {
+        "id": "database-auditor",
+        "path": "auditors/database-auditor.md",
+        "domain": "database"
+      },
+      {
+        "id": "integrations-auditor",
+        "path": "auditors/integrations-auditor.md",
+        "domain": "integrations"
+      },
+      {
+        "id": "identity-auditor",
+        "path": "auditors/identity-auditor.md",
+        "domain": "identity"
+      },
+      {
+        "id": "leads-auditor",
+        "path": "auditors/leads-auditor.md",
+        "domain": "leads"
+      },
+      {
+        "id": "seo-auditor",
+        "path": "auditors/seo-auditor.md",
+        "domain": "seo"
+      },
+      {
+        "id": "content-auditor",
+        "path": "auditors/content-auditor.md",
+        "domain": "content"
+      },
+      {
+        "id": "accessibility-auditor",
+        "path": "auditors/accessibility-auditor.md",
+        "domain": "accessibility"
+      },
+      {
+        "id": "performance-auditor",
+        "path": "auditors/performance-auditor.md",
+        "domain": "performance"
+      },
+      {
+        "id": "security-auditor",
+        "path": "auditors/security-auditor.md",
+        "domain": "security"
+      },
+      {
+        "id": "observability-auditor",
+        "path": "auditors/observability-auditor.md",
+        "domain": "observability"
+      },
+      {
+        "id": "dependencies-auditor",
+        "path": "auditors/dependencies-auditor.md",
+        "domain": "dependencies"
+      },
+      {
+        "id": "product-flows-auditor",
+        "path": "auditors/product-flows-auditor.md",
+        "domain": "product-flows"
+      }
+    ],
+    "reviewers": [
+      {
+        "id": "adversarial-reviewer",
+        "path": "reviewers/adversarial-reviewer.md"
+      },
+      {
+        "id": "architecture-reviewer",
+        "path": "reviewers/architecture-reviewer.md"
+      },
+      {
+        "id": "regression-reviewer",
+        "path": "reviewers/regression-reviewer.md"
+      },
+      {
+        "id": "contract-reviewer",
+        "path": "reviewers/contract-reviewer.md"
+      },
+      {
+        "id": "security-reviewer",
+        "path": "reviewers/security-reviewer.md"
+      },
+      {
+        "id": "integration-reviewer",
+        "path": "reviewers/integration-reviewer.md"
+      },
+      {
+        "id": "final-reviewer",
+        "path": "reviewers/final-reviewer.md"
+      }
+    ],
+    "guardians": [
+      {
+        "id": "git-guardian",
+        "path": "guardians/git-guardian.md"
+      },
+      {
+        "id": "secrets-guardian",
+        "path": "guardians/secrets-guardian.md"
+      },
+      {
+        "id": "credentials-guardian",
+        "path": "guardians/credentials-guardian.md"
+      },
+      {
+        "id": "migration-guardian",
+        "path": "guardians/migration-guardian.md"
+      },
+      {
+        "id": "dependency-guardian",
+        "path": "guardians/dependency-guardian.md"
+      },
+      {
+        "id": "privacy-guardian",
+        "path": "guardians/privacy-guardian.md"
+      },
+      {
+        "id": "architecture-guardian",
+        "path": "guardians/architecture-guardian.md"
+      },
+      {
+        "id": "destructive-action-guardian",
+        "path": "guardians/destructive-action-guardian.md"
+      }
+    ],
+    "integrationAgents": [
+      {
+        "id": "soundcharts-integration",
+        "path": "integrations/soundcharts/agent.md"
+      },
+      {
+        "id": "spotify-integration",
+        "path": "integrations/spotify/agent.md"
+      },
+      {
+        "id": "instagram-integration",
+        "path": "integrations/instagram/agent.md"
+      },
+      {
+        "id": "youtube-integration",
+        "path": "integrations/youtube/agent.md"
+      },
+      {
+        "id": "tiktok-integration",
+        "path": "integrations/tiktok/agent.md"
+      },
+      {
+        "id": "soundcloud-integration",
+        "path": "integrations/soundcloud/agent.md"
+      },
+      {
+        "id": "saas-webhook-integration",
+        "path": "integrations/saas-webhook/agent.md"
+      },
+      {
+        "id": "supabase-storage-integration",
+        "path": "integrations/supabase-storage/agent.md"
+      }
+    ],
+    "skills": [
+      {
+        "id": "repository-discovery",
+        "path": "skills/repository-discovery/SKILL.md"
+      },
+      {
+        "id": "repository-map",
+        "path": "skills/repository-map/SKILL.md"
+      },
+      {
+        "id": "feature-trace",
+        "path": "skills/feature-trace/SKILL.md"
+      },
+      {
+        "id": "data-flow-trace",
+        "path": "skills/data-flow-trace/SKILL.md"
+      },
+      {
+        "id": "dependency-trace",
+        "path": "skills/dependency-trace/SKILL.md"
+      },
+      {
+        "id": "root-cause-analysis",
+        "path": "skills/root-cause-analysis/SKILL.md"
+      },
+      {
+        "id": "impact-analysis",
+        "path": "skills/impact-analysis/SKILL.md"
+      },
+      {
+        "id": "finding-classification",
+        "path": "skills/finding-classification/SKILL.md"
+      },
+      {
+        "id": "autofix",
+        "path": "skills/autofix/SKILL.md"
+      },
+      {
+        "id": "regression-generation",
+        "path": "skills/regression-generation/SKILL.md"
+      },
+      {
+        "id": "contract-audit",
+        "path": "skills/contract-audit/SKILL.md"
+      },
+      {
+        "id": "integration-audit",
+        "path": "skills/integration-audit/SKILL.md"
+      },
+      {
+        "id": "integration-health-check",
+        "path": "skills/integration-health-check/SKILL.md"
+      },
+      {
+        "id": "identity-resolution",
+        "path": "skills/identity-resolution/SKILL.md"
+      },
+      {
+        "id": "cross-provider-reconciliation",
+        "path": "skills/cross-provider-reconciliation/SKILL.md"
+      },
+      {
+        "id": "metrics-audit",
+        "path": "skills/metrics-audit/SKILL.md"
+      },
+      {
+        "id": "metric-freshness",
+        "path": "skills/metric-freshness/SKILL.md"
+      },
+      {
+        "id": "lead-flow-trace",
+        "path": "skills/lead-flow-trace/SKILL.md"
+      },
+      {
+        "id": "lead-delivery-audit",
+        "path": "skills/lead-delivery-audit/SKILL.md"
+      },
+      {
+        "id": "lead-reconciliation",
+        "path": "skills/lead-reconciliation/SKILL.md"
+      },
+      {
+        "id": "visual-audit",
+        "path": "skills/visual-audit/SKILL.md"
+      },
+      {
+        "id": "responsive-audit",
+        "path": "skills/responsive-audit/SKILL.md"
+      },
+      {
+        "id": "accessibility-audit",
+        "path": "skills/accessibility-audit/SKILL.md"
+      },
+      {
+        "id": "seo-audit",
+        "path": "skills/seo-audit/SKILL.md"
+      },
+      {
+        "id": "security-audit",
+        "path": "skills/security-audit/SKILL.md"
+      },
+      {
+        "id": "performance-audit",
+        "path": "skills/performance-audit/SKILL.md"
+      },
+      {
+        "id": "migration-audit",
+        "path": "skills/migration-audit/SKILL.md"
+      },
+      {
+        "id": "adversarial-review",
+        "path": "skills/adversarial-review/SKILL.md"
+      },
+      {
+        "id": "release-validation",
+        "path": "skills/release-validation/SKILL.md"
+      },
+      {
+        "id": "incident-recovery",
+        "path": "skills/incident-recovery/SKILL.md"
+      }
+    ],
+    "workflows": [
+      {
+        "id": "autonomous-full-audit",
+        "path": "workflows/autonomous-full-audit.yml"
+      },
+      {
+        "id": "continuous-audit",
+        "path": "workflows/continuous-audit.yml"
+      },
+      {
+        "id": "repository-onboarding",
+        "path": "workflows/repository-onboarding.yml"
+      },
+      {
+        "id": "bugfix",
+        "path": "workflows/bugfix.yml"
+      },
+      {
+        "id": "feature",
+        "path": "workflows/feature.yml"
+      },
+      {
+        "id": "refactor",
+        "path": "workflows/refactor.yml"
+      },
+      {
+        "id": "frontend-change",
+        "path": "workflows/frontend-change.yml"
+      },
+      {
+        "id": "integration-full-audit",
+        "path": "workflows/integration-full-audit.yml"
+      },
+      {
+        "id": "provider-recovery",
+        "path": "workflows/provider-recovery.yml"
+      },
+      {
+        "id": "provider-drift",
+        "path": "workflows/provider-drift.yml"
+      },
+      {
+        "id": "identity-reconciliation",
+        "path": "workflows/identity-reconciliation.yml"
+      },
+      {
+        "id": "artist-metrics",
+        "path": "workflows/artist-metrics.yml"
+      },
+      {
+        "id": "contact-form",
+        "path": "workflows/contact-form.yml"
+      },
+      {
+        "id": "lead-delivery",
+        "path": "workflows/lead-delivery.yml"
+      },
+      {
+        "id": "lead-reconciliation",
+        "path": "workflows/lead-reconciliation.yml"
+      },
+      {
+        "id": "seo",
+        "path": "workflows/seo.yml"
+      },
+      {
+        "id": "security",
+        "path": "workflows/security.yml"
+      },
+      {
+        "id": "performance",
+        "path": "workflows/performance.yml"
+      },
+      {
+        "id": "database-change",
+        "path": "workflows/database-change.yml"
+      },
+      {
+        "id": "dependency-upgrade",
+        "path": "workflows/dependency-upgrade.yml"
+      },
+      {
+        "id": "incident",
+        "path": "workflows/incident.yml"
+      },
+      {
+        "id": "release",
+        "path": "workflows/release.yml"
+      }
+    ],
+    "gates": [
+      {
+        "id": "trace",
+        "path": "gates/trace.json"
+      },
+      {
+        "id": "root-cause",
+        "path": "gates/root-cause.json"
+      },
+      {
+        "id": "architecture",
+        "path": "gates/architecture.json"
+      },
+      {
+        "id": "implementation",
+        "path": "gates/implementation.json"
+      },
+      {
+        "id": "contract",
+        "path": "gates/contract.json"
+      },
+      {
+        "id": "test",
+        "path": "gates/test.json"
+      },
+      {
+        "id": "regression",
+        "path": "gates/regression.json"
+      },
+      {
+        "id": "integration",
+        "path": "gates/integration.json"
+      },
+      {
+        "id": "identity",
+        "path": "gates/identity.json"
+      },
+      {
+        "id": "lead-delivery",
+        "path": "gates/lead-delivery.json"
+      },
+      {
+        "id": "security",
+        "path": "gates/security.json"
+      },
+      {
+        "id": "accessibility",
+        "path": "gates/accessibility.json"
+      },
+      {
+        "id": "visual",
+        "path": "gates/visual.json"
+      },
+      {
+        "id": "performance",
+        "path": "gates/performance.json"
+      },
+      {
+        "id": "release",
+        "path": "gates/release.json"
+      }
+    ],
+    "sensors": [
+      {
+        "id": "repository-changes",
+        "path": "sensors/repository-changes.json"
+      },
+      {
+        "id": "git-state",
+        "path": "sensors/git-state.json"
+      },
+      {
+        "id": "test-failures",
+        "path": "sensors/test-failures.json"
+      },
+      {
+        "id": "build-failures",
+        "path": "sensors/build-failures.json"
+      },
+      {
+        "id": "runtime-errors",
+        "path": "sensors/runtime-errors.json"
+      },
+      {
+        "id": "contract-drift",
+        "path": "sensors/contract-drift.json"
+      },
+      {
+        "id": "dependency-drift",
+        "path": "sensors/dependency-drift.json"
+      },
+      {
+        "id": "integration-health",
+        "path": "sensors/integration-health.json"
+      },
+      {
+        "id": "credential-health",
+        "path": "sensors/credential-health.json"
+      },
+      {
+        "id": "metric-freshness",
+        "path": "sensors/metric-freshness.json"
+      },
+      {
+        "id": "identity-conflicts",
+        "path": "sensors/identity-conflicts.json"
+      },
+      {
+        "id": "lead-delivery",
+        "path": "sensors/lead-delivery.json"
+      },
+      {
+        "id": "lead-reconciliation",
+        "path": "sensors/lead-reconciliation.json"
+      },
+      {
+        "id": "security",
+        "path": "sensors/security.json"
+      },
+      {
+        "id": "provider-timeouts",
+        "path": "sensors/provider-timeouts.json"
+      },
+      {
+        "id": "env-contract",
+        "path": "sensors/env-contract.json"
+      }
+    ]
+  },
+  "providers": [
+    "soundcharts",
+    "spotify",
+    "instagram",
+    "youtube",
+    "tiktok",
+    "soundcloud",
+    "saas-webhook",
+    "supabase-storage"
+  ],
+  "routing": {
+    "architecture": {
+      "lead": "architecture-lead",
+      "subagents": [
+        "codebase-cartographer"
+      ],
+      "auditor": "architecture-auditor",
+      "reviewers": [
+        "architecture-reviewer"
+      ],
+      "workflow": "refactor",
+      "gates": [
+        "architecture"
+      ]
+    },
+    "frontend": {
+      "lead": "frontend-lead",
+      "subagents": [
+        "interaction-auditor",
+        "error-state-auditor",
+        "loading-state-auditor",
+        "empty-state-auditor"
+      ],
+      "auditor": "frontend-auditor",
+      "reviewers": [
+        "adversarial-reviewer",
+        "regression-reviewer"
+      ],
+      "workflow": "frontend-change",
+      "gates": [
+        "implementation",
+        "visual",
+        "accessibility"
+      ]
+    },
+    "backend": {
+      "lead": "backend-lead",
+      "subagents": [
+        "input-validation-auditor",
+        "error-mapping-auditor",
+        "transaction-auditor"
+      ],
+      "auditor": "backend-auditor",
+      "reviewers": [
+        "adversarial-reviewer",
+        "contract-reviewer"
+      ],
+      "workflow": "bugfix",
+      "gates": [
+        "implementation",
+        "contract",
+        "test"
+      ]
+    },
+    "database": {
+      "lead": "database-lead",
+      "subagents": [
+        "migration-order-auditor",
+        "constraint-auditor",
+        "nullability-auditor"
+      ],
+      "auditor": "database-auditor",
+      "reviewers": [
+        "contract-reviewer",
+        "adversarial-reviewer"
+      ],
+      "workflow": "database-change",
+      "gates": [
+        "contract",
+        "regression"
+      ]
+    },
+    "integrations": {
+      "lead": "backend-lead",
+      "subagents": [
+        "concurrency-auditor",
+        "transaction-auditor"
+      ],
+      "auditor": "integrations-auditor",
+      "reviewers": [
+        "integration-reviewer",
+        "adversarial-reviewer"
+      ],
+      "workflow": "provider-recovery",
+      "gates": [
+        "integration",
+        "regression"
+      ]
+    },
+    "identity": {
+      "lead": "integrity-lead",
+      "subagents": [
+        "data-integrity-auditor"
+      ],
+      "auditor": "identity-auditor",
+      "reviewers": [
+        "integration-reviewer",
+        "adversarial-reviewer"
+      ],
+      "workflow": "identity-reconciliation",
+      "gates": [
+        "identity",
+        "regression"
+      ]
+    },
+    "leads": {
+      "lead": "backend-lead",
+      "subagents": [
+        "idempotency-auditor",
+        "concurrency-auditor",
+        "interaction-auditor"
+      ],
+      "auditor": "leads-auditor",
+      "reviewers": [
+        "adversarial-reviewer",
+        "security-reviewer"
+      ],
+      "workflow": "contact-form",
+      "gates": [
+        "lead-delivery",
+        "regression"
+      ]
+    },
+    "seo": {
+      "lead": "seo-lead",
+      "subagents": [],
+      "auditor": "seo-auditor",
+      "reviewers": [
+        "adversarial-reviewer"
+      ],
+      "workflow": "seo",
+      "gates": [
+        "implementation",
+        "regression"
+      ]
+    },
+    "content": {
+      "lead": "cms-lead",
+      "subagents": [],
+      "auditor": "content-auditor",
+      "reviewers": [
+        "regression-reviewer"
+      ],
+      "workflow": "bugfix",
+      "gates": [
+        "implementation"
+      ]
+    },
+    "accessibility": {
+      "lead": "accessibility-lead",
+      "subagents": [
+        "modal-auditor"
+      ],
+      "auditor": "accessibility-auditor",
+      "reviewers": [
+        "regression-reviewer"
+      ],
+      "workflow": "frontend-change",
+      "gates": [
+        "accessibility"
+      ]
+    },
+    "performance": {
+      "lead": "performance-lead",
+      "subagents": [],
+      "auditor": "performance-auditor",
+      "reviewers": [
+        "regression-reviewer"
+      ],
+      "workflow": "performance",
+      "gates": [
+        "performance"
+      ]
+    },
+    "security": {
+      "lead": "security-lead",
+      "subagents": [
+        "input-validation-auditor"
+      ],
+      "auditor": "security-auditor",
+      "reviewers": [
+        "security-reviewer",
+        "adversarial-reviewer"
+      ],
+      "workflow": "security",
+      "gates": [
+        "security",
+        "regression"
+      ]
+    },
+    "observability": {
+      "lead": "observability-lead",
+      "subagents": [],
+      "auditor": "observability-auditor",
+      "reviewers": [
+        "regression-reviewer"
+      ],
+      "workflow": "bugfix",
+      "gates": [
+        "implementation"
+      ]
+    },
+    "dependencies": {
+      "lead": "dependency-lead",
+      "subagents": [],
+      "auditor": "dependencies-auditor",
+      "reviewers": [
+        "regression-reviewer"
+      ],
+      "workflow": "dependency-upgrade",
+      "gates": [
+        "release"
+      ]
+    },
+    "product-flows": {
+      "lead": "architecture-lead",
+      "subagents": [],
+      "auditor": "product-flows-auditor",
+      "reviewers": [
+        "adversarial-reviewer"
+      ],
+      "workflow": "autonomous-full-audit",
+      "gates": [
+        "trace",
+        "regression"
+      ]
+    },
+    "release": {
+      "lead": "release-lead",
+      "subagents": [],
+      "auditor": "security-auditor",
+      "reviewers": [
+        "final-reviewer"
+      ],
+      "workflow": "release",
+      "gates": [
+        "release"
+      ]
+    },
+    "default": {
+      "lead": "architecture-lead",
+      "subagents": [],
+      "auditor": "architecture-auditor",
+      "reviewers": [
+        "adversarial-reviewer"
+      ],
+      "workflow": "bugfix",
+      "gates": [
+        "implementation",
+        "regression"
+      ]
+    }
+  }
+}

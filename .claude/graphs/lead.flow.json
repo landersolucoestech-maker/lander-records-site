@@ -1,0 +1,111 @@
+{
+  "id": "lead",
+  "curated": true,
+  "nodes": [
+    {
+      "id": "ContactForm",
+      "code": [
+        "app/(public)/contato/ContactForm.tsx#formElement"
+      ]
+    },
+    {
+      "id": "ContactRoute",
+      "code": [
+        "app/api/contact/route.ts#payloadSchema"
+      ]
+    },
+    {
+      "id": "ClientIp",
+      "code": [
+        "lib/contact-client-ip.ts#resolveContactClientIp"
+      ]
+    },
+    {
+      "id": "RateLimit",
+      "code": [
+        "lib/contact.ts#isContactRateLimited"
+      ]
+    },
+    {
+      "id": "ContactSubmission",
+      "code": [
+        "lib/db/schema.ts#contactSubmissions"
+      ]
+    },
+    {
+      "id": "OutboxEvent",
+      "code": [
+        "lib/db/schema.ts#integrationOutbox"
+      ]
+    },
+    {
+      "id": "Dispatcher",
+      "code": [
+        "lib/contact.ts#dispatchOutboxEvent"
+      ]
+    },
+    {
+      "id": "RetryPolicy",
+      "code": [
+        "lib/contact-outbox-policy.ts#outboxFailureTransition"
+      ]
+    },
+    {
+      "id": "Scheduler",
+      "code": [
+        "app/api/cron/integrations/route.ts#retryDueOutboxEvents"
+      ]
+    },
+    {
+      "id": "Receiver",
+      "code": []
+    }
+  ],
+  "edges": [
+    [
+      "ContactForm",
+      "posts",
+      "ContactRoute"
+    ],
+    [
+      "ContactRoute",
+      "uses",
+      "ClientIp"
+    ],
+    [
+      "ContactRoute",
+      "checks",
+      "RateLimit"
+    ],
+    [
+      "ContactRoute",
+      "produces",
+      "ContactSubmission"
+    ],
+    [
+      "ContactRoute",
+      "produces",
+      "OutboxEvent"
+    ],
+    [
+      "Dispatcher",
+      "consumes",
+      "OutboxEvent"
+    ],
+    [
+      "Dispatcher",
+      "delivers",
+      "Receiver"
+    ],
+    [
+      "Dispatcher",
+      "applies",
+      "RetryPolicy"
+    ],
+    [
+      "Scheduler",
+      "drives",
+      "Dispatcher"
+    ]
+  ]
+}

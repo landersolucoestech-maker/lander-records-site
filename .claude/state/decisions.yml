@@ -1,0 +1,33 @@
+# Decision index — records live in decisions/
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "accepted": [
+    "ADR-0002 machine-readable yaml",
+    "ADR-0003 lead destination",
+    "ADR-0004 outbox dead letter",
+    "ADR-0005 self-contained OS"
+  ],
+  "superseded": [
+    "ADR-0001 (superseded by ADR-0005; non-operational)"
+  ],
+  "open": [
+    {
+      "id": "DEC-0001",
+      "blocks": [
+        "F-0006"
+      ]
+    },
+    {
+      "id": "DEC-0002",
+      "blocks": [
+        "F-0008"
+      ]
+    },
+    {
+      "id": "DEC-0003",
+      "blocks": [
+        "F-0011"
+      ]
+    }
+  ]
+}

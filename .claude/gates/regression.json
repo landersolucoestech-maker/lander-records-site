@@ -1,0 +1,47 @@
+{
+  "id": "regression",
+  "title": "Regression gate",
+  "checks": [
+    {
+      "name": "typecheck",
+      "type": "command",
+      "argv": [
+        "npm",
+        "run",
+        "typecheck"
+      ]
+    },
+    {
+      "name": "unit suites",
+      "type": "command",
+      "argv": [
+        "npm",
+        "test"
+      ],
+      "evidenceKind": "test"
+    },
+    {
+      "name": "DB integration suites",
+      "type": "command",
+      "argv": [
+        "npm",
+        "run",
+        "test:integration"
+      ],
+      "requiresEnv": [
+        "DATABASE_URL"
+      ],
+      "evidenceKind": "test"
+    },
+    {
+      "name": "production build",
+      "type": "command",
+      "argv": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "evidenceKind": "build"
+    }
+  ]
+}

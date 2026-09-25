@@ -1,0 +1,60 @@
+{
+  "confidence": "confirmed",
+  "dependencies": [
+    "DEC-0003"
+  ],
+  "risk": "low",
+  "discoveredAt": "2026-09-25T13:50:00.000Z",
+  "id": "F-0011",
+  "title": "No favicon: every page logs a 404 (public-routes spec fails)",
+  "severity": "P3",
+  "domain": "frontend",
+  "status": "NEEDS_PRODUCT_DECISION",
+  "decision": "DEC-0003",
+  "evidence": [
+    "curl /favicon.ico → 404",
+    "tests/browser/public-routes.spec.ts: 50 failures 'Failed to load resource: 404' on base and head"
+  ],
+  "rootCause": "No icon asset in app/ or public/.",
+  "producer": [
+    "app/"
+  ],
+  "consumers": [
+    "browsers",
+    "public-routes spec"
+  ],
+  "affectedFlow": "brand/SEO",
+  "invariantViolated": "public routes load without asset errors",
+  "blastRadius": "all pages; browser suite red",
+  "autofix": {
+    "eligible": false,
+    "reason": "official icon asset is a brand decision"
+  },
+  "correction": "add approved square icon as app/icon.png",
+  "requiredTests": [
+    "tests/browser/public-routes.spec.ts"
+  ],
+  "regressionRisk": "none",
+  "impactLevel": "L1",
+  "producerAgent": "frontend-auditor",
+  "history": [
+    {
+      "status": "DISCOVERED",
+      "at": "2026-09-25T13:50:00.000Z",
+      "by": "visual-lead",
+      "note": "browser suite"
+    },
+    {
+      "status": "TRIAGED",
+      "at": "2026-09-25T13:51:00.000Z",
+      "by": "autonomous-controller",
+      "note": "P3 frontend"
+    },
+    {
+      "status": "NEEDS_PRODUCT_DECISION",
+      "at": "2026-09-25T13:52:00.000Z",
+      "by": "autonomous-controller",
+      "note": "DEC-0003 opened"
+    }
+  ]
+}

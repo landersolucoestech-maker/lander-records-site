@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lander-os/release",
+  "title": "Release record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "commit",
+    "migrations",
+    "gates",
+    "rollbackPlan",
+    "smoke"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "commit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "migrations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": {
+        "enum": [
+          "PASS",
+          "FAIL",
+          "BLOCKED"
+        ]
+      }
+    },
+    "backupEvidence": {
+      "type": "string"
+    },
+    "deployedAt": {
+      "type": "string"
+    },
+    "smoke": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "PENDING"
+      ]
+    },
+    "rollbackPlan": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

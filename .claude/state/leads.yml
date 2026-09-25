@@ -1,0 +1,26 @@
+# Lead pipeline state
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "systemOfRecord": "contact_submissions",
+  "delivery": "integration_outbox → signed webhook (receiver not configured)",
+  "lifecycle": {
+    "RECEIVED": "route",
+    "VALIDATED": "zod",
+    "QUEUED": "pending",
+    "DELIVERING": "claimed",
+    "DELIVERED": "delivered",
+    "FAILED_RETRYABLE": "failed",
+    "FAILED_PERMANENT": "dead_letter",
+    "NOT_CONFIGURED": "disabled"
+  },
+  "health": "PERSISTING_NOT_DELIVERING",
+  "evidence": [
+    "tests/integration/contact-outbox-delivery.mjs",
+    "tests/browser/contact-form.spec.ts",
+    "tests/integration/cms.mjs"
+  ],
+  "openDecisions": [
+    "DEC-0001",
+    "DEC-0002"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "id": "F-NNNN",
+  "title": "",
+  "severity": "P2",
+  "domain": "backend",
+  "status": "TRIAGED",
+  "confidence": "high",
+  "evidence": [
+    "path:line — observation"
+  ],
+  "rootCause": "",
+  "producer": [
+    ""
+  ],
+  "consumers": [
+    ""
+  ],
+  "affectedFlow": "",
+  "invariantViolated": "",
+  "blastRadius": "",
+  "dependencies": [],
+  "autofix": {
+    "eligible": true,
+    "reason": ""
+  },
+  "risk": "low",
+  "correction": "",
+  "requiredTests": [
+    ""
+  ],
+  "regressionRisk": "",
+  "impactLevel": "L2",
+  "producerAgent": "",
+  "discoveredAt": "YYYY-MM-DDTHH:MM:SS.000Z",
+  "history": [
+    {
+      "status": "TRIAGED",
+      "at": "YYYY-MM-DDTHH:MM:SS.000Z",
+      "by": "",
+      "note": ""
+    }
+  ]
+}

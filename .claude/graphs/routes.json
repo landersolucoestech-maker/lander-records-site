@@ -1,0 +1,349 @@
+{
+  "generatedBy": ".claude/runtime/graph.mjs",
+  "routes": [
+    {
+      "path": "/",
+      "kind": "page",
+      "file": "app/(public)/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/",
+      "kind": "page",
+      "file": "app/admin/(protected)/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/artist-categories/",
+      "kind": "page",
+      "file": "app/admin/(protected)/artist-categories/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/artists/",
+      "kind": "page",
+      "file": "app/admin/(protected)/artists/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/artists/[id]/",
+      "kind": "page",
+      "file": "app/admin/(protected)/artists/[id]/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/artists/[id]/view/",
+      "kind": "page",
+      "file": "app/admin/(protected)/artists/[id]/view/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/artists/new/",
+      "kind": "page",
+      "file": "app/admin/(protected)/artists/new/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/audit/",
+      "kind": "page",
+      "file": "app/admin/(protected)/audit/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/categories/",
+      "kind": "page",
+      "file": "app/admin/(protected)/categories/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/change-password/",
+      "kind": "page",
+      "file": "app/admin/change-password/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/header/",
+      "kind": "page",
+      "file": "app/admin/(protected)/header/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/home/",
+      "kind": "page",
+      "file": "app/admin/(protected)/home/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/login/",
+      "kind": "page",
+      "file": "app/admin/login/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/media-kit/",
+      "kind": "page",
+      "file": "app/admin/(protected)/media-kit/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/media/",
+      "kind": "page",
+      "file": "app/admin/(protected)/media/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/navigation/",
+      "kind": "page",
+      "file": "app/admin/(protected)/navigation/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/pages/",
+      "kind": "page",
+      "file": "app/admin/(protected)/pages/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/pages/[id]/",
+      "kind": "page",
+      "file": "app/admin/(protected)/pages/[id]/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/pages/[id]/view/",
+      "kind": "page",
+      "file": "app/admin/(protected)/pages/[id]/view/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/post-categories/",
+      "kind": "page",
+      "file": "app/admin/(protected)/post-categories/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/posts/",
+      "kind": "page",
+      "file": "app/admin/(protected)/posts/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/posts/[id]/",
+      "kind": "page",
+      "file": "app/admin/(protected)/posts/[id]/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/posts/[id]/view/",
+      "kind": "page",
+      "file": "app/admin/(protected)/posts/[id]/view/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/releases/",
+      "kind": "page",
+      "file": "app/admin/(protected)/releases/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/settings/",
+      "kind": "page",
+      "file": "app/admin/(protected)/settings/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/settings/lander-records/",
+      "kind": "page",
+      "file": "app/admin/(protected)/settings/lander-records/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/tags/",
+      "kind": "page",
+      "file": "app/admin/(protected)/tags/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/admin/users/",
+      "kind": "page",
+      "file": "app/admin/(protected)/users/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/api/admin/status/",
+      "kind": "api",
+      "file": "app/api/admin/status/route.ts",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/api/contact/",
+      "kind": "api",
+      "file": "app/api/contact/route.ts",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "path": "/api/cron/integrations/",
+      "kind": "api",
+      "file": "app/api/cron/integrations/route.ts",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/api/health/",
+      "kind": "api",
+      "file": "app/api/health/route.ts",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/api/integrations/spotify/callback/",
+      "kind": "api",
+      "file": "app/api/integrations/spotify/callback/route.ts",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/api/integrations/spotify/connect/",
+      "kind": "api",
+      "file": "app/api/integrations/spotify/connect/route.ts",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/artistas/",
+      "kind": "page",
+      "file": "app/(public)/artistas/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/artistas/[slug]/",
+      "kind": "page",
+      "file": "app/(public)/artistas/[slug]/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/cms-preview/[[...section]]/",
+      "kind": "page",
+      "file": "app/cms-preview/[[...section]]/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/contato/",
+      "kind": "page",
+      "file": "app/(public)/contato/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/noticias/",
+      "kind": "page",
+      "file": "app/(public)/noticias/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/noticias/[slug]/",
+      "kind": "page",
+      "file": "app/(public)/noticias/[slug]/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/politica-de-privacidade/",
+      "kind": "page",
+      "file": "app/(public)/politica-de-privacidade/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/sobre-nos/",
+      "kind": "page",
+      "file": "app/(public)/sobre-nos/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/termos-e-condicoes/",
+      "kind": "page",
+      "file": "app/(public)/termos-e-condicoes/page.tsx",
+      "methods": [
+        "GET"
+      ]
+    }
+  ]
+}

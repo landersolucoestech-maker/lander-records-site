@@ -1,0 +1,82 @@
+# Workflow database-change — Schema/migration change
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "id": "database-change",
+  "title": "Schema/migration change",
+  "trigger": "database finding or feature",
+  "phases": [
+    {
+      "id": "plan",
+      "agents": [
+        "database-lead",
+        "migration-lead"
+      ],
+      "skills": [
+        "migration-audit",
+        "impact-analysis"
+      ],
+      "gates": [
+        "architecture"
+      ],
+      "transition": "migration classified additive/destructive"
+    },
+    {
+      "id": "apply-local",
+      "agents": [
+        "database-lead",
+        "migration-order-auditor"
+      ],
+      "skills": [
+        "migration-audit"
+      ],
+      "gates": [
+        "contract"
+      ],
+      "transition": "fresh + upgrade path PASS, contract recaptured"
+    },
+    {
+      "id": "review",
+      "agents": [
+        "contract-reviewer",
+        "adversarial-reviewer"
+      ],
+      "skills": [
+        "adversarial-review"
+      ],
+      "gates": [
+        "regression"
+      ],
+      "transition": "→ RESOLVED (code)"
+    },
+    {
+      "id": "release",
+      "agents": [
+        "release-lead"
+      ],
+      "skills": [
+        "release-validation"
+      ],
+      "gates": [
+        "release"
+      ],
+      "transition": "remote apply only via guarded release with operator authorization"
+    }
+  ],
+  "stopConditions": [
+    "product decision required (DEC)",
+    "destructive/data-loss risk",
+    "external system or credential unavailable (BLOCKED_EXTERNAL)",
+    "unresolvable ambiguity",
+    "irreversible architectural change",
+    "contradictory requirements"
+  ],
+  "outputs": [
+    "findings/*.json updated",
+    "evidence/EV-*.json",
+    "atomic commits"
+  ],
+  "stateTransitions": [
+    "READY → INVESTIGATING → ROOT_CAUSE_CONFIRMED → FIXING → VALIDATING → REAUDITING → RESOLVED"
+  ],
+  "rollback": "additive: leave unused; destructive: restore from verified backup (scripts/release, infra/backup) — requires operator"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "git-state",
+  "title": "Git state",
+  "kind": "check",
+  "domain": "release",
+  "feeds": "all",
+  "invariant": "no uncommitted changes outside volatile OS state at completion",
+  "severity": "P3",
+  "check": {
+    "type": "git-clean-except",
+    "allow": [
+      ".claude/state/.run"
+    ]
+  }
+}

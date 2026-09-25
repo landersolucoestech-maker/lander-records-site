@@ -1,0 +1,135 @@
+{
+  "critical": [
+    "NO EVIDENCE = NO CLAIM",
+    "DISCOVERY OF A FIXABLE DEFECT DOES NOT COMPLETE THE TASK",
+    "THE SYSTEM MUST CONTINUE WHILE READY WORK EXISTS"
+  ],
+  "policies": [
+    {
+      "id": "autonomy-policy",
+      "path": "policies/autonomy-policy.md",
+      "statement": "Operate at the highest safe autonomy. No authorization is requested between normal steps (read, trace, fix, test, lint, build, stage, atomic commit). Stop only for the six stop conditions in kernel/autonomous-controller.md.",
+      "enforcement": "controller.mjs next drives the loop; stops are recorded as findings/DECs."
+    },
+    {
+      "id": "architecture-stability-policy",
+      "path": "policies/architecture-stability-policy.md",
+      "statement": "The canonical .claude layout is frozen; structural change requires an ADR and explicit migration; no two sources of truth.",
+      "enforcement": "runtime/pack.mjs (canonical entries, registry, independence)."
+    },
+    {
+      "id": "investigation-first-policy",
+      "path": "policies/investigation-first-policy.md",
+      "statement": "No edit before the defect is traced producer → transformation → consumer.",
+      "enforcement": "Findings need rootCause before ROOT_CAUSE_CONFIRMED."
+    },
+    {
+      "id": "evidence-first-policy",
+      "path": "policies/evidence-first-policy.md",
+      "statement": "NO EVIDENCE = NO CLAIM. 'fixed', 'healthy', 'integrated', 'delivered', 'no regression' require evidence records.",
+      "enforcement": "RESOLVED requires evidenceRecords; completion.mjs; gates."
+    },
+    {
+      "id": "root-cause-first-policy",
+      "path": "policies/root-cause-first-policy.md",
+      "statement": "Fix the layer that owns the defect; symptom patches (|| 0, catch-and-ignore) are forbidden.",
+      "enforcement": "gate root-cause; forbidden-pattern checks."
+    },
+    {
+      "id": "minimum-correct-fix-policy",
+      "path": "policies/minimum-correct-fix-policy.md",
+      "statement": "Prefer the minimal correct fix over the minimal local patch; propagate to all consumers of a changed contract.",
+      "enforcement": "contract-reviewer, graphs reverse edges."
+    },
+    {
+      "id": "source-of-truth-policy",
+      "path": "policies/source-of-truth-policy.md",
+      "statement": "One concept → one canonical field and one authoritative implementation; duplicates need a documented single writer.",
+      "enforcement": "source-of-truth-lead; data-flows graph."
+    },
+    {
+      "id": "autofix-policy",
+      "path": "policies/autofix-policy.md",
+      "statement": "Autofix when root cause proven, expected behavior defined, risk acceptable, reversible, validatable. Otherwise park with reason.",
+      "enforcement": "finding.autofix.eligible + reason."
+    },
+    {
+      "id": "regression-policy",
+      "path": "policies/regression-policy.md",
+      "statement": "A change is not done until previously passing suites still pass; new failures re-enter FIXING. Pre-existing failures must be reproduced on the base commit before being classified.",
+      "enforcement": "state/known-failures.yml with evidence; regression gate."
+    },
+    {
+      "id": "integrations-policy",
+      "path": "policies/integrations-policy.md",
+      "statement": "HTTP 200 is not health. Every provider call has a timeout; errors persisted; retries bounded; permanent failures not retried.",
+      "enforcement": "integration gate, provider-timeouts sensor."
+    },
+    {
+      "id": "identities-policy",
+      "path": "policies/identities-policy.md",
+      "statement": "Identities never merge by text similarity; metrics belong to the identity that produced them.",
+      "enforcement": "identity/identity-policy.md; identity gate; identity-conflicts sensor."
+    },
+    {
+      "id": "metrics-policy",
+      "path": "policies/metrics-policy.md",
+      "statement": "ZERO ≠ NULL ≠ ERROR ≠ STALE. No `value || 0`; unavailable renders '—'; observedAt unknown stays null.",
+      "enforcement": "forbidden-pattern checks in gates/identity.json and gates/implementation.json."
+    },
+    {
+      "id": "leads-policy",
+      "path": "policies/leads-policy.md",
+      "statement": "A lead is persisted before any delivery attempt; delivery is outbox-based, idempotent, bounded, with dead letter; no PII in logs; no credentials in the browser.",
+      "enforcement": "lead-delivery gate; lead sensors."
+    },
+    {
+      "id": "credentials-policy",
+      "path": "policies/credentials-policy.md",
+      "statement": "Credentials only from the server environment; tokens encrypted at rest; bearer tokens only to allowlisted hosts.",
+      "enforcement": "credentials-guardian; secret-lead."
+    },
+    {
+      "id": "migrations-policy",
+      "path": "policies/migrations-policy.md",
+      "statement": "Migrations are new numbered SQL files, never edited after apply; remote apply only via guarded release; destructive changes need backup + rehearsal evidence.",
+      "enforcement": "migration-guardian; database-change workflow."
+    },
+    {
+      "id": "security-policy",
+      "path": "policies/security-policy.md",
+      "statement": "Deny by default; authn never substitutes authz; server-side checks authoritative; negative tests for every authz/abuse change.",
+      "enforcement": "security gate; security-reviewer mandatory for L5."
+    },
+    {
+      "id": "privacy-policy",
+      "path": "policies/privacy-policy.md",
+      "statement": "Minimize personal data; IPs only as salted hash; consent versioned; new PII destinations need a product decision.",
+      "enforcement": "privacy-guardian."
+    },
+    {
+      "id": "git-policy",
+      "path": "policies/git-policy.md",
+      "statement": "Preflight before mutation; no destructive git; stage only the current cluster; `git diff --cached --check`; atomic, specific commit messages.",
+      "enforcement": "git-guardian; preflight.mjs."
+    },
+    {
+      "id": "destructive-actions-policy",
+      "path": "policies/destructive-actions-policy.md",
+      "statement": "Deleting data/media, production writes and irreversible operations require explicit operator authorization in the current conversation.",
+      "enforcement": "destructive-action-guardian."
+    },
+    {
+      "id": "completion-policy",
+      "path": "policies/completion-policy.md",
+      "statement": "DISCOVERY OF A FIXABLE DEFECT DOES NOT COMPLETE THE TASK. THE SYSTEM MUST CONTINUE WHILE READY WORK EXISTS. Completion only via completion.mjs verdict.",
+      "enforcement": "completion.mjs; controller.mjs next."
+    },
+    {
+      "id": "dependency-policy",
+      "path": "policies/dependency-policy.md",
+      "statement": "No new dependency where Node built-ins or existing deps suffice; pinned majors stay pinned; lockfile churn reviewed.",
+      "enforcement": "dependency-guardian; dependency-upgrade workflow."
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+# Identity model state
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "internal": [
+    "artists.id",
+    "lander_records"
+  ],
+  "external": [
+    "soundcharts_artist_uuid",
+    "spotify artist id (derived from links)",
+    "spotify playlist/user id",
+    "platform profile URLs"
+  ],
+  "invariants": [
+    "identity/identity-policy.md"
+  ],
+  "lastReconciliation": null,
+  "sensor": "identity-conflicts"
+}

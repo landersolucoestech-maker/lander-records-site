@@ -1,0 +1,8 @@
+{
+  "id": "repository-changes",
+  "title": "Repository changes",
+  "kind": "git",
+  "domain": "architecture",
+  "feeds": "all",
+  "invariant": "work happens on a working branch with a known baseline"
+}

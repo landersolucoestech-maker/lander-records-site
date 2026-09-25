@@ -1,0 +1,66 @@
+# Workflow provider-drift — Adapt to a provider payload/contract change
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "id": "provider-drift",
+  "title": "Adapt to a provider payload/contract change",
+  "trigger": "drift signal",
+  "phases": [
+    {
+      "id": "capture",
+      "agents": [
+        "integrations-auditor"
+      ],
+      "skills": [
+        "contract-audit"
+      ],
+      "gates": [],
+      "transition": "sanitized payload sample as evidence"
+    },
+    {
+      "id": "adapt",
+      "agents": [
+        "backend-lead"
+      ],
+      "skills": [
+        "autofix",
+        "regression-generation"
+      ],
+      "gates": [
+        "contract",
+        "integration"
+      ],
+      "transition": "parser + schema updated"
+    },
+    {
+      "id": "review",
+      "agents": [
+        "integration-reviewer",
+        "adversarial-reviewer"
+      ],
+      "skills": [
+        "adversarial-review"
+      ],
+      "gates": [
+        "regression"
+      ],
+      "transition": "→ RESOLVED"
+    }
+  ],
+  "stopConditions": [
+    "product decision required (DEC)",
+    "destructive/data-loss risk",
+    "external system or credential unavailable (BLOCKED_EXTERNAL)",
+    "unresolvable ambiguity",
+    "irreversible architectural change",
+    "contradictory requirements"
+  ],
+  "outputs": [
+    "findings/*.json updated",
+    "evidence/EV-*.json",
+    "atomic commits"
+  ],
+  "stateTransitions": [
+    "READY → INVESTIGATING → ROOT_CAUSE_CONFIRMED → FIXING → VALIDATING → REAUDITING → RESOLVED"
+  ],
+  "rollback": "revert only this workflow's own commits (git revert); never reset/clean pre-existing work; data side effects need compensation per ADR/incident workflow"
+}

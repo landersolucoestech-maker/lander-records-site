@@ -1,0 +1,102 @@
+{
+  "id": "metric",
+  "curated": true,
+  "nodes": [
+    {
+      "id": "ArtistLinks",
+      "code": [
+        "lib/db/schema.ts#artistLinks"
+      ]
+    },
+    {
+      "id": "Resolver",
+      "code": [
+        "lib/integrations/soundcharts.ts#resolveSoundchartsArtist"
+      ]
+    },
+    {
+      "id": "MetricsClient",
+      "code": [
+        "lib/integrations/soundcharts.ts#fetchSoundchartsArtistMetrics"
+      ]
+    },
+    {
+      "id": "Sync",
+      "code": [
+        "lib/integrations/sync.ts#syncArtistSoundcharts"
+      ]
+    },
+    {
+      "id": "ArtistMetrics",
+      "code": [
+        "lib/db/artist-management-schema.ts#artistMetrics"
+      ]
+    },
+    {
+      "id": "MetricCache",
+      "code": [
+        "lib/db/integration-schema.ts#integrationMetricCache"
+      ]
+    },
+    {
+      "id": "ArtistRepository",
+      "code": [
+        "modules/artists/repository.ts#artistMetrics"
+      ]
+    },
+    {
+      "id": "ArtistPage",
+      "code": [
+        "app/(public)/artistas/[slug]/page.tsx#metricLabels"
+      ]
+    },
+    {
+      "id": "HomeSocial",
+      "code": [
+        "app/(public)/page.tsx#getLanderRecordsSocialMetrics"
+      ]
+    }
+  ],
+  "edges": [
+    [
+      "Sync",
+      "consumes",
+      "ArtistLinks"
+    ],
+    [
+      "Sync",
+      "uses",
+      "Resolver"
+    ],
+    [
+      "Sync",
+      "uses",
+      "MetricsClient"
+    ],
+    [
+      "Sync",
+      "produces",
+      "ArtistMetrics"
+    ],
+    [
+      "Sync",
+      "produces",
+      "MetricCache"
+    ],
+    [
+      "ArtistRepository",
+      "consumes",
+      "ArtistMetrics"
+    ],
+    [
+      "ArtistPage",
+      "consumes",
+      "ArtistRepository"
+    ],
+    [
+      "HomeSocial",
+      "consumes",
+      "MetricCache"
+    ]
+  ]
+}

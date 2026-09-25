@@ -1,0 +1,39 @@
+{
+  "id": "integration",
+  "title": "Integration gate",
+  "checks": [
+    {
+      "name": "Soundcharts requests time-bounded",
+      "type": "required-pattern",
+      "file": "lib/integrations/soundcharts.ts",
+      "pattern": "signal: AbortSignal\\.timeout\\(SOUNDCHARTS_REQUEST_TIMEOUT_MS\\)[\\s\\S]*signal: AbortSignal\\.timeout\\(SOUNDCHARTS_REQUEST_TIMEOUT_MS\\)",
+      "message": "token and API requests need timeouts"
+    },
+    {
+      "name": "Spotify requests time-bounded",
+      "type": "required-pattern",
+      "file": "lib/integrations/spotify.ts",
+      "pattern": "AbortSignal\\.timeout\\(SPOTIFY_REQUEST_TIMEOUT_MS\\)",
+      "message": "timeouts required"
+    },
+    {
+      "name": "integration persistence + identity sync",
+      "type": "command",
+      "argv": [
+        "npm",
+        "run",
+        "test:integration"
+      ],
+      "requiresEnv": [
+        "DATABASE_URL"
+      ]
+    },
+    {
+      "name": "no open P0/P1 integration findings",
+      "type": "no-open-findings",
+      "domains": [
+        "integrations"
+      ]
+    }
+  ]
+}

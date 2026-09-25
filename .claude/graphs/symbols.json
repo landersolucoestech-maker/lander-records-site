@@ -1,0 +1,731 @@
+{
+  "generatedBy": ".claude/runtime/graph.mjs",
+  "symbols": {
+    "app/(public)/artistas/ArtistFilterGrid.tsx": [
+      "ArtistFilterGrid"
+    ],
+    "app/(public)/artistas/[slug]/page.tsx": [
+      "dynamic",
+      "generateMetadata"
+    ],
+    "app/(public)/artistas/page.tsx": [
+      "dynamic",
+      "generateMetadata"
+    ],
+    "app/(public)/contato/ContactForm.tsx": [
+      "ContactForm"
+    ],
+    "app/(public)/contato/page.tsx": [
+      "dynamic",
+      "generateMetadata"
+    ],
+    "app/(public)/noticias/NewsFilterGrid.tsx": [
+      "NewsFilterGrid"
+    ],
+    "app/(public)/noticias/[slug]/page.tsx": [
+      "dynamic",
+      "generateMetadata"
+    ],
+    "app/(public)/noticias/page.tsx": [
+      "dynamic",
+      "generateMetadata"
+    ],
+    "app/(public)/page.tsx": [
+      "dynamic",
+      "generateMetadata"
+    ],
+    "app/(public)/politica-de-privacidade/page.tsx": [
+      "dynamic",
+      "generateMetadata"
+    ],
+    "app/(public)/sobre-nos/GroupCompaniesTabs.tsx": [
+      "GroupCompaniesTabs"
+    ],
+    "app/(public)/sobre-nos/page.tsx": [
+      "dynamic",
+      "generateMetadata"
+    ],
+    "app/(public)/termos-e-condicoes/page.tsx": [
+      "dynamic",
+      "generateMetadata"
+    ],
+    "app/admin/(protected)/artists/ArtistForm.tsx": [
+      "ArtistOption",
+      "ArtistMediaOption",
+      "ArtistEditorInitial",
+      "ArtistFormOptions"
+    ],
+    "app/admin/(protected)/artists/ArtistManager.tsx": [
+      "ArtistSummary"
+    ],
+    "app/admin/(protected)/artists/[id]/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/artists/[id]/view/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/artists/editor-data.ts": [
+      "loadArtistOptions",
+      "loadArtistEditor"
+    ],
+    "app/admin/(protected)/artists/new/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/artists/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/audit/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/categories/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/header/HeaderManagerView.tsx": [
+      "HeaderManagerData",
+      "HeaderManagerView"
+    ],
+    "app/admin/(protected)/header/HeaderPreview.tsx": [
+      "HeaderPreview"
+    ],
+    "app/admin/(protected)/header/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/home/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/layout.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/media-kit/actions.ts": [
+      "updateMediaKitSettings",
+      "createMediaKitSection",
+      "updateMediaKitSection",
+      "deleteMediaKitSection",
+      "createMediaKitItem",
+      "updateMediaKitItem",
+      "deleteMediaKitItem"
+    ],
+    "app/admin/(protected)/media-kit/components/MediaKitBuilder.tsx": [
+      "MediaKitBuilder"
+    ],
+    "app/admin/(protected)/media-kit/components/MediaKitPreviewDeck.tsx": [
+      "MediaKitPreviewDeck"
+    ],
+    "app/admin/(protected)/media-kit/media-kit-contract.ts": [
+      "MEDIA_FIT_VALUES",
+      "MEDIA_POSITION_VALUES",
+      "MediaFit",
+      "MediaPosition",
+      "recordText",
+      "mediaFit",
+      "mediaPosition",
+      "isPublishableValue",
+      "visibleByPosition"
+    ],
+    "app/admin/(protected)/media-kit/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/media-kit/preview-auth.ts": [
+      "canMutateMediaKitInCurrentEnvironment",
+      "requireMediaKitMutationAdmin"
+    ],
+    "app/admin/(protected)/media/MediaLibrary.tsx": [
+      "MediaLibraryItem",
+      "MediaLibrary"
+    ],
+    "app/admin/(protected)/media/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/navigation/NavigationManager.tsx": [
+      "NavigationSummary"
+    ],
+    "app/admin/(protected)/navigation/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/pages/PageManager.tsx": [
+      "PageSectionSummary",
+      "PageSummary"
+    ],
+    "app/admin/(protected)/pages/[id]/PageContentWorkbench.tsx": [
+      "PageEditorSection",
+      "PageEditorItem",
+      "PageMediaOption"
+    ],
+    "app/admin/(protected)/pages/[id]/hero-media-actions.ts": [
+      "uploadPageSectionMedia",
+      "setPageSectionMedia",
+      "removePageSectionMedia"
+    ],
+    "app/admin/(protected)/pages/[id]/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/pages/[id]/view/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/pages/page-contract.ts": [
+      "knownPageKeys",
+      "pageContract"
+    ],
+    "app/admin/(protected)/pages/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/pages/site-page-contract.ts": [
+      "PageClassification",
+      "SectionFieldName",
+      "ItemFieldName",
+      "SiteSectionContract",
+      "SitePageContract",
+      "SITE_PAGE_CONTRACTS",
+      "sitePageContract",
+      "siteSectionContract",
+      "siteSectionOrder"
+    ],
+    "app/admin/(protected)/posts/PostManager.tsx": [
+      "PostRecord"
+    ],
+    "app/admin/(protected)/posts/[id]/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/posts/[id]/view/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/posts/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/releases/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/settings/SettingsTabs.tsx": [
+      "SettingsTabs"
+    ],
+    "app/admin/(protected)/settings/lander-records/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/settings/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/(protected)/users/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/actions.ts": [
+      "logoutAction",
+      "changeOwnPassword",
+      "upsertArtistCategory",
+      "deleteArtistCategory",
+      "upsertPostCategory",
+      "deletePostCategory",
+      "updatePageSection",
+      "addPageSectionItem",
+      "updatePageSectionItem",
+      "deletePageSectionItem",
+      "upsertNavigationItem",
+      "deleteNavigationItem",
+      "updateCompanySettings",
+      "updateIdentitySettings",
+      "upsertSocialLink",
+      "uploadMedia",
+      "archiveMedia",
+      "createAdminUser",
+      "updateAdminUser",
+      "resetAdminPassword"
+    ],
+    "app/admin/artist-actions.ts": [
+      "ArtistActionState",
+      "saveArtistAction",
+      "deleteArtistAction"
+    ],
+    "app/admin/change-password/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/components/AdminContextHeaderSync.tsx": [
+      "AdminContextHeaderSync"
+    ],
+    "app/admin/components/AdminDialog.tsx": [
+      "AdminDialog"
+    ],
+    "app/admin/components/AdminIcon.tsx": [
+      "AdminIcon"
+    ],
+    "app/admin/components/AdminMediaPicker.tsx": [
+      "AdminMediaPickerItem",
+      "AdminMediaPicker"
+    ],
+    "app/admin/components/AdminPagination.tsx": [
+      "AdminPagination"
+    ],
+    "app/admin/components/AdminShell.tsx": [
+      "AdminNotificationItem",
+      "AdminShell"
+    ],
+    "app/admin/components/DashboardView.tsx": [
+      "DashboardView"
+    ],
+    "app/admin/components/HomeManagerView.tsx": [
+      "HomeManagerSection",
+      "HomeManagerView",
+      "createPreviewHomeSections"
+    ],
+    "app/admin/components/admin-navigation.ts": [
+      "AdminRole",
+      "AdminNavItem",
+      "AdminNavModule",
+      "AdminNavGroup",
+      "adminNavigation",
+      "visibleAdminNavigation",
+      "resolveAdminLocation"
+    ],
+    "app/admin/integration-actions.ts": [
+      "saveLanderRecordsIntegrationSettings",
+      "syncLanderRecordsIntegrationsAction"
+    ],
+    "app/admin/login/actions.ts": [
+      "loginAction"
+    ],
+    "app/admin/login/page.tsx": [
+      "dynamic"
+    ],
+    "app/admin/navigation-contract.ts": [
+      "NAVIGATION_MENU_KEYS",
+      "NAVIGATION_LINK_TYPES",
+      "NavigationMenuKey",
+      "NavigationLinkType",
+      "NavigationHierarchyInput",
+      "INTERNAL_NAVIGATION_DESTINATIONS",
+      "isNavigationMenuKey",
+      "isNavigationLinkType",
+      "navigationDestinationError",
+      "navigationHierarchyError",
+      "navigationDeletionError",
+      "normalizeNavigationNewTab",
+      "navigationEmptyMessage",
+      "menuLabel"
+    ],
+    "app/admin/page-actions.ts": [
+      "deletePageAction",
+      "createPageSectionAction",
+      "attachSectionAction",
+      "detachSectionAction"
+    ],
+    "app/admin/page-content-actions.ts": [
+      "updatePageSection",
+      "addPageSectionItem",
+      "updatePageSectionItem",
+      "deletePageSectionItem"
+    ],
+    "app/admin/page-content-contract.ts": [
+      "ALL_SECTION_FIELDS",
+      "ALL_ITEM_FIELDS",
+      "allowedSectionFields",
+      "allowedItemFields",
+      "canCreateOrDeleteItems",
+      "canEditItem",
+      "assertItemCapacity",
+      "normalizeCmsDestination"
+    ],
+    "app/admin/post-actions.ts": [
+      "PostActionState",
+      "savePostAction",
+      "deletePostAction"
+    ],
+    "app/api/admin/status/route.ts": [
+      "dynamic",
+      "GET"
+    ],
+    "app/api/contact/route.ts": [
+      "POST"
+    ],
+    "app/api/cron/integrations/route.ts": [
+      "dynamic",
+      "GET"
+    ],
+    "app/api/health/route.ts": [
+      "dynamic",
+      "GET"
+    ],
+    "app/api/integrations/spotify/callback/route.ts": [
+      "dynamic",
+      "GET"
+    ],
+    "app/api/integrations/spotify/connect/route.ts": [
+      "dynamic",
+      "GET"
+    ],
+    "app/cms-preview/AdminPreview.tsx": [
+      "AdminPreview"
+    ],
+    "app/cms-preview/[[...section]]/page.tsx": [
+      "dynamic"
+    ],
+    "app/components/CopyArticleLink.tsx": [
+      "CopyArticleLink"
+    ],
+    "app/components/LazyReveal.tsx": [
+      "LazyReveal"
+    ],
+    "app/components/MobileNavigation.tsx": [
+      "MobileNavigation"
+    ],
+    "app/components/PageTransitionLoader.tsx": [
+      "PageTransitionLoader"
+    ],
+    "app/components/PublicRouteLoading.tsx": [
+      "PublicRouteLoading"
+    ],
+    "app/components/SiteChrome.tsx": [
+      "Header",
+      "Footer"
+    ],
+    "app/components/SkipLink.tsx": [
+      "SkipLink"
+    ],
+    "app/layout.tsx": [
+      "metadata"
+    ],
+    "app/sitemap.ts": [
+      "dynamic"
+    ],
+    "lib/auth/development-bypass.ts": [
+      "AdminAuthBoundary",
+      "DevelopmentAdminSession",
+      "isDevelopmentAuthBypassEnabled",
+      "isDisposablePreviewAuthBypassEnabled",
+      "isLoopbackRequestHost",
+      "isDisposablePreviewRequestHost",
+      "isDevelopmentAuthBypassAllowed",
+      "isAdminAuthBypassAllowed",
+      "classifyAdminAuthBoundary",
+      "shouldBypassAdminAuthentication",
+      "getDevelopmentAdminSession",
+      "isPersistentAdminSession",
+      "selectAdminSessionForRequest"
+    ],
+    "lib/auth/index.ts": [
+      "SESSION_COOKIE",
+      "AdminSession",
+      "AuthorizedAdminSession",
+      "AdminAuthorization",
+      "getAdminSession",
+      "getAdminAuthorization",
+      "requireAdmin",
+      "requirePersistentAdmin",
+      "createAdminSession",
+      "destroyAdminSession",
+      "verifyPassword",
+      "hashPassword",
+      "audit"
+    ],
+    "lib/auth/policy.ts": [
+      "ADMIN_ROLES",
+      "AdminRole",
+      "SessionRecord",
+      "AuthorizationSession",
+      "AdminAccessDecision",
+      "isAdminRole",
+      "isValidSessionRecord",
+      "hasMinimumRole",
+      "evaluateAdminAuthorization"
+    ],
+    "lib/contact-client-ip.ts": [
+      "resolveContactClientIp"
+    ],
+    "lib/contact-idempotency.ts": [
+      "RandomUuid",
+      "createContactIdempotencyKey",
+      "idempotencyKeyAfterAttempt"
+    ],
+    "lib/contact-outbox-policy.ts": [
+      "OUTBOX_BASE_RETRY_DELAY_MS",
+      "OUTBOX_MAX_RETRY_DELAY_MS",
+      "OUTBOX_MAX_ATTEMPTS",
+      "OutboxFailureTransition",
+      "isPermanentDeliveryStatus",
+      "outboxFailureTransition"
+    ],
+    "lib/contact.ts": [
+      "hashIp",
+      "isContactRateLimited",
+      "retryDueOutboxEvents",
+      "dispatchOutboxEvent"
+    ],
+    "lib/db/artist-management-schema.ts": [
+      "artistProfiles",
+      "artistRoles",
+      "artistRoleRelations",
+      "musicGenres",
+      "artistGenreRelations",
+      "artistMetrics",
+      "artistMetricHistory",
+      "artistPublicationDestinations",
+      "artistPublicationPlacements"
+    ],
+    "lib/db/index.ts": [
+      "getDb"
+    ],
+    "lib/db/integration-schema.ts": [
+      "landerRecordsIntegrationSettings",
+      "artistExternalIdentities",
+      "integrationMetricCache",
+      "spotifyReleaseCache",
+      "spotifyOauthStates"
+    ],
+    "lib/db/news-management-schema.ts": [
+      "postProfiles",
+      "postLinks"
+    ],
+    "lib/db/page-management-schema.ts": [
+      "sectionDefinitions",
+      "pageSectionBindings"
+    ],
+    "lib/db/schema.ts": [
+      "adminRole",
+      "contentStatus",
+      "mediaStatus",
+      "contactStatus",
+      "outboxStatus",
+      "adminUsers",
+      "adminSessions",
+      "auditLogs",
+      "mediaAssets",
+      "artistCategories",
+      "artists",
+      "artistCategoryRelations",
+      "artistLinks",
+      "artistEmbeds",
+      "postCategories",
+      "tags",
+      "posts",
+      "postTags",
+      "releases",
+      "pages",
+      "pageSections",
+      "pageSectionItems",
+      "navigationItems",
+      "siteSettings",
+      "socialLinks",
+      "mediaKitSettings",
+      "mediaKitSections",
+      "mediaKitItems",
+      "contactTopics",
+      "contactSubmissions",
+      "integrationOutbox",
+      "slugRedirects"
+    ],
+    "lib/integrations/identity.ts": [
+      "normalizeExternalUrl",
+      "normalizePlatformUrl",
+      "spotifyPlaylistIdFromUrl",
+      "spotifyArtistIdFromUrl",
+      "platformFromUrl",
+      "extractSoundchartsUuid"
+    ],
+    "lib/integrations/secrets.ts": [
+      "encryptIntegrationSecret",
+      "decryptIntegrationSecret"
+    ],
+    "lib/integrations/soundcharts.ts": [
+      "SoundchartsResolution",
+      "SoundchartsMetric",
+      "soundchartsCredentialsConfigured",
+      "resolveSoundchartsArtist",
+      "fetchSoundchartsArtistMetrics",
+      "getSoundchartsUsage"
+    ],
+    "lib/integrations/spotify.ts": [
+      "SpotifyRelease",
+      "spotifyCredentialsConfigured",
+      "spotifyAdminRedirectUrl",
+      "resolveSpotifyApiUrl",
+      "spotifyTokenRequest",
+      "createSpotifyAuthorizationUrl",
+      "spotifyApi",
+      "completeSpotifyAuthorization",
+      "getSpotifyUserAccessToken",
+      "fetchLatestSpotifyPlaylistReleases"
+    ],
+    "lib/integrations/sync.ts": [
+      "syncLanderRecordsSoundcharts",
+      "syncArtistSoundcharts",
+      "syncAllArtistSoundcharts",
+      "syncSpotifyReleases",
+      "syncAllIntegrations",
+      "getLanderRecordsSocialMetrics",
+      "getCachedSpotifyReleases",
+      "getHomeSpotifyReleaseFeed"
+    ],
+    "lib/logging/index.ts": [
+      "logger"
+    ],
+    "lib/media-embed.ts": [
+      "trustedExternalUrl",
+      "trustedEmbedUrl"
+    ],
+    "lib/mocks/admin.ts": [
+      "mockDashboardData",
+      "mockAdminUsers",
+      "mockAuditRows",
+      "mockAuditSummary",
+      "mockNotifications"
+    ],
+    "lib/mocks/artists.ts": [
+      "mockArtistCategories",
+      "mockArtistRoles",
+      "mockMusicGenres",
+      "mockPublicationDestinations",
+      "mockArtists",
+      "mockArtistEditorOptions",
+      "mockArtistEditor",
+      "mockArtistSummaries"
+    ],
+    "lib/mocks/config.ts": [
+      "mockDataEnabled"
+    ],
+    "lib/mocks/integrations.ts": [
+      "mockSocialMetrics",
+      "mockSpotifyFeed",
+      "mockIntegrationSettings",
+      "mockIntegrationMetricRows"
+    ],
+    "lib/mocks/media-kit.ts": [
+      "mockMediaKitSettings",
+      "mockMediaKitSections",
+      "MockMediaKitItem",
+      "mockMediaKitItems",
+      "mockMediaKitArtists",
+      "mockMediaKitReleases"
+    ],
+    "lib/mocks/media.ts": [
+      "mockMedia",
+      "mockMediaOptions"
+    ],
+    "lib/mocks/posts.ts": [
+      "MockPostCategory",
+      "mockPostCategories",
+      "mockPosts",
+      "mockPostRecords",
+      "mockPostPresentation"
+    ],
+    "lib/mocks/preview.ts": [
+      "mockPreviewModules",
+      "mockPreviewRows",
+      "mockPreviewArtists",
+      "mockPreviewPosts",
+      "mockPreviewPages",
+      "mockPreviewNavigation",
+      "mockPreviewHeader",
+      "mockPreviewHomeSections",
+      "mockPreviewSettings",
+      "mockPreviewDashboard"
+    ],
+    "lib/mocks/site.ts": [
+      "mockSiteSettings",
+      "mockSocialLinks",
+      "mockNavigation",
+      "mockContactTopics",
+      "mockPages",
+      "mockPageSections",
+      "mockPageItems",
+      "mockPageContent"
+    ],
+    "lib/news-content.ts": [
+      "getPublicPostPresentation"
+    ],
+    "lib/public-link.ts": [
+      "TrustedPublicLink",
+      "trustedInternalHref",
+      "trustedExternalHref",
+      "trustedPublicLink"
+    ],
+    "lib/security/index.ts": [
+      "safeCompare"
+    ],
+    "lib/seo.ts": [
+      "absoluteUrl",
+      "absolutePageUrl",
+      "normalizeCanonicalOverride",
+      "resolveCanonicalUrl",
+      "buildMetadata"
+    ],
+    "lib/slug.ts": [
+      "slugify"
+    ],
+    "lib/storage/index.ts": [
+      "uploadMedia",
+      "deleteMedia"
+    ],
+    "lib/storage/supabase-storage.ts": [
+      "supabaseStorage"
+    ],
+    "lib/storage/types.ts": [
+      "StoredMedia",
+      "MediaStorage"
+    ],
+    "lib/validation/index.ts": [
+      "requiredString",
+      "uuidSchema"
+    ],
+    "modules/artists/repository.ts": [
+      "getArtistCategoriesForPublic",
+      "getPublishedArtists",
+      "getPublishedArtistBySlug"
+    ],
+    "modules/artists/service.ts": [
+      "getArtistDirectory"
+    ],
+    "modules/artists/types.ts": [
+      "PublicArtist",
+      "ArtistStatus"
+    ],
+    "modules/artists/validation.ts": [
+      "artistSlugSchema",
+      "artistStatusSchema"
+    ],
+    "modules/contacts/repository.ts": [
+      "getContactTopics"
+    ],
+    "modules/media/repository.ts": [
+      "getFeaturedReleases"
+    ],
+    "modules/media/types.ts": [
+      "MediaStorageProvider"
+    ],
+    "modules/pages/repository.ts": [
+      "getPageContent"
+    ],
+    "modules/posts/repository.ts": [
+      "getPostCategoriesForPublic",
+      "getPublishedPosts",
+      "getPublishedPostBySlug"
+    ],
+    "modules/posts/types.ts": [
+      "PublicPost"
+    ],
+    "modules/posts/validation.ts": [
+      "postSlugSchema",
+      "postStatusSchema"
+    ],
+    "modules/settings/repository.ts": [
+      "getSiteChrome",
+      "getSlugRedirect"
+    ],
+    "proxy.ts": [
+      "proxy",
+      "config"
+    ],
+    "scripts/db-catalog.mjs": [
+      "readCatalog",
+      "compareCatalog",
+      "openDatabase"
+    ],
+    "scripts/materialize-banner.mjs": [
+      "materializeBanner"
+    ],
+    "scripts/migration-utils.mjs": [
+      "quoteLiteral",
+      "migrationWithAtomicHistory",
+      "resolveChecksum"
+    ]
+  }
+}

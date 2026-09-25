@@ -1,0 +1,17 @@
+{
+  "id": "security",
+  "title": "Security invariants",
+  "kind": "check",
+  "domain": "security",
+  "feeds": "admin, contact, integrations",
+  "invariant": "auth tests pass",
+  "severity": "P0",
+  "check": {
+    "type": "command",
+    "argv": [
+      "npm",
+      "run",
+      "test:auth"
+    ]
+  }
+}

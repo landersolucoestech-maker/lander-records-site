@@ -1,0 +1,91 @@
+{
+  "confidence": "confirmed",
+  "dependencies": [],
+  "risk": "low",
+  "discoveredAt": "2026-09-25T13:50:00.000Z",
+  "id": "F-0005",
+  "title": "Lead outbox retries forever, including permanent rejections, with no dead letter",
+  "severity": "P2",
+  "domain": "leads",
+  "status": "REAUDITING",
+  "evidence": [
+    "lib/contact.ts (base): every failure → status failed, next_attempt_at now+15min, no attempt cap, no status classification"
+  ],
+  "rootCause": "Failure handling had a single transient path.",
+  "producer": [
+    "lib/contact.ts#dispatchOutboxEvent"
+  ],
+  "consumers": [
+    "lib/contact.ts#retryDueOutboxEvents",
+    "receiver"
+  ],
+  "affectedFlow": "lead delivery",
+  "invariantViolated": "Retries are bounded and never repeat permanent failures; terminal failures are reconcilable",
+  "blastRadius": "receiver hammered every 15 min per rejected lead; no operator signal",
+  "autofix": {
+    "eligible": true,
+    "reason": "additive enum + pure policy with tests"
+  },
+  "correction": "lib/contact-outbox-policy.ts + migration 0018 dead_letter (ADR-0004)",
+  "requiredTests": [
+    "tests/unit/contact-outbox-policy.test.mjs",
+    "tests/integration/contact-outbox-delivery.mjs",
+    "tests/database/migration-path.integration.mjs"
+  ],
+  "regressionRisk": "low — old code never writes dead_letter",
+  "impactLevel": "L5",
+  "producerAgent": "leads-auditor",
+  "commits": [
+    "126d36c"
+  ],
+  "history": [
+    {
+      "status": "DISCOVERED",
+      "at": "2026-09-25T13:50:00.000Z",
+      "by": "leads-auditor",
+      "note": "outbox state review"
+    },
+    {
+      "status": "TRIAGED",
+      "at": "2026-09-25T13:51:00.000Z",
+      "by": "autonomous-controller",
+      "note": "severity and domain assigned"
+    },
+    {
+      "status": "READY",
+      "at": "2026-09-25T13:52:00.000Z",
+      "by": "autonomous-controller",
+      "note": "root cause traceable in repo; autofix eligible"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-25T13:53:00.000Z",
+      "by": "owner lead",
+      "note": "tracing producer → consumer"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-25T13:54:00.000Z",
+      "by": "owner lead",
+      "note": "single retry path"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-25T13:55:00.000Z",
+      "by": "owner lead",
+      "note": "bounded exponential + dead letter"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-25T13:56:00.000Z",
+      "by": "qa-lead",
+      "note": "tests added; commits 126d36c"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-25T13:57:00.000Z",
+      "by": "auditor",
+      "note": "re-running the detecting check on the fixed code"
+    }
+  ]
+}

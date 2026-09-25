@@ -1,0 +1,28 @@
+{
+  "id": "metric-freshness",
+  "title": "Metric freshness",
+  "kind": "sql",
+  "domain": "integrations",
+  "feeds": "artist page, home social cards",
+  "invariant": "resolved identities synced within 48h; connected playlist within 24h",
+  "probes": [
+    {
+      "name": "stale-artist-metrics",
+      "severity": "P2",
+      "message": "resolved artist identities not synced for more than 48h",
+      "sql": "SELECT artist_id, last_synced_at FROM artist_external_identities WHERE resolution_status = 'resolved' AND (last_synced_at IS NULL OR last_synced_at < now() - interval '48 hours')"
+    },
+    {
+      "name": "stale-lander-metrics",
+      "severity": "P2",
+      "message": "Lander Records Soundcharts metrics older than 48h",
+      "sql": "SELECT soundcharts_last_synced_at FROM lander_records_integration_settings WHERE soundcharts_artist_uuid <> '' AND (soundcharts_last_synced_at IS NULL OR soundcharts_last_synced_at < now() - interval '48 hours')"
+    },
+    {
+      "name": "stale-spotify-releases",
+      "severity": "P2",
+      "message": "connected Spotify playlist not synced for more than 24h",
+      "sql": "SELECT spotify_last_synced_at FROM lander_records_integration_settings WHERE spotify_playlist_id <> '' AND spotify_refresh_token_encrypted <> '' AND (spotify_last_synced_at IS NULL OR spotify_last_synced_at < now() - interval '24 hours')"
+    }
+  ]
+}

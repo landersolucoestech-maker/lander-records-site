@@ -1,0 +1,125 @@
+# Derived index of .claude/findings — regenerate with: node .claude/runtime/findings.mjs index
+# Format: JSON-compatible YAML (ADR-0002). Written by .claude/runtime.
+{
+  "derivedFrom": ".claude/findings/*.json",
+  "totals": {
+    "all": 11,
+    "open": 8,
+    "parked": 3,
+    "closed": 0,
+    "ready": 0
+  },
+  "readyQueue": [],
+  "findings": [
+    {
+      "id": "F-0001",
+      "title": "Contact form shows a successful submission as an error",
+      "severity": "P1",
+      "domain": "leads",
+      "status": "REAUDITING",
+      "priority": 680,
+      "decision": null,
+      "evidenceRecords": []
+    },
+    {
+      "id": "F-0002",
+      "title": "Contact rate limit keyed on a client-controlled X-Forwarded-For hop",
+      "severity": "P1",
+      "domain": "security",
+      "status": "REAUDITING",
+      "priority": 710,
+      "decision": null,
+      "evidenceRecords": []
+    },
+    {
+      "id": "F-0003",
+      "title": "Metrics of an invalidated or replaced Soundcharts identity stay published",
+      "severity": "P1",
+      "domain": "identity",
+      "status": "REAUDITING",
+      "priority": 660,
+      "decision": null,
+      "evidenceRecords": []
+    },
+    {
+      "id": "F-0004",
+      "title": "Soundcharts requests have no timeout",
+      "severity": "P2",
+      "domain": "integrations",
+      "status": "REAUDITING",
+      "priority": 320,
+      "decision": null,
+      "evidenceRecords": []
+    },
+    {
+      "id": "F-0005",
+      "title": "Lead outbox retries forever, including permanent rejections, with no dead letter",
+      "severity": "P2",
+      "domain": "leads",
+      "status": "REAUDITING",
+      "priority": 380,
+      "decision": null,
+      "evidenceRecords": []
+    },
+    {
+      "id": "F-0006",
+      "title": "Staff have no way to read contact submissions",
+      "severity": "P1",
+      "domain": "leads",
+      "status": "NEEDS_PRODUCT_DECISION",
+      "priority": 660,
+      "decision": "DEC-0001",
+      "evidenceRecords": []
+    },
+    {
+      "id": "F-0007",
+      "title": "Schema contract missing media kit tables (0015–0017)",
+      "severity": "P2",
+      "domain": "database",
+      "status": "REAUDITING",
+      "priority": 340,
+      "decision": null,
+      "evidenceRecords": []
+    },
+    {
+      "id": "F-0008",
+      "title": "Lead events marked disabled are never delivered after a receiver is configured",
+      "severity": "P2",
+      "domain": "leads",
+      "status": "NEEDS_PRODUCT_DECISION",
+      "priority": 360,
+      "decision": "DEC-0002",
+      "evidenceRecords": []
+    },
+    {
+      "id": "F-0009",
+      "title": "Static public pages declare the homepage as canonical",
+      "severity": "P1",
+      "domain": "seo",
+      "status": "REAUDITING",
+      "priority": 600,
+      "decision": null,
+      "evidenceRecords": []
+    },
+    {
+      "id": "F-0010",
+      "title": "Sitemap and contact form use URLs that 308-redirect (trailingSlash)",
+      "severity": "P2",
+      "domain": "seo",
+      "status": "REAUDITING",
+      "priority": 300,
+      "decision": null,
+      "evidenceRecords": []
+    },
+    {
+      "id": "F-0011",
+      "title": "No favicon: every page logs a 404 (public-routes spec fails)",
+      "severity": "P3",
+      "domain": "frontend",
+      "status": "NEEDS_PRODUCT_DECISION",
+      "priority": 110,
+      "decision": "DEC-0003",
+      "evidenceRecords": []
+    }
+  ]
+}

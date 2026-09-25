@@ -1,0 +1,94 @@
+# Workflow bugfix — Fix one defect
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "id": "bugfix",
+  "title": "Fix one defect",
+  "trigger": "finding READY",
+  "phases": [
+    {
+      "id": "trace",
+      "agents": [
+        "codebase-cartographer"
+      ],
+      "skills": [
+        "feature-trace",
+        "data-flow-trace"
+      ],
+      "gates": [
+        "trace"
+      ],
+      "transition": "READY → INVESTIGATING"
+    },
+    {
+      "id": "root-cause",
+      "agents": [
+        "backend-lead"
+      ],
+      "skills": [
+        "root-cause-analysis"
+      ],
+      "gates": [
+        "root-cause"
+      ],
+      "transition": "→ ROOT_CAUSE_CONFIRMED"
+    },
+    {
+      "id": "fix",
+      "agents": [
+        "backend-lead",
+        "frontend-lead"
+      ],
+      "skills": [
+        "impact-analysis",
+        "autofix",
+        "regression-generation"
+      ],
+      "gates": [
+        "implementation",
+        "test"
+      ],
+      "transition": "→ VALIDATING"
+    },
+    {
+      "id": "review",
+      "agents": [
+        "adversarial-reviewer"
+      ],
+      "skills": [
+        "adversarial-review"
+      ],
+      "gates": [
+        "regression"
+      ],
+      "transition": "→ REAUDITING"
+    },
+    {
+      "id": "reaudit",
+      "agents": [
+        "product-flows-auditor"
+      ],
+      "skills": [
+        "feature-trace"
+      ],
+      "gates": [],
+      "transition": "→ RESOLVED"
+    }
+  ],
+  "stopConditions": [
+    "product decision required (DEC)",
+    "destructive/data-loss risk",
+    "external system or credential unavailable (BLOCKED_EXTERNAL)",
+    "unresolvable ambiguity",
+    "irreversible architectural change",
+    "contradictory requirements"
+  ],
+  "outputs": [
+    "findings/*.json updated",
+    "evidence/EV-*.json",
+    "atomic commits"
+  ],
+  "stateTransitions": [
+    "READY → INVESTIGATING → ROOT_CAUSE_CONFIRMED → FIXING → VALIDATING → REAUDITING → RESOLVED"
+  ],
+  "rollback": "revert only this workflow's own commits (git revert); never reset/clean pre-existing work; data side effects need compensation per ADR/incident workflow"
+}

@@ -1,0 +1,42 @@
+{
+  "id": "identity",
+  "title": "Identity gate",
+  "checks": [
+    {
+      "name": "identity change purges metrics",
+      "type": "required-pattern",
+      "file": "lib/integrations/sync.ts",
+      "pattern": "if \\(identityChanged\\) await purgeArtistSoundchartsMetrics",
+      "message": "purge on identity change required"
+    },
+    {
+      "name": "no name-based matching",
+      "type": "forbidden-pattern",
+      "paths": [
+        "lib/integrations"
+      ],
+      "pattern": "search/artist\\?name|by-name|\\.name\\s*===\\s*artist",
+      "message": "identity must not be matched by name"
+    },
+    {
+      "name": "no zero-fallback on metric/lead values",
+      "type": "forbidden-pattern",
+      "paths": [
+        "lib/integrations",
+        "modules/artists",
+        "app/(public)",
+        "lib/contact.ts",
+        "app/api/contact"
+      ],
+      "pattern": "(value|metric|metrics|followers|subscribers|listeners)[\\w\\]\\[\"'.:]*\\s*(\\|\\||\\?\\?)\\s*0\\b",
+      "message": "ZERO≠NULL: do not default metric values to 0"
+    },
+    {
+      "name": "no open P0/P1 identity findings",
+      "type": "no-open-findings",
+      "domains": [
+        "identity"
+      ]
+    }
+  ]
+}

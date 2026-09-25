@@ -1,0 +1,51 @@
+# Workflow continuous-audit — Periodic sensor sweep
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "id": "continuous-audit",
+  "title": "Periodic sensor sweep",
+  "trigger": "session start or schedule",
+  "phases": [
+    {
+      "id": "sense",
+      "agents": [
+        "integrity-lead",
+        "observability-lead"
+      ],
+      "skills": [
+        "metric-freshness",
+        "lead-reconciliation",
+        "cross-provider-reconciliation"
+      ],
+      "gates": [],
+      "transition": "signals → DISCOVERED findings"
+    },
+    {
+      "id": "triage",
+      "agents": [
+        "architecture-lead"
+      ],
+      "skills": [
+        "finding-classification"
+      ],
+      "gates": [],
+      "transition": "DISCOVERED → TRIAGED/READY"
+    }
+  ],
+  "stopConditions": [
+    "product decision required (DEC)",
+    "destructive/data-loss risk",
+    "external system or credential unavailable (BLOCKED_EXTERNAL)",
+    "unresolvable ambiguity",
+    "irreversible architectural change",
+    "contradictory requirements"
+  ],
+  "outputs": [
+    "findings/*.json updated",
+    "evidence/EV-*.json",
+    "atomic commits"
+  ],
+  "stateTransitions": [
+    "signal → DISCOVERED → TRIAGED → READY"
+  ],
+  "rollback": "revert only this workflow's own commits (git revert); never reset/clean pre-existing work; data side effects need compensation per ADR/incident workflow"
+}

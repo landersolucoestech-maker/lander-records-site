@@ -1,0 +1,23 @@
+{
+  "id": "performance",
+  "title": "Performance gate",
+  "checks": [
+    {
+      "name": "production build",
+      "type": "command",
+      "argv": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "evidenceKind": "build"
+    },
+    {
+      "name": "home fetches data in parallel",
+      "type": "required-pattern",
+      "file": "app/(public)/page.tsx",
+      "pattern": "await Promise\\.all\\(\\[",
+      "message": "home data must be fetched in parallel"
+    }
+  ]
+}

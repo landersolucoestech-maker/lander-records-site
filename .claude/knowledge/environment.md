@@ -1,0 +1,18 @@
+# Environment contract (names only)
+
+Documented in `.env.example` and `docs/ENVIRONMENT_CONTRACT.md`. Checked by sensors `env-contract` (documentation) and `credential-health` (presence, names only).
+
+- `DATABASE_URL`
+- `NEXT_PUBLIC_SITE_URL`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_STORAGE_BUCKET`
+- `CONTACT_IP_HASH_SALT`
+- `DEV_AUTH_BYPASS`
+- `ADMIN_BOOTSTRAP_*`
+- `INTEGRATION_TOKEN_ENCRYPTION_KEY`
+- `SPOTIFY_CLIENT_ID/SECRET/REDIRECT_URI`
+- `SOUNDCHARTS_CLIENT_ID/SECRET/TEAM_ID`
+- `CRON_SECRET`
+- `LANDER_SAAS_WEBHOOK_URL/SECRET`
+- `LANDER_MOCK_DATA`

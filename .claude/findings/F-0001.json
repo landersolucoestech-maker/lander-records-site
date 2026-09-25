@@ -1,0 +1,92 @@
+{
+  "confidence": "confirmed",
+  "dependencies": [],
+  "risk": "low",
+  "discoveredAt": "2026-09-25T13:50:00.000Z",
+  "id": "F-0001",
+  "title": "Contact form shows a successful submission as an error",
+  "severity": "P1",
+  "domain": "leads",
+  "status": "REAUDITING",
+  "evidence": [
+    "app/(public)/contato/ContactForm.tsx (base e673bf9): event.currentTarget.reset() after await fetch",
+    "Playwright on base build: 201 response, visitor sees alert \"Cannot read properties of null (reading 'reset')\"",
+    "Playwright on base build with 502 HTML: alert \"Unexpected token '<' ... is not valid JSON\""
+  ],
+  "rootCause": "React nulls SyntheticEvent.currentTarget after the handler yields; reset() threw TypeError inside try, so the catch rendered the JS error as the result and the idempotency key was never rotated. response.json() on non-JSON error pages surfaced parser errors.",
+  "producer": [
+    "app/(public)/contato/ContactForm.tsx#submit"
+  ],
+  "consumers": [
+    "visitors of /contato/"
+  ],
+  "affectedFlow": "contact form → /api/contact/ → UI confirmation",
+  "invariantViolated": "The UI must report the true outcome of a persisted submission",
+  "blastRadius": "every successful contact submission since the form shipped; duplicates on user retry were deduped server-side only while the key stayed the same",
+  "autofix": {
+    "eligible": true,
+    "reason": "deterministic client bug with reproducible browser test"
+  },
+  "correction": "capture formElement before await; parse error bodies defensively; readable network error; post to /api/contact/",
+  "requiredTests": [
+    "tests/browser/contact-form.spec.ts",
+    "tests/unit/contact-client-ip.test.mjs (form contract)"
+  ],
+  "regressionRisk": "low — client-only change, server contract unchanged",
+  "impactLevel": "L2",
+  "producerAgent": "leads-auditor",
+  "commits": [
+    "9e9cbbf",
+    "10369be"
+  ],
+  "history": [
+    {
+      "status": "DISCOVERED",
+      "at": "2026-09-25T13:50:00.000Z",
+      "by": "leads-auditor",
+      "note": "browser trace of the contact journey"
+    },
+    {
+      "status": "TRIAGED",
+      "at": "2026-09-25T13:51:00.000Z",
+      "by": "autonomous-controller",
+      "note": "severity and domain assigned"
+    },
+    {
+      "status": "READY",
+      "at": "2026-09-25T13:52:00.000Z",
+      "by": "autonomous-controller",
+      "note": "root cause traceable in repo; autofix eligible"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-25T13:53:00.000Z",
+      "by": "owner lead",
+      "note": "tracing producer → consumer"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-25T13:54:00.000Z",
+      "by": "owner lead",
+      "note": "event.currentTarget null after await (React)"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-25T13:55:00.000Z",
+      "by": "owner lead",
+      "note": "capture element; defensive JSON parse"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-25T13:56:00.000Z",
+      "by": "qa-lead",
+      "note": "tests added; commits 9e9cbbf, 10369be"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-25T13:57:00.000Z",
+      "by": "auditor",
+      "note": "re-running the detecting check on the fixed code"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "provider-timeouts",
+  "title": "Provider timeouts",
+  "kind": "check",
+  "domain": "integrations",
+  "feeds": "cron sync",
+  "invariant": "every Soundcharts request is time-bounded",
+  "severity": "P2",
+  "check": {
+    "type": "required-pattern",
+    "file": "lib/integrations/soundcharts.ts",
+    "pattern": "AbortSignal\\.timeout\\(SOUNDCHARTS_REQUEST_TIMEOUT_MS\\)",
+    "message": "Soundcharts fetch without timeout"
+  }
+}

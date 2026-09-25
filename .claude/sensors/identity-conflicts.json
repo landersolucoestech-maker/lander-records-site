@@ -1,0 +1,40 @@
+{
+  "id": "identity-conflicts",
+  "title": "Identity conflicts",
+  "kind": "sql",
+  "domain": "identity",
+  "feeds": "artist metrics",
+  "invariant": "one Soundcharts UUID per artist; metrics only for resolved identities",
+  "probes": [
+    {
+      "name": "duplicate-uuid",
+      "severity": "P1",
+      "message": "one Soundcharts UUID resolved for multiple artists",
+      "sql": "SELECT soundcharts_artist_uuid, count(*) AS artists FROM artist_external_identities WHERE soundcharts_artist_uuid <> '' GROUP BY soundcharts_artist_uuid HAVING count(*) > 1"
+    },
+    {
+      "name": "status-uuid-mismatch",
+      "severity": "P1",
+      "message": "identity status inconsistent with stored UUID",
+      "sql": "SELECT artist_id, resolution_status FROM artist_external_identities WHERE (resolution_status = 'resolved' AND soundcharts_artist_uuid = '') OR (resolution_status IN ('unresolved', 'needs_review') AND soundcharts_artist_uuid <> '')"
+    },
+    {
+      "name": "metrics-without-identity",
+      "severity": "P1",
+      "message": "Soundcharts metrics published for artists without a resolved identity",
+      "sql": "SELECT m.artist_id, m.platform FROM artist_metrics m LEFT JOIN artist_external_identities i ON i.artist_id = m.artist_id WHERE m.source = 'soundcharts' AND (i.artist_id IS NULL OR i.resolution_status <> 'resolved')"
+    },
+    {
+      "name": "orphan-metric-cache",
+      "severity": "P3",
+      "message": "metric cache rows for artists that no longer exist",
+      "sql": "SELECT c.entity_id, c.platform FROM integration_metric_cache c WHERE c.entity_type = 'artist' AND NOT EXISTS (SELECT 1 FROM artists a WHERE a.id::text = c.entity_id)"
+    },
+    {
+      "name": "lander-metrics-without-identity",
+      "severity": "P1",
+      "message": "Home social metrics cached without a Lander Records identity",
+      "sql": "SELECT c.platform FROM integration_metric_cache c JOIN lander_records_integration_settings s ON s.key = 'lander_records' WHERE c.entity_type = 'lander_records' AND c.source = 'soundcharts' AND s.soundcharts_artist_uuid = ''"
+    }
+  ]
+}

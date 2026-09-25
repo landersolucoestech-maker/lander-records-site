@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "integration_outbox delivery envelope (site.contact.submitted)",
+  "type": "object",
+  "required": [
+    "id",
+    "type",
+    "aggregateType",
+    "aggregateId",
+    "occurredAt",
+    "data"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "site.contact.submitted"
+    },
+    "aggregateType": {
+      "const": "contact_submission"
+    },
+    "aggregateId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "data": {
+      "type": "object",
+      "required": [
+        "contactSubmissionId",
+        "idempotencyKey",
+        "name",
+        "email",
+        "phone",
+        "topic",
+        "message",
+        "consent",
+        "attribution"
+      ],
+      "properties": {
+        "contactSubmissionId": {
+          "type": "string"
+        },
+        "idempotencyKey": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "topic": {
+          "type": "object",
+          "required": [
+            "slug",
+            "name",
+            "saasType"
+          ],
+          "properties": {
+            "slug": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "saasType": {
+              "type": "string"
+            }
+          }
+        },
+        "message": {
+          "type": "string"
+        },
+        "consent": {
+          "type": "object",
+          "required": [
+            "accepted",
+            "version",
+            "at"
+          ],
+          "properties": {
+            "accepted": {
+              "const": true
+            },
+            "version": {
+              "type": "string"
+            },
+            "at": {
+              "type": "string"
+            }
+          }
+        },
+        "attribution": {
+          "type": "object",
+          "required": [
+            "source",
+            "pagePath",
+            "referrer",
+            "utm"
+          ],
+          "properties": {
+            "source": {
+              "type": "string"
+            },
+            "pagePath": {
+              "type": "string"
+            },
+            "referrer": {
+              "type": "string"
+            },
+            "utm": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    }
+  }
+}

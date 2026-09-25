@@ -1,0 +1,72 @@
+# Workflow feature — Add a feature inside the existing architecture
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "id": "feature",
+  "title": "Add a feature inside the existing architecture",
+  "trigger": "approved product requirement",
+  "phases": [
+    {
+      "id": "plan",
+      "agents": [
+        "architecture-lead",
+        "api-lead"
+      ],
+      "skills": [
+        "impact-analysis",
+        "contract-audit"
+      ],
+      "gates": [
+        "architecture"
+      ],
+      "transition": "requirements + criteria recorded"
+    },
+    {
+      "id": "build",
+      "agents": [
+        "backend-lead",
+        "frontend-lead"
+      ],
+      "skills": [
+        "autofix",
+        "regression-generation"
+      ],
+      "gates": [
+        "implementation",
+        "contract",
+        "test"
+      ],
+      "transition": "criteria closed"
+    },
+    {
+      "id": "review",
+      "agents": [
+        "adversarial-reviewer",
+        "contract-reviewer"
+      ],
+      "skills": [
+        "adversarial-review"
+      ],
+      "gates": [
+        "regression"
+      ],
+      "transition": "review PASS"
+    }
+  ],
+  "stopConditions": [
+    "product decision required (DEC)",
+    "destructive/data-loss risk",
+    "external system or credential unavailable (BLOCKED_EXTERNAL)",
+    "unresolvable ambiguity",
+    "irreversible architectural change",
+    "contradictory requirements"
+  ],
+  "outputs": [
+    "findings/*.json updated",
+    "evidence/EV-*.json",
+    "atomic commits"
+  ],
+  "stateTransitions": [
+    "mission ACTIVE → COMPLETED"
+  ],
+  "rollback": "revert only this workflow's own commits (git revert); never reset/clean pre-existing work; data side effects need compensation per ADR/incident workflow"
+}

@@ -1,0 +1,72 @@
+# Workflow frontend-change — UI change with visual/a11y validation
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "id": "frontend-change",
+  "title": "UI change with visual/a11y validation",
+  "trigger": "frontend finding",
+  "phases": [
+    {
+      "id": "trace",
+      "agents": [
+        "frontend-lead"
+      ],
+      "skills": [
+        "feature-trace"
+      ],
+      "gates": [
+        "trace"
+      ],
+      "transition": "→ INVESTIGATING"
+    },
+    {
+      "id": "fix",
+      "agents": [
+        "frontend-lead",
+        "interaction-auditor",
+        "error-state-auditor"
+      ],
+      "skills": [
+        "autofix"
+      ],
+      "gates": [
+        "implementation"
+      ],
+      "transition": "→ VALIDATING"
+    },
+    {
+      "id": "verify",
+      "agents": [
+        "visual-lead",
+        "accessibility-lead",
+        "responsive-lead"
+      ],
+      "skills": [
+        "visual-audit",
+        "responsive-audit",
+        "accessibility-audit"
+      ],
+      "gates": [
+        "visual",
+        "accessibility"
+      ],
+      "transition": "→ REAUDITING"
+    }
+  ],
+  "stopConditions": [
+    "product decision required (DEC)",
+    "destructive/data-loss risk",
+    "external system or credential unavailable (BLOCKED_EXTERNAL)",
+    "unresolvable ambiguity",
+    "irreversible architectural change",
+    "contradictory requirements"
+  ],
+  "outputs": [
+    "findings/*.json updated",
+    "evidence/EV-*.json",
+    "atomic commits"
+  ],
+  "stateTransitions": [
+    "READY → INVESTIGATING → ROOT_CAUSE_CONFIRMED → FIXING → VALIDATING → REAUDITING → RESOLVED"
+  ],
+  "rollback": "revert only this workflow's own commits (git revert); never reset/clean pre-existing work; data side effects need compensation per ADR/incident workflow"
+}

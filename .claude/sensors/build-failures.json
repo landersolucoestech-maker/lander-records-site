@@ -1,0 +1,17 @@
+{
+  "id": "build-failures",
+  "title": "Typecheck/build failures",
+  "kind": "check",
+  "domain": "architecture",
+  "feeds": "all",
+  "invariant": "the project typechecks",
+  "severity": "P0",
+  "check": {
+    "type": "command",
+    "argv": [
+      "npm",
+      "run",
+      "typecheck"
+    ]
+  }
+}

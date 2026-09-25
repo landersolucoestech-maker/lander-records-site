@@ -1,0 +1,130 @@
+// Pack integrity validation (control-plane/capability-registry.md). Pure checks, no side effects.
+import fs from "node:fs";
+import path from "node:path";
+import { OS_DIR, osPath, readJson, readYml, walk } from "./io.mjs";
+import { validate } from "./schema.mjs";
+import { loadFindings, validateFinding, buildIndex } from "./findings.mjs";
+import { loadEvidence } from "./evidence.mjs";
+
+export const CANONICAL = ["CLAUDE.md", "kernel", "control-plane", "agents", "subagents", "integrations", "leads", "identity", "auditors", "reviewers", "guardians", "contracts", "policies", "rules", "skills", "workflows", "gates", "sensors", "runtime", "state", "findings", "evidence", "knowledge", "graphs", "schemas", "decisions", "incidents", "reports", "templates"];
+const ALLOWED_EXTRA = new Set([".gitignore"]);
+const SKILL_SECTIONS = ["INPUT", "PRECONDITIONS", "PROCEDURE", "OUTPUT", "FAILURE MODES", "EVIDENCE REQUIRED", "NEXT ACTION"];
+const LEAD_SECTIONS = ["Purpose", "Responsibilities", "Allowed actions", "Prohibited actions", "Required inputs", "Required context", "Procedures", "Outputs", "Evidence requirements", "Handoff rules", "Escalation rules", "Completion rules"];
+const PROVIDER_FILES = ["agent.md", "auditor.md", "contract.md", "rules.md", "health.md", "workflow.md"];
+const CHECK_TYPES = new Set(["command", "forbidden-pattern", "required-pattern", "no-open-findings", "resolved-have-fresh-evidence", "git-clean-except", "fresh-evidence-for"]);
+const SENSOR_KINDS = new Set(["sql", "env-contract", "env-presence", "git", "check"]);
+const SCHEMA_KEYWORDS = new Set(["$schema", "$id", "title", "description", "type", "enum", "const", "required", "properties", "additionalProperties", "items", "minItems", "minLength", "maxLength", "pattern", "minimum", "format"]);
+// Files allowed to mention the out-of-architecture directory, all non-operational (ADR-0005).
+const INDEPENDENCE_ALLOW = new Set(["decisions/ADR-0001-claude-codex-boundary.md", "decisions/ADR-0005-self-contained-claude-os.md", "runtime/tests/independence.test.mjs", "runtime/lib/pack.mjs", "reports/2026-09-25-autonomous-os-bootstrap.md"]);
+
+export function frontMatter(text) {
+  const match = text.match(/^---\n([\s\S]*?)\n---\n/);
+  if (!match) return null;
+  return Object.fromEntries(match[1].split("\n").map((line) => line.match(/^([a-zA-Z-]+):\s*(.*)$/)).filter(Boolean).map((m) => [m[1], m[2]]));
+}
+
+function schemaKeywordErrors(schema, at) {
+  if (!schema || typeof schema !== "object") return [];
+  const errors = Object.keys(schema).filter((k) => !SCHEMA_KEYWORDS.has(k)).map((k) => `${at}: unsupported keyword ${k}`);
+  for (const child of Object.values(schema.properties || {})) errors.push(...schemaKeywordErrors(child, `${at}.properties`));
+  if (schema.items) errors.push(...schemaKeywordErrors(schema.items, `${at}.items`));
+  if (schema.additionalProperties && typeof schema.additionalProperties === "object") errors.push(...schemaKeywordErrors(schema.additionalProperties, `${at}.additionalProperties`));
+  return errors;
+}
+
+export function validatePack() {
+  const errors = [];
+  const osRel = (file) => path.relative(OS_DIR, file).split(path.sep).join("/");
+  const top = fs.readdirSync(OS_DIR);
+  for (const entry of CANONICAL) if (!top.includes(entry)) errors.push(`canonical entry missing: ${entry}`);
+  for (const entry of top) if (!CANONICAL.includes(entry) && !ALLOWED_EXTRA.has(entry)) errors.push(`non-canonical top-level entry (requires ADR): ${entry}`);
+
+  const all = walk(OS_DIR);
+  for (const file of all) {
+    const r = osRel(file);
+    const text = fs.readFileSync(file, "utf8");
+    if (/\.codex|codex/i.test(text) && !INDEPENDENCE_ALLOW.has(r)) errors.push(`independence: ${r} references the out-of-architecture Codex pack`);
+    if (r.endsWith(".yml")) { try { readYml(file); } catch (error) { errors.push(error.message); } }
+    if (r.endsWith(".json")) { try { JSON.parse(text); } catch (error) { errors.push(`${r}: invalid JSON ${error.message}`); } }
+  }
+
+  for (const file of walk(osPath("contracts"), (f) => f.endsWith(".schema.json"))) errors.push(...schemaKeywordErrors(readJson(file), osRel(file)));
+
+  const registry = readJson(osPath("control-plane", "registry.json"));
+  const registered = new Set();
+  for (const [kind, entries] of Object.entries(registry.components)) {
+    for (const entry of entries) {
+      registered.add(entry.path);
+      if (!fs.existsSync(osPath(entry.path))) errors.push(`registry ${kind}: ${entry.id} -> missing ${entry.path}`);
+    }
+  }
+  const mustRegister = [
+    ...walk(osPath("agents"), (f) => f.endsWith(".md")), ...walk(osPath("subagents"), (f) => f.endsWith(".md")),
+    ...walk(osPath("auditors"), (f) => f.endsWith(".md")), ...walk(osPath("reviewers"), (f) => f.endsWith(".md")),
+    ...walk(osPath("guardians"), (f) => f.endsWith(".md")), ...walk(osPath("skills"), (f) => f.endsWith("SKILL.md")),
+    ...walk(osPath("workflows"), (f) => f.endsWith(".yml")), ...walk(osPath("gates"), (f) => f.endsWith(".json")), ...walk(osPath("sensors"), (f) => f.endsWith(".json")),
+  ].map(osRel).filter((r) => !r.endsWith("README.md"));
+  for (const r of mustRegister) if (!registered.has(r)) errors.push(`unregistered component: ${r}`);
+
+  const agentIds = new Set(["agents", "subagents", "auditors", "reviewers", "guardians", "integrationAgents"].flatMap((k) => (registry.components[k] || []).map((e) => e.id)));
+  for (const kind of ["agents", "subagents", "auditors", "reviewers", "guardians"]) {
+    for (const entry of registry.components[kind] || []) {
+      const file = osPath(entry.path);
+      if (!fs.existsSync(file)) continue;
+      const text = fs.readFileSync(file, "utf8");
+      const meta = frontMatter(text);
+      if (!meta?.name || !meta.description || !meta.tools) errors.push(`${entry.path}: Claude Code front matter needs name, description, tools`);
+      else if (meta.name !== entry.id) errors.push(`${entry.path}: front matter name ${meta.name} != registry id ${entry.id}`);
+      if (kind === "agents") for (const section of LEAD_SECTIONS) if (!text.includes(`## ${section}`)) errors.push(`${entry.path}: missing section "${section}"`);
+    }
+  }
+  const skillIds = new Set();
+  for (const entry of registry.components.skills || []) {
+    skillIds.add(entry.id);
+    const file = osPath(entry.path);
+    if (!fs.existsSync(file)) continue;
+    const text = fs.readFileSync(file, "utf8");
+    const meta = frontMatter(text);
+    if (!meta?.name || !meta.description) errors.push(`${entry.path}: skill front matter needs name and description`);
+    for (const section of SKILL_SECTIONS) if (!text.includes(`## ${section}`)) errors.push(`${entry.path}: missing section "${section}"`);
+  }
+  const gateIds = new Set((registry.components.gates || []).map((e) => e.id));
+  for (const entry of registry.components.gates || []) {
+    if (!fs.existsSync(osPath(entry.path))) continue;
+    const gate = readJson(osPath(entry.path));
+    if (gate.id !== entry.id) errors.push(`${entry.path}: id mismatch`);
+    for (const check of gate.checks || []) if (!CHECK_TYPES.has(check.type)) errors.push(`${entry.path}: unknown check type ${check.type}`);
+    if (!gate.checks?.length) errors.push(`${entry.path}: gate without checks`);
+  }
+  for (const entry of registry.components.sensors || []) {
+    if (!fs.existsSync(osPath(entry.path))) continue;
+    const sensor = readJson(osPath(entry.path));
+    if (!SENSOR_KINDS.has(sensor.kind)) errors.push(`${entry.path}: unknown sensor kind ${sensor.kind}`);
+    if (sensor.kind === "check" && !CHECK_TYPES.has(sensor.check?.type)) errors.push(`${entry.path}: unknown check type`);
+  }
+  for (const entry of registry.components.workflows || []) {
+    if (!fs.existsSync(osPath(entry.path))) continue;
+    const wf = readYml(osPath(entry.path));
+    for (const key of ["id", "phases", "stopConditions", "outputs", "stateTransitions", "rollback"]) if (!(key in wf)) errors.push(`${entry.path}: missing ${key}`);
+    for (const phase of wf.phases || []) {
+      for (const agent of phase.agents || []) if (!agentIds.has(agent)) errors.push(`${entry.path} phase ${phase.id}: unknown agent ${agent}`);
+      for (const skill of phase.skills || []) if (!skillIds.has(skill)) errors.push(`${entry.path} phase ${phase.id}: unknown skill ${skill}`);
+      for (const gate of phase.gates || []) if (!gateIds.has(gate)) errors.push(`${entry.path} phase ${phase.id}: unknown gate ${gate}`);
+    }
+  }
+  for (const [domain, route] of Object.entries(registry.routing)) {
+    for (const agent of [route.lead, ...(route.subagents || []), ...(route.reviewers || []), route.auditor].filter(Boolean)) if (!agentIds.has(agent)) errors.push(`routing ${domain}: unknown agent ${agent}`);
+    if (route.workflow && !(registry.components.workflows || []).some((w) => w.id === route.workflow)) errors.push(`routing ${domain}: unknown workflow ${route.workflow}`);
+  }
+  for (const provider of registry.providers) for (const file of PROVIDER_FILES) if (!fs.existsSync(osPath("integrations", provider, file))) errors.push(`integrations/${provider}/${file} missing`);
+
+  const findings = loadFindings();
+  errors.push(...findings.flatMap(validateFinding));
+  for (const f of findings) for (const ev of f.evidenceRecords || []) if (!fs.existsSync(osPath("evidence", `${ev}.json`))) errors.push(`${f.id}: evidence ${ev} missing`);
+  for (const f of findings) if (f.decision && !fs.readdirSync(osPath("decisions")).some((n) => n.startsWith(f.decision))) errors.push(`${f.id}: decision ${f.decision} missing`);
+  const evidenceSchema = readJson(osPath("contracts", "evidence.schema.json"));
+  for (const record of loadEvidence()) errors.push(...validate(evidenceSchema, record).map((e) => `${record.id}: ${e}`));
+  const indexFile = osPath("state", "findings.yml");
+  if (!fs.existsSync(indexFile) || JSON.stringify(readYml(indexFile)) !== JSON.stringify(buildIndex(findings))) errors.push("state/findings.yml is stale: run node .claude/runtime/findings.mjs index");
+  return { errors, stats: { files: all.length, findings: findings.length, evidence: loadEvidence().length, registered: registered.size } };
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lander-os/external-identity",
+  "title": "External identity link",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "entityType",
+    "entityId",
+    "provider",
+    "externalId",
+    "resolutionStatus",
+    "matchedVia",
+    "verified"
+  ],
+  "properties": {
+    "entityType": {
+      "enum": [
+        "artist",
+        "lander_records"
+      ]
+    },
+    "entityId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provider": {
+      "type": "string",
+      "minLength": 1
+    },
+    "externalId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "resolutionStatus": {
+      "enum": [
+        "unresolved",
+        "resolved",
+        "needs_review",
+        "error"
+      ]
+    },
+    "matchedVia": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verified": {
+      "type": "boolean"
+    },
+    "lastResolvedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

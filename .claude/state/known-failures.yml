@@ -1,0 +1,38 @@
+# Baseline failures reproduced on the bootstrap base commit e673bf9 (must not be reclassified without re-running on base)
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "baseCommit": "e673bf9",
+  "failures": [
+    {
+      "id": "KF-001",
+      "check": "npm test (tests/unit/media-kit-layout-contract.test.mjs)",
+      "tests": [
+        "cover and about pages retain strong editorial hierarchy",
+        "reference deck keeps the approved global typography while KPI labels wrap without clipping"
+      ],
+      "reproducedOnBase": true,
+      "finding": "F-0012"
+    },
+    {
+      "id": "KF-002",
+      "check": "npm run lint",
+      "detail": "12 errors react-hooks/set-state-in-effect (+1 immutability) in admin managers/AdminShell; lint is not part of CI",
+      "reproducedOnBase": true,
+      "finding": "F-0013"
+    },
+    {
+      "id": "KF-003",
+      "check": "tests/browser/public-routes.spec.ts",
+      "detail": "favicon 404 on every route",
+      "reproducedOnBase": true,
+      "finding": "F-0011"
+    },
+    {
+      "id": "KF-004",
+      "check": "tests/browser/public-routes.spec.ts › rendered artist embeds never use an untrusted iframe origin",
+      "detail": "timeout without outbound network (ENV-002)",
+      "reproducedOnBase": false,
+      "finding": null
+    }
+  ]
+}

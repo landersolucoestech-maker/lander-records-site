@@ -1,0 +1,96 @@
+{
+  "confidence": "confirmed",
+  "dependencies": [],
+  "risk": "low",
+  "discoveredAt": "2026-09-25T13:50:00.000Z",
+  "id": "F-0009",
+  "title": "Static public pages declare the homepage as canonical",
+  "severity": "P1",
+  "domain": "seo",
+  "status": "REAUDITING",
+  "evidence": [
+    "all seeded pages have canonical_url '' (SELECT slug, canonical_url FROM pages)",
+    "lib/seo.ts (base): canonical = input.canonical || absoluteUrl('/')",
+    "pages passed content?.page.canonicalUrl || undefined"
+  ],
+  "rootCause": "Unsafe default in buildMetadata combined with optional canonical input.",
+  "producer": [
+    "lib/seo.ts#buildMetadata"
+  ],
+  "consumers": [
+    "/contato/",
+    "/sobre-nos/",
+    "/artistas/",
+    "/noticias/",
+    "/politica-de-privacidade/",
+    "/termos-e-condicoes/"
+  ],
+  "affectedFlow": "search indexing",
+  "invariantViolated": "every page self-canonicalizes unless an explicit override exists",
+  "blastRadius": "six public pages consolidated into the homepage by search engines",
+  "autofix": {
+    "eligible": true,
+    "reason": "compile-time guarded; verified on built server"
+  },
+  "correction": "canonical required; resolveCanonicalUrl(cms, route) per page",
+  "requiredTests": [
+    "tests/unit/seo-canonical.test.mjs",
+    "built-server curl of <link rel=canonical>"
+  ],
+  "regressionRisk": "low — CMS overrides preserved",
+  "impactLevel": "L2",
+  "producerAgent": "seo-auditor",
+  "commits": [
+    "23ded20"
+  ],
+  "history": [
+    {
+      "status": "DISCOVERED",
+      "at": "2026-09-25T13:50:00.000Z",
+      "by": "leads-auditor",
+      "note": "canonical audit on built server"
+    },
+    {
+      "status": "TRIAGED",
+      "at": "2026-09-25T13:51:00.000Z",
+      "by": "autonomous-controller",
+      "note": "severity and domain assigned"
+    },
+    {
+      "status": "READY",
+      "at": "2026-09-25T13:52:00.000Z",
+      "by": "autonomous-controller",
+      "note": "root cause traceable in repo; autofix eligible"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-25T13:53:00.000Z",
+      "by": "owner lead",
+      "note": "tracing producer → consumer"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-25T13:54:00.000Z",
+      "by": "owner lead",
+      "note": "homepage fallback"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-25T13:55:00.000Z",
+      "by": "owner lead",
+      "note": "required canonical"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-25T13:56:00.000Z",
+      "by": "qa-lead",
+      "note": "tests added; commits 23ded20"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-25T13:57:00.000Z",
+      "by": "auditor",
+      "note": "re-running the detecting check on the fixed code"
+    }
+  ]
+}

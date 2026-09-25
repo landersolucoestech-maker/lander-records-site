@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lander-os/test",
+  "title": "Test obligation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "level",
+    "path",
+    "command"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "level": {
+      "enum": [
+        "unit",
+        "contract",
+        "integration",
+        "migration",
+        "browser",
+        "smoke",
+        "security"
+      ]
+    },
+    "path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "command": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provesFinding": {
+      "type": "string",
+      "minLength": 1
+    },
+    "redOnBase": {
+      "type": "boolean"
+    }
+  }
+}

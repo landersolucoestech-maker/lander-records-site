@@ -1,0 +1,75 @@
+{
+  "id": "identity",
+  "curated": true,
+  "nodes": [
+    {
+      "id": "InternalArtist",
+      "code": [
+        "lib/db/schema.ts#artists"
+      ]
+    },
+    {
+      "id": "PlatformUrl",
+      "code": [
+        "lib/integrations/identity.ts#normalizePlatformUrl"
+      ]
+    },
+    {
+      "id": "SpotifyArtistId",
+      "code": [
+        "lib/integrations/identity.ts#spotifyArtistIdFromUrl"
+      ]
+    },
+    {
+      "id": "SoundchartsUuid",
+      "code": [
+        "lib/db/integration-schema.ts#soundchartsArtistUuid"
+      ]
+    },
+    {
+      "id": "Verifier",
+      "code": [
+        "lib/integrations/soundcharts.ts#verifyIdentifier"
+      ]
+    },
+    {
+      "id": "Invalidation",
+      "code": [
+        "lib/integrations/sync.ts#resolutionStillMatches",
+        "lib/integrations/sync.ts#purgeArtistSoundchartsMetrics"
+      ]
+    }
+  ],
+  "edges": [
+    [
+      "InternalArtist",
+      "has",
+      "PlatformUrl"
+    ],
+    [
+      "PlatformUrl",
+      "derives",
+      "SpotifyArtistId"
+    ],
+    [
+      "SpotifyArtistId",
+      "resolves",
+      "SoundchartsUuid"
+    ],
+    [
+      "PlatformUrl",
+      "resolves",
+      "SoundchartsUuid"
+    ],
+    [
+      "Verifier",
+      "proves",
+      "SoundchartsUuid"
+    ],
+    [
+      "Invalidation",
+      "withdraws",
+      "SoundchartsUuid"
+    ]
+  ]
+}

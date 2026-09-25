@@ -1,0 +1,22 @@
+# Architecture summary — see knowledge/architecture.md
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "style": "Next.js App Router monolith; public site and admin CMS share one PostgreSQL domain",
+  "layers": [
+    "app (routes, UI, server actions)",
+    "modules (domain facades)",
+    "lib (services, integrations, db)",
+    "lib/db (Drizzle schema)"
+  ],
+  "boundaries": {
+    "adminAuth": "proxy.ts (cookie presence) + requireAdmin(role) server-side",
+    "secrets": "server-only env",
+    "cron": "/api/cron/integrations/ Bearer CRON_SECRET"
+  },
+  "adr": [
+    "ADR-0002",
+    "ADR-0003",
+    "ADR-0004",
+    "ADR-0005"
+  ]
+}

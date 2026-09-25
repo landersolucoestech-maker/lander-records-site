@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "spotify_release_cache row",
+  "type": "object",
+  "required": [
+    "position",
+    "playlistId",
+    "albumId",
+    "title",
+    "spotifyUrl",
+    "releaseDate",
+    "releaseDatePrecision"
+  ],
+  "properties": {
+    "position": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "playlistId": {
+      "type": "string"
+    },
+    "albumId": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "artistName": {
+      "type": "string"
+    },
+    "coverUrl": {
+      "type": "string"
+    },
+    "spotifyUrl": {
+      "type": "string"
+    },
+    "releaseDate": {
+      "type": "string"
+    },
+    "releaseDatePrecision": {
+      "enum": [
+        "year",
+        "month",
+        "day"
+      ]
+    },
+    "playlistAddedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fetchedAt": {
+      "type": "string"
+    },
+    "expiresAt": {
+      "type": "string"
+    }
+  }
+}

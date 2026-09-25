@@ -1,0 +1,89 @@
+{
+  "confidence": "confirmed",
+  "dependencies": [],
+  "risk": "low",
+  "discoveredAt": "2026-09-25T13:50:00.000Z",
+  "id": "F-0007",
+  "title": "Schema contract missing media kit tables (0015–0017)",
+  "severity": "P2",
+  "domain": "database",
+  "status": "REAUDITING",
+  "evidence": [
+    "node scripts/audit-db.mjs on a fresh migrated DB: SCHEMA_DRIFT=FAIL, TABLES_UNEXPECTED media_kit_items/sections/settings"
+  ],
+  "rootCause": "Contract not re-captured after migrations 0015–0017.",
+  "producer": [
+    "scripts/db-schema-contract.json"
+  ],
+  "consumers": [
+    "scripts/audit-db.mjs"
+  ],
+  "affectedFlow": "release schema verification",
+  "invariantViolated": "Drizzle ↔ migrations ↔ schema contract agree",
+  "blastRadius": "audit-db false alarms hide real drift",
+  "autofix": {
+    "eligible": true,
+    "reason": "generated snapshot from clean local *_test DB"
+  },
+  "correction": "re-capture contract",
+  "requiredTests": [
+    "node scripts/audit-db.mjs"
+  ],
+  "regressionRisk": "none",
+  "impactLevel": "L2",
+  "producerAgent": "database-auditor",
+  "commits": [
+    "7ba065f",
+    "126d36c"
+  ],
+  "history": [
+    {
+      "status": "DISCOVERED",
+      "at": "2026-09-25T13:50:00.000Z",
+      "by": "leads-auditor",
+      "note": "audit-db on fresh DB"
+    },
+    {
+      "status": "TRIAGED",
+      "at": "2026-09-25T13:51:00.000Z",
+      "by": "autonomous-controller",
+      "note": "severity and domain assigned"
+    },
+    {
+      "status": "READY",
+      "at": "2026-09-25T13:52:00.000Z",
+      "by": "autonomous-controller",
+      "note": "root cause traceable in repo; autofix eligible"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-25T13:53:00.000Z",
+      "by": "owner lead",
+      "note": "tracing producer → consumer"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-25T13:54:00.000Z",
+      "by": "owner lead",
+      "note": "missing capture after 0015–0017"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-25T13:55:00.000Z",
+      "by": "owner lead",
+      "note": "re-capture"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-25T13:56:00.000Z",
+      "by": "qa-lead",
+      "note": "tests added; commits 7ba065f"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-25T13:57:00.000Z",
+      "by": "auditor",
+      "note": "re-running the detecting check on the fixed code"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+# Repository baseline at OS bootstrap (volatile snapshots go to state/.run/preflight.json)
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "defaultBranch": "main",
+  "workingBranch": "claude/upbeat-edison-4x54r1",
+  "bootstrapBase": "e673bf9d79fa9d76f4149a4d5c16e8a109ac37d5",
+  "preexistingChanges": "none (clean clone)",
+  "protectedBranches": [
+    "main"
+  ],
+  "ignoredRuntimePaths": [
+    ".next",
+    ".local",
+    "test-results",
+    "playwright-report",
+    ".claude/state/.run"
+  ]
+}

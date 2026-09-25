@@ -1,0 +1,65 @@
+# Workflow seo — SEO audit and fixes
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "id": "seo",
+  "title": "SEO audit and fixes",
+  "trigger": "seo finding / release",
+  "phases": [
+    {
+      "id": "audit",
+      "agents": [
+        "seo-auditor",
+        "seo-lead"
+      ],
+      "skills": [
+        "seo-audit"
+      ],
+      "gates": [],
+      "transition": "findings"
+    },
+    {
+      "id": "fix",
+      "agents": [
+        "seo-lead"
+      ],
+      "skills": [
+        "autofix",
+        "regression-generation"
+      ],
+      "gates": [
+        "implementation"
+      ],
+      "transition": "→ VALIDATING"
+    },
+    {
+      "id": "verify",
+      "agents": [
+        "adversarial-reviewer"
+      ],
+      "skills": [
+        "seo-audit"
+      ],
+      "gates": [
+        "regression"
+      ],
+      "transition": "built-server evidence → RESOLVED"
+    }
+  ],
+  "stopConditions": [
+    "product decision required (DEC)",
+    "destructive/data-loss risk",
+    "external system or credential unavailable (BLOCKED_EXTERNAL)",
+    "unresolvable ambiguity",
+    "irreversible architectural change",
+    "contradictory requirements"
+  ],
+  "outputs": [
+    "findings/*.json updated",
+    "evidence/EV-*.json",
+    "atomic commits"
+  ],
+  "stateTransitions": [
+    "READY → INVESTIGATING → ROOT_CAUSE_CONFIRMED → FIXING → VALIDATING → REAUDITING → RESOLVED"
+  ],
+  "rollback": "revert only this workflow's own commits (git revert); never reset/clean pre-existing work; data side effects need compensation per ADR/incident workflow"
+}

@@ -1,0 +1,64 @@
+# Workflow provider-recovery — Restore a failing provider
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "id": "provider-recovery",
+  "title": "Restore a failing provider",
+  "trigger": "integration-health signal",
+  "phases": [
+    {
+      "id": "classify",
+      "agents": [
+        "integrations-auditor"
+      ],
+      "skills": [
+        "integration-audit"
+      ],
+      "gates": [],
+      "transition": "credential | provider outage | contract drift | code"
+    },
+    {
+      "id": "recover",
+      "agents": [
+        "backend-lead"
+      ],
+      "skills": [
+        "root-cause-analysis",
+        "autofix"
+      ],
+      "gates": [
+        "integration"
+      ],
+      "transition": "fix or BLOCKED_EXTERNAL"
+    },
+    {
+      "id": "verify",
+      "agents": [
+        "integration-reviewer"
+      ],
+      "skills": [
+        "integration-health-check"
+      ],
+      "gates": [
+        "integration"
+      ],
+      "transition": "health updated with evidence"
+    }
+  ],
+  "stopConditions": [
+    "product decision required (DEC)",
+    "destructive/data-loss risk",
+    "external system or credential unavailable (BLOCKED_EXTERNAL)",
+    "unresolvable ambiguity",
+    "irreversible architectural change",
+    "contradictory requirements"
+  ],
+  "outputs": [
+    "findings/*.json updated",
+    "evidence/EV-*.json",
+    "atomic commits"
+  ],
+  "stateTransitions": [
+    "READY → INVESTIGATING → ROOT_CAUSE_CONFIRMED → FIXING → VALIDATING → REAUDITING → RESOLVED"
+  ],
+  "rollback": "configuration rollback via environment (never delete persisted metrics of the same identity)"
+}

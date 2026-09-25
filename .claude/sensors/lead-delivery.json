@@ -1,0 +1,28 @@
+{
+  "id": "lead-delivery",
+  "title": "Lead delivery",
+  "kind": "sql",
+  "domain": "leads",
+  "feeds": "contact → outbox → receiver",
+  "invariant": "no dead letters or overdue failures; disabled only while no receiver is configured",
+  "probes": [
+    {
+      "name": "dead-letters",
+      "severity": "P1",
+      "message": "lead events in dead letter",
+      "sql": "SELECT id, attempts, left(last_error, 120) AS error FROM integration_outbox WHERE status::text = 'dead_letter'"
+    },
+    {
+      "name": "overdue-failed",
+      "severity": "P2",
+      "message": "failed lead events overdue for retry by more than 1h (scheduler not running?)",
+      "sql": "SELECT id, attempts, next_attempt_at FROM integration_outbox WHERE status = 'failed' AND next_attempt_at < now() - interval '1 hour'"
+    },
+    {
+      "name": "undelivered-disabled",
+      "severity": "P3",
+      "message": "lead events not delivered because no receiver is configured (DEC-0001)",
+      "sql": "SELECT count(*) AS events FROM integration_outbox WHERE status = 'disabled' HAVING count(*) > 0"
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "id": "release-feed",
+  "curated": true,
+  "nodes": [
+    {
+      "id": "PlaylistSetting",
+      "code": [
+        "lib/db/integration-schema.ts#spotifyPlaylistId"
+      ]
+    },
+    {
+      "id": "OAuth",
+      "code": [
+        "lib/integrations/spotify.ts#completeSpotifyAuthorization"
+      ]
+    },
+    {
+      "id": "TokenCrypto",
+      "code": [
+        "lib/integrations/secrets.ts#encryptIntegrationSecret"
+      ]
+    },
+    {
+      "id": "Fetcher",
+      "code": [
+        "lib/integrations/spotify.ts#fetchLatestSpotifyPlaylistReleases"
+      ]
+    },
+    {
+      "id": "ReleaseCache",
+      "code": [
+        "lib/db/integration-schema.ts#spotifyReleaseCache"
+      ]
+    },
+    {
+      "id": "HomeFeed",
+      "code": [
+        "lib/integrations/sync.ts#getHomeSpotifyReleaseFeed"
+      ]
+    },
+    {
+      "id": "HomeReleases",
+      "code": [
+        "app/(public)/page.tsx#releaseCard"
+      ]
+    }
+  ],
+  "edges": [
+    [
+      "OAuth",
+      "stores",
+      "TokenCrypto"
+    ],
+    [
+      "Fetcher",
+      "reads",
+      "PlaylistSetting"
+    ],
+    [
+      "Fetcher",
+      "produces",
+      "ReleaseCache"
+    ],
+    [
+      "HomeFeed",
+      "consumes",
+      "ReleaseCache"
+    ],
+    [
+      "HomeReleases",
+      "consumes",
+      "HomeFeed"
+    ]
+  ]
+}

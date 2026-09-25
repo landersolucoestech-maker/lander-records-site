@@ -1,0 +1,59 @@
+{
+  "confidence": "confirmed",
+  "dependencies": [
+    "DEC-0002"
+  ],
+  "risk": "medium",
+  "discoveredAt": "2026-09-25T13:50:00.000Z",
+  "id": "F-0008",
+  "title": "Lead events marked disabled are never delivered after a receiver is configured",
+  "severity": "P2",
+  "domain": "leads",
+  "status": "NEEDS_PRODUCT_DECISION",
+  "decision": "DEC-0002",
+  "evidence": [
+    "lib/contact.ts#dispatchOutboxEvent: no URL/secret → status disabled",
+    "lib/contact.ts#retryDueOutboxEvents selects only failed / stale pending"
+  ],
+  "rootCause": "disabled is terminal by design; replay semantics undefined.",
+  "producer": [
+    "lib/contact.ts"
+  ],
+  "consumers": [
+    "future receiver"
+  ],
+  "affectedFlow": "lead delivery",
+  "invariantViolated": "defined behavior for historical leads when delivery starts",
+  "blastRadius": "all leads captured before receiver configuration",
+  "autofix": {
+    "eligible": false,
+    "reason": "sending historical PII to a new third party is a product/legal decision"
+  },
+  "correction": "per DEC-0002",
+  "requiredTests": [
+    "replay script idempotency test (if option B/C)"
+  ],
+  "regressionRisk": "n/a",
+  "impactLevel": "L5",
+  "producerAgent": "leads-auditor",
+  "history": [
+    {
+      "status": "DISCOVERED",
+      "at": "2026-09-25T13:50:00.000Z",
+      "by": "leads-auditor",
+      "note": "outbox state review"
+    },
+    {
+      "status": "TRIAGED",
+      "at": "2026-09-25T13:51:00.000Z",
+      "by": "autonomous-controller",
+      "note": "P2 leads"
+    },
+    {
+      "status": "NEEDS_PRODUCT_DECISION",
+      "at": "2026-09-25T13:52:00.000Z",
+      "by": "autonomous-controller",
+      "note": "DEC-0002 opened"
+    }
+  ]
+}

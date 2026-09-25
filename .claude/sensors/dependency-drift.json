@@ -1,0 +1,17 @@
+{
+  "id": "dependency-drift",
+  "title": "Dependency tree consistency",
+  "kind": "check",
+  "domain": "dependencies",
+  "feeds": "build",
+  "invariant": "installed tree matches package-lock.json",
+  "severity": "P2",
+  "check": {
+    "type": "command",
+    "argv": [
+      "npm",
+      "ls",
+      "--depth=0"
+    ]
+  }
+}

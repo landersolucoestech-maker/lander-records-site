@@ -1,0 +1,73 @@
+# Workflow contact-form — Contact form defects
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "id": "contact-form",
+  "title": "Contact form defects",
+  "trigger": "leads finding (UI/route)",
+  "phases": [
+    {
+      "id": "trace",
+      "agents": [
+        "frontend-lead",
+        "backend-lead"
+      ],
+      "skills": [
+        "lead-flow-trace"
+      ],
+      "gates": [
+        "trace"
+      ],
+      "transition": "→ INVESTIGATING"
+    },
+    {
+      "id": "fix",
+      "agents": [
+        "frontend-lead",
+        "backend-lead",
+        "interaction-auditor",
+        "input-validation-auditor"
+      ],
+      "skills": [
+        "autofix",
+        "regression-generation"
+      ],
+      "gates": [
+        "implementation",
+        "lead-delivery"
+      ],
+      "transition": "→ VALIDATING"
+    },
+    {
+      "id": "verify",
+      "agents": [
+        "adversarial-reviewer",
+        "security-reviewer"
+      ],
+      "skills": [
+        "lead-delivery-audit"
+      ],
+      "gates": [
+        "accessibility",
+        "security"
+      ],
+      "transition": "→ RESOLVED"
+    }
+  ],
+  "stopConditions": [
+    "product decision required (DEC)",
+    "destructive/data-loss risk",
+    "external system or credential unavailable (BLOCKED_EXTERNAL)",
+    "unresolvable ambiguity",
+    "irreversible architectural change",
+    "contradictory requirements"
+  ],
+  "outputs": [
+    "findings/*.json updated",
+    "evidence/EV-*.json",
+    "atomic commits"
+  ],
+  "stateTransitions": [
+    "READY → INVESTIGATING → ROOT_CAUSE_CONFIRMED → FIXING → VALIDATING → REAUDITING → RESOLVED"
+  ],
+  "rollback": "revert only this workflow's own commits (git revert); never reset/clean pre-existing work; data side effects need compensation per ADR/incident workflow"
+}

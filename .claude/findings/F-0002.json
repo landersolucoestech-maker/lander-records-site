@@ -1,0 +1,90 @@
+{
+  "confidence": "confirmed",
+  "dependencies": [],
+  "risk": "low",
+  "discoveredAt": "2026-09-25T13:50:00.000Z",
+  "id": "F-0002",
+  "title": "Contact rate limit keyed on a client-controlled X-Forwarded-For hop",
+  "severity": "P1",
+  "domain": "security",
+  "status": "REAUDITING",
+  "evidence": [
+    "app/api/contact/route.ts (base): ip = x-forwarded-for.split(',')[0]",
+    "infra/nginx/lander-records.conf.example:29 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for (appends; first hop is caller-supplied)"
+  ],
+  "rootCause": "The first XFF entry is supplied by the caller when the proxy appends; the trusted address is X-Real-IP / the last hop.",
+  "producer": [
+    "app/api/contact/route.ts"
+  ],
+  "consumers": [
+    "lib/contact.ts#isContactRateLimited",
+    "contact_submissions.ip_hash"
+  ],
+  "affectedFlow": "contact spam protection",
+  "invariantViolated": "Abuse controls must key on a proxy-verified identity",
+  "blastRadius": "unbounded submissions by rotating a header; polluted ip_hash data",
+  "autofix": {
+    "eligible": true,
+    "reason": "pure function with unit tests; no data migration"
+  },
+  "correction": "lib/contact-client-ip.ts: X-Real-IP, else last XFF hop",
+  "requiredTests": [
+    "tests/unit/contact-client-ip.test.mjs"
+  ],
+  "regressionRisk": "medium — deployments without X-Real-IP rely on the nearest proxy being the last hop (documented in leads/rate-limit.md)",
+  "impactLevel": "L5",
+  "producerAgent": "security-auditor",
+  "commits": [
+    "9e9cbbf"
+  ],
+  "history": [
+    {
+      "status": "DISCOVERED",
+      "at": "2026-09-25T13:50:00.000Z",
+      "by": "leads-auditor",
+      "note": "header trust review against the reference proxy config"
+    },
+    {
+      "status": "TRIAGED",
+      "at": "2026-09-25T13:51:00.000Z",
+      "by": "autonomous-controller",
+      "note": "severity and domain assigned"
+    },
+    {
+      "status": "READY",
+      "at": "2026-09-25T13:52:00.000Z",
+      "by": "autonomous-controller",
+      "note": "root cause traceable in repo; autofix eligible"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-25T13:53:00.000Z",
+      "by": "owner lead",
+      "note": "tracing producer → consumer"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-25T13:54:00.000Z",
+      "by": "owner lead",
+      "note": "first XFF hop is attacker-controlled"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-25T13:55:00.000Z",
+      "by": "owner lead",
+      "note": "trusted resolver"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-25T13:56:00.000Z",
+      "by": "qa-lead",
+      "note": "tests added; commits 9e9cbbf"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-25T13:57:00.000Z",
+      "by": "auditor",
+      "note": "re-running the detecting check on the fixed code"
+    }
+  ]
+}

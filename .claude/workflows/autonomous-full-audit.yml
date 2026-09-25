@@ -1,0 +1,127 @@
+# Workflow autonomous-full-audit — Audit the whole site and fix everything safely fixable
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "id": "autonomous-full-audit",
+  "title": "Audit the whole site and fix everything safely fixable",
+  "trigger": "operator: 'audite e corrija tudo'",
+  "phases": [
+    {
+      "id": "discover",
+      "agents": [
+        "codebase-cartographer"
+      ],
+      "skills": [
+        "repository-discovery",
+        "repository-map"
+      ],
+      "gates": [
+        "trace"
+      ],
+      "transition": "mission ACTIVE"
+    },
+    {
+      "id": "audit",
+      "agents": [
+        "architecture-auditor",
+        "frontend-auditor",
+        "backend-auditor",
+        "database-auditor",
+        "integrations-auditor",
+        "identity-auditor",
+        "leads-auditor",
+        "seo-auditor",
+        "content-auditor",
+        "accessibility-auditor",
+        "performance-auditor",
+        "security-auditor",
+        "observability-auditor",
+        "dependencies-auditor",
+        "product-flows-auditor"
+      ],
+      "skills": [
+        "finding-classification"
+      ],
+      "gates": [],
+      "transition": "findings DISCOVERED/TRIAGED/READY"
+    },
+    {
+      "id": "fix-loop",
+      "agents": [
+        "backend-lead",
+        "frontend-lead",
+        "database-lead",
+        "seo-lead"
+      ],
+      "skills": [
+        "root-cause-analysis",
+        "impact-analysis",
+        "autofix",
+        "regression-generation"
+      ],
+      "gates": [
+        "root-cause",
+        "implementation",
+        "test"
+      ],
+      "transition": "READY → VALIDATING (per finding, priority order)"
+    },
+    {
+      "id": "review",
+      "agents": [
+        "adversarial-reviewer",
+        "regression-reviewer"
+      ],
+      "skills": [
+        "adversarial-review"
+      ],
+      "gates": [
+        "regression"
+      ],
+      "transition": "VALIDATING → REAUDITING"
+    },
+    {
+      "id": "reaudit",
+      "agents": [
+        "product-flows-auditor"
+      ],
+      "skills": [
+        "feature-trace"
+      ],
+      "gates": [
+        "trace"
+      ],
+      "transition": "REAUDITING → RESOLVED"
+    },
+    {
+      "id": "close",
+      "agents": [
+        "final-reviewer",
+        "git-lead"
+      ],
+      "skills": [
+        "release-validation"
+      ],
+      "gates": [
+        "release"
+      ],
+      "transition": "mission closed with verdict"
+    }
+  ],
+  "stopConditions": [
+    "product decision required (DEC)",
+    "destructive/data-loss risk",
+    "external system or credential unavailable (BLOCKED_EXTERNAL)",
+    "unresolvable ambiguity",
+    "irreversible architectural change",
+    "contradictory requirements"
+  ],
+  "outputs": [
+    "reports/<date>-full-audit.md",
+    "findings, evidence, commits",
+    "completion verdict"
+  ],
+  "stateTransitions": [
+    "READY → INVESTIGATING → ROOT_CAUSE_CONFIRMED → FIXING → VALIDATING → REAUDITING → RESOLVED"
+  ],
+  "rollback": "revert only this workflow's own commits (git revert); never reset/clean pre-existing work; data side effects need compensation per ADR/incident workflow"
+}

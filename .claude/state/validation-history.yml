@@ -1,0 +1,5 @@
+# Gate executions recorded with --record (latest 200)
+# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+{
+  "entries": []
+}
