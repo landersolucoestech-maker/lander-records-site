@@ -7,7 +7,7 @@
   "title": "Metrics of an invalidated or replaced Soundcharts identity stay published",
   "severity": "P1",
   "domain": "identity",
-  "status": "INVESTIGATING",
+  "status": "RESOLVED",
   "evidence": [
     "lib/integrations/sync.ts (base): unresolved/not_configured branches clear the UUID but leave artist_metrics/integration_metric_cache",
     "tests/integration/soundcharts-identity-sync.mjs fails on base: 'metrics of an invalidated identity must not stay published'"
@@ -179,11 +179,42 @@
       "at": "2026-09-25T23:39:13.142Z",
       "by": "adversarial-reviewer",
       "note": "reopened: unconditional pre-fetch identity write publishes superseded identity; admin purge before row lock; cleared identity not withdrawn (EV-0044)"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-25T23:49:36.669Z",
+      "by": "owner",
+      "note": "sync writes assumed the URLs/links and identity read earlier still held; admin purge ran before the row lock"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-25T23:49:36.770Z",
+      "by": "owner",
+      "note": "fix in 32a5013 (compare-and-set under row lock; admin lock-before-purge; withdrawal without identity)"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-25T23:49:36.869Z",
+      "by": "qa-engineer",
+      "note": "required test green on HEAD (EV-0045)"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-25T23:49:36.957Z",
+      "by": "regression-reviewer",
+      "note": "reaudit: EV-0045 covers the round-4 reproductions"
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-25T23:49:37.084Z",
+      "by": "autonomous-controller",
+      "note": "proof EV-0045; server rebuilt from HEAD"
     }
   ],
   "evidenceRecords": [
     "EV-0019",
     "EV-0032",
-    "EV-0039"
+    "EV-0039",
+    "EV-0045"
   ]
 }
