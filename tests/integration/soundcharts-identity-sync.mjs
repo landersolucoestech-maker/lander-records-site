@@ -126,7 +126,45 @@ try {
   const landerRows = [...await client`SELECT 1 FROM integration_metric_cache WHERE entity_type='lander_records' AND source='soundcharts'`];
   assert.equal(landerRows.length, 0, "Home must render the unavailable state instead of metrics from an invalidated identity");
 
-  // 6. Every provider request is bounded by a timeout signal.
+  // 6. Lander identity re-resolves to a different artist but the metrics fetch fails: the old identity's
+  //    values must already be withdrawn, and a later success must not resurrect them.
+  await client`
+    UPDATE lander_records_integration_settings
+    SET instagram_url=${newUrl}, youtube_url='', soundcharts_artist_uuid=${OLD_UUID}, soundcharts_resolution_status='resolved',
+        soundcharts_matched_via=${`instagram:${oldUrl}`}, soundcharts_last_synced_at=now() - interval '2 days'
+    WHERE key='lander_records'
+  `;
+  for (const [platform, metric, value] of [["youtube", "subscribers", 999], ["instagram", "followers", 5000]]) {
+    await client`
+      INSERT INTO integration_metric_cache (entity_type, entity_id, platform, metric, value, source)
+      VALUES ('lander_records','lander_records',${platform},${metric},${value},'soundcharts')
+      ON CONFLICT (entity_type, entity_id, platform, metric) DO UPDATE SET value=EXCLUDED.value
+    `;
+  }
+  provider = { resolveTo: NEW_UUID, metrics: {}, failMetrics: true };
+  await assert.rejects(() => syncLanderRecordsSoundcharts(true), /Soundcharts respondeu 503/);
+  const [repointed] = await client`SELECT soundcharts_artist_uuid FROM lander_records_integration_settings WHERE key='lander_records'`;
+  assert.equal(repointed.soundcharts_artist_uuid, NEW_UUID);
+  assert.equal([...await client`SELECT 1 FROM integration_metric_cache WHERE entity_type='lander_records'`].length, 0, "old identity values withdrawn before the failed fetch");
+  provider = { resolveTo: NEW_UUID, metrics: { instagram: 42 }, failMetrics: false };
+  assert.equal((await syncLanderRecordsSoundcharts(true)).status, "synced");
+  const landerAfter = [...await client`SELECT platform, value FROM integration_metric_cache WHERE entity_type='lander_records' ORDER BY platform`];
+  assert.deepEqual(landerAfter.map((r) => [r.platform, Number(r.value)]), [["instagram", 42]], "no old-identity youtube value may survive");
+
+  // 7. Same for an artist: links re-resolve to another identity, fetch fails, then succeeds.
+  await seedOldIdentity();
+  await setLink(newUrl);
+  provider = { resolveTo: NEW_UUID, metrics: {}, failMetrics: true };
+  await assert.rejects(() => syncArtistSoundcharts(artistId, true), /Soundcharts respondeu 503/);
+  assert.deepEqual(await metricRows(), [], "artist: old identity metrics withdrawn before the failed fetch");
+  const [artistIdentity] = await client`SELECT soundcharts_artist_uuid, last_synced_at FROM artist_external_identities WHERE artist_id=${artistId}`;
+  assert.equal(artistIdentity.soundcharts_artist_uuid, NEW_UUID);
+  assert.equal(artistIdentity.last_synced_at, null);
+  provider = { resolveTo: NEW_UUID, metrics: { instagram: 7 }, failMetrics: false };
+  assert.equal((await syncArtistSoundcharts(artistId, false)).status, "synced", "unsynced identity is not considered fresh");
+  assert.deepEqual((await metricRows()).map((row) => [row.platform, Number(row.value)]), [["instagram", 7]]);
+
+  // 8. Every provider request is bounded by a timeout signal.
   assert.ok(seenSignals.length > 0);
   assert.ok(seenSignals.every((signal) => signal instanceof AbortSignal), "every Soundcharts request must carry an AbortSignal timeout");
 

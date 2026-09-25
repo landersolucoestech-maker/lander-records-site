@@ -127,18 +127,24 @@ export async function syncLanderRecordsSoundcharts(force = false) {
       }
       uuid = resolved.uuid;
       matchedVia = `${resolved.matchedViaPlatform}:${resolved.matchedViaIdentifier}`;
-      await db.update(landerRecordsIntegrationSettings).set({
-        soundchartsArtistUuid: uuid,
-        soundchartsResolutionStatus: "resolved",
-        soundchartsMatchedVia: matchedVia,
-        soundchartsLastResolvedAt: new Date(),
-        soundchartsLastError: "",
-        updatedAt: new Date(),
-      }).where(eq(landerRecordsIntegrationSettings.key, LANDER_ENTITY_ID));
+      // Re-point the identity and withdraw the previous identity's metrics atomically, before fetching:
+      // a failed fetch must leave "no data", never the old identity's values under the new one.
+      const identityChanged = uuid !== previousUuid;
+      await db.transaction(async (tx) => {
+        if (identityChanged) await purgeLanderRecordsSoundchartsMetrics(tx);
+        await tx.update(landerRecordsIntegrationSettings).set({
+          soundchartsArtistUuid: uuid,
+          soundchartsResolutionStatus: "resolved",
+          soundchartsMatchedVia: matchedVia,
+          soundchartsLastResolvedAt: new Date(),
+          ...(identityChanged ? { soundchartsLastSyncedAt: null } : {}),
+          soundchartsLastError: "",
+          updatedAt: new Date(),
+        }).where(eq(landerRecordsIntegrationSettings.key, LANDER_ENTITY_ID));
+      });
     }
 
     const metrics = (await fetchSoundchartsArtistMetrics(uuid)).filter((metric) => metric.platform === "instagram" || metric.platform === "youtube");
-    if (uuid !== previousUuid) await purgeLanderRecordsSoundchartsMetrics(db);
     for (const metric of metrics) {
       await upsertCachedMetric({ entityType: "lander_records", entityId: LANDER_ENTITY_ID, ...metric });
     }
@@ -212,6 +218,19 @@ export async function syncArtistSoundcharts(artistId: string, force = false) {
       resolvedUuid = resolved.uuid;
       matchedViaPlatform = resolved.matchedViaPlatform;
       matchedViaIdentifier = resolved.matchedViaIdentifier;
+      // Links no longer match the stored identity. If the resolved identity differs, persist it and withdraw
+      // the previous identity's metrics atomically before fetching, so a failed fetch leaves "no data".
+      if (resolvedUuid !== (identity?.soundchartsArtistUuid || "")) {
+        await db.transaction(async (tx) => {
+          await purgeArtistSoundchartsMetrics(tx, artistId);
+          await tx.insert(artistExternalIdentities).values({
+            artistId, soundchartsArtistUuid: resolvedUuid, resolutionStatus: "resolved", matchedViaPlatform, matchedViaIdentifier, lastResolvedAt: new Date(), lastSyncedAt: null, lastError: "",
+          }).onConflictDoUpdate({
+            target: artistExternalIdentities.artistId,
+            set: { soundchartsArtistUuid: resolvedUuid, resolutionStatus: "resolved", matchedViaPlatform, matchedViaIdentifier, lastResolvedAt: new Date(), lastSyncedAt: null, lastError: "", updatedAt: new Date() },
+          });
+        });
+      }
     }
 
     const metrics = await fetchSoundchartsArtistMetrics(resolvedUuid);
