@@ -7,7 +7,7 @@
   "title": "Contact rate limit keyed on a client-controlled X-Forwarded-For hop",
   "severity": "P1",
   "domain": "security",
-  "status": "REAUDITING",
+  "status": "RESOLVED",
   "evidence": [
     "app/api/contact/route.ts (base): ip = x-forwarded-for.split(',')[0]",
     "infra/nginx/lander-records.conf.example:29 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for (appends; first hop is caller-supplied)"
@@ -93,6 +93,15 @@
       "by": "auditor",
       "note": "re-running the detecting check on the fixed code",
       "reconstructed": true
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-25T15:22:03.433Z",
+      "by": "product-flows-auditor",
+      "note": "reaudit: trusted IP resolver + route wiring tests"
     }
+  ],
+  "evidenceRecords": [
+    "EV-0018"
   ]
 }

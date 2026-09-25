@@ -4,9 +4,9 @@
   "derivedFrom": ".claude/findings/*.json",
   "totals": {
     "all": 14,
-    "open": 9,
+    "open": 0,
     "parked": 5,
-    "closed": 0,
+    "closed": 9,
     "ready": 0
   },
   "readyQueue": [],
@@ -16,50 +16,60 @@
       "title": "Contact form shows a successful submission as an error",
       "severity": "P1",
       "domain": "leads",
-      "status": "REAUDITING",
+      "status": "RESOLVED",
       "priority": 680,
       "decision": null,
-      "evidenceRecords": []
+      "evidenceRecords": [
+        "EV-0017"
+      ]
     },
     {
       "id": "F-0002",
       "title": "Contact rate limit keyed on a client-controlled X-Forwarded-For hop",
       "severity": "P1",
       "domain": "security",
-      "status": "REAUDITING",
+      "status": "RESOLVED",
       "priority": 710,
       "decision": null,
-      "evidenceRecords": []
+      "evidenceRecords": [
+        "EV-0018"
+      ]
     },
     {
       "id": "F-0003",
       "title": "Metrics of an invalidated or replaced Soundcharts identity stay published",
       "severity": "P1",
       "domain": "identity",
-      "status": "REAUDITING",
+      "status": "RESOLVED",
       "priority": 660,
       "decision": null,
-      "evidenceRecords": []
+      "evidenceRecords": [
+        "EV-0019"
+      ]
     },
     {
       "id": "F-0004",
       "title": "Soundcharts requests have no timeout",
       "severity": "P2",
       "domain": "integrations",
-      "status": "REAUDITING",
+      "status": "RESOLVED",
       "priority": 320,
       "decision": null,
-      "evidenceRecords": []
+      "evidenceRecords": [
+        "EV-0019"
+      ]
     },
     {
       "id": "F-0005",
       "title": "Lead outbox retries forever, including permanent rejections, with no dead letter",
       "severity": "P2",
       "domain": "leads",
-      "status": "REAUDITING",
+      "status": "RESOLVED",
       "priority": 380,
       "decision": null,
-      "evidenceRecords": []
+      "evidenceRecords": [
+        "EV-0021"
+      ]
     },
     {
       "id": "F-0006",
@@ -76,10 +86,12 @@
       "title": "Schema contract missing media kit tables (0015–0017)",
       "severity": "P2",
       "domain": "database",
-      "status": "REAUDITING",
+      "status": "RESOLVED",
       "priority": 340,
       "decision": null,
-      "evidenceRecords": []
+      "evidenceRecords": [
+        "EV-0022"
+      ]
     },
     {
       "id": "F-0008",
@@ -96,20 +108,25 @@
       "title": "Static public pages declare the homepage as canonical",
       "severity": "P1",
       "domain": "seo",
-      "status": "REAUDITING",
+      "status": "RESOLVED",
       "priority": 600,
       "decision": null,
-      "evidenceRecords": []
+      "evidenceRecords": [
+        "EV-0024"
+      ]
     },
     {
       "id": "F-0010",
       "title": "Sitemap and contact form use URLs that 308-redirect (trailingSlash)",
       "severity": "P2",
       "domain": "seo",
-      "status": "REAUDITING",
+      "status": "RESOLVED",
       "priority": 300,
       "decision": null,
-      "evidenceRecords": []
+      "evidenceRecords": [
+        "EV-0017",
+        "EV-0024"
+      ]
     },
     {
       "id": "F-0011",
@@ -126,10 +143,12 @@
       "title": "Media Kit layout contract test pins typography values superseded by ff2756e",
       "severity": "P3",
       "domain": "frontend",
-      "status": "REAUDITING",
+      "status": "RESOLVED",
       "priority": 110,
       "decision": null,
-      "evidenceRecords": []
+      "evidenceRecords": [
+        "EV-0025"
+      ]
     },
     {
       "id": "F-0013",

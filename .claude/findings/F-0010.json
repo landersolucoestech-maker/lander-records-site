@@ -7,7 +7,7 @@
   "title": "Sitemap and contact form use URLs that 308-redirect (trailingSlash)",
   "severity": "P2",
   "domain": "seo",
-  "status": "REAUDITING",
+  "status": "RESOLVED",
   "evidence": [
     "curl /sitemap.xml (base): <loc>https://landerrecords.com/contato</loc>; curl /contato → 308 /contato/",
     "Playwright (base): POST /api/contact → 308 → /api/contact/"
@@ -96,6 +96,16 @@
       "by": "auditor",
       "note": "re-running the detecting check on the fixed code",
       "reconstructed": true
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-25T15:22:04.058Z",
+      "by": "product-flows-auditor",
+      "note": "reaudit: contact posts without 308; sitemap URLs served without redirect"
     }
+  ],
+  "evidenceRecords": [
+    "EV-0017",
+    "EV-0024"
   ]
 }

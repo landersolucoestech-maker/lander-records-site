@@ -1,0 +1,33 @@
+{
+  "id": "EV-0019",
+  "kind": "integration",
+  "findings": [
+    "F-0003",
+    "F-0004"
+  ],
+  "criteria": [
+    "C-003"
+  ],
+  "mission": "M-20260925-002",
+  "summary": "env DATABASE_URL=postgresql://postgres@localhost:55432/lander_test node --no-warnings tests/integration/soundcharts-identity-sync.mjs -> PASS",
+  "command": "env DATABASE_URL=postgresql://postgres@localhost:55432/lander_test node --no-warnings tests/integration/soundcharts-identity-sync.mjs",
+  "argv": [
+    "env",
+    "DATABASE_URL=postgresql://postgres@localhost:55432/lander_test",
+    "node",
+    "--no-warnings",
+    "tests/integration/soundcharts-identity-sync.mjs"
+  ],
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "f9e349c5561f87f118007c5f63f945c627dc42b7",
+  "dirty": false,
+  "fingerprint": "b8a4220e3f9b2e959c13e276ef7286ff867716cf65e091af002bcd41ad93d533",
+  "environment": "node v22.22.2 (outside engines >=24 <25) linux; duration 1158ms",
+  "outputSha256": "d38a21d9a07324fdf1c6d150f2a7650a7762f73a3872564d90c12f6640351c5b",
+  "excerpt": "Soundcharts identity sync checks passed: invalidated/replaced identities withdraw metrics, same-identity outages keep last known values, requests are time-bounded.\n",
+  "recordedAt": "2026-09-25T15:21:31.572Z",
+  "producer": "claude-code",
+  "prevHash": "1d3998b4dbee57439c446359d4ffca9857b5012f6e8de379cdec6a1d68f4a28b",
+  "hash": "141591bc28891513099b292930aca341fc7ff554da80b2bd2c6a3e0cb6a41334"
+}

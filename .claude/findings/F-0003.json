@@ -7,7 +7,7 @@
   "title": "Metrics of an invalidated or replaced Soundcharts identity stay published",
   "severity": "P1",
   "domain": "identity",
-  "status": "REAUDITING",
+  "status": "RESOLVED",
   "evidence": [
     "lib/integrations/sync.ts (base): unresolved/not_configured branches clear the UUID but leave artist_metrics/integration_metric_cache",
     "tests/integration/soundcharts-identity-sync.mjs fails on base: 'metrics of an invalidated identity must not stay published'"
@@ -95,6 +95,15 @@
       "by": "auditor",
       "note": "re-running the detecting check on the fixed code",
       "reconstructed": true
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-25T15:22:03.535Z",
+      "by": "product-flows-auditor",
+      "note": "reaudit: DB-backed identity sync (red on base)"
     }
+  ],
+  "evidenceRecords": [
+    "EV-0019"
   ]
 }

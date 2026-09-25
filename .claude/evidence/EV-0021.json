@@ -1,0 +1,32 @@
+{
+  "id": "EV-0021",
+  "kind": "integration",
+  "findings": [
+    "F-0005"
+  ],
+  "criteria": [
+    "C-005"
+  ],
+  "mission": "M-20260925-002",
+  "summary": "env DATABASE_URL=postgresql://postgres@localhost:55432/lander_test node --no-warnings tests/integration/contact-outbox-delivery.mjs -> PASS",
+  "command": "env DATABASE_URL=postgresql://postgres@localhost:55432/lander_test node --no-warnings tests/integration/contact-outbox-delivery.mjs",
+  "argv": [
+    "env",
+    "DATABASE_URL=postgresql://postgres@localhost:55432/lander_test",
+    "node",
+    "--no-warnings",
+    "tests/integration/contact-outbox-delivery.mjs"
+  ],
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "f9e349c5561f87f118007c5f63f945c627dc42b7",
+  "dirty": false,
+  "fingerprint": "b8a4220e3f9b2e959c13e276ef7286ff867716cf65e091af002bcd41ad93d533",
+  "environment": "node v22.22.2 (outside engines >=24 <25) linux; duration 1097ms",
+  "outputSha256": "a66e83a7fedc1c17ac2d45a942aa98798964fd86695da6e01373d16cfdd201f7",
+  "excerpt": "Contact outbox delivery checks passed: signed delivery, exponential retry, permanent-rejection and exhausted-budget dead letter, no dead-letter replay.\ncontact_outbox_dead_letter {\"outboxId\":\"ea0aea3e-27a2-4491-bd79-add7cb110334\",\"attempts\":1,\"error\":\"SaaS webhook returned 422\"}\ncontact_outbox_dead_letter {\"outboxId\":\"da1492b4-bf32-4ba8-99ec-f8f19b36a5ce\",\"attempts\":8,\"error\":\"SaaS webhook returned 503\"}\n",
+  "recordedAt": "2026-09-25T15:21:33.135Z",
+  "producer": "claude-code",
+  "prevHash": "e6dd8360de776674e3b691eb7a55506bd54edd0be23300c095b9b87de8fab82d",
+  "hash": "702f915983a1d0f74e6f479cf48e964b2bc25fa83ad169150ded3d007633dc20"
+}

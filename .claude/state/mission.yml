@@ -2,15 +2,23 @@
 # Format: JSON-compatible YAML (ADR-0002). Written by .claude/runtime.
 {
   "current": {
-    "id": "M-20260925-001",
-    "objective": "Build the self-contained Lander Records Autonomous Product Engineering OS in .claude/ from the real repository and autonomously audit/fix safely fixable defects",
+    "id": "M-20260925-002",
+    "objective": "Validate the Lander Records site fixes and the self-contained .claude OS under the ADR-0007 trust model",
     "status": "ACTIVE",
-    "startedAt": "2026-09-25T14:39:43.572Z",
-    "baseCommit": "3b996810039b92c584ac8819c7c5e600f41ed0cb",
+    "startedAt": "2026-09-25T15:19:51.376Z",
+    "baseCommit": "355654b1dcf5c1f3c53e1d97a5fa05a33785c1a9",
     "branch": "claude/upbeat-edison-4x54r1",
     "verdict": "PENDING",
     "findings": [
-      "F-0014"
+      "F-0001",
+      "F-0002",
+      "F-0003",
+      "F-0004",
+      "F-0005",
+      "F-0007",
+      "F-0009",
+      "F-0010",
+      "F-0012"
     ],
     "requirements": [
       {
@@ -20,7 +28,8 @@
         "criteria": [
           {
             "id": "C-001",
-            "text": "browser contact journey passes on built server"
+            "text": "browser contact journey passes on the built server",
+            "verify": "env E2E_CONTACT_SUBMIT=1 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3100 PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium-1194/chrome-linux/chrome npx playwright test tests/browser/contact-form.spec.ts"
           }
         ]
       },
@@ -31,7 +40,8 @@
         "criteria": [
           {
             "id": "C-002",
-            "text": "client IP unit tests pass"
+            "text": "trusted client IP unit tests",
+            "verify": "node --test tests/unit/contact-client-ip.test.mjs"
           }
         ]
       },
@@ -42,11 +52,8 @@
         "criteria": [
           {
             "id": "C-003",
-            "text": "identity sync DB integration test passes"
-          },
-          {
-            "id": "C-008",
-            "text": "typecheck passes"
+            "text": "identity sync DB integration test",
+            "verify": "env DATABASE_URL=postgresql://postgres@localhost:55432/lander_test node --no-warnings tests/integration/soundcharts-identity-sync.mjs"
           }
         ]
       },
@@ -57,11 +64,18 @@
         "criteria": [
           {
             "id": "C-004",
-            "text": "outbox policy unit + delivery integration + migration path pass"
+            "text": "outbox policy unit tests",
+            "verify": "node --test tests/unit/contact-outbox-policy.test.mjs"
           },
           {
             "id": "C-005",
-            "text": "audit-db reports SCHEMA_DRIFT=PASS"
+            "text": "outbox delivery DB integration test",
+            "verify": "env DATABASE_URL=postgresql://postgres@localhost:55432/lander_test node --no-warnings tests/integration/contact-outbox-delivery.mjs"
+          },
+          {
+            "id": "C-006",
+            "text": "schema contract equals migrated DB",
+            "verify": "env DATABASE_URL=postgresql://postgres@localhost:55432/lander_test node scripts/audit-db.mjs"
           }
         ]
       },
@@ -71,29 +85,150 @@
         "nonRequirement": false,
         "criteria": [
           {
-            "id": "C-006",
-            "text": "seo unit contract + built-server canonical probe pass"
+            "id": "C-007",
+            "text": "SEO canonical/sitemap unit contract",
+            "verify": "node --test tests/unit/seo-canonical.test.mjs"
+          },
+          {
+            "id": "C-008",
+            "text": "built server: every sitemap URL 200 and self-canonical",
+            "verify": "env OS_BASE_URL=http://127.0.0.1:3100 node .claude/runtime/probes/seo-canonical.mjs"
           }
         ]
       },
       {
         "id": "R-006",
-        "text": "OS is self-contained in .claude/, validated, independent of any other pack",
+        "text": "Media Kit contract reflects the approved typography (F-0012); unit suites green",
         "nonRequirement": false,
         "criteria": [
           {
-            "id": "C-007",
-            "text": "os:validate and test:claude-os pass"
+            "id": "C-009",
+            "text": "full unit suites",
+            "verify": "npm test"
           }
         ]
       },
       {
         "id": "R-007",
-        "text": "Do not wire the contact form to any external product; do not modify any pre-existing directory outside .claude/ except for fixes",
+        "text": "The .claude OS is self-contained, valid and its runtime tests pass",
+        "nonRequirement": false,
+        "criteria": [
+          {
+            "id": "C-010",
+            "text": "OS pack validation",
+            "verify": "npm run os:validate"
+          },
+          {
+            "id": "C-011",
+            "text": "OS runtime tests",
+            "verify": "npm run test:claude-os"
+          }
+        ]
+      },
+      {
+        "id": "R-008",
+        "text": "Do not wire the contact form to any external product; do not change pre-existing directories outside .claude/ except for proven fixes",
         "nonRequirement": true,
         "criteria": []
       }
     ]
   },
-  "history": []
+  "history": [
+    {
+      "id": "M-20260925-001",
+      "objective": "Build the self-contained Lander Records Autonomous Product Engineering OS in .claude/ from the real repository and autonomously audit/fix safely fixable defects",
+      "status": "ABORTED",
+      "startedAt": "2026-09-25T14:39:43.572Z",
+      "baseCommit": "3b996810039b92c584ac8819c7c5e600f41ed0cb",
+      "branch": "claude/upbeat-edison-4x54r1",
+      "verdict": "D",
+      "findings": [
+        "F-0014"
+      ],
+      "requirements": [
+        {
+          "id": "R-001",
+          "text": "Contact form reports true outcomes and posts to the served route (F-0001, F-0010)",
+          "nonRequirement": false,
+          "criteria": [
+            {
+              "id": "C-001",
+              "text": "browser contact journey passes on built server"
+            }
+          ]
+        },
+        {
+          "id": "R-002",
+          "text": "Contact rate limit keyed on trusted client IP (F-0002)",
+          "nonRequirement": false,
+          "criteria": [
+            {
+              "id": "C-002",
+              "text": "client IP unit tests pass"
+            }
+          ]
+        },
+        {
+          "id": "R-003",
+          "text": "Metrics withdrawn with invalidated identities; provider calls time-bounded (F-0003, F-0004)",
+          "nonRequirement": false,
+          "criteria": [
+            {
+              "id": "C-003",
+              "text": "identity sync DB integration test passes"
+            },
+            {
+              "id": "C-008",
+              "text": "typecheck passes"
+            }
+          ]
+        },
+        {
+          "id": "R-004",
+          "text": "Bounded lead outbox retry with dead letter; schema contract current (F-0005, F-0007)",
+          "nonRequirement": false,
+          "criteria": [
+            {
+              "id": "C-004",
+              "text": "outbox policy unit + delivery integration + migration path pass"
+            },
+            {
+              "id": "C-005",
+              "text": "audit-db reports SCHEMA_DRIFT=PASS"
+            }
+          ]
+        },
+        {
+          "id": "R-005",
+          "text": "Every public page self-canonical; sitemap equals served URLs (F-0009, F-0010)",
+          "nonRequirement": false,
+          "criteria": [
+            {
+              "id": "C-006",
+              "text": "seo unit contract + built-server canonical probe pass"
+            }
+          ]
+        },
+        {
+          "id": "R-006",
+          "text": "OS is self-contained in .claude/, validated, independent of any other pack",
+          "nonRequirement": false,
+          "criteria": [
+            {
+              "id": "C-007",
+              "text": "os:validate and test:claude-os pass"
+            }
+          ]
+        },
+        {
+          "id": "R-007",
+          "text": "Do not wire the contact form to any external product; do not modify any pre-existing directory outside .claude/ except for fixes",
+          "nonRequirement": true,
+          "criteria": []
+        }
+      ],
+      "closedAt": "2026-09-25T15:19:51.305Z",
+      "note": "superseded: criteria were created before declared verify commands existed (ADR-0007); replaced by the next mission"
+    }
+  ]
 }

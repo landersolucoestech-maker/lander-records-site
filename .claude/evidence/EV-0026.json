@@ -1,0 +1,28 @@
+{
+  "id": "EV-0026",
+  "kind": "test",
+  "findings": [],
+  "criteria": [
+    "C-010"
+  ],
+  "mission": "M-20260925-002",
+  "summary": "npm run os:validate -> PASS",
+  "command": "npm run os:validate",
+  "argv": [
+    "npm",
+    "run",
+    "os:validate"
+  ],
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "f9e349c5561f87f118007c5f63f945c627dc42b7",
+  "dirty": false,
+  "fingerprint": "b8a4220e3f9b2e959c13e276ef7286ff867716cf65e091af002bcd41ad93d533",
+  "environment": "node v22.22.2 (outside engines >=24 <25) linux; duration 641ms",
+  "outputSha256": "5cba17556e3b44e13d2b0bb89316bf3e6819d850f26e82dfbba18691922c94f0",
+  "excerpt": "\n> lander-records-site@1.0.0 os:validate\n> node .claude/runtime/pack.mjs && node .claude/runtime/findings.mjs validate && node .claude/runtime/graph.mjs check\n\n{\"files\":466,\"findings\":14,\"evidence\":25,\"registered\":181}\nPACK_VALID=PASS\nFINDINGS_VALID=14\nGRAPHS_CURRENT=PASS\n",
+  "recordedAt": "2026-09-25T15:21:38.908Z",
+  "producer": "claude-code",
+  "prevHash": "52e26cf60f0988382a0dab19f567a37677bbc4b0b55cf07e51eb3417c365682b",
+  "hash": "debfb6a6ebe303fcd262c913f29af2db3d205294ea98846eaa9cf940cd4e4c41"
+}

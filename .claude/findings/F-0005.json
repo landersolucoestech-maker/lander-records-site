@@ -7,7 +7,7 @@
   "title": "Lead outbox retries forever, including permanent rejections, with no dead letter",
   "severity": "P2",
   "domain": "leads",
-  "status": "REAUDITING",
+  "status": "RESOLVED",
   "evidence": [
     "lib/contact.ts (base): every failure → status failed, next_attempt_at now+15min, no attempt cap, no status classification"
   ],
@@ -94,6 +94,15 @@
       "by": "auditor",
       "note": "re-running the detecting check on the fixed code",
       "reconstructed": true
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-25T15:22:03.741Z",
+      "by": "product-flows-auditor",
+      "note": "reaudit: signed delivery, backoff, dead letter, no replay (red on base)"
     }
+  ],
+  "evidenceRecords": [
+    "EV-0021"
   ]
 }

@@ -7,7 +7,7 @@
   "title": "Soundcharts requests have no timeout",
   "severity": "P2",
   "domain": "integrations",
-  "status": "REAUDITING",
+  "status": "RESOLVED",
   "evidence": [
     "lib/integrations/soundcharts.ts (base): fetch without signal in getAccessToken and soundchartsRequest; Spotify client uses AbortSignal.timeout(10s)"
   ],
@@ -92,6 +92,15 @@
       "by": "auditor",
       "note": "re-running the detecting check on the fixed code",
       "reconstructed": true
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-25T15:22:03.639Z",
+      "by": "product-flows-auditor",
+      "note": "reaudit: every Soundcharts request carries AbortSignal"
     }
+  ],
+  "evidenceRecords": [
+    "EV-0019"
   ]
 }

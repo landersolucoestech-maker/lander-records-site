@@ -1,0 +1,30 @@
+{
+  "id": "EV-0018",
+  "kind": "test",
+  "findings": [
+    "F-0002"
+  ],
+  "criteria": [
+    "C-002"
+  ],
+  "mission": "M-20260925-002",
+  "summary": "node --test tests/unit/contact-client-ip.test.mjs -> PASS",
+  "command": "node --test tests/unit/contact-client-ip.test.mjs",
+  "argv": [
+    "node",
+    "--test",
+    "tests/unit/contact-client-ip.test.mjs"
+  ],
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "f9e349c5561f87f118007c5f63f945c627dc42b7",
+  "dirty": false,
+  "fingerprint": "b8a4220e3f9b2e959c13e276ef7286ff867716cf65e091af002bcd41ad93d533",
+  "environment": "node v22.22.2 (outside engines >=24 <25) linux; duration 290ms",
+  "outputSha256": "195d48748392c49924ade0a20e7d6d9d90c4bc7a24e3f05b6e537bff781142d7",
+  "excerpt": "TAP version 13\n# (node:27109) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/lander-records-site/lib/contact-client-ip.ts is not specified and it doesn't parse as CommonJS.\n# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.\n# To eliminate this warning, add \"type\": \"module\" to /home/user/lander-records-site/package.json.\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# Subtest: X-Real-IP from the trusted proxy wins over any forwarded chain\nok 1 - X-Real-IP from the trusted proxy wins over any forwarded chain\n  ---\n  duration_ms: 1.045783\n  type: 'test'\n  ...\n# Subtest: a spoofed leading X-Forwarded-For hop cannot rotate the rate-limit identity\nok 2 - a spoofed leading X-Forwarded-For hop cannot rotate the rate-limit identity\n  ---\n  duration_ms: 0.973619\n  type: 'test'\n  ...\n# Subtest: missing proxy headers resolve to a stable sentinel\nok 3 - missing proxy headers resolve to a stable sentinel\n  ---\n  duration_ms: 0.201811\n  type: 'test'\n  ...\n# Subtest: the contact route derives the rate-limit key through the trusted resolver\nok 4 - the contact route derives the rate-limit key through the trusted resolver\n  ---\n  duration_ms: 0.696151\n  type: 'test'\n  ...\n# Subtest: the contact form keeps its element across the awaited submit\nok 5 - the contact form keeps its element across the awaited submit\n  ---\n  duration_ms: 0.286711\n  type: 'test'\n  ...\n1..5\n# tests 5\n# suites 0\n# pass 5\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 177.227223\n",
+  "recordedAt": "2026-09-25T15:21:30.312Z",
+  "producer": "claude-code",
+  "prevHash": "1c2f0eef91689ec0c24c654c9650926a83f0aad38618b41021d8013790ea553f",
+  "hash": "1d3998b4dbee57439c446359d4ffca9857b5012f6e8de379cdec6a1d68f4a28b"
+}

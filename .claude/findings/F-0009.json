@@ -7,7 +7,7 @@
   "title": "Static public pages declare the homepage as canonical",
   "severity": "P1",
   "domain": "seo",
-  "status": "REAUDITING",
+  "status": "RESOLVED",
   "evidence": [
     "all seeded pages have canonical_url '' (SELECT slug, canonical_url FROM pages)",
     "lib/seo.ts (base): canonical = input.canonical || absoluteUrl('/')",
@@ -99,6 +99,15 @@
       "by": "auditor",
       "note": "re-running the detecting check on the fixed code",
       "reconstructed": true
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-25T15:22:03.950Z",
+      "by": "product-flows-auditor",
+      "note": "reaudit: every sitemap URL self-canonical on built server"
     }
+  ],
+  "evidenceRecords": [
+    "EV-0024"
   ]
 }

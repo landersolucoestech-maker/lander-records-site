@@ -7,7 +7,7 @@
   "title": "Schema contract missing media kit tables (0015–0017)",
   "severity": "P2",
   "domain": "database",
-  "status": "REAUDITING",
+  "status": "RESOLVED",
   "evidence": [
     "node scripts/audit-db.mjs on a fresh migrated DB: SCHEMA_DRIFT=FAIL, TABLES_UNEXPECTED media_kit_items/sections/settings"
   ],
@@ -92,6 +92,15 @@
       "by": "auditor",
       "note": "re-running the detecting check on the fixed code",
       "reconstructed": true
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-25T15:22:03.846Z",
+      "by": "product-flows-auditor",
+      "note": "reaudit: audit-db SCHEMA_DRIFT=PASS"
     }
+  ],
+  "evidenceRecords": [
+    "EV-0022"
   ]
 }

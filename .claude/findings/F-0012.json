@@ -2,7 +2,7 @@
   "title": "Media Kit layout contract test pins typography values superseded by ff2756e",
   "severity": "P3",
   "domain": "frontend",
-  "status": "REAUDITING",
+  "status": "RESOLVED",
   "confidence": "confirmed",
   "evidence": [
     "npm test on base e673bf9: 2 failures in tests/unit/media-kit-layout-contract.test.mjs",
@@ -90,6 +90,15 @@
       "by": "regression-lead",
       "note": "REAUDITING: see finding evidence; re-pinned values from ff2756e (recorded after the fact)",
       "reconstructed": true
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-25T15:22:04.164Z",
+      "by": "product-flows-auditor",
+      "note": "reaudit: npm test fully green"
     }
+  ],
+  "evidenceRecords": [
+    "EV-0025"
   ]
 }

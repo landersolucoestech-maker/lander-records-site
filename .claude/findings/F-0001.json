@@ -7,7 +7,7 @@
   "title": "Contact form shows a successful submission as an error",
   "severity": "P1",
   "domain": "leads",
-  "status": "REAUDITING",
+  "status": "RESOLVED",
   "evidence": [
     "app/(public)/contato/ContactForm.tsx (base e673bf9): event.currentTarget.reset() after await fetch",
     "Playwright on base build: 201 response, visitor sees alert \"Cannot read properties of null (reading 'reset')\"",
@@ -95,6 +95,15 @@
       "by": "auditor",
       "note": "re-running the detecting check on the fixed code",
       "reconstructed": true
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-25T15:22:03.333Z",
+      "by": "product-flows-auditor",
+      "note": "reaudit: browser journey on built server — 201 confirmed, form reset, no 308, readable 502 (red on base e673bf9 documented)"
     }
+  ],
+  "evidenceRecords": [
+    "EV-0017"
   ]
 }

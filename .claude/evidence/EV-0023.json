@@ -1,0 +1,31 @@
+{
+  "id": "EV-0023",
+  "kind": "test",
+  "findings": [
+    "F-0009",
+    "F-0010"
+  ],
+  "criteria": [
+    "C-007"
+  ],
+  "mission": "M-20260925-002",
+  "summary": "node --test tests/unit/seo-canonical.test.mjs -> PASS",
+  "command": "node --test tests/unit/seo-canonical.test.mjs",
+  "argv": [
+    "node",
+    "--test",
+    "tests/unit/seo-canonical.test.mjs"
+  ],
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "f9e349c5561f87f118007c5f63f945c627dc42b7",
+  "dirty": false,
+  "fingerprint": "b8a4220e3f9b2e959c13e276ef7286ff867716cf65e091af002bcd41ad93d533",
+  "environment": "node v22.22.2 (outside engines >=24 <25) linux; duration 273ms",
+  "outputSha256": "33a955336aef7fbc74c101dc064866006a1ebcab59169e64d17b52776df9b80d",
+  "excerpt": "TAP version 13\n# (node:27264) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/lander-records-site/lib/seo.ts is not specified and it doesn't parse as CommonJS.\n# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.\n# To eliminate this warning, add \"type\": \"module\" to /home/user/lander-records-site/package.json.\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# Subtest: canonical URLs use the configured site route when no valid override exists\nok 1 - canonical URLs use the configured site route when no valid override exists\n  ---\n  duration_ms: 1.434515\n  type: 'test'\n  ...\n# Subtest: canonical overrides preserve valid HTTP(S) URLs but remove fragments\nok 2 - canonical overrides preserve valid HTTP(S) URLs but remove fragments\n  ---\n  duration_ms: 0.349119\n  type: 'test'\n  ...\n# Subtest: static public pages never inherit the homepage canonical\nok 3 - static public pages never inherit the homepage canonical\n  ---\n  duration_ms: 1.92605\n  type: 'test'\n  ...\n# Subtest: sitemap lists the served trailing-slash URLs instead of redirecting forms\nok 4 - sitemap lists the served trailing-slash URLs instead of redirecting forms\n  ---\n  duration_ms: 0.724133\n  type: 'test'\n  ...\n1..4\n# tests 4\n# suites 0\n# pass 4\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 175.617193\n",
+  "recordedAt": "2026-09-25T15:21:33.776Z",
+  "producer": "claude-code",
+  "prevHash": "797fa07f0d0f1746b95a87dfb23d0e1cd5b78428d48409791e972363f7d4e0ac",
+  "hash": "465dca74859f36bc24adfa86460244e364a13b5447b96858a100f6220a54270d"
+}

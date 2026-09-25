@@ -1,0 +1,31 @@
+{
+  "id": "EV-0022",
+  "kind": "integration",
+  "findings": [
+    "F-0007"
+  ],
+  "criteria": [
+    "C-006"
+  ],
+  "mission": "M-20260925-002",
+  "summary": "env DATABASE_URL=postgresql://postgres@localhost:55432/lander_test node scripts/audit-db.mjs -> PASS",
+  "command": "env DATABASE_URL=postgresql://postgres@localhost:55432/lander_test node scripts/audit-db.mjs",
+  "argv": [
+    "env",
+    "DATABASE_URL=postgresql://postgres@localhost:55432/lander_test",
+    "node",
+    "scripts/audit-db.mjs"
+  ],
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "f9e349c5561f87f118007c5f63f945c627dc42b7",
+  "dirty": false,
+  "fingerprint": "b8a4220e3f9b2e959c13e276ef7286ff867716cf65e091af002bcd41ad93d533",
+  "environment": "node v22.22.2 (outside engines >=24 <25) linux; duration 171ms",
+  "outputSha256": "e264df3cb663f51e5aa7089d50661698db514ae56472aad4d2225aa74319381d",
+  "excerpt": "PROJECT=lander-records-site-portal\nDATABASE_URL_PRESENT=true\nDATABASE_URL_PROTOCOL=postgresql\nDATABASE_URL_HOST=loc***\nTABLES_EXPECTED=47\nTABLES_ACTUAL=47\nTABLES_MISSING=[]\nTABLES_UNEXPECTED=[]\nCOLUMNS_EXPECTED=439\nCOLUMNS_ACTUAL=439\nCOLUMNS_MISSING=[]\nCOLUMNS_UNEXPECTED=[]\nCONSTRAINTS_EXPECTED=120\nCONSTRAINTS_ACTUAL=120\nCONSTRAINTS_MISSING=[]\nCONSTRAINTS_UNEXPECTED=[]\nINDEXES_EXPECTED=82\nINDEXES_ACTUAL=82\nINDEXES_MISSING=[]\nINDEXES_UNEXPECTED=[]\nENUMS_EXPECTED=19\nENUMS_ACTUAL=19\nENUMS_MISSING=[]\nENUMS_UNEXPECTED=[]\nMIGRATIONS_EXPECTED=18\nMIGRATIONS_APPLIED=18\nMIGRATIONS_MISSING=[]\nMIGRATIONS_UNKNOWN=[]\nMIGRATION_CHECKSUM_DRIFT=[]\nSCHEMA_DRIFT=PASS\n",
+  "recordedAt": "2026-09-25T15:21:33.403Z",
+  "producer": "claude-code",
+  "prevHash": "702f915983a1d0f74e6f479cf48e964b2bc25fa83ad169150ded3d007633dc20",
+  "hash": "797fa07f0d0f1746b95a87dfb23d0e1cd5b78428d48409791e972363f7d4e0ac"
+}
