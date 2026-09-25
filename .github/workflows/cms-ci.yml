@@ -53,6 +53,10 @@ jobs:
           node .codex/runtime/verify-integrity.mjs
       - name: Agentic Engineering OS self-test
         run: node .codex/runtime/self-test.mjs
+      - name: Lander Records Engineering OS (.claude) integrity and runtime tests
+        run: |
+          npm run os:validate
+          npm run test:claude-os
       - name: Apply CMS migrations
         run: npm run db:migrate
       - name: Security and hardening tests
