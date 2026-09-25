@@ -1,7 +1,14 @@
+import { randomInt } from "node:crypto";
 import { expect, test } from "@playwright/test";
 
 // Writes a real contact submission. Opt-in so it never runs against a shared or production target.
 test.skip(process.env.E2E_CONTACT_SUBMIT !== "1", "set E2E_CONTACT_SUBMIT=1 against a disposable database to run");
+
+// Direct-to-server runs have no proxy, so X-Real-IP is what the rate limiter keys on; a per-run address keeps
+// repeated verification runs from tripping the 5-per-10-minutes limit.
+test.beforeEach(async ({ page }) => {
+  await page.setExtraHTTPHeaders({ "x-real-ip": `198.51.100.${randomInt(1, 254)}` });
+});
 
 test("a valid contact submission is confirmed to the visitor and the form resets", async ({ page }) => {
   const pageErrors: string[] = [];
