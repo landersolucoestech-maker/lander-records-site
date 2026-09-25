@@ -14,5 +14,7 @@
   "outputSha256": "10aa584783601d6005f430f7682facff7a660818fc0892aa97aa4f96c7ca96a3",
   "excerpt": "\n> lander-records-site@1.0.0 test:integration\n> node tests/integration/cms.mjs && node tests/integration/integrations-db.mjs && node --no-warnings tests/integration/soundcharts-identity-sync.mjs && node --no-warnings tests/integration/contact-outbox-delivery.mjs && node tests/integration/authorization-db.mjs\n\nIntegration checks passed: artist CRUD/publication destinations, news CRUD/main-image reuse, page/section registry bindings, and public contact outbox/idempotency.\nIntegration persistence checks passed: Lander settings, Soundcharts identities/metrics, and five-position Spotify cache.\nSoundcharts identity sync checks passed: invalidated/replaced identities withdraw metrics, same-identity outages keep last known values, requests are time-bounded.\nContact outbox delivery checks passed: signed delivery, exponential retry, permanent-rejection and exhausted-budget dead letter, no dead-letter replay.\nAuthorization DB checks passed: anonymous role cannot create or access CMS persistence through PUBLIC privileges.\ncontact_outbox_dead_letter {\"outboxId\":\"7b3fcf1e-94a1-408e-82c3-0ba8e7b09052\",\"attempts\":1,\"error\":\"SaaS webhook returned 422\"}\ncontact_outbox_dead_letter {\"outboxId\":\"cbc63194-cb17-4db5-93ea-88b277ac3d78\",\"attempts\":8,\"error\":\"SaaS webhook returned 503\"}\n",
   "recordedAt": "2026-09-25T14:41:33.301Z",
-  "producer": "claude-code"
+  "producer": "claude-code",
+  "prevHash": "99f64e9d16cd3d0b0b3e9dfa6c361ce0e3de9319e659b6006f6af91e9bea5c0b",
+  "hash": "a137cf93d3a533579604ce3ae43ccf46e7b3e30b7d2cc7a6126e6aa35767fc1e"
 }

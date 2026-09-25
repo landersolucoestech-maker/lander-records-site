@@ -37,6 +37,36 @@
       "domains": [
         "security"
       ]
+    },
+    {
+      "name": "production preview bypass only with disposable preview DB",
+      "type": "required-pattern",
+      "file": ".github/workflows/dev-preview.yml",
+      "pattern": "DATABASE_URL: postgresql://postgres:postgres@localhost:5432/lander_records_preview",
+      "message": "the owner-level preview bypass is acceptable only against the disposable service-container database"
+    },
+    {
+      "name": "production preview bypass only with mock data",
+      "type": "required-pattern",
+      "file": ".github/workflows/dev-preview.yml",
+      "pattern": "LANDER_MOCK_DATA: \"1\"",
+      "message": "preview must run on mock data"
+    },
+    {
+      "name": "preview bypass gated on GitHub Actions + explicit flag",
+      "type": "required-pattern",
+      "file": "lib/auth/development-bypass.ts",
+      "pattern": "environment\\.NODE_ENV === \"production\" &&\\s*environment\\.GITHUB_ACTIONS === \"true\" &&\\s*environment\\.DEV_PREVIEW_PUBLIC_ACCESS === \"true\"",
+      "message": "preview bypass conditions weakened"
+    },
+    {
+      "name": "preview workflow carries no provider secrets",
+      "type": "forbidden-pattern",
+      "paths": [
+        ".github/workflows/dev-preview.yml"
+      ],
+      "pattern": "secrets\\.(SPOTIFY|SOUNDCHARTS|SUPABASE|LANDER_SAAS|INTEGRATION_TOKEN|CONTACT_IP)",
+      "message": "provider/production secrets must never reach the public preview"
     }
   ]
 }

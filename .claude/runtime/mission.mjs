@@ -2,7 +2,7 @@
 // Mission state (kernel/mission-engine.md). state/mission.yml holds the current mission, its
 // requirements, non-requirements and acceptance criteria; history keeps closed missions.
 //   start --objective TEXT | requirement --text TEXT [--non] | criterion --requirement R-001 --text TEXT
-//   status | close --verdict A|B|C|D --note TEXT
+//   status | close [--note TEXT]   (verdict computed by lib/completion.mjs)
 import fs from "node:fs";
 import { args, run, OsError, osPath, readYml, writeYml, git, nowIso } from "./lib/io.mjs";
 import { loadEvidence, isFresh } from "./lib/evidence.mjs";
@@ -13,7 +13,7 @@ const load = () => (fs.existsSync(FILE) ? readYml(FILE) : { current: null, histo
 const save = (state) => writeYml(FILE, HEADER, state);
 const pad = (n, width = 3) => String(n).padStart(width, "0");
 
-run(() => {
+run(async () => {
   const a = args();
   const command = a._[0] || "status";
   const state = load();
@@ -57,15 +57,19 @@ run(() => {
     return;
   }
   if (command === "close") {
-    if (!["A", "B", "C", "D"].includes(a.verdict)) throw new OsError("USAGE", "--verdict A|B|C|D is required");
-    current.status = a.verdict === "D" ? "ABORTED" : "COMPLETED";
-    current.verdict = a.verdict;
+    // The verdict is computed by the completion engine; a caller can never assert it.
+    if (a.verdict) throw new OsError("POLICY_BLOCKED", "--verdict is not accepted; the verdict comes from the completion engine");
+    const { evaluateCompletion } = await import("./lib/completion.mjs");
+    const result = evaluateCompletion();
+    if (result.verdict === "D") throw new OsError("COMPLETION_FAILED", "completion conditions not met (run completion.mjs)", { failed: result.conditions.filter((c) => !c.ok).map((c) => `${c.name}: ${c.detail}`) });
+    current.status = "COMPLETED";
+    current.verdict = result.verdict;
     current.closedAt = nowIso();
-    current.note = a.note || "";
+    current.note = a.note || result.label;
     state.history = [...(state.history || []), current];
     state.current = null;
     save(state);
-    console.log(`closed ${current.id} verdict ${a.verdict}`);
+    console.log(`closed ${current.id} verdict ${result.verdict} — ${result.label}`);
     return;
   }
   throw new OsError("USAGE", "usage: mission.mjs start|requirement|criterion|status|close");

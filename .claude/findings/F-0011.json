@@ -42,19 +42,22 @@
       "status": "DISCOVERED",
       "at": "2026-09-25T13:50:00.000Z",
       "by": "visual-lead",
-      "note": "browser suite"
+      "note": "browser suite",
+      "reconstructed": true
     },
     {
       "status": "TRIAGED",
       "at": "2026-09-25T13:51:00.000Z",
       "by": "autonomous-controller",
-      "note": "P3 frontend"
+      "note": "P3 frontend",
+      "reconstructed": true
     },
     {
       "status": "NEEDS_PRODUCT_DECISION",
       "at": "2026-09-25T13:52:00.000Z",
       "by": "autonomous-controller",
-      "note": "DEC-0003 opened"
+      "note": "DEC-0003 opened",
+      "reconstructed": true
     }
   ]
 }

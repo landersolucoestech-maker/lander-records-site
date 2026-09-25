@@ -16,5 +16,7 @@
   "outputSha256": "c3ae5da6557d34c5af7900af850b0554d3171035aff018592fe3d8ca51980a54",
   "excerpt": "\n> lander-records-site@1.0.0 typecheck\n> tsc --noEmit\n\n",
   "recordedAt": "2026-09-25T14:41:30.200Z",
-  "producer": "claude-code"
+  "producer": "claude-code",
+  "prevHash": "87c28a9300fb41bacdc866e49aae6098db3dc94f58811fecc73b26dba6d5eb20",
+  "hash": "99f64e9d16cd3d0b0b3e9dfa6c361ce0e3de9319e659b6006f6af91e9bea5c0b"
 }

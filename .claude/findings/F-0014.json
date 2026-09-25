@@ -1,0 +1,59 @@
+{
+  "title": "Public artist page hides verified zero metrics (value > 0 filter)",
+  "severity": "P3",
+  "domain": "frontend",
+  "status": "NEEDS_PRODUCT_DECISION",
+  "confidence": "confirmed",
+  "evidence": [
+    "app/(public)/artistas/[slug]/page.tsx:45 filter(([, value]) => value > 0)",
+    "architecture-reviewer report reports/reviews/2026-09-25-architecture-reviewer-os-pack.md MEDIUM-8"
+  ],
+  "rootCause": "Presentation filter treats 0 as absent.",
+  "producer": [
+    "modules/artists/repository.ts (metrics map)"
+  ],
+  "consumers": [
+    "app/(public)/artistas/[slug]/page.tsx"
+  ],
+  "affectedFlow": "artist metrics → public page",
+  "invariantViolated": "ZERO ≠ NULL (presentation)",
+  "blastRadius": "artists with a verified 0 on a platform",
+  "dependencies": [
+    "DEC-0005"
+  ],
+  "autofix": {
+    "eligible": false,
+    "reason": "public presentation of a zero is a product choice (DEC-0005)"
+  },
+  "risk": "low",
+  "correction": "per DEC-0005",
+  "requiredTests": [
+    "browser check of artist page metrics block"
+  ],
+  "regressionRisk": "low",
+  "impactLevel": "L1",
+  "producerAgent": "architecture-reviewer",
+  "id": "F-0014",
+  "discoveredAt": "2026-09-25T14:59:39.656Z",
+  "history": [
+    {
+      "status": "DISCOVERED",
+      "at": "2026-09-25T14:59:39.656Z",
+      "by": "architecture-reviewer",
+      "note": "reported by independent OS review"
+    },
+    {
+      "status": "TRIAGED",
+      "at": "2026-09-25T14:59:39.727Z",
+      "by": "autonomous-controller",
+      "note": "P3 frontend presentation"
+    },
+    {
+      "status": "NEEDS_PRODUCT_DECISION",
+      "at": "2026-09-25T14:59:39.804Z",
+      "by": "autonomous-controller",
+      "note": "DEC-0005 opened"
+    }
+  ],
+  "decision": "DEC-0005"
+}

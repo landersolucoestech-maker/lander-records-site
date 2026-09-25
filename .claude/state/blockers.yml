@@ -12,7 +12,7 @@
     {
       "id": "ENV-002",
       "what": "no outbound internet for browser tests",
-      "effect": "embed iframe test times out",
+      "effect": "public-routes spec 'rendered artist embeds never use an untrusted iframe origin' times out without outbound network (environment limit, not a baseline failure)",
       "unblock": "run public-routes spec with network"
     }
   ]

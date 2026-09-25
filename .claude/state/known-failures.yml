@@ -12,7 +12,7 @@
       ],
       "reproducedOnBase": true,
       "finding": "F-0012",
-      "status": "FIXED_ON_BRANCH (F-0012)"
+      "status": "FIXED_ON_BRANCH (F-0012; proof recorded as evidence on RESOLVED)"
     },
     {
       "id": "KF-002",
@@ -29,13 +29,6 @@
       "reproducedOnBase": true,
       "finding": "F-0011",
       "status": "OPEN (DEC-0003)"
-    },
-    {
-      "id": "KF-004",
-      "check": "tests/browser/public-routes.spec.ts › rendered artist embeds never use an untrusted iframe origin",
-      "detail": "timeout without outbound network (ENV-002)",
-      "reproducedOnBase": false,
-      "finding": null
     }
   ]
 }

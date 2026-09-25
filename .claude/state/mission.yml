@@ -9,7 +9,9 @@
     "baseCommit": "3b996810039b92c584ac8819c7c5e600f41ed0cb",
     "branch": "claude/upbeat-edison-4x54r1",
     "verdict": "PENDING",
-    "findings": [],
+    "findings": [
+      "F-0014"
+    ],
     "requirements": [
       {
         "id": "R-001",

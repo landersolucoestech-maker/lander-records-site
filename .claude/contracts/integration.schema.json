@@ -66,6 +66,9 @@
     "observedAt": {
       "type": "string",
       "format": "date-time"
+    },
+    "note": {
+      "type": "string"
     }
   }
 }

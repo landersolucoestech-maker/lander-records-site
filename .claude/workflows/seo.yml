@@ -40,6 +40,7 @@
         "seo-audit"
       ],
       "gates": [
+        "seo",
         "regression"
       ],
       "transition": "built-server evidence → RESOLVED"

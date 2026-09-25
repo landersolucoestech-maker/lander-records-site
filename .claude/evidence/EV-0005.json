@@ -18,5 +18,7 @@
   "outputSha256": "9e5cd7c832092d3c29e663771894490bb2ea58ccb3b5cf259dc4eedc56b020ef",
   "excerpt": "Contact outbox delivery checks passed: signed delivery, exponential retry, permanent-rejection and exhausted-budget dead letter, no dead-letter replay.\ncontact_outbox_dead_letter {\"outboxId\":\"a6605857-94d4-4555-a3f8-30820bc0e168\",\"attempts\":1,\"error\":\"SaaS webhook returned 422\"}\ncontact_outbox_dead_letter {\"outboxId\":\"ace68fde-fb16-4bf6-9aee-eb29d20bf21b\",\"attempts\":8,\"error\":\"SaaS webhook returned 503\"}\n",
   "recordedAt": "2026-09-25T14:41:18.127Z",
-  "producer": "claude-code"
+  "producer": "claude-code",
+  "prevHash": "5b2717f3e5187b7d082409a3c14c0f126939a7fe37d4bce2ce31a9074e1d0d44",
+  "hash": "26d80b1c7278a17f0574171589abf74766e79c447c055763a36f54319fc17375"
 }

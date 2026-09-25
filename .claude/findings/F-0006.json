@@ -42,19 +42,22 @@
       "status": "DISCOVERED",
       "at": "2026-09-25T13:50:00.000Z",
       "by": "leads-auditor",
-      "note": "form destination trace"
+      "note": "form destination trace",
+      "reconstructed": true
     },
     {
       "status": "TRIAGED",
       "at": "2026-09-25T13:51:00.000Z",
       "by": "autonomous-controller",
-      "note": "P1 leads"
+      "note": "P1 leads",
+      "reconstructed": true
     },
     {
       "status": "NEEDS_PRODUCT_DECISION",
       "at": "2026-09-25T13:52:00.000Z",
       "by": "autonomous-controller",
-      "note": "DEC-0001 opened: reading surface, role, retention"
+      "note": "DEC-0001 opened: reading surface, role, retention",
+      "reconstructed": true
     }
   ]
 }

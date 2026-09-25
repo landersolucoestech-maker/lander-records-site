@@ -5,9 +5,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
-import { args, run, osPath, readJson, REPO_ROOT, walk, rel, sha256, git, nowIso, nextId, writeYml } from "./lib/io.mjs";
+import { args, run, osPath, readJson, REPO_ROOT, walk, rel, sha256, git, nowIso, createRecord, writeYml } from "./lib/io.mjs";
 import { runCheck } from "./lib/checks.mjs";
-import { loadFindings, saveFinding, writeIndex, FINDINGS_DIR } from "./lib/findings.mjs";
+import { loadFindings, saveFinding, writeIndex, transition, FINDINGS_DIR, CLOSED_STATES } from "./lib/findings.mjs";
 
 async function sqlSensor(sensor) {
   if (!process.env.DATABASE_URL) return { status: "BLOCKED", signals: [], detail: "DATABASE_URL not set" };
@@ -73,17 +73,25 @@ const KINDS = { sql: sqlSensor, "env-contract": envContractSensor, "env-presence
 
 function emitFinding(sensor, signal) {
   const fingerprint = sha256(`${sensor.id}|${signal.key}|${signal.message.replace(/\(\d+ row\(s\)\)/, "")}`).slice(0, 24);
-  if (loadFindings().some((f) => f.signal === fingerprint)) return null;
+  const matches = loadFindings().filter((f) => f.signal === fingerprint);
+  // Open or parked: the signal is already tracked (append nothing; the finding stays the single record).
+  if (matches.some((f) => !CLOSED_STATES.includes(f.status))) return null;
+  // Previously RESOLVED: the defect is back — reopen it instead of forgetting it.
+  const resolved = matches.filter((f) => f.status === "RESOLVED").at(-1);
+  if (resolved) {
+    saveFinding(transition(resolved, "INVESTIGATING", `sensor:${sensor.id}`, `regression: signal observed again — ${signal.message}`));
+    return `${resolved.id} (reopened)`;
+  }
   const pending = `unknown — DISCOVERED by sensor ${sensor.id}; establish during triage`;
-  const finding = {
-    id: nextId(FINDINGS_DIR, "F"), title: signal.message.slice(0, 160), severity: signal.severity, domain: signal.domain, status: "DISCOVERED", confidence: "medium",
-    evidence: [`sensor ${sensor.id} at ${nowIso()}: ${signal.message}`], rootCause: pending, producer: [pending], consumers: [pending], affectedFlow: sensor.feeds, invariantViolated: sensor.invariant,
+  const at = nowIso();
+  const created = createRecord(FINDINGS_DIR, "F", (id) => ({
+    id, title: signal.message.slice(0, 160), severity: signal.severity, domain: signal.domain, status: "DISCOVERED", confidence: "medium",
+    evidence: [`sensor ${sensor.id} at ${at}: ${signal.message}`], rootCause: pending, producer: [pending], consumers: [pending], affectedFlow: sensor.feeds, invariantViolated: sensor.invariant,
     blastRadius: pending, dependencies: [], autofix: { eligible: false, reason: "not triaged" }, risk: "medium", correction: pending, requiredTests: ["to be defined at triage"], regressionRisk: pending,
-    impactLevel: "L2", producerAgent: `sensor:${sensor.id}`, discoveredAt: nowIso(), signal: fingerprint,
-    history: [{ status: "DISCOVERED", at: nowIso(), by: `sensor:${sensor.id}`, note: signal.message }],
-  };
-  saveFinding(finding);
-  return finding.id;
+    impactLevel: "L2", producerAgent: `sensor:${sensor.id}`, discoveredAt: at, signal: fingerprint,
+    history: [{ status: "DISCOVERED", at, by: `sensor:${sensor.id}`, note: signal.message }],
+  }));
+  return created.id;
 }
 
 run(async () => {

@@ -22,7 +22,7 @@
   ],
   "render": {
     "home": "'—' when absent",
-    "artistPage": "only value > 0"
+    "artistPage": "only value > 0 — a verified zero is hidden (F-0014, DEC-0005)"
   },
   "lastFreshnessCheck": null
 }

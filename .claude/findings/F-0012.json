@@ -36,46 +36,60 @@
   "discoveredAt": "2026-09-25T14:43:42.844Z",
   "history": [
     {
+      "status": "DISCOVERED",
+      "at": "2026-09-25T14:43:41.844Z",
+      "by": "regression-lead",
+      "note": "baseline failure reproduced on base e673bf9 during discovery",
+      "reconstructed": true
+    },
+    {
       "status": "TRIAGED",
       "at": "2026-09-25T14:43:42.844Z",
       "by": "regression-lead",
-      "note": "baseline failure KF-001 reproduced on base"
+      "note": "baseline failure KF-001 reproduced on base (recorded after the fact)",
+      "reconstructed": true
     },
     {
       "status": "READY",
       "at": "2026-09-25T14:43:43.107Z",
       "by": "regression-lead",
-      "note": "READY: see finding evidence; re-pinned values from ff2756e"
+      "note": "READY: see finding evidence; re-pinned values from ff2756e (recorded after the fact)",
+      "reconstructed": true
     },
     {
       "status": "INVESTIGATING",
       "at": "2026-09-25T14:43:43.181Z",
       "by": "regression-lead",
-      "note": "INVESTIGATING: see finding evidence; re-pinned values from ff2756e"
+      "note": "INVESTIGATING: see finding evidence; re-pinned values from ff2756e (recorded after the fact)",
+      "reconstructed": true
     },
     {
       "status": "ROOT_CAUSE_CONFIRMED",
       "at": "2026-09-25T14:43:43.274Z",
       "by": "regression-lead",
-      "note": "ROOT_CAUSE_CONFIRMED: see finding evidence; re-pinned values from ff2756e"
+      "note": "ROOT_CAUSE_CONFIRMED: see finding evidence; re-pinned values from ff2756e (recorded after the fact)",
+      "reconstructed": true
     },
     {
       "status": "FIXING",
       "at": "2026-09-25T14:43:43.366Z",
       "by": "regression-lead",
-      "note": "FIXING: see finding evidence; re-pinned values from ff2756e"
+      "note": "FIXING: see finding evidence; re-pinned values from ff2756e (recorded after the fact)",
+      "reconstructed": true
     },
     {
       "status": "VALIDATING",
       "at": "2026-09-25T14:43:43.454Z",
       "by": "regression-lead",
-      "note": "VALIDATING: see finding evidence; re-pinned values from ff2756e"
+      "note": "VALIDATING: see finding evidence; re-pinned values from ff2756e (recorded after the fact)",
+      "reconstructed": true
     },
     {
       "status": "REAUDITING",
       "at": "2026-09-25T14:43:43.537Z",
       "by": "regression-lead",
-      "note": "REAUDITING: see finding evidence; re-pinned values from ff2756e"
+      "note": "REAUDITING: see finding evidence; re-pinned values from ff2756e (recorded after the fact)",
+      "reconstructed": true
     }
   ]
 }

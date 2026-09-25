@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import { OsError, osPath, readJson, writeJson, writeYml, nowIso } from "./io.mjs";
+import { OsError, osPath, readJson, writeJson, writeYml, nowIso, decisionStatus, workspaceFingerprint } from "./io.mjs";
+import { loadEvidence, provesFinding } from "./evidence.mjs";
 import { validate } from "./schema.mjs";
 
 export const FINDINGS_DIR = osPath("findings");
@@ -35,13 +36,20 @@ export function schema() { return readJson(osPath("contracts", "finding.schema.j
 
 export function loadFindings() {
   if (!fs.existsSync(FINDINGS_DIR)) return [];
-  return fs.readdirSync(FINDINGS_DIR).filter((name) => /^F-\d{4}\.json$/.test(name)).sort().map((name) => readJson(path.join(FINDINGS_DIR, name)));
+  return fs.readdirSync(FINDINGS_DIR).filter((name) => /^F-\d{4}\.json$/.test(name) && fs.statSync(path.join(FINDINGS_DIR, name)).size > 0).sort().map((name) => readJson(path.join(FINDINGS_DIR, name)));
 }
 
-export function validateFinding(finding) {
+/** Static validation: contract + full history replay against TRANSITIONS + evidence that is about the finding. */
+export function validateFinding(finding, evidence = loadEvidence()) {
   const errors = validate(schema(), finding).map((message) => `${finding.id ?? "?"}: ${message}`);
-  if (finding.history?.at(-1)?.status !== finding.status) errors.push(`${finding.id}: last history entry must equal current status`);
-  if (finding.status === "RESOLVED" && !(finding.evidenceRecords?.length)) errors.push(`${finding.id}: RESOLVED requires evidenceRecords`);
+  const history = finding.history || [];
+  if (history[0] && history[0].status !== "DISCOVERED") errors.push(`${finding.id}: history must start at DISCOVERED`);
+  for (let i = 1; i < history.length; i += 1) {
+    if (!(TRANSITIONS[history[i - 1].status] || []).includes(history[i].status)) errors.push(`${finding.id}: illegal transition in history ${history[i - 1].status} -> ${history[i].status}`);
+    if (Date.parse(history[i].at) < Date.parse(history[i - 1].at)) errors.push(`${finding.id}: history timestamps go backwards`);
+  }
+  if (history.at(-1)?.status !== finding.status) errors.push(`${finding.id}: last history entry must equal current status`);
+  if (finding.status === "RESOLVED" && !(finding.evidenceRecords || []).some((id) => { const e = evidence.find((r) => r.id === id); return e && provesFinding(e, finding.id); })) errors.push(`${finding.id}: RESOLVED requires PASS evidence that names this finding`);
   if (finding.status === "NEEDS_PRODUCT_DECISION" && !finding.decision) errors.push(`${finding.id}: NEEDS_PRODUCT_DECISION requires a decision record`);
   return errors;
 }
@@ -53,7 +61,7 @@ export function priorityScore(finding) {
 
 export function isBlocked(finding, all) {
   return (finding.dependencies || []).some((dep) => {
-    if (dep.startsWith("DEC-")) return true;
+    if (dep.startsWith("DEC-")) return !["DECIDED", "ACCEPTED", "SUPERSEDED"].includes(decisionStatus(dep));
     const target = all.find((item) => item.id === dep);
     return !target || !CLOSED_STATES.includes(target.status);
   });
@@ -63,11 +71,23 @@ export function readyQueue(all = loadFindings()) {
   return all.filter((f) => f.status === "READY" && !isBlocked(f, all)).sort((a, b) => priorityScore(b) - priorityScore(a) || a.id.localeCompare(b.id));
 }
 
+// Transitions that claim verification need fresh PASS evidence about this finding.
+const NEEDS_FRESH_PROOF = new Set(["REAUDITING", "RESOLVED"]);
+
 export function transition(finding, to, by, note, extra = {}) {
   const allowed = TRANSITIONS[finding.status] || [];
   if (!allowed.includes(to)) throw new OsError("ILLEGAL_TRANSITION", `${finding.id}: ${finding.status} -> ${to} is not allowed`, { allowed });
   if (!note) throw new OsError("NOTE_REQUIRED", "every transition needs --note with the reason/evidence");
   const next = { ...finding, ...extra, status: to, history: [...finding.history, { status: to, at: nowIso(), by, note }] };
+  if (NEEDS_FRESH_PROOF.has(to)) {
+    const ws = workspaceFingerprint();
+    const evidence = loadEvidence();
+    const proof = (next.evidenceRecords || []).filter((id) => { const e = evidence.find((r) => r.id === id); return e && provesFinding(e, finding.id, ws); });
+    if (!proof.length) throw new OsError("PROOF_REQUIRED", `${finding.id} -> ${to} needs --evidence with fresh PASS evidence that names ${finding.id}`);
+  }
+  if (to === "READY" && finding.status === "NEEDS_PRODUCT_DECISION" && finding.decision && !["DECIDED", "ACCEPTED"].includes(decisionStatus(finding.decision))) {
+    throw new OsError("DECISION_OPEN", `${finding.decision} is still open; record the decision first`);
+  }
   const errors = validateFinding(next);
   if (errors.length) throw new OsError("INVALID_FINDING", "transition would produce an invalid finding", { errors });
   return next;
@@ -89,4 +109,17 @@ export function buildIndex(all = loadFindings()) {
     findings: all.map((f) => ({ id: f.id, title: f.title, severity: f.severity, domain: f.domain, status: f.status, priority: priorityScore(f), decision: f.decision ?? null, evidenceRecords: f.evidenceRecords ?? [] })),
   };
 }
-export function writeIndex() { writeYml(osPath("state", "findings.yml"), "Derived index of .claude/findings — regenerate with: node .claude/runtime/findings.mjs index", buildIndex()); }
+/** state/decisions.yml is derived from decisions/*.md status lines and the findings they block. */
+export function buildDecisions(all = loadFindings()) {
+  const dir = osPath("decisions");
+  const records = fs.readdirSync(dir).filter((n) => /^(ADR|DEC)-\d{4}/.test(n)).sort().map((n) => {
+    const id = n.match(/^((?:ADR|DEC)-\d{4})/)[1];
+    return { id, status: decisionStatus(id), blocks: all.filter((f) => f.decision === id || (f.dependencies || []).includes(id)).map((f) => f.id) };
+  });
+  return { derivedFrom: ".claude/decisions/*.md + .claude/findings/*.json", records };
+}
+export function writeIndex() {
+  const all = loadFindings();
+  writeYml(osPath("state", "findings.yml"), "Derived index of .claude/findings — regenerate with: node .claude/runtime/findings.mjs index", buildIndex(all));
+  writeYml(osPath("state", "decisions.yml"), "Derived decision index — regenerate with: node .claude/runtime/findings.mjs index", buildDecisions(all));
+}

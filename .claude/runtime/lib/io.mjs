@@ -95,6 +95,35 @@ export function nextId(dir, prefix) {
   return `${prefix}-${String((numbers.length ? Math.max(...numbers) : 0) + 1).padStart(4, "0")}`;
 }
 
+/** Race-free record creation: claims the next id with an exclusive create (O_EXCL) and retries on collision. */
+export function createRecord(dir, prefix, build) {
+  fs.mkdirSync(dir, { recursive: true });
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    const id = nextId(dir, prefix);
+    const file = path.join(dir, `${id}.json`);
+    let fd;
+    try { fd = fs.openSync(file, "wx"); } catch (error) { if (error.code === "EEXIST") continue; throw error; }
+    try {
+      const record = build(id);
+      fs.writeSync(fd, `${JSON.stringify(record, null, 2)}\n`);
+      return record;
+    } catch (error) {
+      fs.closeSync(fd); fd = undefined; fs.rmSync(file, { force: true });
+      throw error;
+    } finally { if (fd !== undefined) fs.closeSync(fd); }
+  }
+  throw new OsError("ID_CONTENTION", `could not allocate a ${prefix} id`);
+}
+
+/** Decisions: DEC-NNNN is OPEN until its file says "Status: DECIDED" (or ACCEPTED/SUPERSEDED). */
+export function decisionStatus(id) {
+  const dir = osPath("decisions");
+  const file = fs.existsSync(dir) ? fs.readdirSync(dir).find((n) => n.startsWith(`${id}-`) || n === `${id}.md`) : null;
+  if (!file) return "MISSING";
+  const status = fs.readFileSync(path.join(dir, file), "utf8").match(/^- Status:\s*([A-Z_]+)/m)?.[1];
+  return status || "OPEN";
+}
+
 export function run(main) {
   Promise.resolve().then(main).catch((error) => {
     const code = error instanceof OsError ? error.code : "RUNTIME_ERROR";

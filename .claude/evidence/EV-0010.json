@@ -16,5 +16,7 @@
   "outputSha256": "ae775717abe738084e06dbf9d6fb413f1f4153717f7388489615cbd802619705",
   "excerpt": "\n> lander-records-site@1.0.0 os:validate\n> node .claude/runtime/pack.mjs && node .claude/runtime/findings.mjs validate && node .claude/runtime/graph.mjs check\n\n{\"files\":435,\"findings\":11,\"evidence\":9,\"registered\":181}\nPACK_VALID=PASS\nFINDINGS_VALID=11\nGRAPHS_CURRENT=PASS\n",
   "recordedAt": "2026-09-25T14:41:21.447Z",
-  "producer": "claude-code"
+  "producer": "claude-code",
+  "prevHash": "1296891291e32c9a77471bd57c3284d17e7168845a96bfb1d855b07df3061acf",
+  "hash": "781bf084f51e222bb712a8e9779632189de952fe4029754425a3572af872606d"
 }

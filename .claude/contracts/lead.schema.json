@@ -3,7 +3,6 @@
   "$id": "lander-os/lead",
   "title": "Lead (contact submission) as implemented by app/api/contact/route.ts",
   "type": "object",
-  "additionalProperties": false,
   "required": [
     "idempotencyKey",
     "name",
@@ -86,5 +85,6 @@
         }
       }
     }
-  }
+  },
+  "description": "zod z.object strips unknown keys (it does not reject them), so no additionalProperties constraint is declared"
 }

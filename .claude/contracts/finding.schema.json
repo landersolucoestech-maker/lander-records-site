@@ -259,6 +259,10 @@
           "note": {
             "type": "string",
             "minLength": 1
+          },
+          "reconstructed": {
+            "type": "boolean",
+            "description": "entry written after the fact from session work, not by runtime/findings.mjs at the time"
           }
         }
       }

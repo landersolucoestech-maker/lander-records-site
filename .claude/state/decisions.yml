@@ -1,38 +1,71 @@
-# Decision index — records live in decisions/
-# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+# Derived decision index — regenerate with: node .claude/runtime/findings.mjs index
+# Format: JSON-compatible YAML (ADR-0002). Written by .claude/runtime.
 {
-  "accepted": [
-    "ADR-0002 machine-readable yaml",
-    "ADR-0003 lead destination",
-    "ADR-0004 outbox dead letter",
-    "ADR-0005 self-contained OS"
-  ],
-  "superseded": [
-    "ADR-0001 (superseded by ADR-0005; non-operational)"
-  ],
-  "open": [
+  "derivedFrom": ".claude/decisions/*.md + .claude/findings/*.json",
+  "records": [
+    {
+      "id": "ADR-0001",
+      "status": "SUPERSEDED",
+      "blocks": []
+    },
+    {
+      "id": "ADR-0002",
+      "status": "ACCEPTED",
+      "blocks": []
+    },
+    {
+      "id": "ADR-0003",
+      "status": "ACCEPTED",
+      "blocks": []
+    },
+    {
+      "id": "ADR-0004",
+      "status": "ACCEPTED",
+      "blocks": []
+    },
+    {
+      "id": "ADR-0005",
+      "status": "ACCEPTED",
+      "blocks": []
+    },
+    {
+      "id": "ADR-0006",
+      "status": "ACCEPTED",
+      "blocks": []
+    },
     {
       "id": "DEC-0001",
+      "status": "OPEN",
       "blocks": [
         "F-0006"
       ]
     },
     {
       "id": "DEC-0002",
+      "status": "OPEN",
       "blocks": [
         "F-0008"
       ]
     },
     {
       "id": "DEC-0003",
+      "status": "OPEN",
       "blocks": [
         "F-0011"
       ]
     },
     {
       "id": "DEC-0004",
+      "status": "OPEN",
       "blocks": [
         "F-0013"
+      ]
+    },
+    {
+      "id": "DEC-0005",
+      "status": "OPEN",
+      "blocks": [
+        "F-0014"
       ]
     }
   ]

@@ -2,7 +2,7 @@
 // gate.mjs <gate-id> [--record]   Evaluates gates/<gate-id>.json. --record stores command results as evidence.
 // gate.mjs list
 import fs from "node:fs";
-import { args, run, osPath, readJson, OsError, writeYml, readYml, nowIso } from "./lib/io.mjs";
+import { args, run, osPath, readJson, OsError, writeYml, readYml, nowIso, workspaceFingerprint } from "./lib/io.mjs";
 import { runCheck } from "./lib/checks.mjs";
 
 run(async () => {
@@ -12,6 +12,7 @@ run(async () => {
   const file = osPath("gates", `${id}.json`);
   if (!fs.existsSync(file)) throw new OsError("NOT_FOUND", `unknown gate ${id}`);
   const gate = readJson(file);
+  const before = workspaceFingerprint().fingerprint;
   const results = [];
   for (const check of gate.checks) results.push({ name: check.name, ...(await runCheck(check, { record: Boolean(a.record), context: `gate:${id}` })) });
   const verdict = results.some((r) => r.status === "FAIL") ? "FAIL" : results.some((r) => r.status === "BLOCKED") ? "BLOCKED" : "PASS";
@@ -20,7 +21,9 @@ run(async () => {
   if (a.record) {
     const historyFile = osPath("state", "validation-history.yml");
     const history = fs.existsSync(historyFile) ? readYml(historyFile) : { entries: [] };
-    history.entries = [...history.entries, { gate: id, verdict, at: nowIso(), checks: results.map((r) => ({ name: r.name, status: r.status, evidence: r.evidence ?? null })) }].slice(-200);
+    const after = workspaceFingerprint().fingerprint;
+    if (after !== before) throw new OsError("WORKSPACE_CHANGED", "workspace changed during the gate run; result not recorded");
+    history.entries = [...history.entries, { gate: id, verdict, at: nowIso(), fingerprint: before, checks: results.map((r) => ({ name: r.name, status: r.status, evidence: r.evidence ?? null })) }].slice(-200);
     writeYml(historyFile, "Gate executions recorded with --record (latest 200)", history);
   }
   process.exitCode = verdict === "PASS" ? 0 : verdict === "BLOCKED" ? 77 : 1;

@@ -1,3 +1,3 @@
 # Agent registry
 
-Agents, subagents, auditors, reviewers and guardians are Claude Code agents (front matter name/description/tools). The registry is the only list; names must match front matter.
+`control-plane/registry.json` is the only list of roles. Files under `.claude/agents/` carry Claude Code front matter (name/description/tools) and are discoverable by Claude Code as project subagents. Subagents, auditors, reviewers, guardians and integration agents live in their canonical directories; they are launched with `node .claude/runtime/dispatch.mjs <role> [--finding F-NNNN]`, whose output is the complete prompt for Claude Code's Agent tool (general-purpose). Routing (`registry.routing`) and workflows (`workflow.mjs run`) name roles that dispatch.mjs can always resolve — pack.mjs verifies every routed/workflow agent is registered.

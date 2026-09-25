@@ -13,7 +13,10 @@
     "commit",
     "environment",
     "recordedAt",
-    "producer"
+    "producer",
+    "prevHash",
+    "hash",
+    "fingerprint"
   ],
   "properties": {
     "id": {
@@ -98,6 +101,14 @@
     "producer": {
       "type": "string",
       "minLength": 1
+    },
+    "prevHash": {
+      "type": "string",
+      "pattern": "^(GENESIS|[0-9a-f]{64})$"
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
     }
   }
 }

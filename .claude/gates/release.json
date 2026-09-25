@@ -11,6 +11,15 @@
       ]
     },
     {
+      "name": "lint",
+      "type": "command",
+      "argv": [
+        "npm",
+        "run",
+        "lint"
+      ]
+    },
+    {
       "name": "typecheck",
       "type": "command",
       "argv": [

@@ -16,12 +16,14 @@ Capabilities previously considered for delegation are reimplemented natively and
 
 | Capability | Native implementation |
 |---|---|
-| Preflight (git baseline, dirty-tree capture) | `runtime/preflight.mjs` → `state/repository.yml`, `state/execution.yml` |
+| Preflight (git baseline, dirty-tree capture) | `runtime/preflight.mjs` → `state/.run/preflight.json` (volatile, git-ignored) |
 | Mission / requirement / acceptance criterion state | `runtime/mission.mjs` → `state/mission.yml` |
 | Command evidence bound to workspace fingerprint | `runtime/evidence.mjs run` → `evidence/EV-*.json` |
 | Finding lifecycle and priority | `runtime/findings.mjs` → `findings/F-*.json`, `state/findings.yml` |
 | Gates | `runtime/gate.mjs` over `gates/*.json` |
-| Completion gate | `runtime/completion.mjs` |
+| Completion gate | `runtime/lib/completion.mjs` (the only verdict producer; used by `completion.mjs` and `mission.mjs close`) |
+| Role launch | `runtime/dispatch.mjs <role>` |
+| Guardian enforcement | `settings.json` PreToolUse hook → `runtime/hooks/guard-bash.mjs` (ADR-0006) |
 | Pack integrity | `runtime/pack.mjs` |
 
 ## Consequences

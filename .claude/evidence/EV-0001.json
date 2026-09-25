@@ -19,5 +19,7 @@
   "outputSha256": "81a9c75c20d776e841ca60dd23482b760d0802642fefb43f22197459ddfb61bd",
   "excerpt": "\nRunning 2 tests using 1 worker\n\n[1/2] [chromium] › tests/browser/contact-form.spec.ts:6:5 › a valid contact submission is confirmed to the visitor and the form resets\n[2/2] [chromium] › tests/browser/contact-form.spec.ts:31:5 › a server rejection is shown as a readable message, not a parser error\n  2 passed (5.8s)\n",
   "recordedAt": "2026-09-25T14:41:14.899Z",
-  "producer": "claude-code"
+  "producer": "claude-code",
+  "prevHash": "GENESIS",
+  "hash": "0fe4f498ce0fac3e099724c6c9d943072150bf1be6c99d6998e1c8d6232f3161"
 }

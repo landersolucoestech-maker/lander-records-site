@@ -1,11 +1,12 @@
 // Check primitives shared by gates and sensors. Each returns { status: PASS|FAIL|BLOCKED, detail }.
 import fs from "node:fs";
 import path from "node:path";
-import { REPO_ROOT, walk, rel, git } from "./io.mjs";
-import { loadFindings, OPEN_STATES } from "./findings.mjs";
-import { runCommandEvidence, loadEvidence, isFresh } from "./evidence.mjs";
+import fs2 from "node:fs";
+import { REPO_ROOT, walk, rel, git, osPath, readYml, workspaceFingerprint } from "./io.mjs";
+import { loadFindings, OPEN_STATES, PARKED_STATES } from "./findings.mjs";
+import { runCommandEvidence, loadEvidence, isFresh, provesFinding } from "./evidence.mjs";
 
-const SOURCE_EXT = /\.(ts|tsx|mjs|js|cjs|sql|css)$/;
+const SOURCE_EXT = /\.(ts|tsx|mjs|js|cjs|sql|css|yml|yaml)$/;
 
 export function filesFor(globs) {
   return globs.flatMap((g) => {
@@ -45,13 +46,19 @@ export async function runCheck(check, { record = false, context = "gate" } = {})
       return { status: ok ? "PASS" : "FAIL", detail: ok ? `${check.file} satisfies ${check.message}` : `${check.file}: ${check.message}` };
     }
     case "no-open-findings": {
-      const open = loadFindings().filter((f) => OPEN_STATES.includes(f.status) && (check.severities || ["P0", "P1"]).includes(f.severity) && (!check.domains || check.domains.includes(f.domain)));
+      // Parked (BLOCKED_EXTERNAL / NEEDS_PRODUCT_DECISION) findings are still open defects for release purposes.
+      const states = check.includeParked === false ? OPEN_STATES : [...OPEN_STATES, ...PARKED_STATES];
+      const open = loadFindings().filter((f) => states.includes(f.status) && (check.severities || ["P0", "P1"]).includes(f.severity) && (!check.domains || check.domains.includes(f.domain)));
       return { status: open.length ? "FAIL" : "PASS", detail: open.length ? `open: ${open.map((f) => `${f.id}(${f.severity},${f.status})`).join(", ")}` : "no open findings in scope" };
     }
     case "resolved-have-fresh-evidence": {
+      // Every RESOLVED finding needs PASS evidence naming it; findings worked in the active mission need it fresh.
       const evidence = loadEvidence();
-      const bad = loadFindings().filter((f) => f.status === "RESOLVED" && (!check.domains || check.domains.includes(f.domain))).filter((f) => !(f.evidenceRecords || []).some((id) => evidence.find((e) => e.id === id && e.result === "PASS")));
-      return { status: bad.length ? "FAIL" : "PASS", detail: bad.length ? `RESOLVED without PASS evidence: ${bad.map((f) => f.id).join(", ")}` : "every RESOLVED finding has PASS evidence" };
+      const ws = workspaceFingerprint();
+      const missionFile = osPath("state", "mission.yml");
+      const missionFindings = new Set(fs2.existsSync(missionFile) ? readYml(missionFile).current?.findings || [] : []);
+      const bad = loadFindings().filter((f) => f.status === "RESOLVED" && (!check.domains || check.domains.includes(f.domain))).filter((f) => !(f.evidenceRecords || []).some((id) => { const e = evidence.find((r) => r.id === id); return e && provesFinding(e, f.id, missionFindings.has(f.id) ? ws : null); }));
+      return { status: bad.length ? "FAIL" : "PASS", detail: bad.length ? `RESOLVED without qualifying proof: ${bad.map((f) => f.id).join(", ")}` : "every RESOLVED finding carries PASS evidence that names it (fresh for this mission)" };
     }
     case "git-clean-except": {
       const dirty = git(["status", "--porcelain"], { allowFail: true }).split("\n").filter(Boolean).map((line) => line.slice(3)).filter((file) => !(check.allow || []).some((prefix) => file.startsWith(prefix)));

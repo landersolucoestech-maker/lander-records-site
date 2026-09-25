@@ -21,3 +21,13 @@ JSON Schema (draft-07) for every record the pack produces or consumes. `runtime/
 | `release.schema.json` | Release record |
 
 Product data shapes observed in the application (payloads, envelopes, cache rows) live in `../schemas/`, not here.
+
+## Enforcement
+| Contract | Enforced by |
+|---|---|
+| finding | runtime/lib/findings.mjs (every write), pack.mjs |
+| evidence | runtime/lib/evidence.mjs (every write), pack.mjs (+ hash chain) |
+| mission | pack.mjs validates state/mission.yml current + history |
+| integration | pack.mjs validates each provider in state/integrations.yml |
+| lead | pack.mjs compares schemas/contact-payload.schema.json keys with the zod payloadSchema in app/api/contact/route.ts |
+| agent, subagent, task, handoff, change, test, metric, external-identity, incident, release | documentary contracts for records written by agents (templates/); not runtime-validated yet |

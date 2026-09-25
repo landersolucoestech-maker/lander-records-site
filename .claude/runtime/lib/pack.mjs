@@ -4,18 +4,29 @@ import path from "node:path";
 import { OS_DIR, osPath, readJson, readYml, walk } from "./io.mjs";
 import { validate } from "./schema.mjs";
 import { loadFindings, validateFinding, buildIndex } from "./findings.mjs";
-import { loadEvidence } from "./evidence.mjs";
+import { loadEvidence, verifyChain } from "./evidence.mjs";
+import { REPO_ROOT } from "./io.mjs";
 
 export const CANONICAL = ["CLAUDE.md", "kernel", "control-plane", "agents", "subagents", "integrations", "leads", "identity", "auditors", "reviewers", "guardians", "contracts", "policies", "rules", "skills", "workflows", "gates", "sensors", "runtime", "state", "findings", "evidence", "knowledge", "graphs", "schemas", "decisions", "incidents", "reports", "templates"];
-const ALLOWED_EXTRA = new Set([".gitignore"]);
+// Claude Code native configuration files (ADR-0006).
+const ALLOWED_EXTRA = new Set([".gitignore", "settings.json", "settings.local.json"]);
 const SKILL_SECTIONS = ["INPUT", "PRECONDITIONS", "PROCEDURE", "OUTPUT", "FAILURE MODES", "EVIDENCE REQUIRED", "NEXT ACTION"];
 const LEAD_SECTIONS = ["Purpose", "Responsibilities", "Allowed actions", "Prohibited actions", "Required inputs", "Required context", "Procedures", "Outputs", "Evidence requirements", "Handoff rules", "Escalation rules", "Completion rules"];
 const PROVIDER_FILES = ["agent.md", "auditor.md", "contract.md", "rules.md", "health.md", "workflow.md"];
 const CHECK_TYPES = new Set(["command", "forbidden-pattern", "required-pattern", "no-open-findings", "resolved-have-fresh-evidence", "git-clean-except", "fresh-evidence-for"]);
 const SENSOR_KINDS = new Set(["sql", "env-contract", "env-presence", "git", "check"]);
 const SCHEMA_KEYWORDS = new Set(["$schema", "$id", "title", "description", "type", "enum", "const", "required", "properties", "additionalProperties", "items", "minItems", "minLength", "maxLength", "pattern", "minimum", "format"]);
-// Files allowed to mention the out-of-architecture directory, all non-operational (ADR-0005).
-const INDEPENDENCE_ALLOW = new Set(["decisions/ADR-0001-claude-codex-boundary.md", "decisions/ADR-0005-self-contained-claude-os.md", "runtime/tests/independence.test.mjs", "runtime/lib/pack.mjs", "reports/2026-09-25-autonomous-os-bootstrap.md"]);
+// Files allowed to mention the out-of-architecture Codex pack, all non-operational (ADR-0005). Single source for pack.mjs and tests.
+export const NON_OPERATIONAL = new Set(["decisions/ADR-0001-claude-codex-boundary.md", "decisions/ADR-0005-self-contained-claude-os.md", "runtime/tests/independence.test.mjs", "runtime/lib/pack.mjs"]);
+
+/** Top-level keys of the zod payloadSchema in app/api/contact/route.ts. */
+export function contactZodKeys() {
+  const file = path.join(REPO_ROOT, "app", "api", "contact", "route.ts");
+  if (!fs.existsSync(file)) return null;
+  const text = fs.readFileSync(file, "utf8");
+  const block = text.slice(text.indexOf("const payloadSchema = z.object({"), text.indexOf("\n});", text.indexOf("const payloadSchema")));
+  return [...block.matchAll(/^  (\w+): z\./gm)].map((m) => m[1]).sort();
+}
 
 export function frontMatter(text) {
   const match = text.match(/^---\n([\s\S]*?)\n---\n/);
@@ -43,7 +54,7 @@ export function validatePack() {
   for (const file of all) {
     const r = osRel(file);
     const text = fs.readFileSync(file, "utf8");
-    if (/\.codex|codex/i.test(text) && !INDEPENDENCE_ALLOW.has(r)) errors.push(`independence: ${r} references the out-of-architecture Codex pack`);
+    if (/\.codex|codex/i.test(text) && !NON_OPERATIONAL.has(r) && !r.startsWith("settings")) errors.push(`independence: ${r} references the out-of-architecture Codex pack`);
     if (r.endsWith(".yml")) { try { readYml(file); } catch (error) { errors.push(error.message); } }
     if (r.endsWith(".json")) { try { JSON.parse(text); } catch (error) { errors.push(`${r}: invalid JSON ${error.message}`); } }
   }
@@ -118,8 +129,35 @@ export function validatePack() {
   }
   for (const provider of registry.providers) for (const file of PROVIDER_FILES) if (!fs.existsSync(osPath("integrations", provider, file))) errors.push(`integrations/${provider}/${file} missing`);
 
+  const settingsFile = osPath("settings.json");
+  if (fs.existsSync(settingsFile)) {
+    const settings = readJson(settingsFile);
+    for (const hooks of Object.values(settings.hooks || {})) for (const group of hooks) for (const hook of group.hooks || []) {
+      const script = hook.command?.match(/\.claude\/runtime\/[\w/.-]+\.mjs/)?.[0];
+      if (script && !fs.existsSync(path.join(REPO_ROOT, script))) errors.push(`settings.json hook references missing ${script}`);
+    }
+  }
+  const missionFile = osPath("state", "mission.yml");
+  if (fs.existsSync(missionFile)) {
+    const missionSchema = readJson(osPath("contracts", "mission.schema.json"));
+    const state = readYml(missionFile);
+    for (const m of [state.current, ...(state.history || [])].filter(Boolean)) errors.push(...validate(missionSchema, m).map((e) => `state/mission.yml ${m.id}: ${e}`));
+  }
+  const integrationSchema = readJson(osPath("contracts", "integration.schema.json"));
+  const integrations = readYml(osPath("state", "integrations.yml"));
+  for (const [provider, record] of Object.entries(integrations.providers || {})) {
+    errors.push(...validate(integrationSchema, { provider, observedAt: integrations.observedAt, ...record }).map((e) => `state/integrations.yml ${provider}: ${e}`));
+    if (!registry.providers.includes(provider)) errors.push(`state/integrations.yml: unknown provider ${provider}`);
+  }
+  const zodKeys = contactZodKeys();
+  if (zodKeys) {
+    const schemaKeys = Object.keys(readJson(osPath("schemas", "contact-payload.schema.json")).properties).sort();
+    if (JSON.stringify(zodKeys) !== JSON.stringify(schemaKeys)) errors.push(`schemas/contact-payload.schema.json drifted from app/api/contact/route.ts payloadSchema (zod: ${zodKeys.join(",")}; schema: ${schemaKeys.join(",")})`);
+  }
+  errors.push(...verifyChain());
+
   const findings = loadFindings();
-  errors.push(...findings.flatMap(validateFinding));
+  errors.push(...findings.flatMap((f) => validateFinding(f)));
   for (const f of findings) for (const ev of f.evidenceRecords || []) if (!fs.existsSync(osPath("evidence", `${ev}.json`))) errors.push(`${f.id}: evidence ${ev} missing`);
   for (const f of findings) if (f.decision && !fs.readdirSync(osPath("decisions")).some((n) => n.startsWith(f.decision))) errors.push(`${f.id}: decision ${f.decision} missing`);
   const evidenceSchema = readJson(osPath("contracts", "evidence.schema.json"));

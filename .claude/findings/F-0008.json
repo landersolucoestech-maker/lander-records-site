@@ -41,19 +41,22 @@
       "status": "DISCOVERED",
       "at": "2026-09-25T13:50:00.000Z",
       "by": "leads-auditor",
-      "note": "outbox state review"
+      "note": "outbox state review",
+      "reconstructed": true
     },
     {
       "status": "TRIAGED",
       "at": "2026-09-25T13:51:00.000Z",
       "by": "autonomous-controller",
-      "note": "P2 leads"
+      "note": "P2 leads",
+      "reconstructed": true
     },
     {
       "status": "NEEDS_PRODUCT_DECISION",
       "at": "2026-09-25T13:52:00.000Z",
       "by": "autonomous-controller",
-      "note": "DEC-0002 opened"
+      "note": "DEC-0002 opened",
+      "reconstructed": true
     }
   ]
 }

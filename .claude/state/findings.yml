@@ -3,9 +3,9 @@
 {
   "derivedFrom": ".claude/findings/*.json",
   "totals": {
-    "all": 13,
+    "all": 14,
     "open": 9,
-    "parked": 4,
+    "parked": 5,
     "closed": 0,
     "ready": 0
   },
@@ -139,6 +139,16 @@
       "status": "NEEDS_PRODUCT_DECISION",
       "priority": 90,
       "decision": "DEC-0004",
+      "evidenceRecords": []
+    },
+    {
+      "id": "F-0014",
+      "title": "Public artist page hides verified zero metrics (value > 0 filter)",
+      "severity": "P3",
+      "domain": "frontend",
+      "status": "NEEDS_PRODUCT_DECISION",
+      "priority": 110,
+      "decision": "DEC-0005",
       "evidenceRecords": []
     }
   ]

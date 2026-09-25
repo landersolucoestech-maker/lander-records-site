@@ -5,9 +5,9 @@ import path from "node:path";
 import test from "node:test";
 import { sandbox, OS_SOURCE } from "./helpers.mjs";
 import { walk } from "../lib/io.mjs";
+import { NON_OPERATIONAL } from "../lib/pack.mjs";
 
 const FORBIDDEN = /\.codex|codex/i;
-const NON_OPERATIONAL = new Set(["decisions/ADR-0001-claude-codex-boundary.md", "decisions/ADR-0005-self-contained-claude-os.md", "runtime/tests/independence.test.mjs", "runtime/lib/pack.mjs", "reports/2026-09-25-autonomous-os-bootstrap.md"]);
 
 test("no operational reference to the out-of-architecture Codex pack", () => {
   const offenders = walk(OS_SOURCE).map((f) => path.relative(OS_SOURCE, f).split(path.sep).join("/")).filter((r) => !NON_OPERATIONAL.has(r) && FORBIDDEN.test(fs.readFileSync(path.join(OS_SOURCE, r), "utf8")));

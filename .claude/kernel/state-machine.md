@@ -18,4 +18,6 @@ Authoritative table: `runtime/lib/findings.mjs#TRANSITIONS` (tests assert this d
 
 Guards: RESOLVED requires evidenceRecords; NEEDS_PRODUCT_DECISION requires a DEC record; every transition requires a note.
 
-Mission states: PLANNED → ACTIVE → COMPLETED | BLOCKED | ABORTED.
+Mission states (runtime/mission.mjs): ACTIVE → COMPLETED (verdict A/B/C computed by lib/completion.mjs). A mission whose completion evaluates to D cannot be closed; it stays ACTIVE until remediated.
+
+Guards enforced by runtime/lib/findings.mjs: history must start at DISCOVERED and replay legally; REAUDITING and RESOLVED need fresh PASS evidence naming the finding; NEEDS_PRODUCT_DECISION → READY needs the DEC marked DECIDED; entries written after the fact carry `reconstructed: true`.

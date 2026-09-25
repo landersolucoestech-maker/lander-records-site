@@ -38,16 +38,25 @@
   "discoveredAt": "2026-09-25T14:43:42.943Z",
   "history": [
     {
+      "status": "DISCOVERED",
+      "at": "2026-09-25T14:43:41.943Z",
+      "by": "consistency-lead",
+      "note": "baseline failure reproduced on base e673bf9 during discovery",
+      "reconstructed": true
+    },
+    {
       "status": "TRIAGED",
       "at": "2026-09-25T14:43:42.943Z",
       "by": "consistency-lead",
-      "note": "baseline failure KF-002 reproduced on base"
+      "note": "baseline failure KF-002 reproduced on base (recorded after the fact)",
+      "reconstructed": true
     },
     {
       "status": "NEEDS_PRODUCT_DECISION",
       "at": "2026-09-25T14:43:43.026Z",
       "by": "autonomous-controller",
-      "note": "DEC-0004 opened: lint policy for admin hydration patterns"
+      "note": "DEC-0004 opened: lint policy for admin hydration patterns (recorded after the fact)",
+      "reconstructed": true
     }
   ],
   "decision": "DEC-0004"
