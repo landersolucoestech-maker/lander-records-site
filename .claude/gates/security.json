@@ -39,40 +39,6 @@
       ]
     },
     {
-      "name": "preview workflow references no secrets at all",
-      "type": "forbidden-pattern",
-      "paths": [
-        ".github/workflows/dev-preview.yml"
-      ],
-      "pattern": "secrets\\s*[.\\[]",
-      "message": "the public owner-level preview must not receive any secret"
-    },
-    {
-      "name": "preview DATABASE_URL only the disposable service container",
-      "type": "forbidden-pattern",
-      "paths": [
-        ".github/workflows/dev-preview.yml"
-      ],
-      "pattern": "DATABASE_URL\\s*[:=](?!\\s*postgresql://postgres:postgres@localhost:5432/lander_records_preview\\s*$)",
-      "message": "DATABASE_URL may only point at the disposable preview database"
-    },
-    {
-      "name": "preview mock data never disabled",
-      "type": "forbidden-pattern",
-      "paths": [
-        ".github/workflows/dev-preview.yml"
-      ],
-      "pattern": "LANDER_MOCK_DATA\\s*[:=](?!\\s*\"1\"\\s*$)",
-      "message": "the preview must run on mock data"
-    },
-    {
-      "name": "preview runs on the disposable database",
-      "type": "required-pattern",
-      "file": ".github/workflows/dev-preview.yml",
-      "pattern": "DATABASE_URL: postgresql://postgres:postgres@localhost:5432/lander_records_preview",
-      "message": "disposable preview database missing"
-    },
-    {
       "name": "preview bypass flag function unchanged",
       "type": "required-pattern",
       "file": "lib/auth/development-bypass.ts",
@@ -85,6 +51,20 @@
       "file": "lib/auth/development-bypass.ts",
       "pattern": "export function isAdminAuthBypassAllowed\\(\\s*host: string \\| null \\| undefined,\\s*environment: DevelopmentAuthEnvironment = process\\.env,\\s*\\): boolean \\{\\s*return \\(\\s*isDevelopmentAuthBypassAllowed\\(host, environment\\) \\|\\|\\s*\\(isDisposablePreviewAuthBypassEnabled\\(environment\\) && isDisposablePreviewRequestHost\\(host\\)\\)\\s*\\);\\s*\\}",
       "message": "admin bypass composition changed \u2014 L5 review required"
+    },
+    {
+      "name": "public preview workflow safety (structured)",
+      "type": "preview-workflow-safety",
+      "file": ".github/workflows/dev-preview.yml",
+      "pinned": {
+        "DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/lander_records_preview",
+        "LANDER_MOCK_DATA": "1"
+      },
+      "allowedEnvWrites": [
+        "APP_PID",
+        "TUNNEL_PID",
+        "PREVIEW_URL"
+      ]
     }
   ]
 }

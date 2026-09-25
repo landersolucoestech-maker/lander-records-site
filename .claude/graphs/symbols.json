@@ -546,6 +546,8 @@
       "fetchLatestSpotifyPlaylistReleases"
     ],
     "lib/integrations/sync.ts": [
+      "DbExecutor",
+      "purgeLanderRecordsSoundchartsMetrics",
       "syncLanderRecordsSoundcharts",
       "syncArtistSoundcharts",
       "syncAllArtistSoundcharts",

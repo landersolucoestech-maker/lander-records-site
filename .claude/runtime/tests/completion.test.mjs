@@ -67,3 +67,65 @@ test("--no-exec can never produce a verdict better than D", () => {
     assert.match(out.stdout, /skipped/);
   } finally { box.cleanup(); }
 });
+
+function anchorErrors(box) {
+  const lib = path.join(box.root, ".claude", "runtime", "lib", "mission-def.mjs");
+  const script = `import(${JSON.stringify(lib)}).then((m) => console.log(JSON.stringify(m.missionAnchorErrors(m.currentMission()))))`;
+  const out = spawnSync(process.execPath, ["--input-type=module", "-e", script], { cwd: box.root, encoding: "utf8" });
+  assert.equal(out.status, 0, out.stderr);
+  return JSON.parse(out.stdout.trim().split("\n").at(-1));
+}
+function editMission(box, fn) {
+  const file = path.join(box.root, ".claude", "state", "mission.yml");
+  const text = fs.readFileSync(file, "utf8");
+  const header = text.split("\n").filter((l) => l.startsWith("#")).join("\n");
+  const state = JSON.parse(text.split("\n").filter((l) => !l.startsWith("#")).join("\n"));
+  fn(state.current);
+  fs.writeFileSync(file, `${header}\n${JSON.stringify(state, null, 2)}\n`);
+}
+
+test("a committed mission definition cannot be weakened by a later commit", () => {
+  const box = sandbox();
+  try {
+    fs.mkdirSync(path.join(box.root, "tests", "unit"), { recursive: true });
+    fs.writeFileSync(path.join(box.root, "tests", "unit", "ok.test.mjs"), "import test from 'node:test'; test('ok', () => {});\n");
+    box.run("mission.mjs", ["abort", "--note", "sandbox"]);
+    box.run("mission.mjs", ["start", "--objective", "sandbox"]);
+    box.run("mission.mjs", ["requirement", "--text", "r"]);
+    box.run("mission.mjs", ["criterion", "--requirement", "R-001", "--text", "c", "--verify", "node --test tests/unit/ok.test.mjs"]);
+    assert.match(anchorErrors(box).join(";"), /never committed/);
+    box.git("add", "-A"); box.git("commit", "-qm", "anchor mission");
+    assert.deepEqual(anchorErrors(box), []);
+
+    // Uncommitted weakening is caught against HEAD; committed weakening against the first anchor.
+    editMission(box, (m) => { m.requirements[0].criteria[0].verify = "npm run lint"; });
+    assert.match(anchorErrors(box).join(";"), /differs from HEAD/);
+    box.git("add", "-A"); box.git("commit", "-qm", "weaken");
+    assert.match(anchorErrors(box).join(";"), /criterion C-001 changed or removed/);
+
+    editMission(box, (m) => { m.requirements[0].criteria[0].verify = "node --test tests/unit/ok.test.mjs"; m.requirements.splice(0, 1); });
+    box.git("add", "-A"); box.git("commit", "-qm", "drop requirement");
+    assert.match(anchorErrors(box).join(";"), /requirement R-001 changed or removed/);
+
+    editMission(box, (m) => { m.startedAt = new Date(Date.now() + 86_400_000).toISOString(); });
+    box.git("add", "-A"); box.git("commit", "-qm", "move start");
+    assert.match(anchorErrors(box).join(";"), /startedAt differs/);
+  } finally { box.cleanup(); }
+});
+
+test("environment overrides and runs that execute no tests never yield PASS", () => {
+  const box = sandbox();
+  try {
+    fs.mkdirSync(path.join(box.root, "tests", "unit"), { recursive: true });
+    fs.writeFileSync(path.join(box.root, "tests", "unit", "empty.test.mjs"), "// no tests\n");
+    box.git("add", "-A"); box.git("commit", "-qm", "empty suite");
+    for (const argv of [
+      ["env", "NODE_OPTIONS=--require=/dev/null", "node", "--test", "tests/unit/empty.test.mjs"],
+      ["env", "NODE_TEST_CONTEXT=child", "node", "--test", "tests/unit/empty.test.mjs"],
+      ["env", "-i", "node", "--test", "tests/unit/empty.test.mjs"],
+      ["env", "npm_config_script_shell=/bin/true", "npm", "test"],
+    ]) assert.match(box.run("evidence.mjs", ["run", "--finding", "F-0001", "--", ...argv]).stderr, /NOT_A_PROOF/, argv.join(" "));
+    const out = box.run("evidence.mjs", ["run", "--finding", "F-0001", "--", "node", "--test", "tests/unit/empty.test.mjs"]);
+    assert.match(out.stdout + out.stderr, /FAIL/, "a suite that ran zero tests must be FAIL");
+  } finally { box.cleanup(); }
+});

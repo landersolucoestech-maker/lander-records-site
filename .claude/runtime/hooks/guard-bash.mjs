@@ -3,6 +3,7 @@
 // secrets-guardian and migration-guardian on Bash commands. Fails CLOSED: unparseable input blocks.
 // It is a guardrail, not a sandbox: it parses common shell forms, not every possible construct (ADR-0007).
 import fs from "node:fs";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
@@ -28,14 +29,20 @@ function gitSubcommand(tok) {
   const i = tok.findIndex((t) => t === "git" || t.endsWith("/git"));
   if (i < 0) return null;
   let j = i + 1;
-  while (j < tok.length && tok[j].startsWith("-")) { if (["-C", "-c", "--git-dir", "--work-tree", "--namespace"].includes(tok[j])) j += 1; j += 1; }
-  return { sub: tok[j], rest: tok.slice(j + 1) };
+  let alias = false;
+  while (j < tok.length && tok[j].startsWith("-")) {
+    if (tok[j] === "-c" && /^alias\./.test(tok[j + 1] || "")) alias = true;
+    if (["-C", "-c", "--git-dir", "--work-tree", "--namespace"].includes(tok[j])) j += 1;
+    j += 1;
+  }
+  return { sub: alias ? "__alias__" : tok[j], rest: tok.slice(j + 1) };
 }
 const has = (rest, ...flags) => rest.some((t) => flags.includes(t));
 const shortFlag = (rest, letter) => rest.some((t) => /^-[a-zA-Z]+$/.test(t) && t.includes(letter));
 const bulkPath = (rest) => rest.some((t) => [".", "./", ":/", "*", ":(top)"].includes(t));
 
 function gitRule({ sub, rest }) {
+  if (sub === "__alias__") return "git-guardian: inline git aliases can hide destructive commands";
   if (sub === "reset" && has(rest, "--hard", "--merge", "--keep")) return "git-guardian: git reset --hard/--merge/--keep discards work";
   if (sub === "clean" && (shortFlag(rest, "f") || has(rest, "--force"))) return "git-guardian: git clean deletes untracked work";
   if (sub === "push" && (rest.some((t) => t.startsWith("--force")) || has(rest, "-f", "--mirror", "--delete", "-d", "--prune") || shortFlag(rest, "f") || rest.some((t) => t.startsWith("+") || t.startsWith(":") || /:\+?[\w/.-]*$/.test(t) && t.includes(":+")))) return "git-guardian: force push (incl. --force-with-lease) / remote deletion rewrites published history";
@@ -46,7 +53,10 @@ function gitRule({ sub, rest }) {
   if (sub === "restore" && bulkPath(rest) && !onlyUnstage) return "git-guardian: bulk restore discards changes";
   if (sub === "switch" && has(rest, "--discard-changes", "-f", "--force")) return "git-guardian: switch --discard-changes discards work";
   if (sub === "stash" && ["clear", "drop"].includes(rest[0])) return "git-guardian: stash clear/drop destroys saved work";
-  if (["filter-branch", "filter-repo", "replace"].includes(sub) || (sub === "rebase" && has(rest, "-i", "--interactive", "--root")) || (sub === "update-ref" && has(rest, "-d")) || (sub === "reflog" && rest[0] === "expire") || (sub === "gc" && rest.some((t) => t.startsWith("--prune")))) return "git-guardian: history rewrite / reflog destruction";
+  if (sub === "config" && rest.some((t) => /^alias\./.test(t))) return "git-guardian: defining git aliases can hide destructive commands";
+  if (sub === "checkout" && has(rest, "--") && rest.slice(rest.indexOf("--") + 1).some((t) => t.endsWith("/"))) return "git-guardian: checkout of a directory discards its changes";
+  if (sub === "restore" && !onlyUnstage && rest.some((t) => !t.startsWith("-") && t.endsWith("/"))) return "git-guardian: restore of a directory discards its changes";
+  if (["filter-branch", "filter-repo", "replace", "update-ref"].includes(sub) || (sub === "rebase" && has(rest, "-i", "--interactive", "--root")) || (sub === "reflog" && rest[0] === "expire") || (sub === "gc" && rest.some((t) => t.startsWith("--prune")))) return "git-guardian: history rewrite / reflog destruction";
   return null;
 }
 
@@ -59,17 +69,18 @@ function dangerousTarget(t) {
   }
   return false;
 }
-function rmRule(tok) {
+function rmRule(tok, cwd) {
   const i = tok.findIndex((t) => t === "rm" || t.endsWith("/rm"));
   if (i >= 0) {
     const args = tok.slice(i + 1);
     const recursive = args.some((t) => t === "--recursive" || (/^-[a-zA-Z]+$/.test(t) && /[rR]/.test(t)));
-    if (recursive && args.filter((t) => !t.startsWith("-")).some(dangerousTarget)) return "destructive-action-guardian: recursive delete of repository or home state";
+    if (recursive && args.filter((t) => !t.startsWith("-")).some((t) => dangerousTarget(t) || /^\$\(\s*pwd\s*\)$|^`pwd`$/.test(t) || (!/^[$~]/.test(t) && dangerousTarget(path.resolve(cwd, t))))) return "destructive-action-guardian: recursive delete of repository or home state";
   }
   const f = tok.indexOf("find");
-  if (f >= 0 && (tok.includes("-delete") || (tok.includes("-exec") && tok.some((t) => t === "rm" || t.endsWith("/rm"))))) {
+  if (f >= 0 && (tok.includes("-delete") || (tok.some((t) => t === "-exec" || t === "-execdir") && tok.some((t) => t === "rm" || t.endsWith("/rm"))))) {
     const start = tok[f + 1] && !tok[f + 1].startsWith("-") ? tok[f + 1] : ".";
-    if (!/^(\/var\/tmp|\/tmp)(\/|$)/.test(start) && !/(^|\/)(node_modules|\.next|test-results|playwright-report)(\/|$)/.test(start)) return "destructive-action-guardian: find -delete / -exec rm over repository state";
+    const resolved = path.resolve(cwd, start);
+    if (!/^(\/var\/tmp|\/tmp)(\/|$)/.test(resolved) && !/(^|\/)(node_modules|\.next|test-results|playwright-report)(\/|$)/.test(resolved)) return "destructive-action-guardian: find -delete / -exec rm over repository state";
   }
   return null;
 }
@@ -106,7 +117,10 @@ function sqlRule(segment, tok) {
 function secretRule(rawSegment, tok) {
   const segment = rawSegment.replace(/''|""/g, "");
   for (const m of segment.matchAll(/(?:^|[\s'"`(=/<])(\.env(?:\.[\w.-]+)?)(?=$|[\s'"`),;|&<>])/g)) if (!m[1].endsWith(".example")) return "secrets-guardian: env files hold credentials";
-  if (tok.length === 1 && tok[0] === "set") return "secrets-guardian: dumping shell variables exposes credentials";
+  if (tok.length === 1 && ["set", "export", "declare"].includes(tok[0])) return "secrets-guardian: dumping shell variables exposes credentials";
+  if (/\/proc\/[\w]+\/environ|\bos\.environ\b|\bENV\[|\bgetenv\s*\(\s*\)/.test(segment)) return "secrets-guardian: dumping the environment exposes credentials";
+  if (/\bprocess\.env\s*(\.\s*|\[\s*["'`])[A-Z0-9_]*(SECRET|KEY|TOKEN|PASSWORD|DATABASE_URL|SALT)/.test(segment)) return "secrets-guardian: printing a credential variable";
+  if (/(^|[\s'"`(=/<])\.e[\w?*[\]]*[?*[][\w?*[\]]*(\s|$)|\.env\*/.test(segment)) return "secrets-guardian: globbing env files";
   if (/\bprocess\.env\b(?!\s*\.\s*(NODE_ENV)\b)(?!\s*\.)/.test(segment) || /Object\.(keys|entries|values)\(\s*process\.env/.test(segment)) return "secrets-guardian: dumping process.env exposes credentials";
   if (tok[0] === "printenv" || tok.includes("printenv") || (tok[0] === "env" && tok.length === 1) || (["export", "declare", "typeset"].includes(tok[0]) && tok.some((t) => /^-[a-zA-Z]*[px]/.test(t)))) return "secrets-guardian: dumping the environment exposes credentials";
   if (/\b(echo|printf)\b[^#]*\$\{?[A-Z0-9_]*(SECRET|KEY|TOKEN|PASSWORD|DATABASE_URL|SALT)/.test(segment)) return "secrets-guardian: printing a credential variable";
@@ -125,7 +139,13 @@ function migrationRule(segment) {
 function nested(segment, tok) {
   const inner = [];
   const shell = tok.findIndex((t) => /^(\/[\w/]*\/)?(sh|bash|zsh|dash|ksh)$/.test(t));
-  if (shell >= 0 && tok[shell + 1] === "-c" && tok[shell + 2]) inner.push(tok[shell + 2]);
+  if (shell >= 0) {
+    const flag = tok.findIndex((t, k) => k > shell && /^-[a-zA-Z]*c[a-zA-Z]*$/.test(t));
+    if (flag > 0) { const script = tok.slice(flag + 1).find((t) => t !== "--"); if (script) inner.push(script); }
+  }
+  // Here-strings / heredoc-style input to a shell, e.g. bash<<<'…' (no space needed before <<<).
+  const here = segment.match(/(?:^|[\s/])(?:sh|bash|zsh|dash|ksh)\s*<<<\s*(?:'([^']*)'|"([^"]*)"|(\S+))/);
+  if (here) inner.push(here[1] ?? here[2] ?? here[3]);
   if (tok[0] === "eval") inner.push(tok.slice(1).join(" "));
   for (const m of segment.matchAll(/\$\(([^()]*)\)|`([^`]*)`/g)) inner.push(m[1] ?? m[2]);
   return inner;
@@ -133,11 +153,13 @@ function nested(segment, tok) {
 
 export function evaluate(command, depth = 0) {
   if (depth > 4) return "guard-bash: command nesting too deep to verify";
+  let cwd = REPO_ROOT;
   for (const segment of segments(String(command))) {
     const tok = tokens(segment);
+    if (tok[0] === "cd") { cwd = !tok[1] || tok[1] === "~" ? (process.env.HOME || "/") : path.resolve(cwd, tok[1]); continue; }
     for (const inner of nested(segment, tok)) { const reason = evaluate(inner, depth + 1); if (reason) return reason; }
     const git = gitSubcommand(tok);
-    const reason = (git && gitRule(git)) || rmRule(tok) || sqlRule(segment, tok) || secretRule(segment, tok) || migrationRule(segment);
+    const reason = (git && gitRule(git)) || rmRule(tok, cwd) || sqlRule(segment, tok) || secretRule(segment, tok) || migrationRule(segment);
     if (reason) return reason;
   }
   return null;

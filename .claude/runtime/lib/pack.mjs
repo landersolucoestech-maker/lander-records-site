@@ -13,7 +13,7 @@ const ALLOWED_EXTRA = new Set([".gitignore", "settings.json", "settings.local.js
 const SKILL_SECTIONS = ["INPUT", "PRECONDITIONS", "PROCEDURE", "OUTPUT", "FAILURE MODES", "EVIDENCE REQUIRED", "NEXT ACTION"];
 const LEAD_SECTIONS = ["Purpose", "Responsibilities", "Allowed actions", "Prohibited actions", "Required inputs", "Required context", "Procedures", "Outputs", "Evidence requirements", "Handoff rules", "Escalation rules", "Completion rules"];
 const PROVIDER_FILES = ["agent.md", "auditor.md", "contract.md", "rules.md", "health.md", "workflow.md"];
-const CHECK_TYPES = new Set(["command", "forbidden-pattern", "required-pattern", "no-open-findings", "resolved-have-fresh-evidence", "git-clean-except", "fresh-evidence-for"]);
+const CHECK_TYPES = new Set(["command", "forbidden-pattern", "required-pattern", "no-open-findings", "resolved-have-fresh-evidence", "git-clean-except", "fresh-evidence-for", "preview-workflow-safety"]);
 const SENSOR_KINDS = new Set(["sql", "env-contract", "env-presence", "git", "check"]);
 const SCHEMA_KEYWORDS = new Set(["$schema", "$id", "title", "description", "type", "enum", "const", "required", "properties", "additionalProperties", "items", "minItems", "minLength", "maxLength", "pattern", "minimum", "format"]);
 // Files allowed to mention the out-of-architecture Codex pack, all non-operational (ADR-0005). Single source for pack.mjs and tests.

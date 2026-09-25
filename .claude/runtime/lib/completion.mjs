@@ -3,12 +3,14 @@
 // declared verify command, the proof command of every finding resolved in the mission, and the regression gate,
 // against the current workspace. Records are an audit trail; git is their anchor (pack.mjs gitAnchorErrors).
 import fs from "node:fs";
-import { osPath, readJson, readYml, git, workspaceFingerprint, splitCommand, RECORD_PATHS, GENERATED_PATHS } from "./io.mjs";
+import path from "node:path";
+import { osPath, readJson, readYml, git, workspaceFingerprint, splitCommand, RECORD_PATHS, GENERATED_PATHS, REPO_ROOT } from "./io.mjs";
 import { porcelainPath } from "./io.mjs";
 import { loadFindings, OPEN_STATES, PARKED_STATES, validateFinding } from "./findings.mjs";
 import { loadEvidence, provesFinding, verifyChain, runCommandEvidence } from "./evidence.mjs";
 import { validatePack } from "./pack.mjs";
 import { isVerifyArgv } from "./commands.mjs";
+import { missionAnchorErrors, missionFindingIds, missionHash } from "./mission-def.mjs";
 import { runCheck } from "./checks.mjs";
 
 export const VERDICT_LABELS = {
@@ -34,7 +36,15 @@ export async function evaluateCompletion({ execute = true } = {}) {
   add("requirements each have criteria with allow-listed verify commands", requirements.length > 0 && requirements.every((r) => r.criteria.length) && criteria.every((c) => c.verify && isVerifyArgv(splitCommand(c.verify))), `${requirements.length} requirement(s), ${criteria.length} criteria`);
   // The mission definition (requirements, criteria, verify commands) must be committed as-is: state/ is a record
   // directory outside the workspace fingerprint, so git is what anchors it (ADR-0007).
-  add("mission definition committed unchanged", missionDefinitionCommitted(mission), "commit state/mission.yml after defining requirements and criteria");
+  // Criteria that exercise a running server must see a build at least as new as the committed product code.
+  if (criteria.some((c) => /PLAYWRIGHT_BASE_URL=|OS_BASE_URL=/.test(c.verify || ""))) {
+    const buildId = path.join(REPO_ROOT, ".next", "BUILD_ID");
+    const lastProductCommit = Number(git(["log", "-1", "--format=%ct", "--", "app", "lib", "modules", "styles", "public", "next.config.mjs", "package.json", "package-lock.json", "proxy.ts"], { allowFail: true }) || 0) * 1000;
+    const built = fs.existsSync(buildId) ? fs.statSync(buildId).mtimeMs : 0;
+    add("server-backed criteria: production build newer than the last product commit", built >= lastProductCommit, built ? `build ${new Date(built).toISOString()} vs product commit ${new Date(lastProductCommit).toISOString()} (the running server must be restarted from this build)` : "no .next/BUILD_ID");
+  }
+  const anchorErrors = missionAnchorErrors(mission);
+  add("mission definition anchored (committed; only additions since first commit; startedAt consistent)", anchorErrors.length === 0, anchorErrors.slice(0, 4).join("; "));
 
   // Structural integrity first (cheap).
   const invalid = findings.flatMap((f) => validateFinding(f, evidence));
@@ -59,11 +69,12 @@ export async function evaluateCompletion({ execute = true } = {}) {
   add("no role's latest review is FAIL", failing.length === 0, failing.join(", "));
   // Findings worked in this mission are derived from their (git-anchored, append-only) history, not from an
   // editable list: any finding with a transition at or after the mission start.
-  const missionFindings = findings.filter((f) => (mission?.findings || []).includes(f.id) || (mission && f.history.some((h) => Date.parse(h.at) >= Date.parse(mission.startedAt))));
+  const scope = missionFindingIds(mission, findings);
+  const missionFindings = findings.filter((f) => scope.has(f.id));
   const required = [ALWAYS_REVIEWER, ...(missionFindings.some((f) => f.impactLevel === "L5") ? [L5_REVIEWER] : [])];
   for (const role of required) {
     const latest = reviews.filter((e) => e.producer === role).at(-1);
-    add(`${role} PASS for the current workspace (ticketed)`, Boolean(latest && latest.result === "PASS" && latest.ticket && latest.fingerprint === ws.fingerprint), latest ? `${latest.id}:${latest.result}` : "none");
+    add(`${role} PASS for the current workspace and mission definition (ticketed)`, Boolean(latest && latest.result === "PASS" && latest.ticket && latest.fingerprint === ws.fingerprint && latest.missionHash === missionHash(mission)), latest ? `${latest.id}:${latest.result}` : "none");
   }
 
   // Re-execution.
@@ -106,14 +117,4 @@ export function reexecuteCriteria(criteria) {
     try { ev = runCommandEvidence({ argv: splitCommand(c.verify), criteria: [c.id], kind: "command", summary: `completion re-run ${c.id}`, producer: "completion" }); } catch (error) { ev = { id: "-", result: "FAIL", error: `${error.code || "ERROR"}: ${error.message}` }; }
     return { id: c.id, ok: ev.result === "PASS", detail: `${ev.id} ${ev.result}: ${c.verify}${ev.error ? ` (${ev.error})` : ""}` };
   });
-}
-
-function missionDefinitionCommitted(mission) {
-  if (!mission) return false;
-  const committed = git(["show", "HEAD:.claude/state/mission.yml"], { allowFail: true });
-  if (!committed) return false;
-  let head;
-  try { head = JSON.parse(committed.split("\n").filter((l) => !l.startsWith("#")).join("\n")).current; } catch { return false; }
-  const shape = (m) => JSON.stringify({ id: m?.id, startedAt: m?.startedAt, requirements: (m?.requirements || []).map((r) => ({ id: r.id, text: r.text, non: Boolean(r.nonRequirement), criteria: r.criteria.map((c) => ({ id: c.id, text: c.text, verify: c.verify })) })) });
-  return shape(head) === shape(mission);
 }

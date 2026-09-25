@@ -125,6 +125,12 @@
       "items": {
         "type": "string"
       }
+    },
+    "missionHash": {
+      "type": [
+        "string",
+        "null"
+      ]
     }
   }
 }

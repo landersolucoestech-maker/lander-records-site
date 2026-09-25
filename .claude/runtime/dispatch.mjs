@@ -7,6 +7,7 @@ import fs from "node:fs";
 import crypto from "node:crypto";
 import { args, run, OsError, osPath, readJson, writeJson, workspaceFingerprint, nowIso } from "./lib/io.mjs";
 import { TICKET_DIR } from "./lib/evidence.mjs";
+import { currentMission, missionHash } from "./lib/mission-def.mjs";
 
 run(() => {
   const a = args();
@@ -22,7 +23,7 @@ run(() => {
   // Ticket: binds a review report to this role and to the exact workspace being reviewed (evidence.mjs review checks it).
   const nonce = crypto.randomBytes(16).toString("hex");
   const ws = workspaceFingerprint();
-  writeJson(`${TICKET_DIR}/${nonce}.json`, { nonce, role: id, fingerprint: ws.fingerprint, head: ws.head, finding: a.finding ?? null, issuedAt: nowIso() });
+  writeJson(`${TICKET_DIR}/${nonce}.json`, { nonce, role: id, fingerprint: ws.fingerprint, head: ws.head, finding: a.finding ?? null, missionHash: missionHash(currentMission()), issuedAt: nowIso() });
   const writer = /tools:.*\bEdit\b/.test(fs.readFileSync(osPath(entry.path), "utf8"));
   console.log(`You are acting as the "${id}" role of the Lander Records Engineering OS (.claude/CLAUDE.md).
 Repository: the lander-records-site checkout (single target; ignore any other repository).

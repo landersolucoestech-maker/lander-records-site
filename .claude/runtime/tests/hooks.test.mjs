@@ -23,10 +23,16 @@ const blocked = [
   "bash -c 'rm -rf .git'", "x=$(git reset --hard)", "echo `git clean -fdx`", "eval \"git reset --hard\"", "/bin/rm -rf .git",
   "rm -rf ..", "find . -delete", "find . -name .git -exec rm -rf {} +", "git switch --discard-changes main",
   "cat .en''v", "node -e 'console.log(process.env)'", "set",
+  "rm -rf $(pwd)", "git checkout -- src/", "git restore src/", "git update-ref refs/heads/main HEAD~3",
+  "git -c alias.x='reset --hard' x", "git config alias.nuke '!git reset --hard'", "bash<<<'git reset --hard'",
+  "bash -lc 'git reset --hard'", "bash -c -- 'git reset --hard'", "find . -execdir rm {} +", "find /var/tmp/../home -delete",
+  "export", "cat /proc/self/environ", "python3 -c 'import os;print(os.environ)'", "cat .e?v", "cat .env*",
+  "node -e 'console.log(process.env.DATABASE_URL)'",
 ];
 const allowed = [
   "git status", "git push -u origin claude/x", "git checkout -b new", "git checkout dev", "git restore --staged .", "cat .env.production.example",
   "find /var/tmp/x -delete", "node -e 'console.log(process.env.NODE_ENV)'", "git commit -m \"fix #12\"",
+  "git checkout -- next-env.d.ts", "git config user.name x", "cd /var/tmp && rm -rf build", "rm -rf ./node_modules/.cache",
   "git log --grep='git reset --hard'", "grep -r TRUNCATE lib", "git diff -- .", "git add .", "git restore --staged lib/x.ts",
   "cat .env.example", "rm -rf /var/tmp/pw-results", "rm -rf node_modules/.cache", "npm test",
   "psql -h /var/tmp/lander-pg -p 55432 -U postgres -c 'drop database if exists lander_path_test'",
@@ -65,4 +71,11 @@ test("rm of the repository root or its ancestors by absolute path is blocked", (
   assert.ok(evaluate(`rm -rf ${root}/`));
   assert.ok(evaluate("rm -rf /"));
   assert.equal(evaluate(`rm -rf ${root}/node_modules/.cache`), null);
+});
+
+test("cd tracking: deleting the repository from its parent is blocked", () => {
+  const root = process.env.CLAUDE_PROJECT_DIR || process.cwd();
+  const name = root.split("/").filter(Boolean).at(-1);
+  assert.ok(evaluate(`cd .. && rm -rf ${name}`));
+  assert.ok(evaluate(`cd / && rm -rf ${root.slice(1)}`));
 });

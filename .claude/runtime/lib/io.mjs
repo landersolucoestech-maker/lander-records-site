@@ -80,10 +80,10 @@ export function workspaceFingerprint() {
 /** Path from a `git status --porcelain` line (robust to the trimmed first line). */
 export const porcelainPath = (line) => line.replace(/^[ MADRCUT?!]{1,2}\s+/, "").replace(/^.* -> /, "");
 
-/** Environment for executed checks: never leak a parent test-runner context (it would mask child exit codes). */
+/** Environment for executed checks: never leak a test-runner context or node/npm option overrides (they can mask failures). */
 export function childEnv(extra = {}) {
   const env = { ...process.env, ...extra };
-  delete env.NODE_TEST_CONTEXT;
+  for (const name of Object.keys(env)) if (name === "NODE_TEST_CONTEXT" || name === "NODE_OPTIONS" || /^npm_config_/i.test(name)) delete env[name];
   return env;
 }
 

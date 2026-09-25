@@ -31,7 +31,8 @@ export function verifyChain(records = loadEvidence()) {
 const chainHead = (id) => loadEvidence({ except: id }).filter((r) => r.id < id).at(-1)?.hash ?? "GENESIS";
 
 export { isProofArgv } from "./commands.mjs";
-import { isProofArgv as proofArgv } from "./commands.mjs";
+import { isProofArgv as proofArgv, ranNothing } from "./commands.mjs";
+import { currentMission, missionHash } from "./mission-def.mjs";
 /** Proof check for a recorded command: uses the stored argv (legacy records: whitespace split). */
 export const isProofCommand = (command = "", argv) => proofArgv(argv || splitCommand(command), { requireFiles: false });
 
@@ -89,7 +90,8 @@ export function runCommandEvidence({ argv, kind = "command", findings = [], crit
   const output = `${child.stdout || ""}${child.stderr || ""}`;
   // Missing binary / permission = environment gap (BLOCKED). A timeout is the command failing (FAIL).
   const blocked = child.error && ["ENOENT", "EACCES", "EPERM"].includes(child.error.code);
-  const result = blocked ? "BLOCKED" : child.status === 0 ? "PASS" : "FAIL";
+  // A test run that executed nothing proves nothing.
+  const result = blocked ? "BLOCKED" : child.status === 0 && !ranNothing(output) ? "PASS" : "FAIL";
   const after = workspaceFingerprint();
   if (after.fingerprint !== before.fingerprint) throw new OsError("WORKSPACE_CHANGED", "the workspace changed while the command ran; evidence would not describe a single state");
   return persist((id) => ({
@@ -130,10 +132,11 @@ export function recordReview({ reviewer, verdict, summary, findings = [], criter
     if (ticket.role !== reviewer) throw new OsError("TICKET_MISMATCH", `ticket was issued to ${ticket.role}, not ${reviewer}`);
     if (ticket.fingerprint !== ws.fingerprint) throw new OsError("TICKET_STALE", "the code changed since this review was dispatched; dispatch a new review");
     if (evidenceUsesTicket(nonce)) throw new OsError("TICKET_USED", "this ticket already backs a review record");
+    if (ticket.missionHash !== missionHash(currentMission())) throw new OsError("TICKET_STALE", "the mission definition changed since this review was dispatched; dispatch a new review");
   }
   const mission = checkLinks([], findings);
   return persist((id) => ({
-    id, kind: "review", findings, criteria: [], mission, ...(nonce ? { ticket: nonce } : {}), summary: summary || `${reviewer}: ${verdict}`, result: verdict,
+    id, kind: "review", findings, criteria: [], mission, missionHash: ticket?.missionHash ?? missionHash(currentMission()), ...(nonce ? { ticket: nonce } : {}), summary: summary || `${reviewer}: ${verdict}`, result: verdict,
     commit: ws.head, dirty: ws.dirty, fingerprint: ticket?.fingerprint ?? ws.fingerprint, environment: `review by ${reviewer}; report ${path.relative(REPO_ROOT, path.resolve(reportFile))}`,
     outputSha256: sha256(report), excerpt: report.slice(-3500), recordedAt: nowIso(), producer: reviewer,
   }));

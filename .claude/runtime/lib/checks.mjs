@@ -6,6 +6,7 @@ import { REPO_ROOT, walk, rel, git, osPath, readYml, workspaceFingerprint, child
 import { porcelainPath } from "./io.mjs";
 import { loadFindings, OPEN_STATES, PARKED_STATES } from "./findings.mjs";
 import { runCommandEvidence, loadEvidence, isFresh, provesFinding } from "./evidence.mjs";
+import { ranNothing } from "./commands.mjs";
 
 const SOURCE_EXT = /\.(ts|tsx|mjs|js|cjs|sql|css|yml|yaml)$/;
 
@@ -29,7 +30,7 @@ export async function runCheck(check, { record = false, context = "gate" } = {})
       if (!record) {
         const { spawnSync } = await import("node:child_process");
         const child = spawnSync(check.argv[0], check.argv.slice(1), { cwd: REPO_ROOT, env: childEnv(), encoding: "utf8", shell: false, maxBuffer: 64 * 1024 * 1024 });
-        return { status: child.status === 0 ? "PASS" : child.error?.code === "ENOENT" ? "BLOCKED" : "FAIL", detail: `${check.argv.join(" ")} exit=${child.status}${child.status ? `\n${`${child.stdout}${child.stderr}`.slice(-1200)}` : ""}` };
+        return { status: child.status === 0 && !ranNothing(`${child.stdout}${child.stderr}`) ? "PASS" : child.error?.code === "ENOENT" ? "BLOCKED" : "FAIL", detail: `${check.argv.join(" ")} exit=${child.status}${child.status ? `\n${`${child.stdout}${child.stderr}`.slice(-1200)}` : ""}` };
       }
       const ev = runCommandEvidence({ argv: check.argv, kind: check.evidenceKind || "command", summary: `${context}: ${check.argv.join(" ")}`, producer: context });
       return { status: ev.result, detail: `${ev.id} exit=${ev.exitCode}`, evidence: ev.id };
@@ -68,6 +69,32 @@ export async function runCheck(check, { record = false, context = "gate" } = {})
     case "fresh-evidence-for": {
       const evidence = loadEvidence().filter((e) => e.result === "PASS" && isFresh(e) && new RegExp(check.commandPattern).test(e.command || ""));
       return { status: evidence.length ? "PASS" : "FAIL", detail: evidence.length ? `fresh: ${evidence.map((e) => e.id).join(", ")}` : `no fresh PASS evidence matching /${check.commandPattern}/` };
+    }
+    case "preview-workflow-safety": {
+      // Structured check of the public preview (owner-level auth bypass): ADR-0006 / rules/security.md.
+      const dir = path.join(REPO_ROOT, ".github", "workflows");
+      const problems = [];
+      const unquoteKeys = (text) => text.replace(/(["'])([A-Za-z_][A-Za-z0-9_]*)\1(\s*:)/g, "$2$3");
+      for (const name of fs2.existsSync(dir) ? fs2.readdirSync(dir).filter((n) => /\.ya?ml$/.test(n)) : []) {
+        const text = fs2.readFileSync(path.join(dir, name), "utf8");
+        if (`.github/workflows/${name}` !== check.file && /DEV_PREVIEW_PUBLIC_ACCESS/.test(text)) problems.push(`${name} enables the preview bypass flag; only ${check.file} may`);
+      }
+      const previewFile = path.join(REPO_ROOT, check.file);
+      if (!fs2.existsSync(previewFile)) return { status: "FAIL", detail: `${check.file} missing` };
+      const preview = unquoteKeys(fs2.readFileSync(previewFile, "utf8"));
+      if (/\$\{\{[^}]*\b(secrets|vars)\b[^}]*\}\}/.test(preview)) problems.push("an expression references the secrets/vars context");
+      for (const line of preview.split("\n").filter((l) => /GITHUB_ENV/.test(l))) {
+        const name = line.match(/echo\s+["']?([A-Za-z_][A-Za-z0-9_]*)=/)?.[1];
+        if (!name || !(check.allowedEnvWrites || []).includes(name)) problems.push(`GITHUB_ENV write not in the allow-list: ${line.trim().slice(0, 80)}`);
+      }
+      for (const [key, allowed] of Object.entries(check.pinned)) {
+        const assignments = [...preview.matchAll(new RegExp(`\\b${key}\\b\\s*[:=]\\s*("[^"]*"|'[^']*'|[^\\s,}]+)`, "g"))].map((m) => m[1].replace(/^["']|["']$/g, ""));
+        const mentions = (preview.match(new RegExp(`\\b${key}\\b`, "g")) || []).length;
+        if (!assignments.length) problems.push(`${key} not set`);
+        for (const value of assignments) if (value !== allowed) problems.push(`${key} assigned ${JSON.stringify(value)} (only ${JSON.stringify(allowed)} allowed)`);
+        if (mentions !== assignments.length) problems.push(`${key} referenced outside a plain assignment`);
+      }
+      return { status: problems.length ? "FAIL" : "PASS", detail: problems.length ? problems.join("; ") : `${check.file} pinned: ${Object.keys(check.pinned).join(", ")}; no secrets/vars; flag only in ${check.file}` };
     }
     default:
       return { status: "FAIL", detail: `unknown check type ${check.type}` };

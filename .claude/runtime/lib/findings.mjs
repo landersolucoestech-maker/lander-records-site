@@ -82,6 +82,14 @@ export function readyQueue(all = loadFindings()) {
   return all.filter((f) => f.status === "READY" && !isBlocked(f, all)).sort((a, b) => priorityScore(b) - priorityScore(a) || a.id.localeCompare(b.id));
 }
 
+/** A proof must run one of the suites the finding names in requiredTests (paths or npm commands). */
+export function matchesRequiredTests(finding, record) {
+  const wanted = (finding.requiredTests || []).flatMap((t) => [...String(t).matchAll(/(tests\/[\w./-]+|\.claude\/runtime\/[\w./-]+|scripts\/[\w./-]+|npm (?:run )?[\w:-]+)/g)].map((m) => m[1]));
+  if (!wanted.length) return true;
+  const command = record.command || "";
+  return wanted.some((w) => command.includes(w));
+}
+
 // Transitions that claim verification need fresh PASS evidence about this finding.
 const NEEDS_FRESH_PROOF = new Set(["REAUDITING", "RESOLVED"]);
 
@@ -93,8 +101,8 @@ export function transition(finding, to, by, note, extra = {}) {
   if (NEEDS_FRESH_PROOF.has(to)) {
     const ws = workspaceFingerprint();
     const evidence = loadEvidence();
-    const proof = (next.evidenceRecords || []).filter((id) => { const e = evidence.find((r) => r.id === id); return e && provesFinding(e, finding.id, ws); });
-    if (!proof.length) throw new OsError("PROOF_REQUIRED", `${finding.id} -> ${to} needs --evidence with fresh PASS evidence that names ${finding.id}`);
+    const proof = (next.evidenceRecords || []).filter((id) => { const e = evidence.find((r) => r.id === id); return e && provesFinding(e, finding.id, ws) && matchesRequiredTests(finding, e); });
+    if (!proof.length) throw new OsError("PROOF_REQUIRED", `${finding.id} -> ${to} needs --evidence with fresh PASS evidence that names ${finding.id} and runs one of its requiredTests`);
   }
   if (to === "READY" && finding.status === "NEEDS_PRODUCT_DECISION" && finding.decision && !DECIDED.includes(decisionStatus(finding.decision))) {
     throw new OsError("DECISION_OPEN", `${finding.decision} is still open; record the decision first`);
