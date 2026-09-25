@@ -150,7 +150,11 @@ try {
       `;
     }
   }
-  if (artistId) await client`DELETE FROM artists WHERE id=${artistId}`;
+  if (artistId) {
+    // Mirrors deleteArtistAction: the metric cache has no FK to artists.
+    await client`DELETE FROM integration_metric_cache WHERE entity_type='artist' AND entity_id=${artistId}`;
+    await client`DELETE FROM artists WHERE id=${artistId}`;
+  }
   await client.end();
   await globalThis.__landerRecordsDb?.client?.end();
 }
