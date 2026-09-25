@@ -36,4 +36,5 @@ test("the contact form keeps its element across the awaited submit", () => {
   assert.doesNotMatch(submitBody.slice(firstAwait), /event\.currentTarget/, "event.currentTarget is null after the handler yields");
   assert.match(submitBody, /formElement\.reset\(\)/);
   assert.match(submitBody, /response\.json\(\)\.catch\(/, "non-JSON error pages must not surface parser errors to visitors");
+  assert.match(submitBody, /fetch\("\/api\/contact\/"/, "trailingSlash: true would 308-redirect every submission");
 });

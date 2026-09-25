@@ -44,7 +44,7 @@ export function ContactForm({ topics }: { topics: Topic[] }) {
     };
 
     try {
-      const response = await fetch("/api/contact", {
+      const response = await fetch("/api/contact/", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
