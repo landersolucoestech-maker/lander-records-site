@@ -48,3 +48,22 @@ test("evidence cannot be asserted and records the real exit code", () => {
     assert.match(record.fingerprint, /^[0-9a-f]{64}$/);
   } finally { box.cleanup(); }
 });
+
+test("workspace fingerprint ignores OS records and commits, but tracks product changes", () => {
+  const box = sandbox();
+  try {
+    const fp = () => JSON.parse(box.run("controller.mjs", ["status"]).stdout).workspace;
+    const probe = () => box.run("evidence.mjs", ["run", "--", process.execPath, "-e", "0"]);
+    probe();
+    const first = JSON.parse(fs.readFileSync(path.join(box.root, ".claude", "evidence", "EV-0001.json"), "utf8")).fingerprint;
+    box.git("add", "-A"); box.git("commit", "-qm", "record evidence");
+    probe();
+    const afterCommit = JSON.parse(fs.readFileSync(path.join(box.root, ".claude", "evidence", "EV-0002.json"), "utf8")).fingerprint;
+    assert.equal(afterCommit, first, "committing records must not change the fingerprint");
+    fs.writeFileSync(path.join(box.root, "product.ts"), "export const x = 1;\n");
+    probe();
+    const afterChange = JSON.parse(fs.readFileSync(path.join(box.root, ".claude", "evidence", "EV-0003.json"), "utf8")).fingerprint;
+    assert.notEqual(afterChange, first, "product changes must change the fingerprint");
+    void fp;
+  } finally { box.cleanup(); }
+});

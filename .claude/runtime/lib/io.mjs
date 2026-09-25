@@ -55,14 +55,19 @@ export function git(args, { allowFail = false } = {}) {
   return result.status === 0 ? result.stdout.trim() : "";
 }
 
-/** Workspace identity: HEAD + staged diff + unstaged diff + untracked file contents (runtime-volatile state excluded). */
+// OS record directories are bookkeeping about the workspace, not part of it: recording evidence,
+// transitioning findings or committing them must not invalidate evidence about the product.
+export const RECORD_PATHS = [".claude/state", ".claude/evidence", ".claude/findings", ".claude/reports"];
+
+/** Content identity of the workspace: index blobs + worktree diff + untracked contents (HEAD-independent). */
 export function workspaceFingerprint() {
   const head = git(["rev-parse", "HEAD"], { allowFail: true }) || "NO_HEAD";
-  const exclude = [":(exclude).claude/state/.run", ":(exclude).claude/evidence", ":(exclude).claude/state/mission.yml", ":(exclude).claude/state/validation-history.yml"];
-  const staged = git(["diff", "--cached", "--binary", "--", ".", ...exclude], { allowFail: true });
+  const exclude = RECORD_PATHS.map((p) => `:(exclude)${p}`);
+  const index = git(["ls-files", "-s", "--", ".", ...exclude], { allowFail: true });
+  const staged = git(["diff", "--cached", "--name-only", "--", ".", ...exclude], { allowFail: true });
   const unstaged = git(["diff", "--binary", "--", ".", ...exclude], { allowFail: true });
   const untracked = git(["ls-files", "--others", "--exclude-standard", "--", ".", ...exclude], { allowFail: true }).split("\n").filter(Boolean).sort();
-  const hash = crypto.createHash("sha256").update(head).update("\0").update(staged).update("\0").update(unstaged);
+  const hash = crypto.createHash("sha256").update(index).update("\0").update(unstaged);
   for (const file of untracked) {
     hash.update(`\0${file}\0`);
     try { hash.update(fs.readFileSync(repoPath(file))); } catch { hash.update("UNREADABLE"); }

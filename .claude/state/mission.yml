@@ -1,6 +1,97 @@
 # Mission state — written by .claude/runtime/mission.mjs (contract: contracts/mission.schema.json)
-# Format: JSON-compatible YAML (YAML 1.2 superset of JSON) — see .claude/decisions/ADR-0002-machine-readable-yaml.md
+# Format: JSON-compatible YAML (ADR-0002). Written by .claude/runtime.
 {
-  "current": null,
+  "current": {
+    "id": "M-20260925-001",
+    "objective": "Build the self-contained Lander Records Autonomous Product Engineering OS in .claude/ from the real repository and autonomously audit/fix safely fixable defects",
+    "status": "ACTIVE",
+    "startedAt": "2026-09-25T14:39:43.572Z",
+    "baseCommit": "3b996810039b92c584ac8819c7c5e600f41ed0cb",
+    "branch": "claude/upbeat-edison-4x54r1",
+    "verdict": "PENDING",
+    "findings": [],
+    "requirements": [
+      {
+        "id": "R-001",
+        "text": "Contact form reports true outcomes and posts to the served route (F-0001, F-0010)",
+        "nonRequirement": false,
+        "criteria": [
+          {
+            "id": "C-001",
+            "text": "browser contact journey passes on built server"
+          }
+        ]
+      },
+      {
+        "id": "R-002",
+        "text": "Contact rate limit keyed on trusted client IP (F-0002)",
+        "nonRequirement": false,
+        "criteria": [
+          {
+            "id": "C-002",
+            "text": "client IP unit tests pass"
+          }
+        ]
+      },
+      {
+        "id": "R-003",
+        "text": "Metrics withdrawn with invalidated identities; provider calls time-bounded (F-0003, F-0004)",
+        "nonRequirement": false,
+        "criteria": [
+          {
+            "id": "C-003",
+            "text": "identity sync DB integration test passes"
+          },
+          {
+            "id": "C-008",
+            "text": "typecheck passes"
+          }
+        ]
+      },
+      {
+        "id": "R-004",
+        "text": "Bounded lead outbox retry with dead letter; schema contract current (F-0005, F-0007)",
+        "nonRequirement": false,
+        "criteria": [
+          {
+            "id": "C-004",
+            "text": "outbox policy unit + delivery integration + migration path pass"
+          },
+          {
+            "id": "C-005",
+            "text": "audit-db reports SCHEMA_DRIFT=PASS"
+          }
+        ]
+      },
+      {
+        "id": "R-005",
+        "text": "Every public page self-canonical; sitemap equals served URLs (F-0009, F-0010)",
+        "nonRequirement": false,
+        "criteria": [
+          {
+            "id": "C-006",
+            "text": "seo unit contract + built-server canonical probe pass"
+          }
+        ]
+      },
+      {
+        "id": "R-006",
+        "text": "OS is self-contained in .claude/, validated, independent of any other pack",
+        "nonRequirement": false,
+        "criteria": [
+          {
+            "id": "C-007",
+            "text": "os:validate and test:claude-os pass"
+          }
+        ]
+      },
+      {
+        "id": "R-007",
+        "text": "Do not wire the contact form to any external product; do not modify any pre-existing directory outside .claude/ except for fixes",
+        "nonRequirement": true,
+        "criteria": []
+      }
+    ]
+  },
   "history": []
 }

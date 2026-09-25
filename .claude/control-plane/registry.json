@@ -778,6 +778,10 @@
       {
         "id": "release",
         "path": "gates/release.json"
+      },
+      {
+        "id": "seo",
+        "path": "gates/seo.json"
       }
     ],
     "sensors": [
@@ -844,6 +848,10 @@
       {
         "id": "env-contract",
         "path": "sensors/env-contract.json"
+      },
+      {
+        "id": "seo-canonical",
+        "path": "sensors/seo-canonical.json"
       }
     ]
   },
@@ -989,7 +997,7 @@
       ],
       "workflow": "seo",
       "gates": [
-        "implementation",
+        "seo",
         "regression"
       ]
     },

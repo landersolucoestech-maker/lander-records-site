@@ -1,0 +1,9 @@
+{
+  "id": "seo",
+  "title": "SEO gate — canonicals, sitemap and robots on the built site",
+  "checks": [
+    { "name": "canonical/sitemap unit contract", "type": "command", "argv": ["node", "--test", "tests/unit/seo-canonical.test.mjs"] },
+    { "name": "served URLs self-canonical", "type": "command", "argv": ["node", ".claude/runtime/probes/seo-canonical.mjs"], "requiresEnv": ["OS_BASE_URL"], "evidenceKind": "runtime" },
+    { "name": "no open P0/P1 SEO findings", "type": "no-open-findings", "domains": ["seo"] }
+  ]
+}

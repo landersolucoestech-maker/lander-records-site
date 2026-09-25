@@ -1,0 +1,10 @@
+{
+  "id": "seo-canonical",
+  "title": "Sitemap URLs are served without redirect and self-canonical",
+  "kind": "check",
+  "domain": "seo",
+  "feeds": "search indexing",
+  "invariant": "published URL = served URL = canonical URL",
+  "severity": "P1",
+  "check": { "type": "command", "argv": ["node", ".claude/runtime/probes/seo-canonical.mjs"], "requiresEnv": ["OS_BASE_URL"] }
+}

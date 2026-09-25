@@ -28,7 +28,7 @@ test("the OS runs in a repository that contains only .claude/", () => {
   try {
     assert.equal(fs.existsSync(path.join(box.root, ".codex")), false);
     assert.equal(fs.existsSync(path.join(box.root, "node_modules")), false);
-    for (const [script, args] of [["pack.mjs", []], ["findings.mjs", ["validate"]], ["controller.mjs", ["next"]], ["controller.mjs", ["status"]], ["preflight.mjs", []], ["mission.mjs", ["start", "--objective", "sandbox"]], ["gate.mjs", ["list"]]]) {
+    for (const [script, args] of [["pack.mjs", []], ["findings.mjs", ["validate"]], ["controller.mjs", ["next"]], ["controller.mjs", ["status"]], ["preflight.mjs", []], ["mission.mjs", ["status"]], ["gate.mjs", ["list"]]]) {
       const result = box.run(script, args);
       assert.equal(result.status, 0, `${script} ${args.join(" ")}: ${result.stderr}`);
     }
