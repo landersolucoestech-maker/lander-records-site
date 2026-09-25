@@ -260,7 +260,7 @@ jobs:
       - name: Keep preview online
         run: |
           echo "Preview admin: $PREVIEW_URL/admin"
-          for minute in $(seq 1 75); do
+          for minute in $(seq 1 180); do
             if ! kill -0 "$APP_PID" 2>/dev/null; then
               cat /tmp/lander-preview.log
               exit 1
