@@ -5,6 +5,12 @@ export function absoluteUrl(pathname: string) {
   return `${base}${pathname.startsWith("/") ? pathname : `/${pathname}`}`;
 }
 
+/** Page URL in the form the site actually serves (next.config trailingSlash: true); other forms 308-redirect. */
+export function absolutePageUrl(pathname: string) {
+  const url = absoluteUrl(pathname);
+  return url.endsWith("/") ? url : `${url}/`;
+}
+
 export function normalizeCanonicalOverride(value: string | null | undefined) {
   const candidate = value?.trim();
   if (!candidate) return "";
@@ -33,7 +39,8 @@ export function resolveCanonicalUrl(value: string | null | undefined, fallbackPa
 export async function buildMetadata(input: {
   title?: string;
   description?: string;
-  canonical?: string;
+  /** Required: a missing canonical must never fall back to the homepage (it would declare the page a duplicate of "/"). */
+  canonical: string;
   image?: string;
   type?: "website" | "article";
 }): Promise<Metadata> {
@@ -41,7 +48,7 @@ export async function buildMetadata(input: {
   const { settings, socialImageUrl } = await getSiteChrome();
   const title = input.title || settings.defaultSeoTitle || settings.brandName;
   const description = input.description || settings.defaultSeoDescription || settings.tagline;
-  const canonical = input.canonical || absoluteUrl("/");
+  const canonical = input.canonical;
   const socialImage = input.image || socialImageUrl || "";
 
   return {

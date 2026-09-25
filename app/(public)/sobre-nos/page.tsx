@@ -1,6 +1,6 @@
 import { GroupCompaniesTabs } from "./GroupCompaniesTabs";
 import { getPageContent } from "@/modules/pages";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, resolveCanonicalUrl } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +9,7 @@ export async function generateMetadata() {
   return buildMetadata({
     title: content?.page.seoTitle || content?.page.title,
     description: content?.page.seoDescription || undefined,
-    canonical: content?.page.canonicalUrl || undefined,
+    canonical: resolveCanonicalUrl(content?.page.canonicalUrl, "/sobre-nos"),
   });
 }
 
