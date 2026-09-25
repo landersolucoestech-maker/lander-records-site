@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { requireAdmin } from "../../../../../lib/auth";
 import { getDb } from "../../../../../lib/db";
 import { mediaAssets, pageSectionItems, pageSections, pages } from "../../../../../lib/db/schema";
+import { mockDataEnabled, mockMediaOptions, mockPageItems, mockPages, mockPageSections } from "../../../../../lib/mocks";
 import { AdminContextHeaderSync } from "../../../components/AdminContextHeaderSync";
 import PageContentWorkbench, { type PageEditorItem, type PageEditorSection, type PageMediaOption } from "./PageContentWorkbench";
 import { pageContract } from "../page-contract";
@@ -20,7 +21,11 @@ export default async function PageContentEditor({ params, searchParams }: { para
   // Development preview sessions may inspect the section editor; mutations remain guarded by the existing server actions.
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const db = getDb();
-  const [pageRows, sections, mediaRows] = await Promise.all([
+  const [pageRows, sections, mediaRows] = mockDataEnabled() ? [
+    mockPages.filter((page) => page.id === id),
+    mockPageSections.filter((section) => section.pageId === id).sort((left, right) => left.position - right.position),
+    mockMediaOptions,
+  ] : await Promise.all([
     db.select().from(pages).where(eq(pages.id, id)).limit(1),
     db.select().from(pageSections).where(eq(pageSections.pageId, id)).orderBy(asc(pageSections.position)),
     db.select({
@@ -34,9 +39,11 @@ export default async function PageContentEditor({ params, searchParams }: { para
   const page = pageRows[0];
   if (!page) notFound();
 
-  const itemRows = sections.length
-    ? await db.select().from(pageSectionItems).where(inArray(pageSectionItems.sectionId, sections.map((section) => section.id))).orderBy(asc(pageSectionItems.position))
-    : [];
+  const itemRows = mockDataEnabled()
+    ? mockPageItems.filter((item) => sections.some((section) => section.id === item.sectionId)).sort((left, right) => left.position - right.position)
+    : sections.length
+      ? await db.select().from(pageSectionItems).where(inArray(pageSectionItems.sectionId, sections.map((section) => section.id))).orderBy(asc(pageSectionItems.position))
+      : [];
 
   const editorSections: PageEditorSection[] = sections.map((section) => ({
     id: section.id,
