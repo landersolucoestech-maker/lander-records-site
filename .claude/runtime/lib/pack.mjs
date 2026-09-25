@@ -3,9 +3,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { OS_DIR, osPath, readJson, readYml, walk } from "./io.mjs";
 import { validate } from "./schema.mjs";
-import { loadFindings, validateFinding, buildIndex } from "./findings.mjs";
+import { loadFindings, validateFinding, buildIndex, buildDecisions } from "./findings.mjs";
 import { loadEvidence, verifyChain } from "./evidence.mjs";
-import { REPO_ROOT } from "./io.mjs";
+import { REPO_ROOT, git } from "./io.mjs";
 
 export const CANONICAL = ["CLAUDE.md", "kernel", "control-plane", "agents", "subagents", "integrations", "leads", "identity", "auditors", "reviewers", "guardians", "contracts", "policies", "rules", "skills", "workflows", "gates", "sensors", "runtime", "state", "findings", "evidence", "knowledge", "graphs", "schemas", "decisions", "incidents", "reports", "templates"];
 // Claude Code native configuration files (ADR-0006).
@@ -54,7 +54,7 @@ export function validatePack() {
   for (const file of all) {
     const r = osRel(file);
     const text = fs.readFileSync(file, "utf8");
-    if (/\.codex|codex/i.test(text) && !NON_OPERATIONAL.has(r) && !r.startsWith("settings")) errors.push(`independence: ${r} references the out-of-architecture Codex pack`);
+    if (/\.codex|codex/i.test(text) && !NON_OPERATIONAL.has(r)) errors.push(`independence: ${r} references the out-of-architecture Codex pack`);
     if (r.endsWith(".yml")) { try { readYml(file); } catch (error) { errors.push(error.message); } }
     if (r.endsWith(".json")) { try { JSON.parse(text); } catch (error) { errors.push(`${r}: invalid JSON ${error.message}`); } }
   }
@@ -133,8 +133,9 @@ export function validatePack() {
   if (fs.existsSync(settingsFile)) {
     const settings = readJson(settingsFile);
     for (const hooks of Object.values(settings.hooks || {})) for (const group of hooks) for (const hook of group.hooks || []) {
-      const script = hook.command?.match(/\.claude\/runtime\/[\w/.-]+\.mjs/)?.[0];
-      if (script && !fs.existsSync(path.join(REPO_ROOT, script))) errors.push(`settings.json hook references missing ${script}`);
+      const script = hook.command?.match(/[\w$./-]+\.(mjs|js|cjs|sh)\b/)?.[0]?.replace(/^\$?CLAUDE_PROJECT_DIR\//, "");
+      if (!script || !script.startsWith(".claude/runtime/")) errors.push(`settings.json hook must run a script under .claude/runtime/: ${hook.command}`);
+      else if (!fs.existsSync(path.join(REPO_ROOT, script))) errors.push(`settings.json hook references missing ${script}`);
     }
   }
   const missionFile = osPath("state", "mission.yml");
@@ -162,7 +163,40 @@ export function validatePack() {
   for (const f of findings) if (f.decision && !fs.readdirSync(osPath("decisions")).some((n) => n.startsWith(f.decision))) errors.push(`${f.id}: decision ${f.decision} missing`);
   const evidenceSchema = readJson(osPath("contracts", "evidence.schema.json"));
   for (const record of loadEvidence()) errors.push(...validate(evidenceSchema, record).map((e) => `${record.id}: ${e}`));
+  errors.push(...gitAnchorErrors());
+  const decisionsFile = osPath("state", "decisions.yml");
+  if (!fs.existsSync(decisionsFile) || JSON.stringify(readYml(decisionsFile)) !== JSON.stringify(buildDecisions(findings))) errors.push("state/decisions.yml is stale: run node .claude/runtime/findings.mjs index");
   const indexFile = osPath("state", "findings.yml");
   if (!fs.existsSync(indexFile) || JSON.stringify(readYml(indexFile)) !== JSON.stringify(buildIndex(findings))) errors.push("state/findings.yml is stale: run node .claude/runtime/findings.mjs index");
   return { errors, stats: { files: all.length, findings: findings.length, evidence: loadEvidence().length, registered: registered.size } };
+}
+
+/**
+ * Git is the trust anchor for records: once committed, an evidence record is immutable and a finding's
+ * history is append-only. New (uncommitted) history entries may not be marked reconstructed.
+ */
+export function gitAnchorErrors() {
+  const errors = [];
+  if (!git(["rev-parse", "--verify", "HEAD"], { allowFail: true })) return errors;
+  const tracked = (dir) => git(["ls-tree", "-r", "--name-only", "HEAD", "--", `.claude/${dir}`], { allowFail: true }).split("\n").filter((f) => /\/(EV|F)-\d{4}\.json$/.test(f));
+  const committed = (file) => git(["show", `HEAD:${file}`], { allowFail: true });
+  for (const file of tracked("evidence")) {
+    const full = path.join(REPO_ROOT, file);
+    if (!fs.existsSync(full)) { errors.push(`${file}: committed evidence was deleted`); continue; }
+    if (JSON.stringify(JSON.parse(committed(file))) !== JSON.stringify(JSON.parse(fs.readFileSync(full, "utf8")))) errors.push(`${file}: committed evidence was modified`);
+  }
+  for (const file of tracked("findings")) {
+    const full = path.join(REPO_ROOT, file);
+    if (!fs.existsSync(full)) { errors.push(`${file}: committed finding was deleted`); continue; }
+    const before = JSON.parse(committed(file)).history || [];
+    const now = JSON.parse(fs.readFileSync(full, "utf8")).history || [];
+    if (JSON.stringify(now.slice(0, before.length)) !== JSON.stringify(before)) errors.push(`${file}: committed history was rewritten (history is append-only)`);
+    if (now.slice(before.length).some((h) => h.reconstructed)) errors.push(`${file}: new history entries cannot be marked reconstructed`);
+  }
+  const untrackedFindings = git(["ls-files", "--others", "--exclude-standard", "--", ".claude/findings"], { allowFail: true }).split("\n").filter(Boolean);
+  for (const file of untrackedFindings) {
+    const f = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, file), "utf8"));
+    if ((f.history || []).some((h) => h.reconstructed)) errors.push(`${file}: new findings cannot contain reconstructed history`);
+  }
+  return errors;
 }

@@ -1,0 +1,18 @@
+{
+  "id": "EV-0016",
+  "kind": "review",
+  "findings": [],
+  "criteria": [],
+  "summary": "OS re-review at a3635a7: bypasses demonstrated (self-asserted evidence/reviews, forgeable gate history, hook bypasses)",
+  "result": "FAIL",
+  "commit": "a3635a72d654be0bc3ddde93904f5dc802a09b2d",
+  "dirty": false,
+  "fingerprint": "a6a600f32ebd872a3ca4a8f8c8c844f6a7dad95a31430927fe6994f0ff454c28",
+  "environment": "review by architecture-reviewer; report .claude/reports/reviews/2026-09-25-architecture-reviewer-os-pack-rereview.md",
+  "outputSha256": "b6776416b4a4b37552f651b762c8237725654e25259a89422d1132775a1690dc",
+  "excerpt": "# Re-review — architecture-reviewer — .claude OS after 5864ccb / a3635a7 (HEAD a3635a7)\n\nIndependent read-only re-review; bypasses demonstrated in throwaway clones. Condensed from the reviewer's hand-back.\n\n## Prior items\n- H1 PARTIAL: reviewer identity self-declared; review fingerprint = recording time, not reviewed code; non-required reviewer FAIL disappears after an edit; regression gate result forgeable in state/validation-history.yml. Demonstrated closing a mission with verdict C using `true` evidence and a self-written review.\n- H2 CLOSED at CLI (mission.yml still hand-editable). H3 PARTIAL: hand-edited F-0006 to RESOLVED passed (replay does not re-check decision guard / proof at REAUDITING). H4 CLOSED. H5 PARTIAL: freshness only for CLI-touched mission findings; any command (`true`) is proof. H6 CLOSED. H7 PARTIAL: hook fails open, many bypasses.\n- M1 OPEN: secretless chain recomputable; appended/rewritten records validate; docs overclaim. M2 PARTIAL: any command closes any criterion; old evidence closes new mission criteria. M3 CLOSED. M4 PARTIAL: concurrent writers break the chain. M5–M8 CLOSED. M9 PARTIAL (README claims ajv). M10 CLOSED.\n\n## New\n1. HIGH old evidence closes a new mission's criteria (criterion ids restart; evidence not bound to mission).\n2. HIGH regression-gate condition forgeable (unprotected YAML).\n3. MEDIUM concurrent evidence writers break the chain (24 parallel runs → PACK_INVALID).\n4. MEDIUM guard hook fails open (path with space/symlink, bad JSON) and is bypassable (git -C, reset HEAD~3 --hard, push +main, restore --staged --worktree, checkout HEAD -- ., stash clear, branch -Df, rm --recursive --force, rm -rf \"$PWD\", DROP TABLE with '# lander_test' comment, cat .env.staging, printenv VAR, node readFileSync('.env'), bare db:migrate, user named localhost); false positives on grep/git log.\n5. MEDIUM docs claim guarantees the code does not provide (CLAUDE.md, ADR-0006, contracts README).\n6. MEDIUM review evidence not bound to what/who was reviewed.\n7. LOW settings.json exempt from independence scan; hook check only .claude paths. 8. LOW dismissed signals re-raised. 9. LOW mission status counts reviews. 10. LOW SUPERSEDED handled inconsistently. 11. LOW REAUDITING proof not validated statically; decisions.yml staleness unchecked.\n\nRequirements: self-contained holds; layout holds; grounding mostly; NO EVIDENCE = NO CLAIM fails.\n\nVERDICT: FAIL\n",
+  "recordedAt": "2026-09-25T15:13:17.750Z",
+  "producer": "architecture-reviewer",
+  "prevHash": "9e84362ccf3830ef20ca4e94f3049a4dba754e7cb75b9d7a5c4926d66a2d37cd",
+  "hash": "582a3847ffbf81cf6ad7c145f35bd41291a88b63ee7d2ae6de4bff5e7537af23"
+}

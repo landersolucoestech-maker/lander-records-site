@@ -39,17 +39,28 @@ export function loadFindings() {
   return fs.readdirSync(FINDINGS_DIR).filter((name) => /^F-\d{4}\.json$/.test(name) && fs.statSync(path.join(FINDINGS_DIR, name)).size > 0).sort().map((name) => readJson(path.join(FINDINGS_DIR, name)));
 }
 
-/** Static validation: contract + full history replay against TRANSITIONS + evidence that is about the finding. */
+const DECIDED = ["DECIDED", "ACCEPTED"];
+const proofFor = (finding, evidence, beforeIso) => (finding.evidenceRecords || []).some((id) => {
+  const e = evidence.find((r) => r.id === id);
+  return e && provesFinding(e, finding.id) && (!beforeIso || Date.parse(e.recordedAt) <= Date.parse(beforeIso));
+});
+
+/** Static validation: contract + full history replay with the same guards the transition CLI enforces. */
 export function validateFinding(finding, evidence = loadEvidence()) {
   const errors = validate(schema(), finding).map((message) => `${finding.id ?? "?"}: ${message}`);
   const history = finding.history || [];
   if (history[0] && history[0].status !== "DISCOVERED") errors.push(`${finding.id}: history must start at DISCOVERED`);
   for (let i = 1; i < history.length; i += 1) {
-    if (!(TRANSITIONS[history[i - 1].status] || []).includes(history[i].status)) errors.push(`${finding.id}: illegal transition in history ${history[i - 1].status} -> ${history[i].status}`);
-    if (Date.parse(history[i].at) < Date.parse(history[i - 1].at)) errors.push(`${finding.id}: history timestamps go backwards`);
+    const [prev, cur] = [history[i - 1], history[i]];
+    if (!(TRANSITIONS[prev.status] || []).includes(cur.status)) errors.push(`${finding.id}: illegal transition in history ${prev.status} -> ${cur.status}`);
+    if (Date.parse(cur.at) < Date.parse(prev.at)) errors.push(`${finding.id}: history timestamps go backwards`);
+    if (prev.status === "NEEDS_PRODUCT_DECISION" && cur.status === "READY" && !DECIDED.includes(decisionStatus(finding.decision))) errors.push(`${finding.id}: left NEEDS_PRODUCT_DECISION while ${finding.decision} is not decided`);
+    // Verification states need PASS proof (real test/probe naming the finding) recorded before the entry.
+    // Pre-runtime entries marked reconstructed may reach REAUDITING without it, never RESOLVED (pack.mjs forbids new reconstructed entries).
+    if (cur.status === "REAUDITING" && !cur.reconstructed && !proofFor(finding, evidence, cur.at)) errors.push(`${finding.id}: REAUDITING at ${cur.at} without prior proof evidence naming the finding`);
+    if (cur.status === "RESOLVED" && !proofFor(finding, evidence, cur.at)) errors.push(`${finding.id}: RESOLVED at ${cur.at} without prior proof evidence naming the finding`);
   }
   if (history.at(-1)?.status !== finding.status) errors.push(`${finding.id}: last history entry must equal current status`);
-  if (finding.status === "RESOLVED" && !(finding.evidenceRecords || []).some((id) => { const e = evidence.find((r) => r.id === id); return e && provesFinding(e, finding.id); })) errors.push(`${finding.id}: RESOLVED requires PASS evidence that names this finding`);
   if (finding.status === "NEEDS_PRODUCT_DECISION" && !finding.decision) errors.push(`${finding.id}: NEEDS_PRODUCT_DECISION requires a decision record`);
   return errors;
 }
@@ -61,7 +72,7 @@ export function priorityScore(finding) {
 
 export function isBlocked(finding, all) {
   return (finding.dependencies || []).some((dep) => {
-    if (dep.startsWith("DEC-")) return !["DECIDED", "ACCEPTED", "SUPERSEDED"].includes(decisionStatus(dep));
+    if (dep.startsWith("DEC-")) return !DECIDED.includes(decisionStatus(dep));
     const target = all.find((item) => item.id === dep);
     return !target || !CLOSED_STATES.includes(target.status);
   });
@@ -85,7 +96,7 @@ export function transition(finding, to, by, note, extra = {}) {
     const proof = (next.evidenceRecords || []).filter((id) => { const e = evidence.find((r) => r.id === id); return e && provesFinding(e, finding.id, ws); });
     if (!proof.length) throw new OsError("PROOF_REQUIRED", `${finding.id} -> ${to} needs --evidence with fresh PASS evidence that names ${finding.id}`);
   }
-  if (to === "READY" && finding.status === "NEEDS_PRODUCT_DECISION" && finding.decision && !["DECIDED", "ACCEPTED"].includes(decisionStatus(finding.decision))) {
+  if (to === "READY" && finding.status === "NEEDS_PRODUCT_DECISION" && finding.decision && !DECIDED.includes(decisionStatus(finding.decision))) {
     throw new OsError("DECISION_OPEN", `${finding.decision} is still open; record the decision first`);
   }
   const errors = validateFinding(next);

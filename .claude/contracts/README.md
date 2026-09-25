@@ -1,6 +1,6 @@
 # Contracts
 
-JSON Schema (draft-07) for every record the pack produces or consumes. `runtime/pack.mjs` validates findings (`findings/*.json`), evidence (`evidence/*.json`) and agent front matter against these with ajv (already a devDependency).
+JSON Schema (draft-07) for every record the pack produces or consumes. `runtime/lib/schema.mjs` (dependency-free draft-07 subset) validates the contracts marked runtime-enforced below; agent front matter is checked structurally by `runtime/pack.mjs` (name/description/tools), not against `agent.schema.json`.
 
 | Contract | Validates |
 |---|---|

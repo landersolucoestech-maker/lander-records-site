@@ -1,9 +1,13 @@
-// Completion engine (kernel/completion-engine.md). The only producer of a mission verdict.
+// Completion engine (kernel/completion-engine.md) — the only producer of a mission verdict.
+// Trust model (ADR-0007): recorded PASS is never trusted on its own. Completion RE-EXECUTES every criterion's
+// declared verify command, the proof command of every finding resolved in the mission, and the regression gate,
+// against the current workspace. Records are an audit trail; git is their anchor (pack.mjs gitAnchorErrors).
 import fs from "node:fs";
-import { osPath, readYml, git, workspaceFingerprint } from "./io.mjs";
+import { osPath, readJson, readYml, git, workspaceFingerprint, splitCommand, RECORD_PATHS, GENERATED_PATHS } from "./io.mjs";
 import { loadFindings, OPEN_STATES, PARKED_STATES, validateFinding } from "./findings.mjs";
-import { loadEvidence, isFresh, provesFinding, verifyChain } from "./evidence.mjs";
+import { loadEvidence, provesFinding, verifyChain, runCommandEvidence } from "./evidence.mjs";
 import { validatePack } from "./pack.mjs";
+import { runCheck } from "./checks.mjs";
 
 export const VERDICT_LABELS = {
   A: "MISSÃO CONCLUÍDA E ESTADO VALIDADO",
@@ -11,59 +15,82 @@ export const VERDICT_LABELS = {
   C: "BLOQUEADO POR DECISÃO DE PRODUTO",
   D: "REGRESSÃO OU ESTADO INSEGURO / CONDIÇÕES DE CONCLUSÃO NÃO ATENDIDAS",
 };
-const L5_REVIEWER = "security-reviewer";
 const ALWAYS_REVIEWER = "adversarial-reviewer";
-const REQUIRED_GATE = "regression";
+const L5_REVIEWER = "security-reviewer";
 
-export function evaluateCompletion() {
-  const ws = workspaceFingerprint();
-  const findings = loadFindings();
-  const evidence = loadEvidence();
+export async function evaluateCompletion({ execute = true } = {}) {
   const conditions = [];
   const add = (name, ok, detail = "") => conditions.push({ name, ok, detail });
-
+  const attempt = (fn) => { try { return fn(); } catch (error) { return { result: "FAIL", id: "-", error: `${error.code || "ERROR"}: ${error.message}` }; } };
+  const findings = loadFindings();
+  const evidence = loadEvidence();
   const missionFile = osPath("state", "mission.yml");
   const mission = fs.existsSync(missionFile) ? readYml(missionFile).current : null;
-  add("active mission exists", Boolean(mission && mission.status === "ACTIVE"), mission ? `${mission.id} ${mission.status}` : "none");
+  add("active mission exists", mission?.status === "ACTIVE", mission ? `${mission.id} ${mission.status}` : "none");
   const requirements = (mission?.requirements || []).filter((r) => !r.nonRequirement);
-  add("mission has requirements", requirements.length > 0, `${requirements.length} requirement(s)`);
-  add("every requirement has criteria", requirements.length > 0 && requirements.every((r) => r.criteria.length > 0));
   const criteria = requirements.flatMap((r) => r.criteria);
-  const openCriteria = criteria.filter((c) => !evidence.some((e) => (e.criteria || []).includes(c.id) && e.result === "PASS" && e.kind !== "review" && isFresh(e, ws)));
-  add("every criterion closed by fresh executed PASS evidence", criteria.length > 0 && openCriteria.length === 0, openCriteria.length ? `open: ${openCriteria.map((c) => c.id).join(", ")}` : `${criteria.length} closed`);
+  add("requirements each have criteria with declared verify commands", requirements.length > 0 && requirements.every((r) => r.criteria.length) && criteria.every((c) => c.verify), `${requirements.length} requirement(s), ${criteria.length} criteria`);
 
+  // Structural integrity first (cheap).
   const invalid = findings.flatMap((f) => validateFinding(f, evidence));
-  add("findings satisfy contract and lifecycle", invalid.length === 0, invalid.slice(0, 5).join("; "));
-  add("evidence chain intact", verifyChain(evidence).length === 0, verifyChain(evidence).slice(0, 3).join("; "));
+  add("findings satisfy contract and replayed lifecycle", invalid.length === 0, invalid.slice(0, 5).join("; "));
+  const chain = verifyChain(evidence);
+  add("evidence chain intact", chain.length === 0, chain.slice(0, 3).join("; "));
+  const pack = validatePack();
+  add("pack integrity (incl. git anchoring of records)", pack.errors.length === 0, pack.errors.slice(0, 5).join("; "));
   const ready = findings.filter((f) => f.status === "READY");
   add("no READY findings remain", ready.length === 0, ready.map((f) => f.id).join(", "));
   const inFlight = findings.filter((f) => OPEN_STATES.includes(f.status) && f.status !== "READY");
   add("no in-flight findings", inFlight.length === 0, inFlight.map((f) => `${f.id}:${f.status}`).join(", "));
-  const missionFindings = findings.filter((f) => (mission?.findings || []).includes(f.id) && f.status === "RESOLVED");
-  const unproven = missionFindings.filter((f) => !(f.evidenceRecords || []).some((id) => { const e = evidence.find((r) => r.id === id); return e && provesFinding(e, f.id, ws); }));
-  add("findings resolved in this mission have fresh proof", unproven.length === 0, unproven.map((f) => f.id).join(", "));
+  const dirty = git(["status", "--porcelain"], { allowFail: true }).split("\n").filter(Boolean).map((l) => l.slice(3)).filter((file) => ![...RECORD_PATHS, ...GENERATED_PATHS].some((p) => file.startsWith(p)));
+  add("product and OS code committed", dirty.length === 0, dirty.slice(0, 10).join(", "));
 
-  const needsSecurity = findings.some((f) => (mission?.findings || []).includes(f.id) && f.impactLevel === "L5");
-  const requiredReviewers = [ALWAYS_REVIEWER, ...(needsSecurity ? [L5_REVIEWER] : [])];
-  for (const reviewer of requiredReviewers) {
-    const latest = evidence.filter((e) => e.kind === "review" && e.producer === reviewer && isFresh(e, ws)).at(-1);
-    add(`fresh ${reviewer} review is PASS`, latest?.result === "PASS", latest ? `${latest.id}:${latest.result}` : "no fresh review for the current workspace");
+  // Reviews: the latest record per role must not be FAIL (regardless of freshness); required roles need a
+  // PASS whose dispatch ticket fingerprint equals the current workspace.
+  const ws = workspaceFingerprint();
+  const reviews = evidence.filter((e) => e.kind === "review");
+  const roles = [...new Set(reviews.map((e) => e.producer))];
+  const failing = roles.filter((role) => reviews.filter((e) => e.producer === role).at(-1)?.result === "FAIL");
+  add("no role's latest review is FAIL", failing.length === 0, failing.join(", "));
+  const missionFindings = findings.filter((f) => (mission?.findings || []).includes(f.id));
+  const required = [ALWAYS_REVIEWER, ...(missionFindings.some((f) => f.impactLevel === "L5") ? [L5_REVIEWER] : [])];
+  for (const role of required) {
+    const latest = reviews.filter((e) => e.producer === role).at(-1);
+    add(`${role} PASS for the current workspace (ticketed)`, Boolean(latest && latest.result === "PASS" && latest.ticket && latest.fingerprint === ws.fingerprint), latest ? `${latest.id}:${latest.result}` : "none");
   }
-  const failingReviews = evidence.filter((e) => e.kind === "review" && e.result === "FAIL" && isFresh(e, ws) && !evidence.some((later) => later.kind === "review" && later.producer === e.producer && later.id > e.id && later.result === "PASS" && isFresh(later, ws)));
-  add("no unanswered fresh FAIL review", failingReviews.length === 0, failingReviews.map((e) => `${e.id}:${e.producer}`).join(", "));
 
-  const historyFile = osPath("state", "validation-history.yml");
-  const gateRuns = fs.existsSync(historyFile) ? readYml(historyFile).entries : [];
-  const gateRun = gateRuns.filter((g) => g.gate === REQUIRED_GATE && g.fingerprint === ws.fingerprint).at(-1);
-  add(`fresh ${REQUIRED_GATE} gate PASS`, gateRun?.verdict === "PASS", gateRun ? `${gateRun.verdict} at ${gateRun.at}` : "not run for the current workspace (gate.mjs regression --record)");
-
-  const pack = validatePack();
-  add("pack integrity", pack.errors.length === 0, pack.errors.slice(0, 5).join("; "));
-  const dirty = git(["status", "--porcelain"], { allowFail: true }).split("\n").filter(Boolean).filter((l) => !l.slice(3).startsWith(".claude/state/.run"));
-  add("changes committed", dirty.length === 0, dirty.slice(0, 10).join(", "));
+  // Re-execution.
+  if (!execute) {
+    add("re-execution of criteria, finding proofs and regression gate", false, "skipped (--no-exec): verdict cannot be better than D");
+  } else if (conditions.every((c) => c.ok)) {
+    for (const c of criteria) {
+      const ev = attempt(() => runCommandEvidence({ argv: splitCommand(c.verify), criteria: [c.id], kind: "command", summary: `completion re-run ${c.id}`, producer: "completion" }));
+      add(`criterion ${c.id} re-executed`, ev.result === "PASS", `${ev.id} ${ev.result}: ${c.verify}${ev.error ? ` (${ev.error})` : ""}`);
+    }
+    const proofs = new Map();
+    for (const f of missionFindings.filter((x) => x.status === "RESOLVED")) {
+      const proof = (f.evidenceRecords || []).map((id) => evidence.find((e) => e.id === id)).filter((e) => e && provesFinding(e, f.id)).at(-1);
+      if (!proof) { add(`finding ${f.id} has a proof to re-run`, false); continue; }
+      const argv = proof.argv || proof.command.split(" ");
+      const key = JSON.stringify(argv);
+      if (!proofs.has(key)) proofs.set(key, { argv, findings: [] });
+      proofs.get(key).findings.push(f.id);
+    }
+    for (const { argv, findings: ids } of proofs.values()) {
+      const ev = attempt(() => runCommandEvidence({ argv, findings: ids, kind: "test", summary: `completion re-run proof for ${ids.join(",")}`, producer: "completion" }));
+      add(`proof re-executed for ${ids.join(", ")}`, ev.result === "PASS", `${ev.id} ${ev.result}: ${argv.join(" ")}${ev.error ? ` (${ev.error})` : ""}`);
+    }
+    const gate = readJson(osPath("gates", "regression.json"));
+    for (const check of gate.checks) {
+      const result = await runCheck(check, { record: true, context: "completion:regression" }).catch((error) => ({ status: "FAIL", detail: `${error.code || "ERROR"}: ${error.message}` }));
+      add(`regression gate: ${check.name}`, result.status === "PASS", `${result.status} ${result.detail?.split("\n")[0] ?? ""}`);
+    }
+  } else {
+    add("re-execution of criteria, finding proofs and regression gate", false, "skipped: structural conditions failed");
+  }
 
   const failed = conditions.filter((c) => !c.ok);
   const parked = findings.filter((f) => PARKED_STATES.includes(f.status));
   const verdict = failed.length ? "D" : parked.some((f) => f.status === "NEEDS_PRODUCT_DECISION") ? "C" : parked.some((f) => f.status === "BLOCKED_EXTERNAL") ? "B" : "A";
-  return { verdict, label: VERDICT_LABELS[verdict], conditions, workspace: ws };
+  return { verdict, label: VERDICT_LABELS[verdict], conditions };
 }

@@ -109,6 +109,22 @@
     "hash": {
       "type": "string",
       "pattern": "^[0-9a-f]{64}$"
+    },
+    "mission": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ticket": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$"
+    },
+    "argv": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   }
 }

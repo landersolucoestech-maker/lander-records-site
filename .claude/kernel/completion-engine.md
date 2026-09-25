@@ -1,7 +1,9 @@
 # Completion engine
 
-Implementation: `runtime/lib/completion.mjs#evaluateCompletion` — the only producer of a verdict (`completion.mjs` prints it; `mission.mjs close` refuses to close on D and never accepts a caller verdict).
+Implementation: `runtime/lib/completion.mjs#evaluateCompletion` — the only verdict producer (`completion.mjs` prints it; `mission.mjs close` refuses D and never accepts a caller verdict). Trust model: ADR-0007.
 
-Conditions: active mission with ≥1 requirement, each with criteria; every criterion closed by fresh executed PASS evidence (reviews do not close criteria); findings valid (contract + history replay); evidence hash chain intact; no READY or in-flight findings; findings worked in the mission RESOLVED with fresh PASS evidence naming them; latest fresh `adversarial-reviewer` review PASS (+ `security-reviewer` when a mission finding is L5); no unanswered fresh FAIL review; fresh `regression` gate PASS recorded in state/validation-history.yml for the current fingerprint; pack integrity; changes committed.
+Structural conditions: active mission; requirements with criteria that declare verify commands; findings valid under replayed lifecycle; evidence chain intact; pack integrity incl. git anchoring; no READY or in-flight findings; code committed; no role whose latest review is FAIL; ticketed `adversarial-reviewer` PASS for the current workspace (+ `security-reviewer` when a mission finding is L5).
 
-Verdict: D if any condition fails; otherwise C when NEEDS_PRODUCT_DECISION findings exist, B when only BLOCKED_EXTERNAL remain, A when nothing is parked.
+Then it **re-executes**: every criterion's declared command, the proof command of every finding RESOLVED in the mission, and every check of `gates/regression.json`, recording each run as evidence. `--no-exec` only reports structure and can never yield better than D.
+
+Verdict: D if anything fails; otherwise C with NEEDS_PRODUCT_DECISION findings, B with only BLOCKED_EXTERNAL, A when nothing is parked.

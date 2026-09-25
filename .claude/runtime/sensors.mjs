@@ -77,6 +77,8 @@ function emitFinding(sensor, signal) {
   // Open or parked: the signal is already tracked (append nothing; the finding stays the single record).
   if (matches.some((f) => !CLOSED_STATES.includes(f.status))) return null;
   // Previously RESOLVED: the defect is back — reopen it instead of forgetting it.
+  // Dismissed as FALSE_POSITIVE / OBSOLETE / DUPLICATED: the disposition sticks; do not re-raise.
+  if (matches.some((f) => ["FALSE_POSITIVE", "OBSOLETE", "DUPLICATED"].includes(f.status))) return null;
   const resolved = matches.filter((f) => f.status === "RESOLVED").at(-1);
   if (resolved) {
     saveFinding(transition(resolved, "INVESTIGATING", `sensor:${sensor.id}`, `regression: signal observed again — ${signal.message}`));

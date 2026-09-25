@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { OsError, osPath, readJson, readYml, createRecord, nowIso, sha256, workspaceFingerprint, REPO_ROOT } from "./io.mjs";
+import { OsError, osPath, readJson, readYml, createRecord, nowIso, sha256, workspaceFingerprint, REPO_ROOT, RUN_DIR, splitCommand } from "./io.mjs";
 import { validate } from "./schema.mjs";
 
 export const EVIDENCE_DIR = osPath("evidence");
@@ -27,8 +27,18 @@ export function verifyChain(records = loadEvidence()) {
   }
   return errors;
 }
-// The chain links to the highest id below the record being created (its placeholder file is still empty).
+// Called under the evidence directory lock (createRecord), so the head cannot move while linking.
 const chainHead = (id) => loadEvidence({ except: id }).filter((r) => r.id < id).at(-1)?.hash ?? "GENESIS";
+
+/** Commands accepted as proof of a finding fix: real test suites, OS probes, schema audit — never `true`/echo. */
+export const PROOF_COMMAND = /(^|\s)(node\s+(--no-warnings\s+)?--test\b|node\s+(--no-warnings\s+)?tests\/|npm\s+(run\s+)?test(:[\w-]+)?\b|npx\s+playwright\s+test\b|node\s+\.claude\/runtime\/probes\/|node\s+scripts\/audit-db\.mjs\b)/;
+export const isProofCommand = (command = "") => PROOF_COMMAND.test(command);
+
+function activeMission() {
+  const file = osPath("state", "mission.yml");
+  const state = fs.existsSync(file) ? readYml(file) : null;
+  return state?.current?.status === "ACTIVE" ? state.current : null;
+}
 
 function persist(build) {
   const schema = readJson(osPath("contracts", "evidence.schema.json"));
@@ -41,17 +51,21 @@ function persist(build) {
   });
 }
 
-/** Criteria must belong to the ACTIVE mission; findings must exist. Typos never create orphan evidence. */
-function checkLinks(criteria, findings) {
+/** Criteria must belong to the ACTIVE mission and the command must be exactly the criterion's declared verify command. */
+function checkLinks(criteria, findings, argv) {
+  const mission = activeMission();
   if (criteria.length) {
-    const file = osPath("state", "mission.yml");
-    const mission = fs.existsSync(file) ? readYml(file).current : null;
-    const known = new Set((mission?.requirements || []).flatMap((r) => r.criteria.map((c) => c.id)));
-    const unknown = criteria.filter((c) => !known.has(c));
+    const declared = new Map((mission?.requirements || []).flatMap((r) => r.criteria.map((c) => [c.id, c.verify])));
+    const unknown = criteria.filter((c) => !declared.has(c));
     if (unknown.length) throw new OsError("UNKNOWN_CRITERION", `criteria not in the active mission: ${unknown.join(", ")}`);
+    for (const c of criteria) {
+      if (!declared.get(c)) throw new OsError("NO_VERIFY_COMMAND", `${c} has no declared verify command`);
+      if (!argv || JSON.stringify(splitCommand(declared.get(c))) !== JSON.stringify(argv)) throw new OsError("CRITERION_COMMAND_MISMATCH", `${c} can only be closed by its declared command: ${declared.get(c)}`);
+    }
   }
   const unknownFindings = findings.filter((f) => !fs.existsSync(osPath("findings", `${f}.json`)));
   if (unknownFindings.length) throw new OsError("UNKNOWN_FINDING", `unknown findings: ${unknownFindings.join(", ")}`);
+  return mission?.id ?? null;
 }
 
 function environment(extra = "") {
@@ -66,7 +80,8 @@ function environment(extra = "") {
 /** Executes a command (no shell) and records its real outcome. Callers can never assert PASS. */
 export function runCommandEvidence({ argv, kind = "command", findings = [], criteria = [], summary, producer = "runtime", env = {}, timeoutMs = 600000 }) {
   if (!argv?.length) throw new OsError("USAGE", "a command is required after --");
-  checkLinks(criteria, findings);
+  const mission = checkLinks(criteria, findings, argv);
+  if (findings.length && !isProofCommand(argv.join(" "))) throw new OsError("NOT_A_PROOF", "evidence naming a finding must run a real test suite, OS probe or schema audit");
   const before = workspaceFingerprint();
   const started = Date.now();
   const child = spawnSync(argv[0], argv.slice(1), { cwd: REPO_ROOT, env: { ...process.env, ...env }, encoding: "utf8", timeout: timeoutMs, maxBuffer: 64 * 1024 * 1024, shell: false });
@@ -77,9 +92,9 @@ export function runCommandEvidence({ argv, kind = "command", findings = [], crit
   const after = workspaceFingerprint();
   if (after.fingerprint !== before.fingerprint) throw new OsError("WORKSPACE_CHANGED", "the workspace changed while the command ran; evidence would not describe a single state");
   return persist((id) => ({
-    id, kind, findings, criteria,
+    id, kind, findings, criteria, mission,
     summary: summary || `${argv.join(" ")} -> ${result}`,
-    command: argv.join(" "), exitCode: typeof child.status === "number" ? child.status : -1, result,
+    command: argv.join(" "), argv, exitCode: typeof child.status === "number" ? child.status : -1, result,
     commit: before.head === "NO_HEAD" ? "0000000" : before.head, dirty: before.dirty, fingerprint: before.fingerprint,
     environment: environment(`; duration ${Date.now() - started}ms${child.error ? `; error ${child.error.code}` : ""}`),
     outputSha256: sha256(output), excerpt: output.slice(-3500), recordedAt: nowIso(), producer,
@@ -92,21 +107,37 @@ export function reportVerdict(report) {
   return last.match(/^VERDICT:\s*(PASS|FAIL)$/)?.[1] ?? null;
 }
 
-/** A completed independent review. The reviewer's full report must be attached. */
+/** Review tickets are minted by dispatch.mjs and bind a report to the role and the exact dispatched workspace. */
+export const TICKET_DIR = `${RUN_DIR}/tickets`;
+export function reportTicket(report) { return report.match(/^`?REVIEW-TICKET:\s*([0-9a-f]{32})`?\s*$/m)?.[1] ?? null; }
+
+/** A completed independent review. The reviewer's full report must be attached and carry its dispatch ticket. */
 export function recordReview({ reviewer, verdict, summary, findings = [], criteria = [], reportFile }) {
   if (!["PASS", "FAIL"].includes(verdict)) throw new OsError("USAGE", "--verdict must be PASS or FAIL");
   if (!reviewer) throw new OsError("USAGE", "--reviewer is required");
+  if (criteria.length) throw new OsError("USAGE", "reviews never close criteria");
   if (!reportFile || !fs.existsSync(reportFile)) throw new OsError("USAGE", "--report must point to the reviewer's full output");
   const report = fs.readFileSync(reportFile, "utf8");
   if (reportVerdict(report) !== verdict) throw new OsError("VERDICT_MISMATCH", `the report's last line must be exactly "VERDICT: ${verdict}"`);
-  checkLinks(criteria, findings);
   const ws = workspaceFingerprint();
+  const nonce = reportTicket(report);
+  let ticket = null;
+  if (verdict === "PASS") {
+    // A PASS must prove it reviewed exactly the current code, as dispatched to this role.
+    if (!nonce || !fs.existsSync(`${TICKET_DIR}/${nonce}.json`)) throw new OsError("TICKET_REQUIRED", "a PASS review needs the REVIEW-TICKET line issued by dispatch.mjs");
+    ticket = readJson(`${TICKET_DIR}/${nonce}.json`);
+    if (ticket.role !== reviewer) throw new OsError("TICKET_MISMATCH", `ticket was issued to ${ticket.role}, not ${reviewer}`);
+    if (ticket.fingerprint !== ws.fingerprint) throw new OsError("TICKET_STALE", "the code changed since this review was dispatched; dispatch a new review");
+    if (evidenceUsesTicket(nonce)) throw new OsError("TICKET_USED", "this ticket already backs a review record");
+  }
+  const mission = checkLinks([], findings);
   return persist((id) => ({
-    id, kind: "review", findings, criteria, summary: summary || `${reviewer}: ${verdict}`, result: verdict,
-    commit: ws.head, dirty: ws.dirty, fingerprint: ws.fingerprint, environment: `review by ${reviewer}; report ${path.relative(REPO_ROOT, path.resolve(reportFile))}`,
+    id, kind: "review", findings, criteria: [], mission, ...(nonce ? { ticket: nonce } : {}), summary: summary || `${reviewer}: ${verdict}`, result: verdict,
+    commit: ws.head, dirty: ws.dirty, fingerprint: ticket?.fingerprint ?? ws.fingerprint, environment: `review by ${reviewer}; report ${path.relative(REPO_ROOT, path.resolve(reportFile))}`,
     outputSha256: sha256(report), excerpt: report.slice(-3500), recordedAt: nowIso(), producer: reviewer,
   }));
 }
+const evidenceUsesTicket = (nonce) => loadEvidence().some((e) => e.ticket === nonce);
 
 export function isFresh(record, ws = workspaceFingerprint()) {
   return record.fingerprint === ws.fingerprint;
@@ -114,5 +145,5 @@ export function isFresh(record, ws = workspaceFingerprint()) {
 
 /** PASS evidence that is about this finding (names it) and describes the current workspace. */
 export function provesFinding(record, findingId, ws) {
-  return record.result === "PASS" && (record.findings || []).includes(findingId) && (!ws || isFresh(record, ws));
+  return record.result === "PASS" && record.kind !== "review" && isProofCommand(record.command) && (record.findings || []).includes(findingId) && (!ws || isFresh(record, ws));
 }

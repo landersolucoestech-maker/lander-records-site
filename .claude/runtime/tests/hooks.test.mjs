@@ -1,34 +1,55 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { OS_SOURCE } from "./helpers.mjs";
 import { evaluate } from "../hooks/guard-bash.mjs";
 
 const blocked = [
-  "git reset --hard origin/dev", "git clean -fd", "git clean -fdx", "git push --force origin x", "git push -f",
-  "git branch -D feature", "git checkout -- .", "git restore .", "rm -rf .git", "rm -rf ./migrations",
-  "psql $PROD -c 'DROP TABLE contact_submissions'", "cat .env.local", "cat .env", "printenv",
-  "DATABASE_URL=postgres://u@db.prod.example:5432/x npm run db:migrate",
+  "git reset --hard origin/dev", "git reset HEAD~3 --hard", "git -C . reset --hard", "git clean -fd", "git clean -fdx",
+  "git push --force origin x", "git push -f", "git push origin +main", "git push origin :dev", "git branch -D feature", "git branch -Df x",
+  "git checkout -- .", "git checkout HEAD -- .", "git restore .", "git restore --staged --worktree .", "git stash clear", "git stash drop",
+  "git filter-branch --all", "git reflog expire --all", "cd x && git reset --hard",
+  "rm -rf .git", "rm -rf ./migrations", "rm --recursive --force .git", "rm -rf \"$PWD\"", "rm -rf .claude*", "rm -rf ~", "rm -rf *",
+  "psql $PROD -c 'DROP TABLE contact_submissions'", "psql $PROD -c 'DROP TABLE users' # lander_test",
+  "psql postgres://localhost@prod.example.com/lander_test -c 'TRUNCATE x'", "dropdb prod",
+  "cat .env.local", "cat .env", "cat .env.staging", "printenv", "printenv DATABASE_URL", "env", "export -p",
+  "node -e \"console.log(require('fs').readFileSync('.env','utf8'))\"", "echo $SOUNDCHARTS_CLIENT_SECRET",
+  "DATABASE_URL=postgres://u@db.prod.example:5432/x npm run db:migrate", "npm run db:migrate",
+  "DATABASE_URL=postgres://localhost@prod.example.com/db npm run db:migrate",
 ];
 const allowed = [
-  "git status", "git push -u origin claude/x", "git push --force-with-lease origin claude/x", "git checkout -b new",
-  "cat .env.example", "rm -rf /var/tmp/pw-results", "npm test",
+  "git status", "git push -u origin claude/x", "git push --force-with-lease origin claude/x", "git checkout -b new", "git checkout dev",
+  "git log --grep='git reset --hard'", "grep -r TRUNCATE lib", "git diff -- .", "git add .", "git restore --staged lib/x.ts",
+  "cat .env.example", "rm -rf /var/tmp/pw-results", "rm -rf node_modules/.cache", "npm test",
   "psql -h /var/tmp/lander-pg -p 55432 -U postgres -c 'drop database if exists lander_path_test'",
+  "psql -h /var/tmp/lander-pg -p 55432 -U postgres lander_test -c 'delete from contact_submissions where id=1'",
   "DATABASE_URL=postgresql://postgres@localhost:55432/lander_test npm run db:migrate",
+  "node -e \"console.log(1)\"",
 ];
 
-test("guard blocks destructive and secret-exposing commands", () => {
+test("guard blocks destructive and secret-exposing commands (incl. reviewer bypasses)", () => {
   for (const cmd of blocked) assert.ok(evaluate(cmd), `should block: ${cmd}`);
 });
 test("guard allows normal engineering commands", () => {
   for (const cmd of allowed) assert.equal(evaluate(cmd), null, `should allow: ${cmd}`);
 });
-test("hook process exits 2 with the reason on stdin JSON", () => {
-  const hook = path.join(OS_SOURCE, "runtime", "hooks", "guard-bash.mjs");
-  const run = (command) => spawnSync(process.execPath, [hook], { input: JSON.stringify({ tool_name: "Bash", tool_input: { command } }), encoding: "utf8" });
-  const denied = run("git reset --hard");
-  assert.equal(denied.status, 2);
-  assert.match(denied.stderr, /git-guardian/);
-  assert.equal(run("git status").status, 0);
+test("hook fails closed and works through paths with spaces and symlinks", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "guard hook "));
+  const copy = path.join(dir, "guard-bash.mjs");
+  fs.copyFileSync(path.join(OS_SOURCE, "runtime", "hooks", "guard-bash.mjs"), copy);
+  const link = path.join(dir, "link.mjs");
+  fs.symlinkSync(copy, link);
+  try {
+    for (const hook of [copy, link]) {
+      const run = (input) => spawnSync(process.execPath, [hook], { input, encoding: "utf8" });
+      const denied = run(JSON.stringify({ tool_name: "Bash", tool_input: { command: "git reset --hard" } }));
+      assert.equal(denied.status, 2, hook);
+      assert.match(denied.stderr, /git-guardian/);
+      assert.equal(run(JSON.stringify({ tool_name: "Bash", tool_input: { command: "git status" } })).status, 0);
+      assert.equal(run("not json").status, 2, "bad input must fail closed");
+    }
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });

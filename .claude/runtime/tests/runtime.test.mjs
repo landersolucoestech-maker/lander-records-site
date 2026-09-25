@@ -51,9 +51,15 @@ test("evidence: no asserted results, real exit codes, known criteria only, tampe
     assert.equal(record.result, "FAIL");
     assert.equal(record.exitCode, 3);
     assert.match(box.run("evidence.mjs", ["run", "--criterion", "C-999", "--", process.execPath, "-e", "0"]).stderr, /UNKNOWN_CRITERION/);
+    assert.match(box.run("evidence.mjs", ["run", "--finding", "F-0001", "--", "true"]).stderr, /NOT_A_PROOF/);
     const file = path.join(box.root, ".claude", "evidence", `${evId(failing)}.json`);
     fs.writeFileSync(file, JSON.stringify({ ...record, result: "PASS", exitCode: 0 }, null, 2));
     assert.match(box.run("pack.mjs").stderr, /edited after recording/);
+    // Committed evidence is immutable even if the chain is recomputed.
+    const committed = path.join(box.root, ".claude", "evidence", "EV-0001.json");
+    const original = JSON.parse(fs.readFileSync(committed, "utf8"));
+    fs.writeFileSync(committed, JSON.stringify({ ...original, summary: "tampered" }, null, 2));
+    assert.match(box.run("pack.mjs").stderr, /committed evidence was modified/);
   } finally { box.cleanup(); }
   assert.deepEqual(verifyChain([]), []);
   const r = { id: "EV-0001", prevHash: "GENESIS", a: 1 };
@@ -85,9 +91,12 @@ test("lifecycle: proof must name the finding; mission close never takes a caller
     assert.equal(created.status, "DISCOVERED", "create always starts at DISCOVERED");
     const step = (to, extra = []) => box.run("findings.mjs", ["transition", id, "--to", to, "--note", "n", ...extra]);
     for (const to of ["TRIAGED", "READY", "INVESTIGATING", "ROOT_CAUSE_CONFIRMED", "FIXING", "VALIDATING"]) assert.equal(step(to).status, 0, to);
+    fs.mkdirSync(path.join(box.root, "tests"), { recursive: true });
+    fs.writeFileSync(path.join(box.root, "tests", "ok.test.mjs"), "import test from 'node:test'; test('ok', () => {});\n");
+    box.git("add", "-A"); box.git("commit", "-qm", "test file");
     const unrelated = evId(box.run("evidence.mjs", ["run", "--", process.execPath, "-e", "0"]));
     assert.match(step("REAUDITING", ["--evidence", unrelated]).stderr, /PROOF_REQUIRED/);
-    const proof = evId(box.run("evidence.mjs", ["run", "--finding", id, "--", process.execPath, "-e", "0"]));
+    const proof = evId(box.run("evidence.mjs", ["run", "--finding", id, "--", "node", "--test", "tests/ok.test.mjs"]));
     assert.equal(step("REAUDITING", ["--evidence", proof]).status, 0);
     assert.equal(step("RESOLVED", ["--evidence", proof]).status, 0);
 
@@ -100,7 +109,7 @@ test("lifecycle: proof must name the finding; mission close never takes a caller
     const again = box.run("sensors.mjs", ["run", "--only", "sandbox-sensor", "--emit-findings"]);
     assert.doesNotMatch(again.stdout, /-> F-\d{4}/, "an open finding is not duplicated");
     for (const to of ["TRIAGED", "READY", "INVESTIGATING", "ROOT_CAUSE_CONFIRMED", "FIXING", "VALIDATING"]) box.run("findings.mjs", ["transition", signalFinding, "--to", to, "--note", "n"]);
-    const p2 = evId(box.run("evidence.mjs", ["run", "--finding", signalFinding, "--", process.execPath, "-e", "0"]));
+    const p2 = evId(box.run("evidence.mjs", ["run", "--finding", signalFinding, "--", "node", "--test", "tests/ok.test.mjs"]));
     box.run("findings.mjs", ["transition", signalFinding, "--to", "REAUDITING", "--note", "n", "--evidence", p2]);
     assert.equal(box.run("findings.mjs", ["transition", signalFinding, "--to", "RESOLVED", "--note", "n", "--evidence", p2]).status, 0);
     const regression = box.run("sensors.mjs", ["run", "--only", "sandbox-sensor", "--emit-findings"]);
@@ -109,6 +118,14 @@ test("lifecycle: proof must name the finding; mission close never takes a caller
 
     assert.match(box.run("mission.mjs", ["close", "--verdict", "A"]).stderr, /POLICY_BLOCKED/);
     assert.match(box.run("mission.mjs", ["close"]).stderr, /COMPLETION_FAILED/);
+
+    // Hand-edited committed history is detected; appended reconstructed entries are rejected.
+    box.git("add", "-A"); box.git("commit", "-qm", "records");
+    const ff = path.join(box.root, ".claude", "findings", `${id}.json`);
+    const rec = JSON.parse(fs.readFileSync(ff, "utf8"));
+    fs.writeFileSync(ff, JSON.stringify({ ...rec, history: rec.history.slice(1) }, null, 2));
+    assert.match(box.run("pack.mjs").stderr, /history was rewritten/);
+    fs.writeFileSync(ff, JSON.stringify(rec, null, 2));
   } finally { box.cleanup(); }
 });
 
@@ -122,5 +139,49 @@ test("a decided DEC unblocks its findings; an open DEC keeps them parked", () =>
     fs.writeFileSync(file, fs.readFileSync(file, "utf8").replace("- Status: OPEN", "- Status: DECIDED"));
     assert.equal(box.run("findings.mjs", ["transition", "F-0014", "--to", "READY", "--note", "decided A"]).status, 0);
     assert.match(box.run("findings.mjs", ["ready"]).stdout, /F-0014/);
+  } finally { box.cleanup(); }
+});
+
+test("criteria close only with their declared command, within their mission", () => {
+  const box = sandbox();
+  try {
+    box.run("mission.mjs", ["abort", "--note", "sandbox"]);
+    assert.equal(box.run("mission.mjs", ["start", "--objective", "sandbox"]).status, 0);
+    box.run("mission.mjs", ["requirement", "--text", "r"]);
+    assert.match(box.run("mission.mjs", ["criterion", "--requirement", "R-001", "--text", "c"]).stderr, /--verify/);
+    const c = box.run("mission.mjs", ["criterion", "--requirement", "R-001", "--text", "c", "--verify", `${process.execPath} -e 0`]).stdout.trim();
+    assert.match(box.run("evidence.mjs", ["run", "--criterion", c, "--", "true"]).stderr, /CRITERION_COMMAND_MISMATCH/);
+    assert.equal(box.run("evidence.mjs", ["run", "--criterion", c, "--", process.execPath, "-e", "0"]).status, 0);
+    const status = JSON.parse(box.run("mission.mjs", ["status"]).stdout);
+    assert.deepEqual(status.open, []);
+  } finally { box.cleanup(); }
+});
+
+test("PASS reviews need a matching, fresh, single-use dispatch ticket", () => {
+  const box = sandbox();
+  try {
+    const report = path.join(box.root, ".claude", "reports", "review.md");
+    fs.writeFileSync(report, "looks fine\nVERDICT: PASS\n");
+    assert.match(box.run("evidence.mjs", ["review", "--reviewer", "adversarial-reviewer", "--verdict", "PASS", "--report", report]).stderr, /TICKET_REQUIRED/);
+    const nonce = box.run("dispatch.mjs", ["adversarial-reviewer"]).stdout.match(/REVIEW-TICKET: ([0-9a-f]{32})/)[1];
+    fs.writeFileSync(report, `REVIEW-TICKET: ${nonce}\nlooks fine\nVERDICT: PASS\n`);
+    assert.match(box.run("evidence.mjs", ["review", "--reviewer", "security-reviewer", "--verdict", "PASS", "--report", report]).stderr, /TICKET_MISMATCH/);
+    assert.equal(box.run("evidence.mjs", ["review", "--reviewer", "adversarial-reviewer", "--verdict", "PASS", "--report", report]).status, 0);
+    assert.match(box.run("evidence.mjs", ["review", "--reviewer", "adversarial-reviewer", "--verdict", "PASS", "--report", report]).stderr, /TICKET_USED/);
+    const nonce2 = box.run("dispatch.mjs", ["adversarial-reviewer"]).stdout.match(/REVIEW-TICKET: ([0-9a-f]{32})/)[1];
+    fs.writeFileSync(path.join(box.root, "product.ts"), "export const changed = true;\n");
+    fs.writeFileSync(report, `REVIEW-TICKET: ${nonce2}\nVERDICT: PASS\n`);
+    assert.match(box.run("evidence.mjs", ["review", "--reviewer", "adversarial-reviewer", "--verdict", "PASS", "--report", report]).stderr, /TICKET_STALE/);
+  } finally { box.cleanup(); }
+});
+
+test("parallel evidence writers keep the chain intact", async () => {
+  const box = sandbox();
+  try {
+    const { spawn } = await import("node:child_process");
+    const runOne = () => new Promise((resolve) => spawn(process.execPath, [path.join(box.root, ".claude", "runtime", "evidence.mjs"), "run", "--", process.execPath, "-e", "0"], { cwd: box.root }).on("close", resolve));
+    await Promise.all(Array.from({ length: 12 }, runOne));
+    const result = box.run("pack.mjs");
+    assert.doesNotMatch(result.stderr, /prevHash|chain/, result.stderr);
   } finally { box.cleanup(); }
 });

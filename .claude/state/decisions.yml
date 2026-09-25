@@ -34,6 +34,11 @@
       "blocks": []
     },
     {
+      "id": "ADR-0007",
+      "status": "ACCEPTED",
+      "blocks": []
+    },
+    {
       "id": "DEC-0001",
       "status": "OPEN",
       "blocks": [
