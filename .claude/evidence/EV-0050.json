@@ -1,0 +1,21 @@
+{
+  "id": "EV-0050",
+  "kind": "review",
+  "findings": [],
+  "criteria": [],
+  "mission": "M-20260925-002",
+  "missionHash": "7fa733e8bec7637c40ba7324efd1e72c6269265ee9c8e20de3540427e626fa28",
+  "ticket": "1fe19ef7ec4c0ade1b08691907d76792",
+  "summary": "round 5: project .npmrc node-options vacuous PASS (HIGH); requiredTests widening (MEDIUM); non-CAS error write (LOW)",
+  "result": "FAIL",
+  "commit": "6697dae33e06d6f5bfdeb6208e91b257efcc4766",
+  "dirty": false,
+  "fingerprint": "194dcde8a158a04bba4c2204a042b0a71c41514b697e507b1a185e1911005796",
+  "environment": "review by adversarial-reviewer; report .claude/reports/reviews/2026-09-25-adversarial-reviewer-round5.md",
+  "outputSha256": "11a6a4a262d898db9272f366bd5bc91847e9c9f38058a8c6a6e8fe8009ca032f",
+  "excerpt": "# Review — adversarial-reviewer — round 5 (HEAD 6697dae)\n\nIndependent read-only review dispatched by the mission controller (clone /var/tmp/adv5; disposable DB restored to baseline). Reproduced from the reviewer's hand-back (condensed; findings and verdict verbatim in substance).\n\nREVIEW-TICKET: 1fe19ef7ec4c0ade1b08691907d76792\n\nRan: soundcharts-identity-sync.mjs exit 0 on HEAD, exit 1 with sync.ts from 32a5013^; test:claude-os 30/30; own race script and runtime probes.\n\nRound-4 items: F-0003 race CLOSED (no new deadlock; a pre-existing slug+links save vs publish FK deadlock aborts one side safely); npmrc PARTIAL (HIGH); admin purge/withdrawal CLOSED; requiredTests PARTIAL; skipped/todo CLOSED; BUILD_ID mtime and hook quote tricks OPEN but accepted (ADR-0007).\n\n## HIGH\n1. `.claude/runtime/lib/io.mjs` childEnv — a project `.npmrc` with `node-options=--require <exit0.cjs>` makes `npm run test:claude-os` and `npm run typecheck` record PASS with nothing run; ranNothing needs `# tests N` only for direct `--test`; the hook allows `npm config set … --location=project` and writing `.npmrc`. Related (reasoned): `node_modules/.bin` is outside the fingerprint.\n\n## MEDIUM\n1. `lib/findings.mjs` matchesRequiredTests + `pack.mjs` anchoring — appending an unrelated suite to requiredTests widens what proves a finding (any entry matches); anchoring only forbids removal.\n\n## LOW\n1. `lib/integrations/sync.ts` catch blocks — the lastError write is not compare-and-set; a superseded run stamps its error on the current identity (admin view only).\n\n## Leads (not established)\n- gitAnchorErrors walks `git log --name-only` with default history simplification; merges may hide versions (use `--full-history -m`).\n- scopeBase trusts any committed COMPLETED entry (documented).\n- A→B→A flip can publish slightly older values for the same identity.\n\nVERDICT: FAIL\n",
+  "recordedAt": "2026-09-26T00:02:13.018Z",
+  "producer": "adversarial-reviewer",
+  "prevHash": "dfc4f23e8c4b111dc711373780d9af178be5b01270cb427ab0133c69971dedcd",
+  "hash": "6089de5114f132cb23320a2a2fb7db6e86205c151f9affd0f89935fdf395f9a6"
+}

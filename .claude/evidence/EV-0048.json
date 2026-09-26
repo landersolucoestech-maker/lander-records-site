@@ -1,0 +1,21 @@
+{
+  "id": "EV-0048",
+  "kind": "review",
+  "findings": [],
+  "criteria": [],
+  "mission": "M-20260925-002",
+  "missionHash": "7fa733e8bec7637c40ba7324efd1e72c6269265ee9c8e20de3540427e626fa28",
+  "ticket": "3e81b668f68391a1fc72279d75d1c6ba",
+  "summary": "round 5: round-4 items closed; MEDIUM duplicated row-lock protocol; LOW 1-5",
+  "result": "PASS",
+  "commit": "6697dae33e06d6f5bfdeb6208e91b257efcc4766",
+  "dirty": false,
+  "fingerprint": "194dcde8a158a04bba4c2204a042b0a71c41514b697e507b1a185e1911005796",
+  "environment": "review by architecture-reviewer; report .claude/reports/reviews/2026-09-25-architecture-reviewer-round5.md",
+  "outputSha256": "ad8cd3ec366cb4aec834cb61fe9b71c5c7f03f02ea02ff820fdcfd22605e50b6",
+  "excerpt": "# Review — architecture-reviewer — round 5 (HEAD 6697dae)\n\nIndependent read-only review dispatched by the mission controller (clone /var/tmp/arch5 at 6697dae). Reproduced from the reviewer's hand-back (condensed; findings and verdict verbatim in substance).\n\nREVIEW-TICKET: 3e81b668f68391a1fc72279d75d1c6ba\n\nRan in the clone (under /var/tmp): `os:validate` exit 0; `test:claude-os` 30/30; `typecheck` exit 0; committed history-rewrite experiment detected by pack.mjs; `scopeBase()` null → all 19 findings in scope.\n\nRound-4 items: H1 CLOSED; M1 CLOSED (/tmp dependency gone); M2 CLOSED (residue LOW-3); M3 mostly CLOSED (residue LOW-4); L1–L4 CLOSED. Docs (ADR-0006, ADR-0007, CLAUDE.md, kernel/completion-engine.md) claim nothing beyond the code. Layout unchanged. `.codex` only in the NON_OPERATIONAL allow-list and records.\n\n## MEDIUM\n1. Row-lock protocol duplicated: `lockLanderSettings`/`lockArtistIdentity` in sync.ts, inline copies in app/admin/artist-actions.ts and app/admin/integration-actions.ts; drift in one admin action could reintroduce the F-0003-class race. Export the lock helpers and use them in both actions. Product change otherwise sound (app → lib only, no deadlock, `superseded` not leaked to UI).\n\n## LOW\n1. scopeBase trusts HEAD mission history; mission.yml history not append-only anchored (documented in ADR-0007 §3).\n2. mission-def.mjs spawns one git process per mission.yml commit (pack.mjs uses cat-file --batch).\n3. mission.yml still written by findings.mjs trackOnMission; read directly by controller.mjs and pack.mjs.\n4. No tests for BUILD_ID freshness, failing proof re-execution at completion, or history-wide anchoring.\n5. Directory check blocks `git checkout <branch>` when a directory has the same name; ignores `git -C`.\n\nVERDICT: PASS\n",
+  "recordedAt": "2026-09-25T23:54:06.744Z",
+  "producer": "architecture-reviewer",
+  "prevHash": "fb663557c15b1a96fd173d6f1dde81e777bcd4450a418faa0079f62e883a5175",
+  "hash": "225aeabdde54aa89707626cec78e15a121afe896e8a953fcea478b364cedd9ed"
+}
