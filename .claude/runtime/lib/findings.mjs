@@ -82,18 +82,33 @@ export function readyQueue(all = loadFindings()) {
   return all.filter((f) => f.status === "READY" && !isBlocked(f, all)).sort((a, b) => priorityScore(b) - priorityScore(a) || a.id.localeCompare(b.id));
 }
 
-/**
- * A proof must run one of the suites the finding names in requiredTests: a named file must be an argument of the
- * executed program (not merely appear in an env value), a named npm command must be the executed command. Fails
- * closed: a finding without a parsable requiredTests entry cannot be verified.
- */
-export function matchesRequiredTests(finding, record) {
-  const wanted = (finding.requiredTests || []).flatMap((t) => [...String(t).matchAll(/(tests\/[\w./-]+|\.claude\/runtime\/[\w./-]+|scripts\/[\w./-]+|npm (?:run )?[\w:-]+)/g)].map((m) => m[1]));
-  if (!wanted.length) return false;
+/** The suites a finding names in requiredTests (test/probe/script paths and npm commands). */
+export function requiredTestTokens(finding) {
+  return [...new Set((finding.requiredTests || []).flatMap((t) => [...String(t).matchAll(/(tests\/[\w./-]+|\.claude\/runtime\/[\w./-]+|scripts\/[\w./-]+|npm (?:run )?[\w:-]+)/g)].map((m) => m[1])))];
+}
+
+/** Whether a record ran one named suite: a file must be an argument of the executed program (not an env value), an npm command must be the executed command. */
+export function runsRequiredTest(token, record) {
   const argv = [...(record.argv || splitCommand(record.command || ""))];
   if (argv[0] === "env") { argv.shift(); while (argv.length && /^[A-Za-z_][A-Za-z0-9_]*=/.test(argv[0])) argv.shift(); }
   const program = argv.join(" ");
-  return wanted.some((w) => (w.startsWith("npm ") ? program === w || (w === "npm test" && program === "npm run test") : argv.slice(1).includes(w)));
+  return token.startsWith("npm ") ? program === token || (token === "npm test" && program === "npm run test") : argv.slice(1).includes(token);
+}
+
+/** Whether a record runs at least one of the finding's suites (it can be part of the finding's proof set). */
+export function matchesRequiredTests(finding, record) {
+  return requiredTestTokens(finding).some((token) => runsRequiredTest(token, record));
+}
+
+/**
+ * Suites of requiredTests that none of the given records runs. Verification needs proofs that together run *every*
+ * named suite, so adding an entry to requiredTests can only add work, never widen what proves the finding. A finding
+ * without a parsable entry cannot be verified (fails closed).
+ */
+export function missingRequiredTests(finding, records) {
+  const tokens = requiredTestTokens(finding);
+  if (!tokens.length) return ["(no parsable requiredTests entry)"];
+  return tokens.filter((token) => !records.some((record) => runsRequiredTest(token, record)));
 }
 
 // Transitions that claim verification need fresh PASS evidence about this finding.
@@ -107,8 +122,9 @@ export function transition(finding, to, by, note, extra = {}) {
   if (NEEDS_FRESH_PROOF.has(to)) {
     const ws = workspaceFingerprint();
     const evidence = loadEvidence();
-    const proof = (next.evidenceRecords || []).filter((id) => { const e = evidence.find((r) => r.id === id); return e && provesFinding(e, finding.id, ws) && matchesRequiredTests(finding, e); });
-    if (!proof.length) throw new OsError("PROOF_REQUIRED", `${finding.id} -> ${to} needs --evidence with fresh PASS evidence that names ${finding.id} and runs one of its requiredTests`);
+    const fresh = (next.evidenceRecords || []).map((id) => evidence.find((r) => r.id === id)).filter((e) => e && provesFinding(e, finding.id, ws));
+    const missing = missingRequiredTests(finding, fresh);
+    if (missing.length) throw new OsError("PROOF_REQUIRED", `${finding.id} -> ${to} needs --evidence with fresh PASS evidence that names ${finding.id} and, together, runs every requiredTests suite; missing: ${missing.join(", ")}`);
   }
   if (to === "READY" && finding.status === "NEEDS_PRODUCT_DECISION" && finding.decision && !DECIDED.includes(decisionStatus(finding.decision))) {
     throw new OsError("DECISION_OPEN", `${finding.decision} is still open; record the decision first`);

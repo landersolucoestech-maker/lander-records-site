@@ -3,6 +3,7 @@
 // secrets-guardian and migration-guardian on Bash commands. Fails CLOSED: unparseable input blocks.
 // It is a guardrail, not a sandbox: it parses common shell forms, not every possible construct (ADR-0007).
 import fs from "node:fs";
+import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -29,7 +30,7 @@ function gitSubcommand(tok) {
   const i = tok.findIndex((t) => t === "git" || t.endsWith("/git"));
   if (i < 0) return null;
   // GIT_CONFIG_COUNT/KEY_n/VALUE_n in the environment define config (incl. aliases) without -c.
-  if (tok.slice(0, i).some((t) => /^GIT_CONFIG_(KEY_\d+|PARAMETERS)=/.test(t))) return { sub: "__alias__", rest: [] };
+  if (tok.slice(0, i).some((t) => /^GIT_CONFIG_(KEY_\d+|PARAMETERS|COUNT)=/.test(t))) return { sub: "__alias__", rest: [] };
   let j = i + 1;
   let alias = false;
   while (j < tok.length && tok[j].startsWith("-")) {
@@ -40,7 +41,9 @@ function gitSubcommand(tok) {
   }
   return { sub: alias ? "__alias__" : tok[j], rest: tok.slice(j + 1) };
 }
-const has = (rest, ...flags) => rest.some((t) => flags.includes(t));
+// Git accepts unambiguous prefixes of long options (`--har` = `--hard`): a token of 4+ chars that begins a listed
+// long flag counts as that flag.
+const has = (rest, ...flags) => rest.some((t) => flags.includes(t) || (t.startsWith("--") && t.length >= 4 && !t.includes("=") && flags.some((f) => f.startsWith("--") && f.startsWith(t))));
 const shortFlag = (rest, letter) => rest.some((t) => /^-[a-zA-Z]+$/.test(t) && t.includes(letter));
 const bulkPath = (rest) => rest.some((t) => [".", "./", ":/", "*", ":(top)"].includes(t));
 
@@ -48,19 +51,23 @@ function gitRule({ sub, rest }, cwd = REPO_ROOT) {
   if (sub === "__alias__") return "git-guardian: inline git aliases can hide destructive commands";
   if (sub === "reset" && has(rest, "--hard", "--merge", "--keep")) return "git-guardian: git reset --hard/--merge/--keep discards work";
   if (sub === "clean" && (shortFlag(rest, "f") || has(rest, "--force"))) return "git-guardian: git clean deletes untracked work";
-  if (sub === "push" && (rest.some((t) => t.startsWith("--force")) || has(rest, "-f", "--mirror", "--delete", "-d", "--prune") || shortFlag(rest, "f") || rest.some((t) => t.startsWith("+") || t.startsWith(":") || /:\+?[\w/.-]*$/.test(t) && t.includes(":+")))) return "git-guardian: force push (incl. --force-with-lease) / remote deletion rewrites published history";
+  if (sub === "push" && (rest.some((t) => t.startsWith("--force") || (t.length >= 5 && "--force".startsWith(t))) || has(rest, "-f", "--mirror", "--delete", "-d", "--prune") || shortFlag(rest, "f") || rest.some((t) => t.startsWith("+") || t.startsWith(":") || /:\+?[\w/.-]*$/.test(t) && t.includes(":+")))) return "git-guardian: force push (incl. --force-with-lease) / remote deletion rewrites published history";
   if (sub === "branch" && (shortFlag(rest, "D") || shortFlag(rest, "f") || has(rest, "--force") || (has(rest, "--delete", "-d") && has(rest, "--force", "-f")))) return "git-guardian: forced branch deletion";
   if (sub === "checkout" && (bulkPath(rest) || has(rest, "-f", "--force") || (has(rest, "--") && rest.slice(rest.indexOf("--") + 1).some((t) => [".", "./", ":/", "*"].includes(t))))) return "git-guardian: bulk checkout discards changes";
   // `git restore --staged <path>` only unstages; it discards nothing in the worktree.
   const onlyUnstage = has(rest, "--staged", "-S") && !has(rest, "--worktree", "-W");
   if (sub === "restore" && bulkPath(rest) && !onlyUnstage) return "git-guardian: bulk restore discards changes";
-  if (sub === "switch" && has(rest, "--discard-changes", "-f", "--force")) return "git-guardian: switch --discard-changes discards work";
+  if (sub === "switch" && (has(rest, "--discard-changes", "-f", "--force", "--force-create") || shortFlag(rest, "C"))) return "git-guardian: switch --discard-changes / -C discards work";
+  if (sub === "checkout" && shortFlag(rest, "B")) return "git-guardian: checkout -B resets an existing branch";
+  if (sub === "read-tree" && (has(rest, "--reset") || shortFlag(rest, "u"))) return "git-guardian: read-tree -u/--reset overwrites the worktree";
   if (sub === "worktree" && rest[0] === "remove" && (has(rest, "--force") || shortFlag(rest, "f"))) return "git-guardian: forced worktree removal discards its changes";
   if (sub === "stash" && ["clear", "drop"].includes(rest[0])) return "git-guardian: stash clear/drop destroys saved work";
   if (sub === "config" && rest.some((t) => /^alias\./.test(t))) return "git-guardian: defining git aliases can hide destructive commands";
   // A pathspec naming a directory (trailing slash or an existing directory) discards everything under it.
   const isDir = (t) => !t.startsWith("-") && (t.endsWith("/") || (() => { try { return fs.statSync(path.resolve(cwd, t)).isDirectory(); } catch { return false; } })());
-  if (sub === "checkout" && (has(rest, "--") ? rest.slice(rest.indexOf("--") + 1) : rest).some(isDir)) return "git-guardian: checkout of a directory discards its changes";
+  // Without `--`, a name that is also a branch/commit is what git checks out (a branch switch, not a path restore).
+  const isRef = (t) => spawnSync("git", ["rev-parse", "--verify", "--quiet", `${t}^{commit}`], { cwd, stdio: "ignore" }).status === 0;
+  if (sub === "checkout" && (has(rest, "--") ? rest.slice(rest.indexOf("--") + 1) : rest.filter((t) => !isRef(t))).some(isDir)) return "git-guardian: checkout of a directory discards its changes";
   if (sub === "restore" && !onlyUnstage && rest.some(isDir)) return "git-guardian: restore of a directory discards its changes";
   if (["filter-branch", "filter-repo", "replace", "update-ref"].includes(sub) || (sub === "rebase" && has(rest, "-i", "--interactive", "--root")) || (sub === "reflog" && rest[0] === "expire") || (sub === "gc" && rest.some((t) => t.startsWith("--prune")))) return "git-guardian: history rewrite / reflog destruction";
   return null;
@@ -113,9 +120,15 @@ function dbTargets(segment, tok) {
   return { hosts, dbs, local: hosts.length > 0 && hosts.every(isLocal), testDb: dbs.length > 0 && dbs.every((d) => /_test$/.test(d)) };
 }
 
-function sqlRule(segment, tok) {
+function sqlRule(rawSegment, tok) {
+  const segment = rawSegment.replace(/''|""/g, ""); // 'DR''OP' is DROP to the shell
   const client = tok.some((t) => ["psql", "pg_restore", "dropdb"].includes(t)) || /\bnode\s+(-e|--eval)\b/.test(segment);
   if (!client) return null;
+  // SQL read from a file cannot be inspected here: only against a local *_test database.
+  if (tok.includes("psql") && (tok.some((t) => t === "-f" || t.startsWith("--file")) || /(^|\s)<\s*[^<\s]/.test(segment))) {
+    const t = dbTargets(segment, tok);
+    if (!(t.local && t.testDb)) return "destructive-action-guardian: psql with SQL from a file runs only against local *_test databases";
+  }
   if (tok.includes("dropdb") || /\b(DROP\s+(TABLE|DATABASE|SCHEMA|TYPE|OWNED)|TRUNCATE\b|DELETE\s+FROM\s+\w+\s*(;|'|"|$))/i.test(segment)) {
     const t = dbTargets(segment, tok);
     if (!(t.local && t.testDb)) return "destructive-action-guardian: destructive SQL is allowed only against local *_test databases";
@@ -126,6 +139,10 @@ function sqlRule(segment, tok) {
 function secretRule(rawSegment, tok) {
   const segment = rawSegment.replace(/''|""/g, "");
   for (const m of segment.matchAll(/(?:^|[\s'"`(=/<])(\.env(?:\.[\w.-]+)?)(?=$|[\s'"`),;|&<>])/g)) if (!m[1].endsWith(".example")) return "secrets-guardian: env files hold credentials";
+  const bare = tok.filter((t) => !["(", ")", "{", "}", ";"].includes(t)).map((t) => t.replace(/^[({]+|[;)}]+$/g, "")).filter(Boolean);
+  if (bare.length === 1 && ["set", "export", "declare", "typeset", "env", "printenv"].includes(bare[0])) return "secrets-guardian: dumping shell variables exposes credentials";
+  if ((tok[0] === "env" && tok.slice(1).every((t) => t.startsWith("-"))) || (tok[0] === "compgen" && tok.includes("-e")) || /\$\{![A-Za-z_]*[*@]\}/.test(segment) || /\$\{![A-Za-z_]\w*\}/.test(segment)) return "secrets-guardian: dumping the environment exposes credentials";
+  if (/\{\s*env\s*\}\s*=\s*process|import\(\s*["'`](node:)?process["'`]\s*\)|\bos\.environb\b|\/proc\/\S*environ/.test(segment)) return "secrets-guardian: dumping the environment exposes credentials";
   if (tok.length === 1 && ["set", "export", "declare", "typeset", "env"].includes(tok[0])) return "secrets-guardian: dumping shell variables exposes credentials";
   if (/\/proc\/[^/\s]+\/environ|\bos\.environ\b|\bENV\[|\bgetenv\s*\(\s*\)|\bENVIRON\b|%ENV\b|\bprocess\s*\[\s*["'`]env|require\(\s*["'`](node:)?process["'`]\s*\)\s*\.\s*env|\bruby\b.*\bENV\b/.test(segment)) return "secrets-guardian: dumping the environment exposes credentials";
   if (tok[0] === "ps" && tok.slice(1).some((t) => /^[a-zA-Z]*e[a-zA-Z]*$/.test(t))) return "secrets-guardian: ps e prints process environments";
@@ -135,6 +152,13 @@ function secretRule(rawSegment, tok) {
   if (/\bprocess\.env\b(?!\s*\.\s*(NODE_ENV)\b)(?!\s*\.)/.test(segment) || /Object\.(keys|entries|values)\(\s*process\.env/.test(segment)) return "secrets-guardian: dumping process.env exposes credentials";
   if (tok[0] === "printenv" || tok.includes("printenv") || (tok[0] === "env" && tok.length === 1) || (["export", "declare", "typeset"].includes(tok[0]) && tok.some((t) => /^-[a-zA-Z]*[px]/.test(t)))) return "secrets-guardian: dumping the environment exposes credentials";
   if (/\b(echo|printf)\b[^#]*\$\{?[A-Z0-9_]*(SECRET|KEY|TOKEN|PASSWORD|DATABASE_URL|SALT)/.test(segment)) return "secrets-guardian: printing a credential variable";
+  return null;
+}
+
+function configRule(segment, tok) {
+  if (tok[0] === "export" && tok.some((t) => /^GIT_CONFIG_/.test(t))) return "git-guardian: GIT_CONFIG_* in the environment can define aliases for later git commands";
+  if (/>>?\s*["']?[^\s"']*\.git\/(config|hooks\/)/.test(segment) || (/\btee\b/.test(segment) && /\.git\/(config|hooks\/)/.test(segment))) return "git-guardian: writing git config/hooks directly can hide destructive commands";
+  if (/>>?\s*["']?[^\s"']*\.npmrc\b/.test(segment) || (tok[0] === "npm" && tok[1] === "config" && ["set", "edit"].includes(tok[2]))) return "evidence-guardian: npm configuration changes how proof commands run";
   return null;
 }
 
@@ -172,7 +196,7 @@ export function evaluate(command, depth = 0) {
     if (tok[0] === "cd") { cwd = !tok[1] || tok[1] === "~" ? (process.env.HOME || "/") : path.resolve(cwd, tok[1]); continue; }
     for (const inner of nested(segment, tok)) { const reason = evaluate(inner, depth + 1); if (reason) return reason; }
     const git = gitSubcommand(tok);
-    const reason = (git && gitRule(git, cwd)) || rmRule(tok, cwd) || sqlRule(segment, tok) || secretRule(segment, tok) || migrationRule(segment);
+    const reason = (git && gitRule(git, cwd)) || rmRule(tok, cwd) || sqlRule(segment, tok) || secretRule(segment, tok) || configRule(segment, tok) || migrationRule(segment);
     if (reason) return reason;
   }
   return null;

@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { OsError, osPath, readJson, createRecord, nowIso, sha256, workspaceFingerprint, REPO_ROOT, RUN_DIR, splitCommand, childEnv, resolveArgv } from "./io.mjs";
+import { OsError, osPath, readJson, createRecord, nowIso, sha256, workspaceFingerprint, REPO_ROOT, RUN_DIR, splitCommand, childEnv, resolveArgv, npmConfigError } from "./io.mjs";
 import { validate } from "./schema.mjs";
 
 export const EVIDENCE_DIR = osPath("evidence");
@@ -85,6 +85,8 @@ export function runCommandEvidence({ argv, kind = "command", findings = [], crit
   if (findings.length && !proofArgv(argv)) throw new OsError("NOT_A_PROOF", "evidence naming a finding must run an allow-listed test suite, OS probe or schema audit (lib/commands.mjs)");
   const before = workspaceFingerprint();
   const started = Date.now();
+  const npmrc = npmConfigError(argv);
+  if (npmrc) throw new OsError("NPMRC_PRESENT", npmrc);
   const [bin, ...rest] = resolveArgv(argv);
   const child = spawnSync(bin, rest, { cwd: REPO_ROOT, env: childEnv(env), encoding: "utf8", timeout: timeoutMs, maxBuffer: 64 * 1024 * 1024, shell: false });
   const output = `${child.stdout || ""}${child.stderr || ""}`;

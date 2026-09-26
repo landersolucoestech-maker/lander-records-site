@@ -1,7 +1,7 @@
 // Mission definition anchoring (ADR-0007 §3). The definition a mission is judged against is the one first
 // committed with its id; later commits may only add requirements/criteria, never change or remove them.
 import fs from "node:fs";
-import { git, osPath, readYml, sha256 } from "./io.mjs";
+import { catFiles, git, osPath, readYml, sha256 } from "./io.mjs";
 
 const MISSION_FILE = ".claude/state/mission.yml";
 // Same format as io.readYml, applied to `git show` output rather than a file.
@@ -21,9 +21,10 @@ export const missionHash = (m) => (m ? sha256(JSON.stringify(missionShape(m))) :
 /** First commit whose mission.yml has this mission as current, with that definition. */
 export function missionAnchor(id) {
   const commits = git(["log", "--format=%H", "--reverse", "--", MISSION_FILE], { allowFail: true }).split("\n").filter(Boolean);
+  const blobs = catFiles(commits.map((c) => `${c}:${MISSION_FILE}`));
   for (const commit of commits) {
     let def;
-    try { def = parse(git(["show", `${commit}:${MISSION_FILE}`], { allowFail: true })).current; } catch { continue; }
+    try { def = parse(blobs.get(`${commit}:${MISSION_FILE}`) ?? "").current; } catch { continue; }
     if (def?.id === id) return { commit, def, committedAt: git(["show", "-s", "--format=%cI", commit], { allowFail: true }) };
   }
   return null;
@@ -63,8 +64,9 @@ export function scopeBase() {
   const last = (head?.history || []).filter((m) => m.status === "COMPLETED" && m.verdict && m.verdict !== "D").at(-1);
   if (!last) return null;
   const commits = git(["log", "--format=%H", "--reverse", "--", MISSION_FILE], { allowFail: true }).split("\n").filter(Boolean);
+  const blobs = catFiles(commits.map((c) => `${c}:${MISSION_FILE}`));
   for (const commit of commits) {
-    try { if ((parse(git(["show", `${commit}:${MISSION_FILE}`], { allowFail: true })).history || []).some((m) => m.id === last.id && m.status === "COMPLETED")) return commit; } catch { /* not JSON at that commit */ }
+    try { if ((parse(blobs.get(`${commit}:${MISSION_FILE}`) ?? "").history || []).some((m) => m.id === last.id && m.status === "COMPLETED")) return commit; } catch { /* not JSON at that commit */ }
   }
   return null;
 }

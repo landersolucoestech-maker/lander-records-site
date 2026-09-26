@@ -6,7 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { osPath, readJson, git, workspaceFingerprint, splitCommand, RECORD_PATHS, GENERATED_PATHS, REPO_ROOT } from "./io.mjs";
 import { porcelainPath } from "./io.mjs";
-import { loadFindings, matchesRequiredTests, OPEN_STATES, PARKED_STATES, validateFinding } from "./findings.mjs";
+import { loadFindings, missingRequiredTests, requiredTestTokens, runsRequiredTest, OPEN_STATES, PARKED_STATES, validateFinding } from "./findings.mjs";
 import { loadEvidence, provesFinding, verifyChain, runCommandEvidence } from "./evidence.mjs";
 import { validatePack } from "./pack.mjs";
 import { isVerifyArgv } from "./commands.mjs";
@@ -83,12 +83,18 @@ export async function evaluateCompletion({ execute = true } = {}) {
     for (const r of reexecuteCriteria(criteria)) add(`criterion ${r.id} re-executed`, r.ok, r.detail);
     const proofs = new Map();
     for (const f of missionFindings.filter((x) => x.status === "RESOLVED")) {
-      const proof = (f.evidenceRecords || []).map((id) => evidence.find((e) => e.id === id)).filter((e) => e && provesFinding(e, f.id) && matchesRequiredTests(f, e)).at(-1);
-      if (!proof) { add(`finding ${f.id} has a proof that runs one of its requiredTests`, false); continue; }
-      const argv = proof.argv || splitCommand(proof.command);
-      const key = JSON.stringify(argv);
-      if (!proofs.has(key)) proofs.set(key, { argv, findings: [] });
-      proofs.get(key).findings.push(f.id);
+      // Every named suite is re-run: for each, the latest proof of this finding that runs it.
+      const records = (f.evidenceRecords || []).map((id) => evidence.find((e) => e.id === id)).filter((e) => e && provesFinding(e, f.id));
+      const tokens = requiredTestTokens(f);
+      const missing = missingRequiredTests(f, records);
+      if (missing.length) { add(`finding ${f.id} has proofs that run every requiredTests suite`, false, `missing: ${missing.join(", ")}`); continue; }
+      for (const token of tokens) {
+        const proof = records.filter((e) => runsRequiredTest(token, e)).at(-1);
+        const argv = proof.argv || splitCommand(proof.command);
+        const key = JSON.stringify(argv);
+        if (!proofs.has(key)) proofs.set(key, { argv, findings: [] });
+        if (!proofs.get(key).findings.includes(f.id)) proofs.get(key).findings.push(f.id);
+      }
     }
     for (const { argv, findings: ids } of proofs.values()) {
       const ev = attempt(() => runCommandEvidence({ argv, findings: ids, kind: "test", summary: `completion re-run proof for ${ids.join(",")}`, producer: "completion" }));

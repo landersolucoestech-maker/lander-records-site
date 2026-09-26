@@ -70,6 +70,9 @@ export const isVerifyArgv = (argv, { requireFiles = true } = {}) => withFiles(re
 export function ranNothing(output, argv = []) {
   // A direct `node --test` run must also show a positive TAP summary (empty output is not a pass).
   if (argv.includes("--test") && !/^# tests [1-9]\d*$/m.test(output)) return true;
+  // npm/npx test proofs must show a positive signal from their runner: a TAP summary, an integration script's
+  // "checks passed" line or Playwright's "N passed". (Verify-only scripts such as typecheck print nothing.)
+  if (withFiles(false, () => classify(argv)) === "proof" && ["npm", "npx"].includes(unwrapEnv(argv)?.[0]) && !(/^# tests [1-9]\d*$/m.test(output) || /\bchecks passed\b/i.test(output) || /\b[1-9]\d* passed\b/.test(output))) return true;
   // "# pass 0": every test was skipped or todo.
   return /^# tests 0$/m.test(output) || /^# pass 0$/m.test(output) || /No tests found/i.test(output) || /^\s*ok \d+ - [\w./-]+\.(test|spec)\.(mjs|cjs|js|ts)\s*$/m.test(output);
 }

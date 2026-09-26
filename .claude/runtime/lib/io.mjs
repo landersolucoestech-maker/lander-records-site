@@ -83,7 +83,8 @@ export const porcelainPath = (line) => line.replace(/^[ MADRCUT?!]{1,2}\s+/, "")
 /**
  * Environment for executed checks: never leak a test-runner context or node/npm option overrides (they can mask
  * failures). npm user/global config files are neutralised and `script-shell` is pinned (a `script-shell` in any
- * npmrc turns every script into a no-op). PATH and HOME are inherited; node/npm/npx are resolved by resolveArgv.
+ * npmrc turns every script into a no-op), and `node-options` is emptied. HOME is inherited; PATH is inherited with
+ * the running node's directory first. A project .npmrc is refused outright by `npmConfigError`.
  */
 export function childEnv(extra = {}) {
   const env = { ...process.env, ...extra };
@@ -91,7 +92,18 @@ export function childEnv(extra = {}) {
   env.npm_config_userconfig = "/dev/null";
   env.npm_config_globalconfig = "/dev/null/npmrc"; // cannot exist (npm rejects loading /dev/null twice)
   env.npm_config_script_shell = "/bin/sh"; // environment config outranks a project .npmrc script-shell
+  env.npm_config_node_options = ""; // …and its node-options (npm would export them as NODE_OPTIONS to scripts)
+  // Programs a script invokes (node inside `npm run`) resolve next to the running node first.
+  env.PATH = [path.dirname(process.execPath), env.PATH].filter(Boolean).join(path.delimiter);
   return env;
+}
+
+/** A project .npmrc can change how npm runs scripts; executed npm/npx commands refuse to run while one exists. */
+export function npmConfigError(argv) {
+  let i = 0;
+  if (argv[0] === "env") { i = 1; while (i < argv.length && /^[A-Za-z_][A-Za-z0-9_]*=/.test(argv[i])) i += 1; }
+  if (!["npm", "npx"].includes(argv[i])) return null;
+  return fs.existsSync(path.join(REPO_ROOT, ".npmrc")) ? "a project .npmrc exists: npm/npx proof and verify commands do not run under project npm configuration" : null;
 }
 
 /** argv with node/npm/npx resolved next to the running node binary, not looked up on PATH. */
@@ -175,4 +187,24 @@ export function run(main) {
     console.error(JSON.stringify({ ok: false, code, message: error.message, details: error.details ?? {} }, null, 2));
     process.exit(code === "BLOCKED" ? 77 : 1);
   });
+}
+
+/** Reads many `<rev>:<path>` blobs through one `git cat-file --batch` process; missing blobs map to null. */
+export function catFiles(specs) {
+  const out = new Map();
+  if (!specs.length) return out;
+  const res = spawnSync("git", ["cat-file", "--batch"], { cwd: REPO_ROOT, input: `${specs.join("\n")}\n`, maxBuffer: 256 * 1024 * 1024 });
+  const buf = res.stdout || Buffer.alloc(0);
+  let pos = 0;
+  for (const spec of specs) {
+    const nl = buf.indexOf(10, pos);
+    if (nl < 0) break;
+    const header = buf.subarray(pos, nl).toString("utf8");
+    pos = nl + 1;
+    const m = header.match(/^\S+ blob (\d+)$/);
+    if (!m) { out.set(spec, null); continue; }
+    out.set(spec, buf.subarray(pos, pos + Number(m[1])).toString("utf8"));
+    pos += Number(m[1]) + 1;
+  }
+  return out;
 }

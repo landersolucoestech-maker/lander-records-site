@@ -548,7 +548,9 @@
     "lib/integrations/sync.ts": [
       "DbExecutor",
       "purgeLanderRecordsSoundchartsMetrics",
+      "lockLanderSettings",
       "syncLanderRecordsSoundcharts",
+      "lockArtistIdentityRow",
       "syncArtistSoundcharts",
       "syncAllArtistSoundcharts",
       "syncSpotifyReleases",

@@ -97,7 +97,6 @@
       "definedIn": "lib/db/integration-schema.ts",
       "readers": [
         "app/admin/(protected)/settings/lander-records/page.tsx",
-        "app/admin/integration-actions.ts",
         "lib/integrations/spotify.ts",
         "lib/integrations/sync.ts"
       ],
@@ -110,7 +109,6 @@
     "artist_external_identities": {
       "definedIn": "lib/db/integration-schema.ts",
       "readers": [
-        "app/admin/artist-actions.ts",
         "lib/integrations/sync.ts"
       ],
       "writers": [

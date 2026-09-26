@@ -1,12 +1,11 @@
 // Pack integrity validation (control-plane/capability-registry.md). Pure checks, no side effects.
 import fs from "node:fs";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 import { OS_DIR, osPath, readJson, readYml, walk } from "./io.mjs";
 import { validate } from "./schema.mjs";
 import { loadFindings, validateFinding, buildIndex, buildDecisions } from "./findings.mjs";
 import { loadEvidence, verifyChain } from "./evidence.mjs";
-import { REPO_ROOT, git } from "./io.mjs";
+import { REPO_ROOT, git, catFiles } from "./io.mjs";
 
 export const CANONICAL = ["CLAUDE.md", "kernel", "control-plane", "agents", "subagents", "integrations", "leads", "identity", "auditors", "reviewers", "guardians", "contracts", "policies", "rules", "skills", "workflows", "gates", "sensors", "runtime", "state", "findings", "evidence", "knowledge", "graphs", "schemas", "decisions", "incidents", "reports", "templates"];
 // Claude Code native configuration files (ADR-0006).
@@ -180,30 +179,11 @@ export function validatePack() {
  * Git is the trust anchor for records: once committed, an evidence record is immutable and a finding's
  * history is append-only. New (uncommitted) history entries may not be marked reconstructed.
  */
-/** Reads many `<rev>:<path>` blobs through one `git cat-file --batch` process; missing blobs map to null. */
-function catFiles(specs) {
-  const out = new Map();
-  if (!specs.length) return out;
-  const res = spawnSync("git", ["cat-file", "--batch"], { cwd: REPO_ROOT, input: `${specs.join("\n")}\n`, maxBuffer: 256 * 1024 * 1024 });
-  const buf = res.stdout || Buffer.alloc(0);
-  let pos = 0;
-  for (const spec of specs) {
-    const nl = buf.indexOf(10, pos);
-    if (nl < 0) break;
-    const header = buf.subarray(pos, nl).toString("utf8");
-    pos = nl + 1;
-    const m = header.match(/^\S+ blob (\d+)$/);
-    if (!m) { out.set(spec, null); continue; }
-    out.set(spec, buf.subarray(pos, pos + Number(m[1])).toString("utf8"));
-    pos += Number(m[1]) + 1;
-  }
-  return out;
-}
-
 /**
  * Records are anchored in git history, not only against HEAD (ADR-0007 §3): from the commit that introduced
  * ADR-0007 on, every committed version of an evidence record equals its first version, and every committed version
- * of a finding keeps the previous version's history as a prefix and its requiredTests as a subset. The working copy
+ * of a finding keeps the previous version's history as a prefix and its requiredTests as a subset, and the closed-mission
+ * history in state/mission.yml is append-only. The working copy
  * is checked against the last committed version the same way.
  */
 export function gitAnchorErrors() {
@@ -214,20 +194,21 @@ export function gitAnchorErrors() {
   const versions = new Map(); // file -> ordered commits touching it (cutoff first)
   for (const spec of range) {
     let commit = null;
-    for (const line of git(["log", "--reverse", "--format=C %H", "--name-only", spec, "--", ".claude/evidence", ".claude/findings"], { allowFail: true }).split("\n")) {
+    // --full-history -m: merge commits list their files too, so a merge cannot hide a rewritten version.
+    for (const line of git(["log", "--reverse", "--topo-order", "--full-history", "-m", "--format=C %H", "--name-only", spec, "--", ".claude/evidence", ".claude/findings", ".claude/state/mission.yml"], { allowFail: true }).split("\n")) {
       if (line.startsWith("C ")) { commit = line.slice(2); continue; }
-      if (!/\/(EV|F)-\d{4}\.json$/.test(line)) continue;
+      if (!/\/(EV|F)-\d{4}\.json$|^\.claude\/state\/mission\.yml$/.test(line)) continue;
       if (!versions.has(line)) versions.set(line, []);
-      versions.get(line).push(commit);
+      if (versions.get(line).at(-1) !== commit) versions.get(line).push(commit);
     }
   }
   // A file present at the cutoff but untouched since still needs its cutoff version as the baseline.
-  if (cutoff) for (const file of git(["ls-tree", "-r", "--name-only", cutoff, "--", ".claude/evidence", ".claude/findings"], { allowFail: true }).split("\n").filter((f) => /\/(EV|F)-\d{4}\.json$/.test(f))) {
+  if (cutoff) for (const file of git(["ls-tree", "-r", "--name-only", cutoff, "--", ".claude/evidence", ".claude/findings", ".claude/state/mission.yml"], { allowFail: true }).split("\n").filter((f) => /\/(EV|F)-\d{4}\.json$|^\.claude\/state\/mission\.yml$/.test(f))) {
     if (!versions.has(file)) versions.set(file, []);
     if (versions.get(file)[0] !== cutoff) versions.get(file).unshift(cutoff);
   }
   const blobs = catFiles([...versions].flatMap(([file, commits]) => commits.map((c) => `${c}:${file}`)));
-  const parse = (text) => { try { return text == null ? null : JSON.parse(text); } catch { return undefined; } };
+  const parse = (text) => { try { return text == null ? null : JSON.parse(text.split("\n").filter((l) => !l.startsWith("#")).join("\n")); } catch { return undefined; } };
   for (const [file, commits] of versions) {
     const chain = commits.map((c) => ({ at: c.slice(0, 7), value: parse(blobs.get(`${c}:${file}`)) }));
     const full = path.join(REPO_ROOT, file);
@@ -239,6 +220,12 @@ export function gitAnchorErrors() {
       const now = chain[i].value;
       if (now === null) { errors.push(`${file}: committed record was deleted (${chain[i].at})`); break; }
       if (now === undefined || !before) { errors.push(`${file}: unreadable record (${chain[i].at})`); break; }
+      if (file.endsWith("mission.yml")) {
+        // Closed missions are append-only: an ABORTED entry cannot later read COMPLETED (it would move the scope base).
+        const m0 = before.history || [], m1 = now.history || [];
+        if (JSON.stringify(m1.slice(0, m0.length)) !== JSON.stringify(m0)) { errors.push(`${file}: committed mission history was rewritten (${chain[i].at})`); break; }
+        continue;
+      }
       if (file.includes("/evidence/")) {
         if (JSON.stringify(now) !== JSON.stringify(before)) { errors.push(`${file}: committed evidence was modified (${chain[i].at})`); break; }
         continue;

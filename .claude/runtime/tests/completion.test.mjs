@@ -223,3 +223,71 @@ test("requiredTests binding and ticket mission binding", () => {
     assert.match(rec.stdout + rec.stderr, /TICKET_STALE|mission definition changed/);
   } finally { box.cleanup(); }
 });
+
+test("committed records stay anchored across later commits (not only against HEAD)", () => {
+  const box = sandbox();
+  try {
+    const findingsDir = path.join(box.root, ".claude", "findings");
+    const file = fs.readdirSync(findingsDir).filter((n) => /^F-\d{4}\.json$/.test(n)).sort()[0];
+    const full = path.join(findingsDir, file);
+    const validate = () => { const out = box.run("pack.mjs", []); return out.stdout + out.stderr; };
+    assert.match(validate(), /PACK_VALID=PASS/);
+    const f = JSON.parse(fs.readFileSync(full, "utf8"));
+    f.history = f.history.slice(0, 1);
+    fs.writeFileSync(full, JSON.stringify(f, null, 2));
+    box.git("add", "-A"); box.git("commit", "-qm", "truncate history");
+    fs.writeFileSync(path.join(box.root, "unrelated.txt"), "x\n");
+    box.git("add", "-A"); box.git("commit", "-qm", "later commit");
+    assert.match(validate(), /committed history was rewritten/);
+
+    // Each file reports its first violation; use another finding for the requiredTests case.
+    const other = path.join(findingsDir, fs.readdirSync(findingsDir).filter((n) => /^F-\d{4}\.json$/.test(n)).sort()[1]);
+    const g = JSON.parse(fs.readFileSync(other, "utf8"));
+    g.requiredTests = [];
+    fs.writeFileSync(other, JSON.stringify(g, null, 2));
+    box.git("add", "-A"); box.git("commit", "-qm", "drop required tests");
+    assert.match(validate(), /requiredTests entries removed/);
+  } finally { box.cleanup(); }
+});
+
+test("closed-mission history is append-only (an ABORTED mission cannot become COMPLETED)", () => {
+  const box = sandbox();
+  try {
+    box.run("mission.mjs", ["abort", "--note", "sandbox"]);
+    box.git("add", "-A"); box.git("commit", "-qm", "abort");
+    const file = path.join(box.root, ".claude", "state", "mission.yml");
+    const text = fs.readFileSync(file, "utf8");
+    const header = text.split("\n").filter((l) => l.startsWith("#")).join("\n");
+    const state = JSON.parse(text.split("\n").filter((l) => !l.startsWith("#")).join("\n"));
+    state.history.at(-1).status = "COMPLETED";
+    state.history.at(-1).verdict = "A";
+    fs.writeFileSync(file, `${header}\n${JSON.stringify(state, null, 2)}\n`);
+    box.git("add", "-A"); box.git("commit", "-qm", "rewrite");
+    const out = box.run("pack.mjs", []);
+    assert.match(out.stdout + out.stderr, /committed mission history was rewritten/);
+  } finally { box.cleanup(); }
+});
+
+test("npm proofs refuse to run under a project .npmrc; verification needs every requiredTests suite", () => {
+  const box = sandbox();
+  try {
+    fs.writeFileSync(path.join(box.root, "package.json"), JSON.stringify({ name: "sandbox", private: true, scripts: { test: "node --test" } }));
+    fs.writeFileSync(path.join(box.root, ".npmrc"), "node-options=--require /dev/null\n");
+    box.git("add", "-A"); box.git("commit", "-qm", "npmrc");
+    assert.match(box.run("evidence.mjs", ["run", "--finding", "F-0001", "--", "npm", "test"]).stderr, /NPMRC_PRESENT/);
+
+    const lib = path.join(box.root, ".claude", "runtime", "lib", "findings.mjs");
+    const finding = { requiredTests: ["tests/unit/a.test.mjs", "tests/integration/b.mjs"] };
+    const script = `import(${JSON.stringify(lib)}).then((m) => console.log(JSON.stringify([
+      m.missingRequiredTests(${JSON.stringify(finding)}, [{ argv: ["node", "--test", "tests/unit/a.test.mjs"] }]),
+      m.missingRequiredTests(${JSON.stringify(finding)}, [{ argv: ["node", "--test", "tests/unit/a.test.mjs"] }, { argv: ["node", "tests/integration/b.mjs"] }]),
+      m.missingRequiredTests({ requiredTests: [...${JSON.stringify(finding.requiredTests)}, "npm run test:claude-os"] }, [{ argv: ["npm", "run", "test:claude-os"] }]),
+    ])))`;
+    const out = spawnSync(process.execPath, ["--input-type=module", "-e", script], { cwd: box.root, encoding: "utf8" });
+    assert.equal(out.status, 0, out.stderr);
+    const [one, both, widened] = JSON.parse(out.stdout.trim());
+    assert.deepEqual(one, ["tests/integration/b.mjs"]);
+    assert.deepEqual(both, []);
+    assert.deepEqual(widened, ["tests/unit/a.test.mjs", "tests/integration/b.mjs"], "appending a suite never replaces the original ones");
+  } finally { box.cleanup(); }
+});

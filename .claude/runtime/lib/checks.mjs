@@ -2,7 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import fs2 from "node:fs";
-import { REPO_ROOT, walk, rel, git, workspaceFingerprint, childEnv, resolveArgv } from "./io.mjs";
+import { REPO_ROOT, walk, rel, git, workspaceFingerprint, childEnv, resolveArgv, npmConfigError } from "./io.mjs";
 import { porcelainPath } from "./io.mjs";
 import { loadFindings, OPEN_STATES, PARKED_STATES } from "./findings.mjs";
 import { runCommandEvidence, loadEvidence, isFresh, provesFinding } from "./evidence.mjs";
@@ -30,6 +30,8 @@ export async function runCheck(check, { record = false, context = "gate" } = {})
     case "command": {
       if (!record) {
         const { spawnSync } = await import("node:child_process");
+        const npmrc = npmConfigError(check.argv);
+        if (npmrc) return { status: "FAIL", detail: npmrc };
         const [bin, ...rest] = resolveArgv(check.argv);
         const child = spawnSync(bin, rest, { cwd: REPO_ROOT, env: childEnv(), encoding: "utf8", shell: false, maxBuffer: 64 * 1024 * 1024 });
         return { status: child.status === 0 && !ranNothing(`${child.stdout}${child.stderr}`, check.argv) ? "PASS" : child.error?.code === "ENOENT" ? "BLOCKED" : "FAIL", detail: `${check.argv.join(" ")} exit=${child.status}${child.status ? `\n${`${child.stdout}${child.stderr}`.slice(-1200)}` : ""}` };
@@ -90,14 +92,20 @@ export async function runCheck(check, { record = false, context = "gate" } = {})
       if (/\$\{\{/.test(preview)) problems.push("the public preview may not use ${{ }} expressions");
       if (/^\s*secrets\s*:/m.test(preview)) problems.push("the public preview may not pass secrets to a called workflow");
       if (/^\s*(-\s+)?["'][^"'\n]*["']\s*:/m.test(preview)) problems.push("quoted keys that are not plain names are not allowed");
+      // Constructs whose meaning a line-based check cannot see: explicit (`?`) keys and quoted scalars continued
+      // across lines (an escaped line break joins "DATABASE_\⏎URL" into DATABASE_URL).
+      if (/^\s*(-\s+)?\?(\s|$)/m.test(preview)) problems.push("explicit (?) keys are not allowed in the public preview");
+      if (preview.split("\n").some((l) => /"/.test(l) && /\\\s*$/.test(l))) problems.push("quoted scalars continued across lines are not allowed in the public preview");
       // Shell indirection that can set or unset variables without naming them literally.
-      for (const word of ["eval", "unset", "declare", "typeset", "export", "source", "tee", "set -a"]) if (new RegExp(`(^|[\\s;&|(])${word.replace(" ", "\\s+")}(\\s|$)`, "m").test(preview)) problems.push(`shell construct not allowed in the public preview: ${word}`);
+      for (const word of ["eval", "unset", "declare", "typeset", "export", "source", "tee", "set -a", "env -u", "env -i", "printf -v", "read -", "mapfile", "readarray"]) if (new RegExp(`(^|[\\s;&|(])${word.replace(" ", "\\s+")}(\\s|$)`, "m").test(preview)) problems.push(`shell construct not allowed in the public preview: ${word}`);
       for (const line of preview.split("\n").filter((l) => />/.test(l) && /\$\{?[A-Za-z_]/.test(l.slice(l.indexOf(">"))))) {
         if (!/>>\s*"\$(GITHUB_ENV|GITHUB_OUTPUT|GITHUB_STEP_SUMMARY)"\s*$/.test(line)) problems.push(`redirection to a variable target: ${line.trim().slice(0, 80)}`);
       }
+      // Every GITHUB_ENV mention on a line must be one allow-listed `echo "NAME=…" >> "$GITHUB_ENV"` write.
       for (const line of preview.split("\n").filter((l) => /GITHUB_ENV/.test(l))) {
-        const name = line.match(/echo\s+["']?([A-Za-z_][A-Za-z0-9_]*)=/)?.[1];
-        if (!name || !(check.allowedEnvWrites || []).includes(name)) problems.push(`GITHUB_ENV write not in the allow-list: ${line.trim().slice(0, 80)}`);
+        const mentions = (line.match(/GITHUB_ENV/g) || []).length;
+        const writes = [...line.matchAll(/echo\s+"([A-Za-z_][A-Za-z0-9_]*)=[^"]*"\s*>>\s*"\$GITHUB_ENV"/g)].map((m) => m[1]);
+        if (writes.length !== mentions || writes.some((name) => !(check.allowedEnvWrites || []).includes(name))) problems.push(`GITHUB_ENV write not in the allow-list: ${line.trim().slice(0, 80)}`);
       }
       for (const [key, allowed] of Object.entries(check.pinned)) {
         const assignments = [...preview.matchAll(new RegExp(`\\b${key}\\b\\s*[:=]\\s*("[^"]*"|'[^']*'|[^\\s,}]+)`, "g"))].map((m) => m[1].replace(/^["']|["']$/g, ""));

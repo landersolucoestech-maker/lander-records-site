@@ -46,6 +46,12 @@ test("preview workflow safety: baseline passes, every known bypass fails", () =>
       "secrets['X']": inject("      X: ${{ secrets['SOUNDCHARTS_CLIENT_SECRET'] }}\n"),
       "GITHUB_ENV override": BASE.replace('echo "APP_PID=$APP_PID" >> "$GITHUB_ENV"', 'echo "APP_PID=$APP_PID" >> "$GITHUB_ENV"\n          echo "DATABASE_URL=$X" >> "$GITHUB_ENV"'),
       "mock data disabled": BASE.replace('LANDER_MOCK_DATA: "1"', 'LANDER_MOCK_DATA: "0"'),
+      // Round 5.
+      "multi-line quoted key": inject('      ? "DATABASE_\\\n        URL"\n      : postgresql://prod.example/x\n'),
+      "escaped line break in value": inject('      X: "$\\\n        {{ secrets.PROD }}"\n'),
+      "second echo on a line": BASE.replace('echo "APP_PID=$APP_PID" >> "$GITHUB_ENV"', 'echo "APP_PID=$APP_PID" >> "$GITHUB_ENV"; echo "DATABASE_UR""L=x" >> "$GITHUB_ENV"'),
+      "env -u": BASE.replace('echo "- Ambiente', 'env -u "LANDER_MOCK""_DATA" node x.js\n          echo "- Ambiente'),
+      "printf -v": BASE.replace('echo "- Ambiente', 'printf -v DATABASE_URL x\n          echo "- Ambiente'),
     };
     for (const [label, text] of Object.entries(bypasses)) assert.equal(evaluate(box, { "dev-preview.yml": text }).status, "FAIL", label);
     const other = "name: x\non: push\njobs:\n  a:\n    runs-on: ubuntu-latest\n    env:\n      DEV_PREVIEW_PUBLIC_ACCESS: \"true\"\n    steps: []\n";
