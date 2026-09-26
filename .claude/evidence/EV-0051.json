@@ -1,0 +1,36 @@
+{
+  "id": "EV-0051",
+  "kind": "command",
+  "findings": [
+    "F-0001",
+    "F-0005",
+    "F-0009",
+    "F-0010",
+    "F-0012",
+    "F-0015"
+  ],
+  "criteria": [],
+  "mission": "M-20260925-002",
+  "summary": "node --test tests/unit/contact-client-ip.test.mjs tests/unit/contact-outbox-policy.test.mjs tests/unit/seo-canonical.test.mjs tests/unit/media-kit-layout-contract.test.mjs -> PASS",
+  "command": "node --test tests/unit/contact-client-ip.test.mjs tests/unit/contact-outbox-policy.test.mjs tests/unit/seo-canonical.test.mjs tests/unit/media-kit-layout-contract.test.mjs",
+  "argv": [
+    "node",
+    "--test",
+    "tests/unit/contact-client-ip.test.mjs",
+    "tests/unit/contact-outbox-policy.test.mjs",
+    "tests/unit/seo-canonical.test.mjs",
+    "tests/unit/media-kit-layout-contract.test.mjs"
+  ],
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "2c2bdeb27159db6b581d9b559eba07c09bfd5e70",
+  "dirty": false,
+  "fingerprint": "03becb8f9064ca5471aac184d69c7a0bd1dc320da1a3124b2d9eaa1d79c72837",
+  "environment": "node v22.22.2 (outside engines >=24 <25) linux; duration 330ms",
+  "outputSha256": "a9ee3973555b1d5eb93baacf66ad6bacb3990482510b9769124affa90c905e63",
+  "excerpt": " dispatch persists the policy decision and schema/migration expose dead_letter\nok 12 - dispatch persists the policy decision and schema/migration expose dead_letter\n  ---\n  duration_ms: 0.530462\n  type: 'test'\n  ...\n# Subtest: media kit reference deck is portrait and isolated from editor styles\nok 13 - media kit reference deck is portrait and isolated from editor styles\n  ---\n  duration_ms: 1.339059\n  type: 'test'\n  ...\n# Subtest: the six-page reference sequence is implemented as dedicated templates\nok 14 - the six-page reference sequence is implemented as dedicated templates\n  ---\n  duration_ms: 0.321077\n  type: 'test'\n  ...\n# Subtest: reference page four is advertising and page five is a placement example\nok 15 - reference page four is advertising and page five is a placement example\n  ---\n  duration_ms: 0.434314\n  type: 'test'\n  ...\n# Subtest: reference audience page contains the four expected information blocks\nok 16 - reference audience page contains the four expected information blocks\n  ---\n  duration_ms: 0.36152\n  type: 'test'\n  ...\n# Subtest: cover and about pages retain strong editorial hierarchy\nok 17 - cover and about pages retain strong editorial hierarchy\n  ---\n  duration_ms: 0.304518\n  type: 'test'\n  ...\n# Subtest: contact page follows the two-column reference ending\nok 18 - contact page follows the two-column reference ending\n  ---\n  duration_ms: 1.939441\n  type: 'test'\n  ...\n# Subtest: builder keeps free section management and supports the reference application type\nok 19 - builder keeps free section management and supports the reference application type\n  ---\n  duration_ms: 0.252555\n  type: 'test'\n  ...\n# Subtest: persisted canonical deck is migrated to the same six-page reference sequence\nok 20 - persisted canonical deck is migrated to the same six-page reference sequence\n  ---\n  duration_ms: 0.367951\n  type: 'test'\n  ...\n# Subtest: reference deck keeps the approved global typography while KPI labels wrap without clipping\nok 21 - reference deck keeps the approved global typography while KPI labels wrap without clipping\n  ---\n  duration_ms: 0.671573\n  type: 'test'\n  ...\n# (node:21670) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/lander-records-site/lib/seo.ts is not specified and it doesn't parse as CommonJS.\n# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.\n# To eliminate this warning, add \"type\": \"module\" to /home/user/lander-records-site/package.json.\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# Subtest: canonical URLs use the configured site route when no valid override exists\nok 22 - canonical URLs use the configured site route when no valid override exists\n  ---\n  duration_ms: 1.294069\n  type: 'test'\n  ...\n# Subtest: canonical overrides preserve valid HTTP(S) URLs but remove fragments\nok 23 - canonical overrides preserve valid HTTP(S) URLs but remove fragments\n  ---\n  duration_ms: 0.253202\n  type: 'test'\n  ...\n# Subtest: static public pages never inherit the homepage canonical\nok 24 - static public pages never inherit the homepage canonical\n  ---\n  duration_ms: 1.43917\n  type: 'test'\n  ...\n# Subtest: sitemap lists the served trailing-slash URLs instead of redirecting forms\nok 25 - sitemap lists the served trailing-slash URLs instead of redirecting forms\n  ---\n  duration_ms: 0.582615\n  type: 'test'\n  ...\n1..25\n# tests 25\n# suites 0\n# pass 25\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 251.509272\n",
+  "recordedAt": "2026-09-26T00:11:04.581Z",
+  "producer": "claude-code",
+  "prevHash": "6089de5114f132cb23320a2a2fb7db6e86205c151f9affd0f89935fdf395f9a6",
+  "hash": "7617dcc3157942740c6f0588cfe28386bd6959c56cd4fd5bb6a7048f4b411b6f"
+}

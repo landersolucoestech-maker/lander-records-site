@@ -97,9 +97,47 @@
       "at": "2026-09-25T15:22:04.164Z",
       "by": "product-flows-auditor",
       "note": "reaudit: npm test fully green"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-26T00:10:57.638Z",
+      "by": "autonomous-controller",
+      "note": "re-verify: 2c2bdeb requires proofs that together run every requiredTests suite; earlier proofs ran only some"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-26T00:12:13.573Z",
+      "by": "owner",
+      "note": "earlier proofs ran only part of requiredTests"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-26T00:12:13.664Z",
+      "by": "owner",
+      "note": "product fix unchanged; re-verification under the all-suites rule (2c2bdeb)"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-26T00:12:13.761Z",
+      "by": "qa-engineer",
+      "note": "every requiredTests suite green on HEAD (EV-0051,EV-0055)"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-26T00:12:13.873Z",
+      "by": "regression-reviewer",
+      "note": "reaudit: EV-0051,EV-0055"
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-26T00:12:14.000Z",
+      "by": "autonomous-controller",
+      "note": "proofs EV-0051,EV-0055; server rebuilt from 2c2bdeb"
     }
   ],
   "evidenceRecords": [
-    "EV-0025"
+    "EV-0025",
+    "EV-0051",
+    "EV-0055"
   ]
 }

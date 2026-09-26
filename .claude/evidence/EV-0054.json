@@ -1,0 +1,29 @@
+{
+  "id": "EV-0054",
+  "kind": "command",
+  "findings": [
+    "F-0009"
+  ],
+  "criteria": [],
+  "mission": "M-20260925-002",
+  "summary": "env OS_BASE_URL=http://127.0.0.1:3100 node .claude/runtime/probes/seo-canonical.mjs -> PASS",
+  "command": "env OS_BASE_URL=http://127.0.0.1:3100 node .claude/runtime/probes/seo-canonical.mjs",
+  "argv": [
+    "env",
+    "OS_BASE_URL=http://127.0.0.1:3100",
+    "node",
+    ".claude/runtime/probes/seo-canonical.mjs"
+  ],
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "2c2bdeb27159db6b581d9b559eba07c09bfd5e70",
+  "dirty": false,
+  "fingerprint": "03becb8f9064ca5471aac184d69c7a0bd1dc320da1a3124b2d9eaa1d79c72837",
+  "environment": "node v22.22.2 (outside engines >=24 <25) linux; duration 840ms",
+  "outputSha256": "38bbd0aac16ccfa74791fb70028e49e2d8b8ec3b08baae318f5b882efbda5b18",
+  "excerpt": "{\n  \"checked\": 11,\n  \"failures\": []\n}\n",
+  "recordedAt": "2026-09-26T00:11:08.523Z",
+  "producer": "claude-code",
+  "prevHash": "ba8b412bbcc436a1a68b4eacd5712445b9bab5991a659c85d895084d8281e4bc",
+  "hash": "0edb951b4434fdb6d3ce04efadf207e6fb2acff36b05729cf2ea8f96c8c996a0"
+}

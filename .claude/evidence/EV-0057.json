@@ -1,0 +1,29 @@
+{
+  "id": "EV-0057",
+  "kind": "command",
+  "findings": [
+    "F-0017",
+    "F-0019"
+  ],
+  "criteria": [],
+  "mission": "M-20260925-002",
+  "summary": "npm run test:claude-os -> PASS",
+  "command": "npm run test:claude-os",
+  "argv": [
+    "npm",
+    "run",
+    "test:claude-os"
+  ],
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "2c2bdeb27159db6b581d9b559eba07c09bfd5e70",
+  "dirty": false,
+  "fingerprint": "03becb8f9064ca5471aac184d69c7a0bd1dc320da1a3124b2d9eaa1d79c72837",
+  "environment": "node v22.22.2 (outside engines >=24 <25) linux; duration 35472ms",
+  "outputSha256": "643c11fa8ec043926e430a2abaf587414b2c00431f826a33c516b7cc83f3103a",
+  "excerpt": "8034\n  type: 'test'\n  ...\n# Subtest: a checkout that lives under /tmp gets no scratch exemption for its own files\nok 18 - a checkout that lives under /tmp gets no scratch exemption for its own files\n  ---\n  duration_ms: 51.021291\n  type: 'test'\n  ...\n# Subtest: no operational reference to the out-of-architecture Codex pack\nok 19 - no operational reference to the out-of-architecture Codex pack\n  ---\n  duration_ms: 17.796617\n  type: 'test'\n  ...\n# Subtest: runtime imports only Node built-ins and its own modules\nok 20 - runtime imports only Node built-ins and its own modules\n  ---\n  duration_ms: 2.403348\n  type: 'test'\n  ...\n# Subtest: the OS runs in a repository that contains only .claude/\nok 21 - the OS runs in a repository that contains only .claude/\n  ---\n  duration_ms: 2275.050602\n  type: 'test'\n  ...\n# Subtest: kernel/state-machine.md documents exactly the enforced transition table\nok 22 - kernel/state-machine.md documents exactly the enforced transition table\n  ---\n  duration_ms: 2.233212\n  type: 'test'\n  ...\n# Subtest: history replay rejects hand-edited jumps and non-DISCOVERED starts\nok 23 - history replay rejects hand-edited jumps and non-DISCOVERED starts\n  ---\n  duration_ms: 1.683785\n  type: 'test'\n  ...\n# Subtest: priority engine orders by severity/domain/confidence and excludes open decisions\nok 24 - priority engine orders by severity/domain/confidence and excludes open decisions\n  ---\n  duration_ms: 0.698142\n  type: 'test'\n  ...\n# Subtest: schema validator rejects unsupported keywords instead of ignoring them\nok 25 - schema validator rejects unsupported keywords instead of ignoring them\n  ---\n  duration_ms: 0.241903\n  type: 'test'\n  ...\n# Subtest: review verdict is the last non-empty line only\nok 26 - review verdict is the last non-empty line only\n  ---\n  duration_ms: 0.442987\n  type: 'test'\n  ...\n# Subtest: evidence: no asserted results, real exit codes, known criteria only, tamper-evident chain\nok 27 - evidence: no asserted results, real exit codes, known criteria only, tamper-evident chain\n  ---\n  duration_ms: 1852.717227\n  type: 'test'\n  ...\n# Subtest: fingerprint ignores OS records and commits, but tracks product changes\nok 28 - fingerprint ignores OS records and commits, but tracks product changes\n  ---\n  duration_ms: 1621.7233\n  type: 'test'\n  ...\n# Subtest: lifecycle: proof must name the finding; mission close never takes a caller verdict; sensors reopen regressions\nok 29 - lifecycle: proof must name the finding; mission close never takes a caller verdict; sensors reopen regressions\n  ---\n  duration_ms: 4445.561076\n  type: 'test'\n  ...\n# Subtest: a decided DEC unblocks its findings; an open DEC keeps them parked\nok 30 - a decided DEC unblocks its findings; an open DEC keeps them parked\n  ---\n  duration_ms: 1028.157087\n  type: 'test'\n  ...\n# Subtest: criteria close only with their declared command, within their mission\nok 31 - criteria close only with their declared command, within their mission\n  ---\n  duration_ms: 1724.55953\n  type: 'test'\n  ...\n# Subtest: PASS reviews need a matching, fresh, single-use dispatch ticket\nok 32 - PASS reviews need a matching, fresh, single-use dispatch ticket\n  ---\n  duration_ms: 1659.116385\n  type: 'test'\n  ...\n# Subtest: parallel evidence writers keep the chain intact\nok 33 - parallel evidence writers keep the chain intact\n  ---\n  duration_ms: 2084.914319\n  type: 'test'\n  ...\n1..33\n# tests 33\n# suites 0\n# pass 33\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 35243.858775\n",
+  "recordedAt": "2026-09-26T00:11:50.114Z",
+  "producer": "claude-code",
+  "prevHash": "096c4ec42a5961817637fe376df6990db4dea4324cfdc5d5a36423c3cbef0c17",
+  "hash": "46e3195b4c5e88976487f718c2e9ba43f6f6e32b48827b47e04f6c85733a8f6c"
+}

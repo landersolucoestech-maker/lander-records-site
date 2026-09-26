@@ -1,0 +1,29 @@
+{
+  "id": "EV-0053",
+  "kind": "command",
+  "findings": [
+    "F-0005"
+  ],
+  "criteria": [],
+  "mission": "M-20260925-002",
+  "summary": "env TEST_DATABASE_URL=postgresql://postgres@localhost:55432/lander_path_test node tests/database/migration-path.integration.mjs -> PASS",
+  "command": "env TEST_DATABASE_URL=postgresql://postgres@localhost:55432/lander_path_test node tests/database/migration-path.integration.mjs",
+  "argv": [
+    "env",
+    "TEST_DATABASE_URL=postgresql://postgres@localhost:55432/lander_path_test",
+    "node",
+    "tests/database/migration-path.integration.mjs"
+  ],
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "2c2bdeb27159db6b581d9b559eba07c09bfd5e70",
+  "dirty": false,
+  "fingerprint": "03becb8f9064ca5471aac184d69c7a0bd1dc320da1a3124b2d9eaa1d79c72837",
+  "environment": "node v22.22.2 (outside engines >=24 <25) linux; duration 1602ms",
+  "outputSha256": "9128480f904009b42a36fb0c160f9f19cf0e3425e77612c0da038f847e3a4275",
+  "excerpt": "o table page_sections\\n' +\n    'drop cascades to table page_section_items\\n' +\n    'drop cascades to table navigation_items\\n' +\n    'drop cascades to table site_settings\\n' +\n    'drop cascades to table social_links\\n' +\n    'drop cascades to table contact_topics\\n' +\n    'drop cascades to table contact_submissions\\n' +\n    'drop cascades to table integration_outbox\\n' +\n    'drop cascades to table slug_redirects\\n' +\n    'drop cascades to table artist_profiles\\n' +\n    'drop cascades to table artist_roles\\n' +\n    'drop cascades to table artist_role_relations\\n' +\n    'drop cascades to table music_genres\\n' +\n    'drop cascades to table artist_genre_relations\\n' +\n    'drop cascades to table artist_metrics\\n' +\n    'drop cascades to table artist_publication_destinations\\n' +\n    'drop cascades to table artist_publication_placements\\n' +\n    'drop cascades to table post_profiles\\n' +\n    'drop cascades to table post_links\\n' +\n    'drop cascades to table section_definitions\\n' +\n    'drop cascades to table page_section_bindings\\n' +\n    'drop cascades to table lander_records_integration_settings\\n' +\n    'drop cascades to table artist_external_identities\\n' +\n    'drop cascades to table integration_metric_cache\\n' +\n    'drop cascades to table spotify_release_cache\\n' +\n    'drop cascades to table spotify_oauth_states\\n' +\n    'drop cascades to table cms_schema_migration_checksum_transitions\\n' +\n    'drop cascades to table artist_metric_history\\n' +\n    'drop cascades to table media_kit_settings\\n' +\n    'drop cascades to table media_kit_sections\\n' +\n    'drop cascades to table media_kit_items',\n  file: 'dependency.c',\n  line: '1221',\n  routine: 'reportDependentObjects'\n}\n{\n  severity_local: 'NOTICE',\n  severity: 'NOTICE',\n  code: '42P07',\n  message: 'relation \"cms_schema_migrations\" already exists, skipping',\n  file: 'parse_utilcmd.c',\n  line: '207',\n  routine: 'transformCreateStmt'\n}\nSkipped 0001_cms_schema.sql (already applied)\nVerified checksum transition 0002_initial_content.sql\nSkipped 0002_initial_content.sql (already applied)\nSkipped 0003_artist_management.sql (already applied)\nSkipped 0004_news_management.sql (already applied)\nSkipped 0005_page_section_registry.sql (already applied)\nSkipped 0006_public_structure_fidelity.sql (already applied)\nVerified checksum transition 0007_external_integrations.sql\nSkipped 0007_external_integrations.sql (already applied)\nVerified checksum transition 0008_local_media_storage.sql\nSkipped 0008_local_media_storage.sql (already applied)\nSkipped 0009_supabase_storage_provider.sql (already applied)\n{\n  severity_local: 'NOTICE',\n  severity: 'NOTICE',\n  code: '42701',\n  message: 'column \"source\" of relation \"artist_metrics\" already exists, skipping',\n  file: 'tablecmds.c',\n  line: '7340',\n  routine: 'check_for_column_name_collision'\n}\n{\n  severity_local: 'NOTICE',\n  severity: 'NOTICE',\n  code: '42P07',\n  message: 'relation \"artist_metrics_source_idx\" already exists, skipping',\n  file: 'index.c',\n  line: '877',\n  routine: 'index_create'\n}\nApplied 0010_preserve_integration_history.sql\nApplied 0011_authorization_boundary_hardening.sql\nApplied 0012_lander_site_cms_alignment.sql\nApplied 0013_home_latest_releases_playlist.sql\nApplied 0014_home_lander_records_editorial_identity.sql\nApplied 0015_media_kit_builder.sql\nApplied 0016_media_kit_reference_layout.sql\nApplied 0017_media_kit_reference_sequence.sql\nApplied 0018_outbox_dead_letter.sql\nCMS migrations applied successfully.\nMIGRATION_UPGRADE_PATH=PASS\n",
+  "recordedAt": "2026-09-26T00:11:07.576Z",
+  "producer": "claude-code",
+  "prevHash": "d0dad80cf861cd0077ce79033ddc70e1d4b75ff01f8cd1cf4eee0f5c1b47eb6c",
+  "hash": "ba8b412bbcc436a1a68b4eacd5712445b9bab5991a659c85d895084d8281e4bc"
+}

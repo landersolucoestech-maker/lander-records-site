@@ -1,0 +1,30 @@
+{
+  "id": "EV-0052",
+  "kind": "command",
+  "findings": [
+    "F-0005",
+    "F-0015"
+  ],
+  "criteria": [],
+  "mission": "M-20260925-002",
+  "summary": "env DATABASE_URL=postgresql://postgres@localhost:55432/lander_test node tests/integration/contact-outbox-delivery.mjs -> PASS",
+  "command": "env DATABASE_URL=postgresql://postgres@localhost:55432/lander_test node tests/integration/contact-outbox-delivery.mjs",
+  "argv": [
+    "env",
+    "DATABASE_URL=postgresql://postgres@localhost:55432/lander_test",
+    "node",
+    "tests/integration/contact-outbox-delivery.mjs"
+  ],
+  "exitCode": 0,
+  "result": "PASS",
+  "commit": "2c2bdeb27159db6b581d9b559eba07c09bfd5e70",
+  "dirty": false,
+  "fingerprint": "03becb8f9064ca5471aac184d69c7a0bd1dc320da1a3124b2d9eaa1d79c72837",
+  "environment": "node v22.22.2 (outside engines >=24 <25) linux; duration 1162ms",
+  "outputSha256": "7f0f6ac9bd592548b96b65e833add0bbfb48c670f5e7bee598bdd65ad7675f43",
+  "excerpt": "Contact outbox delivery checks passed: signed delivery, exponential retry, permanent-rejection and exhausted-budget dead letter, no dead-letter replay.\n(node:21699) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/user/lander-records-site/lib/contact.ts is not specified and it doesn't parse as CommonJS.\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\nTo eliminate this warning, add \"type\": \"module\" to /home/user/lander-records-site/package.json.\n(Use `node --trace-warnings ...` to show where the warning was created)\ncontact_outbox_dead_letter {\"outboxId\":\"20076640-4e90-490f-a5c8-bfcb7fa64222\",\"attempts\":1,\"error\":\"SaaS webhook returned 422\"}\ncontact_outbox_dead_letter {\"outboxId\":\"2fb3792a-94b7-4f1d-8f9a-de44b54c6e97\",\"attempts\":8,\"error\":\"SaaS webhook returned 503\"}\n",
+  "recordedAt": "2026-09-26T00:11:05.853Z",
+  "producer": "claude-code",
+  "prevHash": "7617dcc3157942740c6f0588cfe28386bd6959c56cd4fd5bb6a7048f4b411b6f",
+  "hash": "d0dad80cf861cd0077ce79033ddc70e1d4b75ff01f8cd1cf4eee0f5c1b47eb6c"
+}

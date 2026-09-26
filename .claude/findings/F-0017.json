@@ -2,7 +2,7 @@
   "confidence": "confirmed",
   "dependencies": [],
   "risk": "low",
-  "status": "INVESTIGATING",
+  "status": "RESOLVED",
   "title": "OS completion could pass without real verification (unanchored mission/proofs, test-runner env masking)",
   "severity": "P1",
   "domain": "architecture",
@@ -168,11 +168,42 @@
       "at": "2026-09-26T00:02:13.101Z",
       "by": "adversarial-reviewer",
       "note": "reopened: project .npmrc node-options vacuous PASS; requiredTests widening (EV-0050 report)"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-26T00:12:15.303Z",
+      "by": "owner",
+      "note": "project .npmrc node-options; requiredTests widening; anchoring vs HEAD/merges"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-26T00:12:15.398Z",
+      "by": "owner",
+      "note": "fix in 2c2bdeb (npm isolation, all-suites verification, full-history anchoring)"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-26T00:12:15.492Z",
+      "by": "qa-engineer",
+      "note": "every requiredTests suite green on HEAD (EV-0057)"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-26T00:12:15.579Z",
+      "by": "regression-reviewer",
+      "note": "reaudit: EV-0057"
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-26T00:12:15.710Z",
+      "by": "autonomous-controller",
+      "note": "proofs EV-0057; server rebuilt from 2c2bdeb"
     }
   ],
   "evidenceRecords": [
     "EV-0035",
     "EV-0042",
-    "EV-0046"
+    "EV-0046",
+    "EV-0057"
   ]
 }

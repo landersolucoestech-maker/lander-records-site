@@ -7,7 +7,7 @@
   "title": "Metrics of an invalidated or replaced Soundcharts identity stay published",
   "severity": "P1",
   "domain": "identity",
-  "status": "INVESTIGATING",
+  "status": "RESOLVED",
   "evidence": [
     "lib/integrations/sync.ts (base): unresolved/not_configured branches clear the UUID but leave artist_metrics/integration_metric_cache",
     "tests/integration/soundcharts-identity-sync.mjs fails on base: 'metrics of an invalidated identity must not stay published'"
@@ -215,12 +215,43 @@
       "at": "2026-09-26T00:02:13.194Z",
       "by": "adversarial-reviewer",
       "note": "reopened: superseded run's lastError write not compare-and-set (EV-0050 report); lock protocol duplicated in admin actions (EV-0048)"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-26T00:12:14.706Z",
+      "by": "owner",
+      "note": "superseded run's lastError write was not compare-and-set; lock protocol duplicated in admin actions"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-26T00:12:14.806Z",
+      "by": "owner",
+      "note": "fix in 633f3a9 (CAS error writes, exported lock helpers)"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-26T00:12:14.909Z",
+      "by": "qa-engineer",
+      "note": "every requiredTests suite green on HEAD (EV-0056)"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-26T00:12:15.012Z",
+      "by": "regression-reviewer",
+      "note": "reaudit: EV-0056"
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-26T00:12:15.150Z",
+      "by": "autonomous-controller",
+      "note": "proofs EV-0056; server rebuilt from 2c2bdeb"
     }
   ],
   "evidenceRecords": [
     "EV-0019",
     "EV-0032",
     "EV-0039",
-    "EV-0045"
+    "EV-0045",
+    "EV-0056"
   ]
 }

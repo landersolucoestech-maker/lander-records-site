@@ -101,9 +101,47 @@
       "at": "2026-09-25T15:22:03.333Z",
       "by": "product-flows-auditor",
       "note": "reaudit: browser journey on built server — 201 confirmed, form reset, no 308, readable 502 (red on base e673bf9 documented)"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-26T00:10:57.252Z",
+      "by": "autonomous-controller",
+      "note": "re-verify: 2c2bdeb requires proofs that together run every requiredTests suite; earlier proofs ran only some"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-26T00:12:11.311Z",
+      "by": "owner",
+      "note": "earlier proofs ran only part of requiredTests"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-26T00:12:11.410Z",
+      "by": "owner",
+      "note": "product fix unchanged; re-verification under the all-suites rule (2c2bdeb)"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-26T00:12:11.506Z",
+      "by": "qa-engineer",
+      "note": "every requiredTests suite green on HEAD (EV-0051,EV-0058)"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-26T00:12:11.597Z",
+      "by": "regression-reviewer",
+      "note": "reaudit: EV-0051,EV-0058"
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-26T00:12:11.741Z",
+      "by": "autonomous-controller",
+      "note": "proofs EV-0051,EV-0058; server rebuilt from 2c2bdeb"
     }
   ],
   "evidenceRecords": [
-    "EV-0017"
+    "EV-0017",
+    "EV-0051",
+    "EV-0058"
   ]
 }

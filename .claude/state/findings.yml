@@ -4,9 +4,9 @@
   "derivedFrom": ".claude/findings/*.json",
   "totals": {
     "all": 19,
-    "open": 3,
+    "open": 0,
     "parked": 6,
-    "closed": 10,
+    "closed": 13,
     "ready": 0
   },
   "readyQueue": [],
@@ -20,7 +20,9 @@
       "priority": 680,
       "decision": null,
       "evidenceRecords": [
-        "EV-0017"
+        "EV-0017",
+        "EV-0051",
+        "EV-0058"
       ]
     },
     {
@@ -40,14 +42,15 @@
       "title": "Metrics of an invalidated or replaced Soundcharts identity stay published",
       "severity": "P1",
       "domain": "identity",
-      "status": "INVESTIGATING",
+      "status": "RESOLVED",
       "priority": 660,
       "decision": null,
       "evidenceRecords": [
         "EV-0019",
         "EV-0032",
         "EV-0039",
-        "EV-0045"
+        "EV-0045",
+        "EV-0056"
       ]
     },
     {
@@ -71,7 +74,10 @@
       "priority": 380,
       "decision": null,
       "evidenceRecords": [
-        "EV-0021"
+        "EV-0021",
+        "EV-0051",
+        "EV-0052",
+        "EV-0053"
       ]
     },
     {
@@ -115,7 +121,9 @@
       "priority": 600,
       "decision": null,
       "evidenceRecords": [
-        "EV-0024"
+        "EV-0024",
+        "EV-0051",
+        "EV-0054"
       ]
     },
     {
@@ -128,7 +136,9 @@
       "decision": null,
       "evidenceRecords": [
         "EV-0017",
-        "EV-0024"
+        "EV-0024",
+        "EV-0051",
+        "EV-0058"
       ]
     },
     {
@@ -150,7 +160,9 @@
       "priority": 110,
       "decision": null,
       "evidenceRecords": [
-        "EV-0025"
+        "EV-0025",
+        "EV-0051",
+        "EV-0055"
       ]
     },
     {
@@ -183,7 +195,9 @@
       "decision": null,
       "evidenceRecords": [
         "EV-0034",
-        "EV-0040"
+        "EV-0040",
+        "EV-0051",
+        "EV-0052"
       ]
     },
     {
@@ -203,13 +217,14 @@
       "title": "OS completion could pass without real verification (unanchored mission/proofs, test-runner env masking)",
       "severity": "P1",
       "domain": "architecture",
-      "status": "INVESTIGATING",
+      "status": "RESOLVED",
       "priority": 560,
       "decision": null,
       "evidenceRecords": [
         "EV-0035",
         "EV-0042",
-        "EV-0046"
+        "EV-0046",
+        "EV-0057"
       ]
     },
     {
@@ -227,13 +242,14 @@
       "title": "Guardian hook and security gate had bypassable forms (force-with-lease, sh -c, string-only preview checks)",
       "severity": "P2",
       "domain": "security",
-      "status": "INVESTIGATING",
+      "status": "RESOLVED",
       "priority": 410,
       "decision": null,
       "evidenceRecords": [
         "EV-0035",
         "EV-0041",
-        "EV-0047"
+        "EV-0047",
+        "EV-0057"
       ]
     }
   ]

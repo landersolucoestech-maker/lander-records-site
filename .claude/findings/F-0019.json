@@ -2,7 +2,7 @@
   "confidence": "confirmed",
   "dependencies": [],
   "risk": "low",
-  "status": "INVESTIGATING",
+  "status": "RESOLVED",
   "title": "Guardian hook and security gate had bypassable forms (force-with-lease, sh -c, string-only preview checks)",
   "severity": "P2",
   "domain": "security",
@@ -168,11 +168,42 @@
       "at": "2026-09-26T00:02:13.280Z",
       "by": "security-reviewer",
       "note": "reopened: preview gate multi-line YAML/explicit keys, multi-echo GITHUB_ENV, env -u/printf -v; hook abbreviated options and remaining forms (EV-0049 report)"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-26T00:12:15.840Z",
+      "by": "owner",
+      "note": "preview gate multi-line YAML/explicit keys/multi-echo; hook abbreviated options and remaining forms"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-26T00:12:15.936Z",
+      "by": "owner",
+      "note": "fix in 2c2bdeb (gate and hook hardening)"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-26T00:12:16.028Z",
+      "by": "qa-engineer",
+      "note": "every requiredTests suite green on HEAD (EV-0057)"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-26T00:12:16.125Z",
+      "by": "regression-reviewer",
+      "note": "reaudit: EV-0057"
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-26T00:12:16.256Z",
+      "by": "autonomous-controller",
+      "note": "proofs EV-0057; server rebuilt from 2c2bdeb"
     }
   ],
   "evidenceRecords": [
     "EV-0035",
     "EV-0041",
-    "EV-0047"
+    "EV-0047",
+    "EV-0057"
   ]
 }

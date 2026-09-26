@@ -127,10 +127,48 @@
       "at": "2026-09-25T23:28:03.045Z",
       "by": "autonomous-controller",
       "note": "proof EV-0040; server rebuilt from HEAD"
+    },
+    {
+      "status": "INVESTIGATING",
+      "at": "2026-09-26T00:10:57.731Z",
+      "by": "autonomous-controller",
+      "note": "re-verify: 2c2bdeb requires proofs that together run every requiredTests suite; earlier proofs ran only some"
+    },
+    {
+      "status": "ROOT_CAUSE_CONFIRMED",
+      "at": "2026-09-26T00:12:14.132Z",
+      "by": "owner",
+      "note": "earlier proofs ran only part of requiredTests"
+    },
+    {
+      "status": "FIXING",
+      "at": "2026-09-26T00:12:14.222Z",
+      "by": "owner",
+      "note": "product fix unchanged; re-verification under the all-suites rule (2c2bdeb)"
+    },
+    {
+      "status": "VALIDATING",
+      "at": "2026-09-26T00:12:14.323Z",
+      "by": "qa-engineer",
+      "note": "every requiredTests suite green on HEAD (EV-0051,EV-0052)"
+    },
+    {
+      "status": "REAUDITING",
+      "at": "2026-09-26T00:12:14.418Z",
+      "by": "regression-reviewer",
+      "note": "reaudit: EV-0051,EV-0052"
+    },
+    {
+      "status": "RESOLVED",
+      "at": "2026-09-26T00:12:14.561Z",
+      "by": "autonomous-controller",
+      "note": "proofs EV-0051,EV-0052; server rebuilt from 2c2bdeb"
     }
   ],
   "evidenceRecords": [
     "EV-0034",
-    "EV-0040"
+    "EV-0040",
+    "EV-0051",
+    "EV-0052"
   ]
 }
