@@ -26,7 +26,7 @@ import {
   slugRedirects,
 } from "../../lib/db/schema";
 import { normalizePlatformUrl } from "../../lib/integrations/identity";
-import { syncArtistSoundcharts } from "../../lib/integrations/sync";
+import { lockArtistIdentityRow, syncArtistSoundcharts } from "../../lib/integrations/sync";
 import { slugify } from "../../lib/slug";
 
 export type ArtistActionState = { ok: boolean; error?: string };
@@ -231,8 +231,7 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
       if (soundchartsLinksChanged) {
         // Lock the identity row first: an in-flight sync publish holds the same lock, so the purge below runs
         // after it commits (and the publish, seeing the changed links, is superseded) — never beside it.
-        await tx.insert(artistExternalIdentities).values({ artistId: resolvedId, resolutionStatus: "unresolved" }).onConflictDoNothing();
-        await tx.select({ artistId: artistExternalIdentities.artistId }).from(artistExternalIdentities).where(eq(artistExternalIdentities.artistId, resolvedId)).for("update");
+        await lockArtistIdentityRow(tx, resolvedId);
         await tx.delete(artistMetrics).where(eq(artistMetrics.artistId, resolvedId));
         await tx.delete(integrationMetricCache).where(and(eq(integrationMetricCache.entityType, "artist"), eq(integrationMetricCache.entityId, resolvedId)));
         await tx.insert(artistExternalIdentities).values({ artistId: resolvedId, resolutionStatus: "unresolved", soundchartsArtistUuid: "", matchedViaPlatform: "", matchedViaIdentifier: "", lastError: "", updatedAt: new Date() }).onConflictDoUpdate({

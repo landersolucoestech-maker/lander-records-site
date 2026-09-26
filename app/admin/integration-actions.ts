@@ -1,13 +1,12 @@
 "use server";
 
-import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { audit, requirePersistentAdmin } from "../../lib/auth";
 import { getDb } from "../../lib/db";
 import { landerRecordsIntegrationSettings, spotifyReleaseCache } from "../../lib/db/integration-schema";
 import { normalizeExternalUrl, normalizePlatformUrl, spotifyPlaylistIdFromUrl } from "../../lib/integrations/identity";
-import { purgeLanderRecordsSoundchartsMetrics, syncAllIntegrations } from "../../lib/integrations/sync";
+import { lockLanderSettings, purgeLanderRecordsSoundchartsMetrics, syncAllIntegrations } from "../../lib/integrations/sync";
 
 function text(formData: FormData, name: string) {
   return String(formData.get(name) || "").trim();
@@ -27,7 +26,7 @@ export async function saveLanderRecordsIntegrationSettings(formData: FormData) {
   // transaction (single purge implementation in lib/integrations/sync.ts). The settings row is locked first, so the
   // purge serializes with an in-flight sync publish (which locks the same row) instead of running beside it.
   const { playlistChanged } = await db.transaction(async (tx) => {
-    const current = (await tx.select().from(landerRecordsIntegrationSettings).where(eq(landerRecordsIntegrationSettings.key, "lander_records")).for("update"))[0];
+    const current = await lockLanderSettings(tx);
     const socialChanged = !current || current.instagramUrl !== instagramUrl || current.youtubeUrl !== youtubeUrl;
     const playlistChanged = !current || current.spotifyPlaylistId !== spotifyPlaylistId;
     if (socialChanged) await purgeLanderRecordsSoundchartsMetrics(tx);

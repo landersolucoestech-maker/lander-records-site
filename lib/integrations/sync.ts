@@ -79,7 +79,8 @@ function resolutionStillMatches(identity: typeof artistExternalIdentities.$infer
 // Every identity/metric write below is a compare-and-set under the settings row lock: it applies only if the official
 // URLs (and, where relevant, the stored identity) are still the ones this run read. An admin save or another sync
 // that changed them in the meantime wins; this run reports "superseded" instead of overwriting newer state.
-async function lockLanderSettings(tx: DbExecutor) {
+/** Locks the Lander settings row. Admin saves take this lock before purging (same protocol as every sync write). */
+export async function lockLanderSettings(tx: DbExecutor) {
   return (await tx.select().from(landerRecordsIntegrationSettings).where(eq(landerRecordsIntegrationSettings.key, LANDER_ENTITY_ID)).for("update"))[0];
 }
 const sameLanderUrls = (a: { instagramUrl: string; youtubeUrl: string } | undefined, b: { instagramUrl: string; youtubeUrl: string }) =>
@@ -204,7 +205,12 @@ export async function syncLanderRecordsSoundcharts(force = false) {
     return { status: "synced" as const, metrics: metrics.length };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Falha desconhecida no Soundcharts.";
-    await db.update(landerRecordsIntegrationSettings).set({ soundchartsLastError: message, updatedAt: new Date() }).where(eq(landerRecordsIntegrationSettings.key, LANDER_ENTITY_ID));
+    // The error describes this run's identity: record it only while that identity is still current.
+    await db.transaction(async (tx) => {
+      const current = await lockLanderSettings(tx);
+      if (!sameLanderUrls(current, settings) || current!.soundchartsArtistUuid !== uuid) return;
+      await tx.update(landerRecordsIntegrationSettings).set({ soundchartsLastError: message, updatedAt: new Date() }).where(eq(landerRecordsIntegrationSettings.key, LANDER_ENTITY_ID));
+    });
     throw error;
   }
 }
@@ -221,10 +227,17 @@ const linksKey = (links: Array<{ platform: string; url: string }>) => links.map(
 
 // Same compare-and-set rule as the Lander path: the identity row is locked (the admin save locks it too) and a
 // write applies only while the artist's links and stored identity are still the ones this run read.
-async function lockArtistIdentity(tx: DbExecutor, artistId: string, links: Array<{ platform: string; url: string }>, expectedUuid: string) {
-  // Ensure the row exists so there is something to lock (a missing row would let two writers interleave).
+/**
+ * Locks an artist's identity row, creating it first so there is always a row to lock (a missing row would let two
+ * writers interleave). Admin saves take this lock before purging (same protocol as every sync write).
+ */
+export async function lockArtistIdentityRow(tx: DbExecutor, artistId: string) {
   await tx.insert(artistExternalIdentities).values({ artistId, resolutionStatus: "unresolved" }).onConflictDoNothing();
-  const current = (await tx.select().from(artistExternalIdentities).where(eq(artistExternalIdentities.artistId, artistId)).for("update"))[0];
+  return (await tx.select().from(artistExternalIdentities).where(eq(artistExternalIdentities.artistId, artistId)).for("update"))[0];
+}
+
+async function lockArtistIdentity(tx: DbExecutor, artistId: string, links: Array<{ platform: string; url: string }>, expectedUuid: string) {
+  const current = await lockArtistIdentityRow(tx, artistId);
   if ((current?.soundchartsArtistUuid || "") !== expectedUuid) return false;
   return linksKey(await readArtistLinks(tx, artistId)) === linksKey(links);
 }
@@ -263,6 +276,7 @@ export async function syncArtistSoundcharts(artistId: string, force = false) {
   if (!soundchartsCredentialsConfigured()) return { status: "credentials_missing" as const, metrics: 0 };
   if (!force && identity && isFresh(identity.lastSyncedAt, SOUNDCHARTS_TTL_MS) && resolutionStillMatches(identity, links)) return { status: "fresh" as const, metrics: 0 };
 
+  let runUuid = identity?.soundchartsArtistUuid || ""; // the identity this run currently stands on
   try {
     let resolvedUuid = identity?.soundchartsArtistUuid || "";
     let matchedViaPlatform = identity?.matchedViaPlatform || "";
@@ -314,6 +328,7 @@ export async function syncArtistSoundcharts(artistId: string, force = false) {
         });
         if (!applied) return { status: "superseded" as const, metrics: 0 };
       }
+      runUuid = resolvedUuid;
     }
 
     const metrics = await fetchSoundchartsArtistMetrics(resolvedUuid);
@@ -378,9 +393,10 @@ export async function syncArtistSoundcharts(artistId: string, force = false) {
     return { status: "synced" as const, metrics: metrics.length };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Falha desconhecida no Soundcharts.";
-    await db.insert(artistExternalIdentities).values({ artistId, resolutionStatus: identity?.resolutionStatus || "error", lastError: message }).onConflictDoUpdate({
-      target: artistExternalIdentities.artistId,
-      set: { lastError: message, updatedAt: new Date() },
+    // Same rule as the Lander path: a superseded run never stamps its error on a newer identity.
+    await db.transaction(async (tx) => {
+      if (!(await lockArtistIdentity(tx, artistId, links, runUuid))) return;
+      await tx.update(artistExternalIdentities).set({ lastError: message, updatedAt: new Date() }).where(eq(artistExternalIdentities.artistId, artistId));
     });
     throw error;
   }

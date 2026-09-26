@@ -279,7 +279,25 @@ try {
   assert.equal([...await client`SELECT 1 FROM integration_metric_cache WHERE entity_type='lander_records'`].length, 0, "Lander: no metrics without an identity");
   assert.deepEqual(await metricRows(), [], "artist: no metrics without an identity");
 
-  // 15. Every provider request is bounded by a timeout signal.
+  // 15. A superseded run that then fails must not stamp its error on the identity that replaced it.
+  await client`
+    UPDATE lander_records_integration_settings
+    SET instagram_url=${newUrl}, soundcharts_artist_uuid=${NEW_UUID}, soundcharts_resolution_status='resolved',
+        soundcharts_matched_via=${`instagram:${newUrl}`}, soundcharts_last_error='', soundcharts_last_synced_at=now() - interval '2 days'
+    WHERE key='lander_records'
+  `;
+  metricsLatch = { promise: new Promise((resolve) => { release = resolve; }) };
+  provider = { resolveTo: NEW_UUID, metrics: {}, failMetrics: true };
+  const failing = syncLanderRecordsSoundcharts(true);
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  await client`UPDATE lander_records_integration_settings SET instagram_url=${oldUrl}, soundcharts_artist_uuid=${OLD_UUID}, soundcharts_matched_via=${`instagram:${oldUrl}`}, soundcharts_last_error='' WHERE key='lander_records'`;
+  release();
+  metricsLatch = null;
+  await assert.rejects(() => failing, /Soundcharts respondeu 503/);
+  const [afterFailure] = await client`SELECT soundcharts_artist_uuid, soundcharts_last_error FROM lander_records_integration_settings WHERE key='lander_records'`;
+  assert.deepEqual([afterFailure.soundcharts_artist_uuid, afterFailure.soundcharts_last_error], [OLD_UUID, ""], "a superseded run's error must not be recorded on the current identity");
+
+  // 16. Every provider request is bounded by a timeout signal.
   assert.ok(seenSignals.length > 0);
   assert.ok(seenSignals.every((signal) => signal instanceof AbortSignal), "every Soundcharts request must carry an AbortSignal timeout");
 
