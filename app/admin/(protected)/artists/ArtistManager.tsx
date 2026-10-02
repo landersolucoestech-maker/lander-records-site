@@ -239,7 +239,7 @@ export default function ArtistManager({ artists: initialArtists, canDelete = fal
 
   useEffect(() => {
     if (!actionMenu) return;
-    const close = () => closeActionMenu();
+    const close = () => { setActionMenu(null); setActionMenuPosition(null); };
     const pointerDown = (event: PointerEvent) => {
       const target = event.target as Element | null;
       if (target?.closest("[data-artist-action-menu], [data-artist-action-trigger]")) return;
