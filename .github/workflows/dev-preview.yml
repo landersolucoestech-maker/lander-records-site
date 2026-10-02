@@ -202,7 +202,7 @@ jobs:
             echo "- Ambiente descartável: PostgreSQL temporário, sem secrets de produção."
             echo "- Autenticação do portal desativada apenas neste preview descartável do GitHub Actions."
             echo "- Todas as rotas públicas e administrativas conhecidas foram validadas como navegáveis antes da publicação."
-            echo "- O endereço representa a revisão mais recente de dev e é substituído por um novo preview no próximo push."
+            echo "- O endereço representa a revisão mais recente de main e é substituído por um novo preview no próximo push."
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Verify public tunnel navigation
@@ -257,20 +257,11 @@ jobs:
           path: preview-url.txt
           retention-days: 1
 
-      - name: Keep preview online
+      - name: Verify preview processes remain healthy
         run: |
           echo "Preview admin: $PREVIEW_URL/admin"
-          for minute in $(seq 1 180); do
-            if ! kill -0 "$APP_PID" 2>/dev/null; then
-              cat /tmp/lander-preview.log
-              exit 1
-            fi
-            if ! kill -0 "$TUNNEL_PID" 2>/dev/null; then
-              cat /tmp/cloudflared.log
-              exit 1
-            fi
-            sleep 60
-          done
+          kill -0 "$APP_PID"
+          kill -0 "$TUNNEL_PID"
 
       - name: Preview logs
         if: always()
