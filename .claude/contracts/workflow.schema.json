@@ -1,0 +1,1 @@
+{"title":"Claude Workflow Contract","type":"object","required":["id","trigger","states","authorization","evidence"]}

@@ -1,0 +1,1 @@
+{"title":"Claude Agent Contract","type":"object","required":["id","purpose","scope","inputs","outputs","skills","gates"]}

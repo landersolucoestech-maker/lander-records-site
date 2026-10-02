@@ -1,0 +1,1 @@
+{"title":"Claude Skill Contract","type":"object","required":["id","purpose","inputs","procedure","validation","outputs","failure"]}

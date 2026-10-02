@@ -1,0 +1,1 @@
+{"title":"Evidence Contract","type":"object","required":["evidence_id","kind","result","timestamp"]}

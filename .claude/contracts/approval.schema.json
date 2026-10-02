@@ -1,0 +1,1 @@
+{"title":"Human Approval Contract","type":"object","required":["approval_id","action","reason","status"]}

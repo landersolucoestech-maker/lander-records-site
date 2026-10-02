@@ -1,0 +1,1 @@
+{"title":"Claude Task Contract","type":"object","required":["task_id","mission","scope","acceptance_criteria","status"]}

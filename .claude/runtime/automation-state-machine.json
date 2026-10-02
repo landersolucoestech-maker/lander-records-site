@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "states": [
+    "received",
+    "authorized",
+    "validated",
+    "planned",
+    "awaiting_approval",
+    "checkpointed",
+    "executing",
+    "verifying",
+    "completed",
+    "failed",
+    "recovering",
+    "rolled_back",
+    "escalated"
+  ],
+  "sideEffectRequirements": [
+    "authorization",
+    "idempotency_key",
+    "checkpoint",
+    "evidence"
+  ],
+  "humanApprovalRequiredFor": [
+    "destructive-write",
+    "publish-or-unpublish",
+    "permission-change",
+    "credential-change",
+    "billing-or-payment",
+    "irreversible-external-action"
+  ]
+}

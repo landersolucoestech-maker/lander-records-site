@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "runtime": "claude-code",
+  "pipeline": [
+    "repo-identity",
+    "scope-lock",
+    "investigate",
+    "plan",
+    "route",
+    "execute",
+    "validate",
+    "review",
+    "evidence",
+    "completion-gate"
+  ],
+  "failurePolicy": {
+    "transient": "bounded-retry",
+    "validation": "stop-and-fix",
+    "authorization": "stop",
+    "destructive": "require-human-approval",
+    "unknown": "escalate"
+  }
+}
