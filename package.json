@@ -24,7 +24,8 @@
     "db:migrate": "node scripts/migrate.mjs",
     "db:seed": "node scripts/seed.mjs",
     "test:integration": "node tests/integration/cms.mjs && node tests/integration/integrations-db.mjs && node tests/integration/authorization-db.mjs",
-    "admin:bootstrap": "node scripts/bootstrap-admin.mjs"
+    "admin:bootstrap": "node scripts/bootstrap-admin.mjs",
+    "validate:content": "node scripts/validate-content.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
