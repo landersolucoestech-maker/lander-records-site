@@ -67,6 +67,7 @@ jobs:
         run: npm run typecheck
       - name: Browser and responsive regression tests
         env:
+          NODE_ENV: development
           DEV_AUTH_BYPASS: "true"
           LANDER_MOCK_DATA: "1"
           PLAYWRIGHT_BASE_URL: http://127.0.0.1:8082
