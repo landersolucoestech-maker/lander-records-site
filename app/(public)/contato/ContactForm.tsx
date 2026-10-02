@@ -47,8 +47,9 @@ export function ContactForm({ topics }: { topics: Topic[] }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Não foi possível enviar a mensagem.");
+      const contentType = response.headers.get("content-type") || "";
+      const result = contentType.includes("application/json") ? await response.json() : null;
+      if (!response.ok) throw new Error(result?.error || "Não foi possível enviar a mensagem.");
       event.currentTarget.reset();
       idempotencyKey.current = idempotencyKeyAfterAttempt(idempotencyKey.current, true);
       setState({ status: "success", message: "Mensagem enviada com sucesso. Nossa equipe recebeu seu contato." });
