@@ -208,7 +208,7 @@ function useDialogLifecycle(open: boolean, onClose: () => void, dialogRef: React
 function ContentViewDialog({ canEdit, onClose, onEdit, post }: { canEdit: boolean; onClose: () => void; onEdit: () => void; post: PostRecord }) {
   const [mounted, setMounted] = useState(false);
   const dialogRef = useRef<HTMLElement>(null);
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => { Promise.resolve().then(() => setMounted(true)); }, []);
   useDialogLifecycle(mounted, onClose, dialogRef);
   if (!mounted) return null;
 
@@ -450,7 +450,7 @@ export default function PostManager({ canDelete = false, canEdit = true, categor
     setLocalNotice(`Conteúdo “${post.title}” excluído desta prévia.`);
   };
 
-  useEffect(() => { setPage(1); closeActionMenu(); }, [authorFilter, categoryFilter, query, sortMode, statusFilter]);
+  useEffect(() => { Promise.resolve().then(() => { setPage(1); closeActionMenu(); }); }, [authorFilter, categoryFilter, query, sortMode, statusFilter]);
 
   useEffect(() => {
     if (!canMutate || preview) return;

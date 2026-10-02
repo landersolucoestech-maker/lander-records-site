@@ -51,7 +51,7 @@ export function MediaLibrary({ archiveAction, canArchive, canUpload, items, uplo
   const hasFilters=Boolean(query.trim()||type!=="all"||status!=="all"||origin!=="all"||sort!=="created-desc");
   const clearFilters=()=>{setQuery("");setType("all");setStatus("all");setOrigin("all");setSort("created-desc");setPage(1);};
 
-  useEffect(()=>{setPage(1);},[origin,query,sort,status,type]);
+  useEffect(()=>{Promise.resolve().then(()=>setPage(1));},[origin,query,sort,status,type]);
   useEffect(()=>{if(!canUpload)return;const open=()=>setUploadOpen(true);window.addEventListener("admin:add-media",open);return()=>window.removeEventListener("admin:add-media",open);},[canUpload]);
 
   return <div className="adminDashboard" data-testid="media-manager">

@@ -132,10 +132,10 @@ export default function PageContentWorkbench({ page, publicRoute, sections, item
 
   useEffect(() => {
     if (!selectedItems.length) {
-      setSelectedItemId("");
+      Promise.resolve().then(() => setSelectedItemId(""));
       return;
     }
-    if (!selectedItems.some((item) => item.id === selectedItemId)) setSelectedItemId(selectedItems[0].id);
+    if (!selectedItems.some((item) => item.id === selectedItemId)) Promise.resolve().then(() => setSelectedItemId(selectedItems[0].id));
   }, [selectedId, selectedItemId, selectedItems]);
 
   useEffect(() => {

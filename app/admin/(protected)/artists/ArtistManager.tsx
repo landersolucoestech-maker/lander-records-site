@@ -123,7 +123,7 @@ function useDialogLifecycle(open: boolean, onClose: () => void, dialogRef: React
 function ArtistViewDialog({ artist, canEdit, onClose, onEdit }: { artist: ArtistSummary; canEdit: boolean; onClose: () => void; onEdit: () => void }) {
   const [mounted, setMounted] = useState(false);
   const dialogRef = useRef<HTMLElement>(null);
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => { Promise.resolve().then(() => setMounted(true)); }, []);
   useDialogLifecycle(mounted, onClose, dialogRef);
   if (!mounted) return null;
 
@@ -151,7 +151,7 @@ function ArtistViewDialog({ artist, canEdit, onClose, onEdit }: { artist: Artist
 function ArtistEditorDialog({ initial, mode, onClose, onLocalSubmit, options }: { initial: ArtistEditorInitial; mode: "create" | "edit"; onClose: () => void; onLocalSubmit?: (formData: FormData) => void | Promise<void>; options: ArtistFormOptions }) {
   const [mounted, setMounted] = useState(false);
   const dialogRef = useRef<HTMLElement>(null);
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => { Promise.resolve().then(() => setMounted(true)); }, []);
   useDialogLifecycle(mounted, onClose, dialogRef);
   if (!mounted) return null;
 
@@ -220,7 +220,7 @@ export default function ArtistManager({ artists: initialArtists, canDelete = fal
     });
   }, [artists, genre, query, role, sort, status]);
 
-  useEffect(() => { setPage(1); closeActionMenu(); }, [genre, pageSize, query, role, sort, status]);
+  useEffect(() => { Promise.resolve().then(() => { setPage(1); setActionMenu(null); setActionMenuPosition(null); }); }, [genre, pageSize, query, role, sort, status]);
 
   useEffect(() => {
     if (!canEdit || preview) return;
@@ -270,7 +270,7 @@ export default function ArtistManager({ artists: initialArtists, canDelete = fal
   };
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
-  useEffect(() => { if (page > pageCount) setPage(pageCount); }, [page, pageCount]);
+  useEffect(() => { if (page > pageCount) Promise.resolve().then(() => setPage(pageCount)); }, [page, pageCount]);
   const startIndex = filtered.length ? (page - 1) * pageSize : 0;
   const pageRows = filtered.slice(startIndex, startIndex + pageSize);
   const endIndex = filtered.length ? startIndex + pageRows.length : 0;

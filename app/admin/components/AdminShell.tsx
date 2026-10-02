@@ -184,9 +184,9 @@ export function AdminShell({ children, email, footerAction, name, notifications 
 
   useEffect(() => {
     const stored = window.localStorage.getItem("lander-admin-sidebar-collapsed");
-    if (stored === "true") setCollapsed(true);
+    if (stored === "true") Promise.resolve().then(() => setCollapsed(true));
     const syncHash = () => setHash(window.location.hash);
-    syncHash();
+    Promise.resolve().then(syncHash);
     window.addEventListener("hashchange", syncHash);
     return () => window.removeEventListener("hashchange", syncHash);
   }, []);
@@ -197,11 +197,11 @@ export function AdminShell({ children, email, footerAction, name, notifications 
 
   useEffect(() => {
     const stored = window.localStorage.getItem(`lander-admin-notifications-seen:${notificationScope}`);
-    setNotificationSeenAt(stored || "");
+    Promise.resolve().then(() => setNotificationSeenAt(stored || ""));
   }, [notificationScope]);
 
   useEffect(() => {
-    setNotificationOpen(false);
+    Promise.resolve().then(() => setNotificationOpen(false));
   }, [pathname]);
 
   useEffect(() => {
