@@ -43,7 +43,8 @@
         "validate-artist-links",
         "validate-artist-media"
       ],
-      "approvalRequiredFor": []
+      "approvalRequiredFor": [],
+      "capabilityRule": "read-only validation uses existing artist/media/link boundaries and must not mutate profile state"
     },
     {
       "id": "contact-routing",
