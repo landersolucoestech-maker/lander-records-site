@@ -92,7 +92,7 @@ jobs:
             cat /tmp/lander-browser.log
             exit 1
           fi
-          npm run test:browser
+          npm run test:browser:ci
       - name: Build
         env:
           NODE_ENV: production
