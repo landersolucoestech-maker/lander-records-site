@@ -49,7 +49,7 @@ test("preview interactions never issue persistent HTTP mutations", async ({ page
   await state.selectOption("loading");
   await expect(page.locator("[aria-busy='true']")).toBeVisible();
   await state.selectOption("error");
-  await expect(page.locator("[role='alert']")).toBeVisible();
+  await expect(page.locator(".adminAlert.error[role='alert']")).toBeVisible();
   await state.selectOption("filled");
   await expect(page.getByRole("table")).toBeVisible();
   expect(mutations).toEqual([]);
