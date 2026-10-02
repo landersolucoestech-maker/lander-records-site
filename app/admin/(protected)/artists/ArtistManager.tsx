@@ -224,7 +224,7 @@ export default function ArtistManager({ artists: initialArtists, canDelete = fal
 
   useEffect(() => {
     if (!canEdit || preview) return;
-    const openCreate = () => { closeActionMenu(); setModal({ mode: "create" }); };
+    const openCreate = () => { setActionMenu(null); setActionMenuPosition(null); setModal({ mode: "create" }); };
     window.addEventListener("admin:new-artist", openCreate);
     return () => window.removeEventListener("admin:new-artist", openCreate);
   }, [canEdit, preview]);
