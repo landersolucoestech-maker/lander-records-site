@@ -1,15 +1,15 @@
 # Claude Pack Completion Report
 
 Date: 2026-10-02
-Validated branch: main
-Validated SHA: f469a1ffebe6d73f7dd935321a4451ae334a92fc
+Validated branch: dev
+Validated SHA: 278c2011bc366c1f8db082ab395760d4ee9578c7
 
 ## Result
-Claude/Claude Code control plane is materialized and operational on main.
+Claude/Claude Code control plane is materialized and operational on dev. main is frozen until explicit user authorization.
 
 ## Evidence
-- CMS Foundation CI: PASS — run 37042290577.
-- Main Preview: PASS — run 37042290555.
+- CMS Foundation CI: PASS — run 37047631935.
+- Dev Preview: PASS — run 37047631978.
 - Claude pack validation: PASS.
 - Claude Engineering OS self-test/integrity: PASS.
 - Database migrations: PASS.
@@ -30,11 +30,13 @@ Runtime includes mission, preflight, orchestration, pack validation, integrity v
 Commands and lifecycle hooks are materialized under .claude.
 
 ## Git policy
-Project policy is MAIN ONLY. CLAUDE.md, runtime preflight, hooks and workflows reject/use only main for new work.
+Project policy is DEV ONLY / MAIN FROZEN. CLAUDE.md, settings, runtime preflight, hooks, tests and workflows require dev for new work. main remains untouched until explicit user authorization.
 
-## Administrative repository cleanup still required
-GitHub repository settings still report dev as the default branch and both dev/main physically exist. The available connector cannot change the default branch or delete dev. Required repository-admin operation: set main as default, then delete dev. No development should occur on dev.
+## Branch state
+Both dev and main intentionally exist. dev is the active working branch. main is intentionally frozen and is not a cleanup target while this policy remains in force.
 
+## Hosting policy
+Hostinger is the authorized hosting/deployment target. Vercel is prohibited by repository policy and legacy-platform guards.
 
 ## Final application quality
 - React 19 hook lint gates are strict again; no React hook errors remain.
