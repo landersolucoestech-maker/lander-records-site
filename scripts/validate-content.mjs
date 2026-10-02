@@ -1,12 +1,18 @@
 import fs from "node:fs/promises";
 import postgres from "postgres";
 
-const envText = await fs.readFile(".env.local", "utf8");
-for (const line of envText.split(/\r?\n/)) {
-  const match = line.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
-  if (match) process.env[match[1]] = match[2];
+if (!process.env.DATABASE_URL) {
+  try {
+    const envText = await fs.readFile(".env.local", "utf8");
+    for (const line of envText.split(/\\r?\\n/)) {
+      const match = line.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+      if (match) process.env[match[1]] = match[2];
+    }
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
 }
-
+if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required for content validation.");
 const sql = postgres(process.env.DATABASE_URL, { max: 1, prepare: false });
 const requiredColumns = {
   posts: ["id", "title", "slug", "category_id", "cover_media_id", "og_media_id", "status"],
