@@ -57,7 +57,8 @@
         "route-contact-submission",
         "assign-contact-followup"
       ],
-      "capabilityRule": "must use existing contact/outbox boundary; unsupported assignment provider is CAPABILITY_UNAVAILABLE"
+      "capabilityRule": "must use existing contact/outbox boundary; unsupported assignment provider is CAPABILITY_UNAVAILABLE",
+      "approvalRequiredFor": []
     },
     {
       "id": "integration-health",
@@ -74,7 +75,8 @@
         "retry-failed-operation",
         "recover-failed-workflow"
       ],
-      "capabilityRule": "must use existing integration sync boundary and never simulate provider success"
+      "capabilityRule": "must use existing integration sync boundary and never simulate provider success",
+      "approvalRequiredFor": []
     },
     {
       "id": "operational-governance",
