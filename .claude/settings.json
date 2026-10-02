@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "runtime": "claude-code",
+  "branchPolicy": {
+    "only": "main",
+    "pullRequests": false,
+    "forcePush": false
+  },
+  "approval": {
+    "required": [
+      "destructive",
+      "publishing",
+      "credential-change",
+      "permission-change",
+      "billing",
+      "irreversible-external-action"
+    ]
+  },
+  "evidence": {
+    "requiredForCompletion": true
+  },
+  "capabilityUnavailable": "CAPABILITY_UNAVAILABLE"
+}

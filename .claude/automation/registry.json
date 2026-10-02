@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "canonicalRuntime": "claude-code",
+  "mode": "capability-aware",
+  "workflows": [
+    {
+      "id": "content-lifecycle",
+      "trigger": "manual-or-cms",
+      "agents": [
+        "content-draft-agent",
+        "content-review-agent",
+        "content-publication-readiness-agent",
+        "human-approval-agent"
+      ],
+      "skills": [
+        "create-content-draft",
+        "validate-content-schema",
+        "validate-content-completeness",
+        "validate-content-links",
+        "validate-content-media",
+        "validate-content-seo",
+        "validate-content-publication-readiness",
+        "request-content-approval",
+        "publish-approved-content"
+      ],
+      "approvalRequiredFor": [
+        "publish-approved-content",
+        "schedule-content-publication",
+        "unpublish-content"
+      ],
+      "capabilityRule": "publishing actions execute only through existing CMS boundaries; otherwise CAPABILITY_UNAVAILABLE"
+    },
+    {
+      "id": "artist-profile-quality",
+      "trigger": "manual-or-content-change",
+      "agents": [
+        "artist-profile-completeness-agent",
+        "media-validation-agent",
+        "link-validation-agent"
+      ],
+      "skills": [
+        "validate-artist-profile",
+        "validate-artist-links",
+        "validate-artist-media"
+      ],
+      "approvalRequiredFor": []
+    },
+    {
+      "id": "contact-routing",
+      "trigger": "contact-submission",
+      "agents": [
+        "contact-routing-agent",
+        "operational-monitor-agent"
+      ],
+      "skills": [
+        "classify-contact-submission",
+        "route-contact-submission",
+        "assign-contact-followup"
+      ],
+      "capabilityRule": "must use existing contact/outbox boundary; unsupported assignment provider is CAPABILITY_UNAVAILABLE"
+    },
+    {
+      "id": "integration-health",
+      "trigger": "cron-or-manual",
+      "agents": [
+        "integration-health-agent",
+        "exception-routing-agent",
+        "operational-recovery-agent"
+      ],
+      "skills": [
+        "validate-integration-config",
+        "check-integration-health",
+        "sync-integration-data",
+        "retry-failed-operation",
+        "recover-failed-workflow"
+      ],
+      "capabilityRule": "must use existing integration sync boundary and never simulate provider success"
+    },
+    {
+      "id": "operational-governance",
+      "trigger": "any-operational-workflow",
+      "agents": [
+        "lander-records-ai-orchestrator",
+        "human-approval-agent",
+        "operational-recovery-agent"
+      ],
+      "skills": [
+        "evaluate-human-approval",
+        "request-human-approval",
+        "resume-after-approval",
+        "reject-unsafe-automation",
+        "create-operational-checkpoint",
+        "record-automation-evidence",
+        "trace-automation-decision",
+        "explain-automation-action"
+      ],
+      "approvalRequiredFor": [
+        "destructive",
+        "publishing",
+        "credentials",
+        "permissions",
+        "billing",
+        "irreversible-external-action"
+      ]
+    }
+  ]
+}
