@@ -27,7 +27,7 @@ test("CI and runtime use the reproducible Node and npm contract", () => {
   assert.equal(packageJson.engines.node, ">=24 <25");
 });
 
-test("dev preview stays disposable, public for review, and isolated from production credentials", () => {
+test("main preview stays disposable, public for review, and isolated from production credentials", () => {
   const preview = read(".github/workflows/dev-preview.yml");
   assert.match(preview, /branches:\s*\n\s*- dev/);
   assert.match(preview, /lander_records_preview/);
