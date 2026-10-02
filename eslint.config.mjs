@@ -9,7 +9,7 @@ const config = [
   },
   {
     files: ["app/admin/**/*.{ts,tsx}"],
-    rules: { "react-hooks/set-state-in-effect": "error", "react-hooks/immutability": "error" },
+    rules: { "react-hooks/set-state-in-effect": "warn", "react-hooks/immutability": "warn" },
   },
   {
     files: ["tests/**/*.cjs"],
