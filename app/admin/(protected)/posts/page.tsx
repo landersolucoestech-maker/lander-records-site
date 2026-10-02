@@ -29,7 +29,7 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
     const initialId = filters.edit || filters.view || undefined;
     return <PostManager
       canDelete
-      canEdit={canEdit}
+      canEdit={session.source === "session" && session.user.role !== "viewer"}
       categories={mockPostCategories.map(({ id, name }) => ({ id, name }))}
       deleted={filters.deleted === "1"}
       developmentMode
@@ -136,7 +136,7 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
 
   return <PostManager
     canDelete={session.source === "session" && (session.user.role === "admin" || session.user.role === "owner")}
-    canEdit={canEdit}
+    canEdit={session.source === "session" && session.user.role !== "viewer"}
     categories={categoryRows}
     deleted={filters.deleted === "1"}
     developmentMode={session.source === "development-auth-bypass"}
