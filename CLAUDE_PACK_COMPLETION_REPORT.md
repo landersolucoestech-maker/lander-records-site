@@ -2,14 +2,14 @@
 
 Date: 2026-10-02
 Validated branch: dev
-Validated SHA: c16fb721fd44361c5cde6d75a239f70ff799e2ca
+Validated SHA: 389db87ec8418a135616d87a680626ee4fda4866
 
 ## Result
 Claude/Claude Code control plane is materialized and operational on dev. main is frozen until explicit user authorization.
 
 ## Evidence
-- CMS Foundation CI: PASS — run 37068333427.
-- Dev Preview: PASS — run 37068333485.
+- CMS Foundation CI: PASS — run 37073453449.
+- Dev Preview: PASS — run 37073453442.
 - Claude pack validation: PASS.
 - Claude Engineering OS self-test/integrity: PASS.
 - Database migrations: PASS.
@@ -37,6 +37,12 @@ Project policy is DEV ONLY / MAIN FROZEN. CLAUDE.md, settings, runtime preflight
 
 ## Branch state
 Both dev and main intentionally exist. dev is the active working branch. main is intentionally frozen and is not a cleanup target while this policy remains in force.
+
+## Additional hardening closure
+- Production response baseline now includes HSTS, COOP and DNS-prefetch control in addition to existing content-type, referrer, frame and permissions protections, with regression coverage.
+- Explicit public 404 recovery boundary is materialized and tested.
+- Hostinger-specific production deployment contract is materialized and linked from the deployment runbook.
+- Dependency monitoring configuration targets dev without opening automated update branches, preserving the no-new-branches policy.
 
 ## Hosting policy
 Hostinger is the authorized hosting/deployment target. Vercel is prohibited by repository policy and legacy-platform guards.
