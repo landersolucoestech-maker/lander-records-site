@@ -7,7 +7,7 @@ const nextConfig = {
   trailingSlash: true,
   experimental: {
     serverActions: {
-      bodySizeLimit: "15mb",
+      bodySizeLimit: "64mb",
     },
   },
   async headers() {
