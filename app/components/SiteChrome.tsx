@@ -115,7 +115,7 @@ export async function Footer() {
           {settings.contactPhone ? <p><strong>Telefone</strong><br/>{settings.contactPhone}</p> : null}
           {settings.contactEmail ? <p><strong>E-mail</strong><br/>{settings.contactEmail}</p> : null}
           {settings.address ? <p><strong>Endereço</strong><br/>{settings.address}</p> : null}
-          {settings.hours ? <p><strong>Horário</strong><br/>{settings.hours}<br/>Fechado aos sábados e domingos</p> : null}
+          {settings.hours ? <p><strong>Horário</strong><br/>{settings.hours}</p> : null}
           <h3 className="footerSocialTitle">Redes Sociais</h3>
           <div className="footerSocials footerSocialIcons">
             {socials.map((social) => <SocialIcon key={social.id} label={social.label} href={social.url} icon={iconByPlatform[social.platform.toLowerCase()] ?? <span aria-hidden="true">↗</span>} />)}
