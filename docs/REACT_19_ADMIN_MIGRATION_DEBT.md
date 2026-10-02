@@ -1,10 +1,7 @@
-# React 19 Admin Migration Debt
+# React 19 Admin Migration Debt — Resolved
 
-The strict React Hooks lint probe on 2026-10-02 identified behavior-sensitive legacy patterns in:
-- ArtistManager.tsx: client-only portal mounting, filter pagination reset, page clamping, action-menu declaration ordering.
-- MediaLibrary.tsx: filter pagination reset.
-- PageContentWorkbench.tsx: selection reconciliation.
-- PostManager.tsx: client-only portal mounting and pagination/filter reconciliation.
-- AdminShell.tsx: localStorage/hash/route-driven UI synchronization.
+The strict React Hooks lint probe on 2026-10-02 originally identified behavior-sensitive legacy patterns in ArtistManager, MediaLibrary, PageContentWorkbench, PostManager and AdminShell.
 
-These rules remain warnings until each component is refactored with targeted behavior tests. They MUST NOT be globally disabled and MUST NOT be represented as resolved. The pack/CI completion report is about Claude OS operation; this application migration debt is tracked separately.
+Those findings were subsequently refactored and validated. The current CI runs the strict lint configuration with zero warnings, targeted behavior contracts, typecheck and production build. No React 19 admin migration exception remains active.
+
+Historical note only: do not reintroduce global hook-rule downgrades or suppressions. Any future regression must be fixed with targeted behavior tests and strict lint preserved.
