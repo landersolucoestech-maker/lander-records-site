@@ -38,7 +38,7 @@ Use .claude/agents/registry.json and .claude/skills/registry.json as canonical c
 Operational automations must be explicit state machines. Require idempotency keys for side effects, structured input/output, authorization checks, audit events, retry policy, failure classification, recovery path and human approval for destructive, publishing, credential, permission, billing or external side effects.
 
 ## Git policy — absolute
-`main` is the only permitted branch. Never create, use, target, push to, or instruct work on `dev`, `develop`, feature, topic, release, automated, or any other branch. All repository changes follow commit → validation → push on `main`. If the checked-out branch is not `main`, stop immediately. Pull requests are not part of this repository workflow.
+Only `dev` is permitted for new work until the user explicitly changes this rule. `main` is frozen and must not be modified without a new explicit user order. Never create feature, topic, develop, hotfix, release, automated, or any other working branch. All repository changes follow inspect → edit → validate → commit → push on `dev`.
 
 ## Hosting / deployment policy — absolute
 Hostinger is the authorized hosting/deployment target for this project. Vercel is prohibited. Never add, restore, recommend, configure, or depend on Vercel. Any hosting/provider change away from Hostinger requires explicit user approval.
