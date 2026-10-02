@@ -1,4 +1,4 @@
-import fs from "node:fs";import {readJson,exists,die} from "./common.mjs";
+import {readJson,exists,die} from "./common.mjs";
 const req=["agent.schema.json","skill.schema.json","task.schema.json","workflow.schema.json","approval.schema.json","evidence.schema.json"];let bad=[];
 for(const f of req){const x=readJson(".claude/contracts/"+f);if(x.type!=="object"||!Array.isArray(x.required)||!x.required.length)bad.push("invalid contract "+f)}
 const sm=readJson(".claude/state-machine.json");if(!sm.states||!sm.transitions)bad.push("invalid state machine");
