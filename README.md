@@ -19,7 +19,7 @@ Website público e backoffice operacional da Lander Records, mantidos no mesmo p
 
 ```bash
 cp .env.example .env.local
-npm install
+npm ci
 npm run db:migrate
 npm run admin:bootstrap
 npm run dev
@@ -43,7 +43,7 @@ O CI executa migrações, testes de integração, typecheck, build e smoke do ru
 
 A aplicação pública e o `/admin` compartilham o mesmo domínio de conteúdo. Uploads de mídia utilizam o provider de storage configurado no servidor; credenciais privilegiadas não pertencem ao bundle do navegador.
 
-Documentação operacional e arquitetural está em `docs/` e `infra/`.
+Documentação operacional e arquitetural está em `docs/` e `infra/`. O destino autorizado de produção é Hostinger; o contrato de implantação está em `docs/HOSTINGER_DEPLOYMENT_CONTRACT.md`. A branch operacional é `dev` e `main` permanece congelada até ordem explícita do usuário.
 
 ## Política de origem
 
