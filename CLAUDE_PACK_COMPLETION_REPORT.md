@@ -20,7 +20,7 @@ Claude/Claude Code control plane is materialized and operational on main.
 - Production build: PASS.
 - Public runtime smoke: PASS.
 - Disposable preview build/runtime/navigation/tunnel: PASS.
-- Repository search for Codex residue: zero current code hits.
+- Repository legacy-residue search: zero current code hits.
 
 ## Claude OS
 Canonical lifecycle: mission -> investigate -> plan -> route -> execute -> validate -> evidence -> completion, with recovery.
@@ -33,5 +33,3 @@ Project policy is MAIN ONLY. CLAUDE.md, runtime preflight, hooks and workflows r
 ## Administrative repository cleanup still required
 GitHub repository settings still report dev as the default branch and both dev/main physically exist. The available connector cannot change the default branch or delete dev. Required repository-admin operation: set main as default, then delete dev. No development should occur on dev.
 
-## External provider status
-Vercel reports failure due to account build-rate-limit. This is external to the passing GitHub CMS Foundation CI and Main Preview evidence and is not represented as PASS.
