@@ -22,3 +22,6 @@ test("canonical overrides preserve valid HTTP(S) URLs but remove fragments", () 
 
 
 test("metadata builder routes supplied canonical values through canonical normalization",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../lib/seo.ts",import.meta.url),"utf8");assert.match(source,/input\.canonical \? resolveCanonicalUrl\(input\.canonical, "\/"\) : absoluteUrl\("\/"\)/)});
+
+
+test("site exposes a first-party web manifest with branded icon",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../app/manifest.ts",import.meta.url),"utf8");assert.match(source,/name: "Lander Records"/);assert.match(source,/\/lander-records-logo\.webp/);assert.match(source,/start_url: "\/"/)});
