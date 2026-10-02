@@ -1,11 +1,12 @@
-# Git Policy — MAIN ONLY
+# Git Policy — DEV ONLY / MAIN FROZEN
 
 ## Absolute rule
-- `main` is the only permitted branch.
-- Never create, use, target, push to, or instruct work on `dev`, `develop`, `feature/*`, `topic/*`, `release/*`, automated branches, or any other branch.
-- Never open a pull request as part of the project workflow.
-- Every change follows: inspect → edit → validate → commit → push directly on `main`.
-- If the active branch is not `main`, all write operations must stop.
+- `dev` is the only permitted branch for new work until the user explicitly changes this rule.
+- `main` is frozen and must not be modified without a new explicit user order.
+- Never create feature, topic, develop, hotfix, release, automated, or any other working branch.
+- Never open a pull request unless the user explicitly changes this rule.
+- Every change follows: inspect → edit → validate → commit → push directly on `dev`.
+- If the active branch is not `dev`, all write operations must stop.
 - History rewriting and force push remain forbidden.
 
 ## Hosting boundary
