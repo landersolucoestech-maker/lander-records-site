@@ -37,6 +37,9 @@ Use .claude/agents/registry.json and .claude/skills/registry.json as canonical c
 ## Automation safety
 Operational automations must be explicit state machines. Require idempotency keys for side effects, structured input/output, authorization checks, audit events, retry policy, failure classification, recovery path and human approval for destructive, publishing, credential, permission, billing or external side effects.
 
+## Git policy — absolute
+`main` is the only permitted branch. Never create, use, target, push to, or instruct work on `dev`, `develop`, feature, topic, release, automated, or any other branch. All repository changes follow commit → validation → push on `main`. If the checked-out branch is not `main`, stop immediately. Pull requests are not part of this repository workflow.
+
 ## Repository safety
 Do not rewrite history, delete data, bypass authorization, expose secrets, or perform destructive migrations without explicit approval. Preserve existing architecture unless evidence justifies a change.
 
