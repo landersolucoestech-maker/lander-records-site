@@ -1,3 +1,2 @@
-# Agent contract
-
-Resolve purpose, domain scope, inputs, permitted skills/tools, outputs, validation gates, handoffs and forbidden actions before execution. Orchestrators cannot bypass authorization, tests, approvals or evidence.
+# Agent Contract
+Every registered Claude agent MUST declare or inherit: mission, bounded scope, inputs, outputs/completion evidence, permitted skills/tools, handoff/escalation behavior, approval boundary, failure/recovery behavior and completion gate. Generic capability files inherit this contract plus their registry family/domain. Domain and operational agents MUST NOT claim unsupported provider actions.
