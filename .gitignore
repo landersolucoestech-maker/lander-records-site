@@ -17,6 +17,3 @@ blob-report/
 .local/
 build-gate.*
 *.tsbuildinfo
-.codex/project-profile.json
-.codex/state/*
-!.codex/state/*.example.json
