@@ -1,0 +1,1 @@
+import {id,now,writeJson,readJson} from "./common.mjs";const m=readJson(".claude/runtime/state/current-mission.json");const e={evidence_id:id("evidence"),mission_id:m.mission_id,kind:process.argv[2]||"validation",result:process.argv[3]||"recorded",timestamp:now()};writeJson(".claude/runtime/evidence/"+e.evidence_id+".json",e);console.log(e.evidence_id);

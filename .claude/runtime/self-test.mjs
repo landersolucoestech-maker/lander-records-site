@@ -1,0 +1,1 @@
+import {execFileSync} from "node:child_process";for(const f of ["validate-pack.mjs","verify-integrity.mjs"])execFileSync(process.execPath,[".claude/runtime/"+f],{stdio:"inherit"});console.log("Claude OS self-test PASS");

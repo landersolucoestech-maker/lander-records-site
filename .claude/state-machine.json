@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "states": [
+    "mission",
+    "investigate",
+    "plan",
+    "route",
+    "execute",
+    "validate",
+    "evidence",
+    "completion",
+    "recovery"
+  ],
+  "transitions": {
+    "mission": [
+      "investigate",
+      "recovery"
+    ],
+    "investigate": [
+      "plan",
+      "recovery"
+    ],
+    "plan": [
+      "route",
+      "recovery"
+    ],
+    "route": [
+      "execute",
+      "recovery"
+    ],
+    "execute": [
+      "validate",
+      "recovery"
+    ],
+    "validate": [
+      "evidence",
+      "execute",
+      "recovery"
+    ],
+    "evidence": [
+      "completion",
+      "recovery"
+    ],
+    "recovery": [
+      "investigate",
+      "plan",
+      "execute"
+    ],
+    "completion": []
+  }
+}

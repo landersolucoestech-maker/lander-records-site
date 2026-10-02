@@ -1,0 +1,1 @@
+import {readJson,writeJson,now} from "./common.mjs";const f=".claude/runtime/state/current-mission.json",m=readJson(f);m.state="recovery";m.history.push({state:"recovery",at:now(),reason:process.argv.slice(2).join(" ")||"unspecified"});writeJson(f,m);console.log("recovery recorded");
