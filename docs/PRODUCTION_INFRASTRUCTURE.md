@@ -1,6 +1,6 @@
 # Production infrastructure readiness
 
-Status: **NOT READY — deployment blocked**. Este documento descreve os requisitos mínimos do repositório; ele não autoriza deploy, DNS, acesso de produção, restart, backup ou migração.
+Status: **REPOSITORY READY / ENVIRONMENT UNVERIFIED**. O repositório possui contrato e artefatos de preparação para Hostinger, mas o ambiente Hostinger real ainda precisa ser inventariado e aprovado antes de deploy, DNS, acesso de produção, restart, backup ou migração. Este documento não autoriza essas ações.
 
 ## O que é conhecido
 
