@@ -20,3 +20,5 @@ test("Claude is canonical and engineering test entrypoint is not Codex",()=>{
   assert.match(p.scripts["test:engineering-os"],/\.claude\/runtime\/tests/);
   assert.doesNotMatch(p.scripts["test:engineering-os"],/\.codex/);
 });
+
+test("branch policy is dev-only and main-frozen",()=>{const hook=fs.readFileSync(".claude/hooks/main-only.mjs","utf8");const preflight=fs.readFileSync(".claude/runtime/preflight.mjs","utf8");const policy=fs.readFileSync(".claude/rules/GIT.md","utf8");assert.match(hook,/branch!==\"dev\"/);assert.match(preflight,/branch!==\"dev\"/);assert.match(policy,/DEV ONLY \/ MAIN FROZEN/);assert.match(policy,/`main` is frozen/)});
