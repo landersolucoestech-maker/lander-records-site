@@ -1,4 +1,4 @@
-name: Main Preview
+name: Dev Preview
 
 on:
   push:
@@ -202,7 +202,7 @@ jobs:
             echo "- Ambiente descartável: PostgreSQL temporário, sem secrets de produção."
             echo "- Autenticação do portal desativada apenas neste preview descartável do GitHub Actions."
             echo "- Todas as rotas públicas e administrativas conhecidas foram validadas como navegáveis antes da publicação."
-            echo "- O endereço representa a revisão mais recente de main e é substituído por um novo preview no próximo push."
+            echo "- O endereço representa a revisão mais recente de dev e é substituído por um novo preview no próximo push."
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Verify public tunnel navigation
@@ -253,7 +253,7 @@ jobs:
       - name: Publish preview URL artifact
         uses: actions/upload-artifact@v4
         with:
-          name: main-preview-url
+          name: dev-preview-url
           path: preview-url.txt
           retention-days: 1
 
