@@ -1,1 +1,30 @@
-{"title":"Evidence Contract","type":"object","required":["evidence_id","kind","result","timestamp"]}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Claude evidence Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence_id",
+    "kind",
+    "result",
+    "timestamp"
+  ],
+  "properties": {
+    "evidence_id": {
+      "type": "string"
+    },
+    "mission_id": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "result": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

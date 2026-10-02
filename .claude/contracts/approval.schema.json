@@ -1,1 +1,31 @@
-{"title":"Human Approval Contract","type":"object","required":["approval_id","action","reason","status"]}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Claude approval Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "approval_id",
+    "action",
+    "reason",
+    "status"
+  ],
+  "properties": {
+    "approval_id": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "expired"
+      ]
+    }
+  }
+}

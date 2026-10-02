@@ -1,1 +1,59 @@
-{"title":"Claude Agent Contract","type":"object","required":["id","purpose","scope","inputs","outputs","skills","gates"]}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Claude agent Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "purpose",
+    "scope",
+    "inputs",
+    "outputs",
+    "skills",
+    "gates"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "gates": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    }
+  }
+}

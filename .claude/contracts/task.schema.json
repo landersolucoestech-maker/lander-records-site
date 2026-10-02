@@ -1,1 +1,43 @@
-{"title":"Claude Task Contract","type":"object","required":["task_id","mission","scope","acceptance_criteria","status"]}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Claude task Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "mission",
+    "scope",
+    "acceptance_criteria",
+    "status"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string"
+    },
+    "mission": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "enum": [
+        "planned",
+        "in_progress",
+        "blocked",
+        "validating",
+        "completed",
+        "failed"
+      ]
+    }
+  }
+}

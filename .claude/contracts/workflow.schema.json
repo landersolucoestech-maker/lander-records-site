@@ -1,1 +1,38 @@
-{"title":"Claude Workflow Contract","type":"object","required":["id","trigger","states","authorization","evidence"]}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Claude workflow Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "trigger",
+    "states",
+    "authorization",
+    "evidence"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "trigger": {
+      "type": "string"
+    },
+    "states": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 2
+    },
+    "authorization": {
+      "type": "object"
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    }
+  }
+}

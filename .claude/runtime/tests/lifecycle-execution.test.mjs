@@ -1,0 +1,16 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import {spawnSync} from "node:child_process";
+import Ajv2020 from "ajv/dist/2020.js";
+import addFormats from "ajv-formats";
+const root=process.cwd();
+const read=(base,p)=>JSON.parse(fs.readFileSync(path.join(base,p),"utf8"));
+const setup=()=>{const tmp=fs.mkdtempSync(path.join(os.tmpdir(),"claude-os-"));fs.cpSync(path.join(root,".claude"),path.join(tmp,".claude"),{recursive:true});return tmp};
+const run=(tmp,f,args=[])=>spawnSync(process.execPath,[path.join(tmp,".claude/runtime",f),...args],{cwd:tmp,encoding:"utf8"});
+test("contracts are strict schemas and compile",()=>{const ajv=new Ajv2020({allErrors:true,strict:true});addFormats(ajv);for(const n of ["agent","skill","task","workflow","approval","evidence"]){const s=read(root,".claude/contracts/"+n+".schema.json");assert.equal(s.additionalProperties,false);assert.ok(Object.keys(s.properties).length);assert.doesNotThrow(()=>ajv.compile(s))}});
+test("canonical lifecycle executes and completion requires evidence",()=>{const t=setup();assert.equal(run(t,"mission.mjs",["init","--title","test"]).status,0);for(const s of ["investigate","plan","route","execute","validate","evidence"])assert.equal(run(t,"orchestrate.mjs",[s]).status,0,s);assert.notEqual(run(t,"completion-gate.mjs").status,0);assert.equal(run(t,"evidence.mjs",["quality-gate","pass"]).status,0);assert.equal(run(t,"completion-gate.mjs").status,0);assert.equal(run(t,"orchestrate.mjs",["completion"]).status,0);assert.equal(read(t,".claude/runtime/state/current-mission.json").state,"completion");fs.rmSync(t,{recursive:true,force:true})});
+test("invalid transition fails at runtime",()=>{const t=setup();run(t,"mission.mjs",["init","--title","invalid"]);assert.notEqual(run(t,"orchestrate.mjs",["completion"]).status,0);fs.rmSync(t,{recursive:true,force:true})});
+test("recovery records reason and resumes through allowed transition",()=>{const t=setup();run(t,"mission.mjs",["init","--title","recovery"]);run(t,"orchestrate.mjs",["investigate"]);assert.equal(run(t,"recovery.mjs",["validation failed"]).status,0);const m=read(t,".claude/runtime/state/current-mission.json");assert.equal(m.state,"recovery");assert.match(m.history.at(-1).reason,/validation failed/);assert.equal(run(t,"orchestrate.mjs",["plan"]).status,0);fs.rmSync(t,{recursive:true,force:true})});
