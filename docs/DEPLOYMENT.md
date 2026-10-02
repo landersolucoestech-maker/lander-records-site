@@ -26,7 +26,8 @@ O alvo autorizado de hospedagem/deploy é **Hostinger**. Vercel é explicitament
 - `PRODUCTION_INFRASTRUCTURE.md`;
 - `ENVIRONMENT_CONTRACT.md`;
 - `DEPLOYMENT_RUNBOOK.md`;
-- `ROLLBACK_RUNBOOK.md`.
+- `ROLLBACK_RUNBOOK.md`;
+- `HOSTINGER_DEPLOYMENT_CONTRACT.md`.
 
 Nenhum workflow deste repositório publica automaticamente em produção. A ativação de um pipeline de deploy exige inventário do ambiente real, política de aprovação, rollback validado e implementação atômica revisada.
 
