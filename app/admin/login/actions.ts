@@ -21,6 +21,7 @@ export async function loginAction(formData: FormData) {
   const user = rows[0];
 
   if (!user) {
+    // Keep the unknown-account path deliberately non-instant to reduce account-enumeration timing signal.
     await new Promise((resolve) => setTimeout(resolve, 350));
     redirect("/admin/login?error=credentials");
   }
