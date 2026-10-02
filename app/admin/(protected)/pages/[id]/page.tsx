@@ -17,7 +17,8 @@ function sectionMediaId(settings: Record<string, unknown> | null | undefined) {
 }
 
 export default async function PageContentEditor({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ section?: string }> }) {
-  await requireAdmin("editor");
+  const session = await requireAdmin("editor");
+  void session;
   // Development preview sessions may inspect the section editor; mutations remain guarded by the existing server actions.
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const db = getDb();
