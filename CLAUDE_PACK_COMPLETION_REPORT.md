@@ -2,14 +2,14 @@
 
 Date: 2026-10-02
 Validated branch: main
-Validated SHA: c849917310663ad65e832fb094a1e670d8cbcb20
+Validated SHA: 6e4a7738df794cc2ad57b5f5d532851206fc5346
 
 ## Result
 Claude/Claude Code control plane is materialized and operational on main.
 
 ## Evidence
-- CMS Foundation CI: PASS — run 37020186064.
-- Main Preview: PASS — run 37020185497.
+- CMS Foundation CI: PASS — run 37034680850.
+- Main Preview: PASS — run 37034680594.
 - Claude pack validation: PASS.
 - Claude Engineering OS self-test/integrity: PASS.
 - Database migrations: PASS.
@@ -33,3 +33,7 @@ Project policy is MAIN ONLY. CLAUDE.md, runtime preflight, hooks and workflows r
 ## Administrative repository cleanup still required
 GitHub repository settings still report dev as the default branch and both dev/main physically exist. The available connector cannot change the default branch or delete dev. Required repository-admin operation: set main as default, then delete dev. No development should occur on dev.
 
+
+## Known application debt
+- React 19 lint diagnostics remain in protected admin UI components. They are currently warnings to preserve existing behavior; they are application refactoring debt, not a Claude OS capability gap.
+- Next.js image optimization warnings remain in media-heavy presentation surfaces and should be handled as a separate visual/performance refactor with regression validation.
