@@ -1,1 +1,1 @@
-import {execFileSync} from "node:child_process";const b=execFileSync("git",["branch","--show-current"],{encoding:"utf8"}).trim();if(b!=="main"){console.error("pre-task blocked: expected main, got "+b);process.exit(1)}console.log("pre-task PASS");
+import {execFileSync} from "node:child_process";const b=execFileSync("git",["branch","--show-current"],{encoding:"utf8"}).trim();if(b!=="dev"){console.error("pre-task blocked: expected dev, got "+b);process.exit(1)}console.log("pre-task PASS");
