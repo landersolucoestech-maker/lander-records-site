@@ -1,5 +1,7 @@
 # Production deployment runbook
 
+Authorized hosting target: **Hostinger**. Apply `docs/HOSTINGER_DEPLOYMENT_CONTRACT.md` before any production promotion.
+
 Este é um runbook de preparação. Qualquer operação que altere produção permanece bloqueada até existir uma mudança separadamente aprovada.
 
 ## Stop conditions
