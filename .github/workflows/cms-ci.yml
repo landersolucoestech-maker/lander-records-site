@@ -57,6 +57,8 @@ jobs:
         run: npm run db:migrate
       - name: Verify migration repeatability
         run: npm run db:migrate
+      - name: Validate migrated content contract
+        run: npm run validate:content
       - name: Security and hardening tests
         run: npm test
       - name: Integration checks
