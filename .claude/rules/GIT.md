@@ -7,3 +7,8 @@
 - Every change follows: inspect → edit → validate → commit → push directly on `main`.
 - If the active branch is not `main`, all write operations must stop.
 - History rewriting and force push remain forbidden.
+
+## Hosting boundary
+- Hostinger is the authorized hosting/deployment target.
+- Vercel is prohibited: never configure, restore, recommend, or depend on it.
+- A different hosting provider requires explicit user approval before any repository or infrastructure change.

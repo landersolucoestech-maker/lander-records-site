@@ -21,7 +21,7 @@ O Supabase não é o banco da aplicação neste projeto. Ele é utilizado como p
 
 ## Alvo de produção
 
-O repositório é provider-neutral. O alvo pode ser VPS, cloud, container ou plataforma gerenciada, desde que cumpra o contrato de runtime e os controles de segurança descritos em:
+O alvo autorizado de hospedagem/deploy é **Hostinger**. Vercel é explicitamente proibido neste projeto. A modalidade Hostinger escolhida deve cumprir o contrato de runtime e os controles de segurança descritos em:
 
 - `PRODUCTION_INFRASTRUCTURE.md`;
 - `ENVIRONMENT_CONTRACT.md`;
@@ -30,9 +30,9 @@ O repositório é provider-neutral. O alvo pode ser VPS, cloud, container ou pla
 
 Nenhum workflow deste repositório publica automaticamente em produção. A ativação de um pipeline de deploy exige inventário do ambiente real, política de aprovação, rollback validado e implementação atômica revisada.
 
-## Preview de desenvolvimento via GitHub Actions
+## Preview de validação via GitHub Actions
 
-A branch `dev` possui um preview temporário em `.github/workflows/dev-preview.yml` para revisão visual do trabalho em andamento sem promover produção.
+A branch `main` é a única branch permitida e possui um preview temporário em `.github/workflows/dev-preview.yml` para revisão visual sem promover produção.
 
 O workflow:
 
@@ -40,8 +40,8 @@ O workflow:
 - executa preflight do Engineering OS, gate de origem, migrações, regressões focadas, typecheck e build;
 - inicia o runtime Next.js de produção dentro do runner;
 - expõe temporariamente o runtime por um túnel HTTPS sem carregar secrets de produção;
-- publica no resumo do job a URL de `/cms-preview/dashboard/` e um artefato `dev-preview-url`;
-- cancela o preview anterior quando um novo push chega em `dev`;
+- publica no resumo do job a URL de `/admin` e um artefato `main-preview-url`;
+- cancela o preview anterior quando um novo push chega em `main`;
 - expira automaticamente quando o job termina.
 
 Esse preview é ambiente descartável de demonstração. Ele não é produção, não autoriza migração de banco real, não utiliza credenciais administrativas reais e não substitui o cutover formal descrito abaixo.

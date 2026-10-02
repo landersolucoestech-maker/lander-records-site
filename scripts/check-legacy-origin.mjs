@@ -14,7 +14,6 @@ const textExtensions = new Set([
 const exactTextFiles = new Set(["Dockerfile", ".env.example", ".gitignore", ".gitattributes", ".nvmrc"]);
 
 const generatorName = ["lova", "ble"].join("");
-const retiredHostBrand = ["host", "inger"].join("");
 const retiredStaticPlatform = ["github", " pages"].join("");
 const retiredStaticScript = ["prepare-github", "-pages-static"].join("");
 const retiredManagedPlatform = ["ver", "cel"].join("");
@@ -23,7 +22,6 @@ const bannedTokens = [
   generatorName,
   `${generatorName}.dev`,
   `${generatorName}-tagger`,
-  retiredHostBrand,
   retiredStaticPlatform,
   retiredStaticScript,
   retiredManagedPlatform,

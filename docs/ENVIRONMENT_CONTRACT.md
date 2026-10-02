@@ -37,7 +37,7 @@ One-time bootstrap variables (`ADMIN_BOOTSTRAP_EMAIL`, `ADMIN_BOOTSTRAP_PASSWORD
 
 ## Deployment credentials
 
-Credentials used by a future deployment pipeline are platform-specific and must not be hard-coded into this contract. Keep them in a protected production Environment/secret store and scope them by least privilege.
+Hostinger is the authorized deployment target. Vercel credentials and Vercel deployment configuration are forbidden. Hostinger deployment credentials must not be hard-coded into this contract. Keep them in a protected production Environment/secret store and scope them by least privilege.
 
 A production pipeline must validate required credential presence without printing values and must remain fail-closed if approval, target SHA, environment identity or rollback evidence are absent.
 

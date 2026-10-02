@@ -13,7 +13,7 @@ Website público e backoffice operacional da Lander Records, mantidos no mesmo p
 - CMS estruturado para páginas, notícias, artistas, navegação e configurações
 - SEO dinâmico, sitemap e dados estruturados
 - Integrações externas com processamento e histórico persistentes
-- Engineering OS em `.codex/` para governança, evidências, verificação e segurança operacional
+- Claude Engineering & Automation OS em `.claude/` para governança, evidências, verificação e segurança operacional
 
 ## Desenvolvimento local
 

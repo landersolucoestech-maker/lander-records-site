@@ -40,6 +40,9 @@ Operational automations must be explicit state machines. Require idempotency key
 ## Git policy — absolute
 `main` is the only permitted branch. Never create, use, target, push to, or instruct work on `dev`, `develop`, feature, topic, release, automated, or any other branch. All repository changes follow commit → validation → push on `main`. If the checked-out branch is not `main`, stop immediately. Pull requests are not part of this repository workflow.
 
+## Hosting / deployment policy — absolute
+Hostinger is the authorized hosting/deployment target for this project. Vercel is prohibited. Never add, restore, recommend, configure, or depend on Vercel. Any hosting/provider change away from Hostinger requires explicit user approval.
+
 ## Repository safety
 Do not rewrite history, delete data, bypass authorization, expose secrets, or perform destructive migrations without explicit approval. Preserve existing architecture unless evidence justifies a change.
 
