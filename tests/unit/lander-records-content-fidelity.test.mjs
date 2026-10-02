@@ -20,3 +20,6 @@ test("public Home renders the corrected CMS eyebrow rather than a hardcoded Port
   assert.match(home, /newsSection\.eyebrow/);
   assert.doesNotMatch(home, />PORTAL LANDER</i);
 });
+
+
+test("footer business hours come only from CMS configuration",()=>{const chrome=read("app/components/SiteChrome.tsx");assert.match(chrome,/settings\.hours/);assert.doesNotMatch(chrome,/Fechado aos sábados e domingos/)});
