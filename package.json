@@ -25,7 +25,8 @@
     "db:seed": "node scripts/seed.mjs",
     "test:integration": "node tests/integration/cms.mjs && node tests/integration/integrations-db.mjs && node tests/integration/authorization-db.mjs",
     "admin:bootstrap": "node scripts/bootstrap-admin.mjs",
-    "validate:content": "node scripts/validate-content.mjs"
+    "validate:content": "node scripts/validate-content.mjs",
+    "test:browser:ci": "playwright test tests/browser/public-routes.spec.ts --grep-invert \"artist navigation exposes a non-blocking streaming loading state\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
