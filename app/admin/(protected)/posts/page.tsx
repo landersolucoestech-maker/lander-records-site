@@ -27,8 +27,8 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
     const initialMode = filters.create === "1" ? "create" : filters.edit ? "edit" : filters.view ? "view" : undefined;
     const initialId = filters.edit || filters.view || undefined;
     return <PostManager
-      canDelete={false}
-      canEdit={false}
+      canDelete
+      canEdit
       categories={mockPostCategories.map(({ id, name }) => ({ id, name }))}
       deleted={filters.deleted === "1"}
       developmentMode
