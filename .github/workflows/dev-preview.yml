@@ -3,20 +3,20 @@ name: Dev Preview
 on:
   push:
     branches:
-      - main
+      - dev
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: lander-records-main-preview-v2
+  group: lander-records-dev-preview-v3
   cancel-in-progress: true
 
 jobs:
   preview:
     name: preview
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     services:
@@ -52,7 +52,7 @@ jobs:
         run: npm ci
 
       - name: Initialize Engineering OS mission
-        run: node .claude/runtime/mission.mjs init --title "GitHub Actions main preview"
+        run: node .claude/runtime/mission.mjs init --title "GitHub Actions dev preview"
 
       - name: Engineering OS preflight
         run: node .claude/runtime/preflight.mjs
