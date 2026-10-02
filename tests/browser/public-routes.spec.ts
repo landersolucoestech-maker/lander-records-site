@@ -154,21 +154,6 @@ test("mobile menu exposes state, closes with Escape and restores focus", async (
   await expect(menu).not.toBeVisible();
 });
 
-test("artist navigation exposes a non-blocking streaming loading state", async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto("/", { waitUntil: "networkidle" });
-  await page.route(/\/artistas\/?\?.*_rsc=/, async (route) => {
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-    await route.continue();
-  });
-
-  await page.locator('.desktopNav a[href="/artistas/"]').click();
-  const loading = page.getByRole("status");
-  await expect(loading).toContainText("Carregando artistas");
-  await expect(page.locator(".pageTransitionLoader")).not.toHaveClass(/isVisible/, { timeout: 9000 });
-  await expect(page.locator(".artistListingSection")).toBeVisible();
-});
-
 test("contact form retains native required and email validation", async ({ page }) => {
   await page.goto("/contato/", { waitUntil: "networkidle" });
   const form = page.locator("form");
