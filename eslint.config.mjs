@@ -5,7 +5,7 @@ const config = [
   ...nextVitals,
   ...nextTypeScript,
   {
-    ignores: [".codex/**", ".next/**", "node_modules/**", "public/**", "assets/**", "next-env.d.ts"],
+    ignores: [".next/**", "node_modules/**", "public/**", "assets/**", "next-env.d.ts"],
   },
   {
     files: ["tests/**/*.cjs"],
