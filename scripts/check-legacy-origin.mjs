@@ -17,7 +17,7 @@ const generatorName = ["lova", "ble"].join("");
 const retiredStaticPlatform = ["github", " pages"].join("");
 const retiredStaticScript = ["prepare-github", "-pages-static"].join("");
 const retiredManagedPlatform = ["ver", "cel"].join("");
-const policyFilesAllowedToNameRetiredPlatform = new Set(["CLAUDE.md", ".claude/rules/GIT.md", "docs/DEPLOYMENT.md", "docs/ENVIRONMENT_CONTRACT.md", "CLAUDE_PACK_COMPLETION_REPORT.md"]);
+const policyFilesAllowedToNameRetiredPlatform = new Set(["CLAUDE.md", ".claude/rules/GIT.md", "docs/DEPLOYMENT.md", "docs/ENVIRONMENT_CONTRACT.md", "CLAUDE_PACK_COMPLETION_REPORT.md", "docs/HOSTINGER_DEPLOYMENT_CONTRACT.md"]);
 
 const bannedTokens = [
   generatorName,
