@@ -17,6 +17,7 @@ const generatorName = ["lova", "ble"].join("");
 const retiredStaticPlatform = ["github", " pages"].join("");
 const retiredStaticScript = ["prepare-github", "-pages-static"].join("");
 const retiredManagedPlatform = ["ver", "cel"].join("");
+const policyFilesAllowedToNameRetiredPlatform = new Set(["CLAUDE.md", ".claude/rules/GIT.md", "docs/DEPLOYMENT.md", "docs/ENVIRONMENT_CONTRACT.md"]);
 
 const bannedTokens = [
   generatorName,
@@ -32,7 +33,10 @@ const violations = [];
 function inspect(value, relativePath, surface) {
   const normalized = value.toLowerCase();
   for (const token of bannedTokens) {
-    if (normalized.includes(token)) violations.push({ relativePath, token, surface });
+    if (normalized.includes(token)) {
+      if (token === retiredManagedPlatform && surface === "content" && policyFilesAllowedToNameRetiredPlatform.has(relativePath)) continue;
+      violations.push({ relativePath, token, surface });
+    }
   }
 }
 
