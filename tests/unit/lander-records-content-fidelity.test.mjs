@@ -26,3 +26,6 @@ test("footer business hours come only from CMS configuration",()=>{const chrome=
 
 
 test("footer copyright avoids stale hard-coded year and location",()=>{const chrome=read("app/components/SiteChrome.tsx");assert.match(chrome,/new Date\(\)\.getFullYear\(\)/);assert.match(chrome,/settings\.brandName/);assert.doesNotMatch(chrome,/2026 © Produtora em Governador Valadares/)});
+
+
+test("artists route exposes a deterministic accessible streaming loading contract",()=>{const loading=read("app/(public)/artistas/loading.tsx");const component=read("app/components/PublicRouteLoading.tsx");assert.match(loading,/PublicRouteLoading label="Carregando artistas"/);assert.match(component,/role="status"/);assert.match(component,/aria-live="polite"/)});
