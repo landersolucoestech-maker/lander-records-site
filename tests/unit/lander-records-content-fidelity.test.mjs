@@ -23,3 +23,6 @@ test("public Home renders the corrected CMS eyebrow rather than a hardcoded Port
 
 
 test("footer business hours come only from CMS configuration",()=>{const chrome=read("app/components/SiteChrome.tsx");assert.match(chrome,/settings\.hours/);assert.doesNotMatch(chrome,/Fechado aos sábados e domingos/)});
+
+
+test("footer copyright avoids stale hard-coded year and location",()=>{const chrome=read("app/components/SiteChrome.tsx");assert.match(chrome,/new Date\(\)\.getFullYear\(\)/);assert.match(chrome,/settings\.brandName/);assert.doesNotMatch(chrome,/2026 © Produtora em Governador Valadares/)});
