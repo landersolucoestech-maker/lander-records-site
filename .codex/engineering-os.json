@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "name": "Autonomous Codex Engineering OS",
+  "shortName": "ACEO",
+  "version": "2.0.0-HARDENED",
+  "projectAgnostic": true,
+  "principles": [
+    "runtime-governs-agent-claims",
+    "evidence-over-assertion",
+    "repository-sovereignty",
+    "least-authority",
+    "explicit-side-effects",
+    "reversibility-first",
+    "no-silent-degradation",
+    "no-silent-scope-expansion",
+    "no-fabricated-evidence",
+    "no-false-done",
+    "localhost-continuity-invariant",
+    "guardian-before-mutation",
+    "fail-closed-on-local-runtime-loss"
+  ],
+  "impactLevels": {
+    "L0": "docs/no behavior",
+    "L1": "isolated low-risk",
+    "L2": "module/feature",
+    "L3": "cross-module/integration",
+    "L4": "architecture/public-contract/dependency",
+    "L5": "security/data/destructive/infra/production"
+  },
+  "authorityLevels": {
+    "A0": "read-only",
+    "A1": "propose-only",
+    "A2": "local-write",
+    "A3": "repository-autonomous",
+    "A4": "staging/external-write-under-policy",
+    "A5": "production/destructive-under-explicit-policy"
+  },
+  "defaultAuthority": "A3",
+  "workspaceIdentity": "git HEAD + branch + staged diff + unstaged diff + untracked content hash",
+  "completion": "requirements closed + fresh evidence + required independent reviews + no unresolved high findings + no unreconciled side effects",
+  "localhostContinuity": {
+    "mandatoryWhenDevServerDetected": true,
+    "supervisor": ".codex/runtime/localhost-guardian.mjs",
+    "completionGate": true
+  }
+}

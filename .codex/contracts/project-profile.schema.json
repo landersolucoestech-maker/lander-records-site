@@ -1,0 +1,20 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "type":"object",
+  "required":["generatedAt","languages","packageManagers","commands","riskSurfaces"],
+  "properties":{
+    "schemaVersion":{"type":"integer"},
+    "generatedAt":{"type":"string"},
+    "root":{"type":"string"},
+    "repository":{"type":["string","null"]},
+    "branch":{"type":["string","null"]},
+    "remote":{"type":["string","null"]},
+    "fileCount":{"type":"integer","minimum":0},
+    "languages":{"type":"array","items":{"type":"string"}},
+    "packageManagers":{"type":"array","items":{"type":"string"}},
+    "commands":{"type":"object"},
+    "riskSurfaces":{"type":"array","items":{"type":"string"}},
+    "localRuntime":{"type":["object","null"],"properties":{"detected":{"type":"boolean"},"framework":{"type":"string"},"command":{"type":"string"},"port":{"type":["integer","null"]},"guardianRequired":{"type":"boolean"}}},
+    "notes":{"type":"array","items":{"type":"string"}}
+  }
+}

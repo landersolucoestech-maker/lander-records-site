@@ -1,0 +1,14 @@
+{
+  "id": "greenfield",
+  "steps": [
+    "discover",
+    "requirements",
+    "architecture",
+    "plan",
+    "implement",
+    "verify",
+    "security",
+    "quality-reviews",
+    "completion-gate"
+  ]
+}

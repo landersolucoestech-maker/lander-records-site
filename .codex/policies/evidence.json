@@ -1,0 +1,9 @@
+{
+  "id": "evidence",
+  "rules": [
+    "no-fabricated-evidence",
+    "code-sensitive-pass-must-match-workspace-fingerprint",
+    "actual-exit-status-required",
+    "stale-pass-does-not-close-criterion"
+  ]
+}

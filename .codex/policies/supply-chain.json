@@ -1,0 +1,8 @@
+{
+  "id": "supply-chain",
+  "rules": [
+    "dependency-change-needs-justification",
+    "review-lockfile",
+    "evaluate-provenance-compatibility-security"
+  ]
+}

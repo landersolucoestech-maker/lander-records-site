@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lander-records.invalid/codex/contracts/preflight-record.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "identity", "executionId", "timestamp", "workspaceFingerprint", "checks", "checksum"],
+  "properties": {
+    "schemaVersion": {"const": 2},
+    "identity": {"type": "object"},
+    "executionId": {"type": "string", "minLength": 1},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "workspaceFingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "checks": {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false, "required": ["name", "ok", "exitCode", "outputHash"], "properties": {"name": {"type": "string"}, "ok": {"type": "boolean"}, "exitCode": {"type": "integer"}, "outputHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}}},
+    "checksum": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

@@ -1,0 +1,13 @@
+import { createHash, createHmac } from "node:crypto";
+import { readFileSync, writeFileSync } from "node:fs";
+const flags = new Map(process.argv.slice(2).map((arg) => { const [key, ...value] = arg.split("="); return [key, value.join("=")]; }));
+const get = (name) => { const value = flags.get(name); if (!value) throw new Error(`${name} is required`); return value; };
+const key = process.env.RELEASE_EVIDENCE_HMAC_KEY ?? ""; if (key.length < 32) throw new Error("RELEASE_EVIDENCE_HMAC_KEY must contain at least 32 characters");
+const precheck = JSON.parse(readFileSync(get("--precheck"), "utf8")); const expected = createHmac("sha256", key).update(JSON.stringify(precheck.payload)).digest("hex");
+if (precheck.kind !== "db-0010-precheck" || precheck.signature !== expected) throw new Error("Invalid precheck manifest");
+const pitrHash = createHash("sha256").update(readFileSync(get("--pitr-evidence"))).digest("hex"); if (precheck.payload.pitrEvidenceHash !== pitrHash) throw new Error("PITR evidence mismatch");
+const expectedTarget = `${precheck.payload.snapshot.target.serverAddress}|${precheck.payload.snapshot.target.serverPort}|${precheck.payload.snapshot.target.database}|${precheck.payload.snapshot.target.user}`;
+if (get("--backup-target") !== expectedTarget) throw new Error("Backup service target does not match precheck target");
+const payload = { version: 1, createdAt: new Date().toISOString(), dumpPath: get("--dump"), dumpSha256: get("--dump-sha256"), commit: get("--commit"), changeTicket: get("--change-ticket"), pitrEvidenceHash: pitrHash, precheckSnapshot: precheck.payload.snapshot };
+if (payload.commit !== precheck.payload.commit || payload.changeTicket !== precheck.payload.changeTicket) throw new Error("Backup release binding mismatch");
+const signature = createHmac("sha256", key).update(JSON.stringify(payload)).digest("hex"); writeFileSync(get("--output"), `${JSON.stringify({ kind: "db-0010-backup", payload, signature }, null, 2)}\n`, { mode: 0o600, flag: "wx" });

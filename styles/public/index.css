@@ -1,0 +1,18 @@
+/* Compatibility cascade: preserve public rendering while ownership migrates. */
+@import "../../app/globals.css";
+@import "../../app/architecture.css";
+@import "../../app/home-extra.css";
+@import "../../app/home-artist-card.css";
+@import "../../app/refinements.css";
+@import "../../app/content-completion.css";
+@import "../../app/artist-profile.css";
+@import "../../app/ecosystem-refresh.css";
+@import "../../app/scroll-reveal.css";
+@import "../../app/hero-wordmarks.css";
+@import "../../app/page-transition-loader.css";
+@import "../../app/artists-grid-image.css";
+@import "../../app/site-polish.css";
+@import "../../app/home-current-polish.css";
+@import "../../app/home-shortcut-premium.css";
+@import "../../app/navigation-polish.css";
+@import "./forms-and-embeds.css";

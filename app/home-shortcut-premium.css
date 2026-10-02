@@ -1,0 +1,200 @@
+/* Premium treatment for the four circular home shortcuts.
+   No projected/external shadow is allowed around the circles. */
+
+.homeShortcutRow {
+  gap: clamp(18px, 2.7vw, 34px);
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.homeShortcutRow::before,
+.homeShortcutRow::after {
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.homeShortcutCircle {
+  --shortcut-glow-x: 12%;
+  --shortcut-glow-y: 24%;
+  --shortcut-glow-2-x: 78%;
+  --shortcut-glow-2-y: 82%;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid rgba(255, 37, 44, .96);
+  border-radius: 50%;
+  outline: 0;
+  background-color: transparent;
+  background-image:
+    radial-gradient(circle at var(--shortcut-glow-x) var(--shortcut-glow-y), rgba(239, 22, 22, .30) 0, rgba(172, 10, 16, .15) 18%, transparent 36%),
+    radial-gradient(circle at var(--shortcut-glow-2-x) var(--shortcut-glow-2-y), rgba(239, 22, 22, .14) 0, rgba(125, 8, 12, .07) 19%, transparent 35%),
+    linear-gradient(148deg, #090909 0%, #050506 46%, #020203 100%);
+  background-clip: padding-box;
+  box-shadow: none !important;
+  filter: none !important;
+  transition:
+    transform .34s cubic-bezier(.16, 1, .3, 1),
+    border-color .28s ease;
+}
+
+.homeShortcutCircle:nth-child(1) {
+  --shortcut-glow-x: 7%;
+  --shortcut-glow-y: 24%;
+  --shortcut-glow-2-x: 76%;
+  --shortcut-glow-2-y: 86%;
+}
+
+.homeShortcutCircle:nth-child(2) {
+  --shortcut-glow-x: 83%;
+  --shortcut-glow-y: 84%;
+  --shortcut-glow-2-x: 22%;
+  --shortcut-glow-2-y: 14%;
+}
+
+.homeShortcutCircle:nth-child(3) {
+  --shortcut-glow-x: 91%;
+  --shortcut-glow-y: 72%;
+  --shortcut-glow-2-x: 28%;
+  --shortcut-glow-2-y: 16%;
+}
+
+.homeShortcutCircle:nth-child(4) {
+  --shortcut-glow-x: 86%;
+  --shortcut-glow-y: 20%;
+  --shortcut-glow-2-x: 18%;
+  --shortcut-glow-2-y: 80%;
+}
+
+.homeShortcutCircle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: .92;
+  transform: none;
+  background:
+    linear-gradient(138deg, rgba(255, 255, 255, .030) 0 14%, transparent 14.5% 61%, rgba(255, 255, 255, .020) 61.5% 62%, transparent 62.5%),
+    linear-gradient(145deg, transparent 0 66%, rgba(255, 85, 85, .12) 66.25%, rgba(255, 255, 255, .025) 66.55%, transparent 67.15%),
+    linear-gradient(24deg, transparent 0 25%, rgba(255, 255, 255, .012) 25.4% 25.8%, transparent 26.2%);
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.homeShortcutCircle::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, .040) 0, rgba(255, 255, 255, .008) 17%, transparent 34%),
+    radial-gradient(circle at 50% 115%, rgba(255, 255, 255, .014), transparent 42%);
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.homeShortcutCircle span {
+  position: absolute;
+  z-index: 2;
+  top: 16%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #ff4a4f;
+  font-size: clamp(10px, .82vw, 12px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: .17em;
+  text-shadow:
+    0 0 6px rgba(255, 38, 44, .90),
+    0 0 15px rgba(239, 22, 22, .55);
+}
+
+.homeShortcutCircle span::after {
+  content: "";
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  width: 34px;
+  height: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, transparent, rgba(255, 40, 46, .96), transparent);
+  box-shadow: none !important;
+}
+
+.homeShortcutCircle strong {
+  position: relative;
+  z-index: 2;
+  max-width: 76%;
+  color: #fff;
+  font-size: clamp(17px, 1.55vw, 22px);
+  font-weight: 900;
+  line-height: 1.03;
+  letter-spacing: -.025em;
+  text-wrap: balance;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, .58);
+}
+
+.homeShortcutCircle i {
+  display: none;
+}
+
+.homeShortcutCircle:hover {
+  transform: translateY(-7px) scale(1.018);
+  border-color: #ff343b;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.homeShortcutCircle:focus,
+.homeShortcutCircle:focus-visible,
+.homeShortcutCircle:active {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.homeShortcutCircle:focus-visible {
+  outline: 2px solid rgba(239, 22, 22, .55);
+  outline-offset: 4px;
+}
+
+@media (max-width: 620px) {
+  .homeShortcutCircle {
+    box-shadow: none !important;
+    filter: none !important;
+  }
+
+  .homeShortcutCircle span {
+    top: 14%;
+    font-size: 9px;
+  }
+
+  .homeShortcutCircle span::after {
+    top: calc(100% + 8px);
+    width: 26px;
+  }
+
+  .homeShortcutCircle strong {
+    max-width: 82%;
+    font-size: clamp(13px, 4.1vw, 16px);
+    line-height: 1.05;
+  }
+}
+
+@media (hover: none) {
+  .homeShortcutCircle:hover {
+    transform: none;
+    box-shadow: none !important;
+    filter: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .homeShortcutCircle {
+    transition: none;
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "type":"object",
+  "required":["id","producer","result","workspaceFingerprint","timestamp"],
+  "properties":{
+    "id":{"type":"string"},
+    "producer":{"type":"string"},
+    "result":{"enum":["PASS","FAIL","BLOCKED"]},
+    "scope":{"type":"string"},
+    "summary":{"type":["string","null"]},
+    "workspaceFingerprint":{"type":"string"},
+    "timestamp":{"type":"string"}
+  }
+}

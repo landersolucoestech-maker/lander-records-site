@@ -1,0 +1,16 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "type":"object",
+  "required":["schemaVersion"],
+  "properties":{
+    "schemaVersion":{"type":"integer","const":1},
+    "status":{"type":"string","enum":["STARTING","WATCHING","HEALTHY","DEGRADED","RECOVERING","FAILED","STOPPED"]},
+    "watcherPid":{"type":["integer","null"]},
+    "childPid":{"type":["integer","null"]},
+    "command":{"type":["string","null"]},
+    "port":{"type":["integer","null"],"minimum":1,"maximum":65535},
+    "url":{"type":["string","null"]},
+    "restartCount":{"type":"integer","minimum":0},
+    "updatedAt":{"type":"string"}
+  }
+}

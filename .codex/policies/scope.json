@@ -1,0 +1,8 @@
+{
+  "id": "scope",
+  "rules": [
+    "no-silent-expansion",
+    "preserve-unrelated-dirty-work",
+    "smallest-complete-solution"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "mission": {
+    "id": "MISSION-001",
+    "status": "ACTIVE",
+    "objective": "example"
+  },
+  "impact": {
+    "level": "L2",
+    "risk": "moderate",
+    "authorityRequired": "A3"
+  },
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "example",
+      "criteria": [
+        "AC-1"
+      ]
+    }
+  ],
+  "criteria": [
+    {
+      "id": "AC-1",
+      "requirementId": "REQ-1",
+      "text": "example criterion",
+      "mandatory": true
+    }
+  ],
+  "evidence": [],
+  "findings": [],
+  "sideEffects": []
+}

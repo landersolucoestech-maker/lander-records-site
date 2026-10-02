@@ -1,0 +1,14 @@
+{
+  "schemaVersion":1,
+  "id":"localhost-continuity",
+  "default":"fail-closed",
+  "invariant":"When a local development server is configured or detected for the active mission, it must remain supervised and healthy for the duration of mutable work and before completion.",
+  "requirements":[
+    "Run preflight before repository mutation.",
+    "Start the guardian daemon when a dev server is detected or configured.",
+    "Treat health loss as an operational incident and attempt bounded-backoff recovery automatically.",
+    "Do not claim DONE while the required localhost endpoint is unhealthy.",
+    "Do not kill an unrelated process solely to free a configured port; surface a conflict unless the process is guardian-owned.",
+    "Record guardian state and health evidence."
+  ]
+}

@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+import fs from 'node:fs';import path from 'node:path';import crypto from 'node:crypto';import {execFileSync} from 'node:child_process';
+import {StateStore,root,argMap,workspaceFingerprint,uid,failClosed,EngineeringOSError} from './lib/core.mjs';import {issueRuntimeExecution} from './lib/execution.mjs';
+const hash=v=>crypto.createHash('sha256').update(v).digest('hex'),a=argMap(),cmd=a._[0]||'status',r=root(),store=new StateStore(r);
+try{
+ if(cmd==='status'){const c=store.read().coverage;if(!c)throw new EngineeringOSError('POLICY_BLOCKED','Coverage snapshot missing');const current=workspaceFingerprint(r).fingerprint;console.log(JSON.stringify({...c,currentStatus:c.workspaceFingerprint===current?c.status:'STALE'},null,2));process.exit(c.workspaceFingerprint===current?0:2)}
+ if(cmd==='verify')throw new EngineeringOSError('UNSUPPORTED_BY_HOST','Hash inventory cannot prove semantic repository review; trusted host review is required');
+ if(cmd!=='snapshot')throw new EngineeringOSError('POLICY_BLOCKED','Usage: coverage.mjs snapshot|status|verify');
+ const result=store.transaction(state=>{const execution=issueRuntimeExecution(r,state,{roleId:'repo-intelligence',capabilities:['inventory:snapshot']});const tracked=execFileSync('git',['ls-files','-z','--cached','--others','--exclude-standard'],{cwd:r}).toString().split('\0').filter(Boolean).filter(p=>!p.startsWith('.local/')&&!p.startsWith('.codex/state/')).sort();const files=tracked.map(rel=>{const bytes=fs.readFileSync(path.join(r,rel));return {path:rel.replaceAll('\\','/'),sha256:hash(bytes),bytes:bytes.length}});const inventoryHash=hash(JSON.stringify(files));state.coverage={schemaVersion:1,snapshotId:uid('INV'),inventoryHash,workspaceFingerprint:workspaceFingerprint(r).fingerprint,status:'INVENTORIED',files,excluded:[{path:'.git/**',reason:'git metadata'},{path:'.local/**',reason:'ignored runtime state'},{path:'.codex/state/**',reason:'legacy/quarantined runtime state'}],uncovered:files.map(x=>x.path),executionId:execution.executionId,createdAt:new Date().toISOString()}});console.log(JSON.stringify(result.state.coverage,null,2));
+}catch(error){failClosed(error)}

@@ -1,0 +1,109 @@
+import Image from "next/image";
+import Link from "next/link";
+import { asc, eq } from "drizzle-orm";
+import { requireAdmin } from "../../../../lib/auth";
+import { hasMinimumRole } from "../../../../lib/auth/policy";
+import { getDb } from "../../../../lib/db";
+import { mockDataEnabled, mockMedia, mockSiteSettings, mockSocialLinks } from "../../../../lib/mocks";
+import { mediaAssets, siteSettings, socialLinks } from "../../../../lib/db/schema";
+import { updateCompanySettings, updateIdentitySettings, upsertSocialLink } from "../../actions";
+import { AdminIcon } from "../../components/AdminIcon";
+import { SettingsTabs } from "./SettingsTabs";
+import styles from "./Settings.module.css";
+
+export const dynamic = "force-dynamic";
+
+export default async function SettingsPage() {
+  const session = await requireAdmin();
+  const persistent = session.source === "session";
+  const canEdit = persistent && hasMinimumRole(session.user.role, "editor");
+  const canAdmin = persistent && hasMinimumRole(session.user.role, "admin");
+  const canManageUsers = persistent && session.user.role === "owner";
+  const realData = mockDataEnabled() ? null : await Promise.all([
+    getDb().select().from(siteSettings).limit(1),
+    getDb().select().from(socialLinks).orderBy(asc(socialLinks.position)),
+    getDb().select().from(mediaAssets).where(eq(mediaAssets.status, "active")).orderBy(asc(mediaAssets.originalFilename)),
+  ]);
+  const settingsRows = realData ? realData[0] : [mockSiteSettings];
+  const socials = realData ? realData[1] : mockSocialLinks.map((item)=>({...item}));
+  const media = realData ? realData[2] : mockMedia.map((item)=>({...item}));
+  const settings = settingsRows[0];
+  if (!settings) throw new Error("As configurações do site ainda não foram inicializadas.");
+  const logo = settings.logoMediaId ? media.find((item) => item.id === settings.logoMediaId) : null;
+
+  const company = <div className={styles.tabPanel}>
+    <section className={styles.card}>
+      <div className={styles.cardHeader}><div><h2>Informações da empresa</h2><p>Dados institucionais e de contato exibidos pelo site da Lander Records.</p></div>{!canAdmin ? <span className="adminBadge">Somente leitura</span> : null}</div>
+      <div className={styles.cardBody}><form action={updateCompanySettings} className={styles.form}>
+        <div className={styles.grid}>
+          <label className={styles.field}><span>E-mail</span><input disabled={!canAdmin} name="contactEmail" type="email" defaultValue={settings.contactEmail}/></label>
+          <label className={styles.field}><span>Telefone</span><input disabled={!canAdmin} name="contactPhone" defaultValue={settings.contactPhone}/></label>
+          <label className={styles.field}><span>Localização</span><input disabled={!canAdmin} name="location" defaultValue={settings.location}/></label>
+          <label className={styles.field}><span>Horário</span><input disabled={!canAdmin} name="hours" defaultValue={settings.hours}/></label>
+          <label className={`${styles.field} ${styles.fieldWide}`}><span>Endereço</span><textarea disabled={!canAdmin} name="address" defaultValue={settings.address}/></label>
+        </div>{canAdmin ? <div className={styles.formActions}><button className="adminButton primary" type="submit">Salvar alterações</button></div> : null}
+      </form></div>
+    </section>
+
+  </div>;
+
+  const identity = <div className={styles.tabPanel}>
+    <div className={styles.companyGrid}>
+      <section className={styles.card}>
+        <div className={styles.cardHeader}><div><h2>Identidade visual</h2><p>Marca aplicada às áreas públicas e administrativas.</p></div></div>
+        <div className={styles.cardBody}><div className={styles.identity}>
+          <div className={styles.logoPreview}>{logo ? <Image alt={logo.altText || settings.brandName} fill sizes="112px" src={logo.url} unoptimized /> : <AdminIcon name="image" size={30} />}</div>
+          <h3>{settings.brandName}</h3><p>{settings.tagline || "Sem tagline configurada"}</p>
+          <div className={styles.summary}><div><span>E-mail</span><strong>{settings.contactEmail || "—"}</strong></div><div><span>Telefone</span><strong>{settings.contactPhone || "—"}</strong></div><div><span>Localização</span><strong>{settings.location || "—"}</strong></div></div>
+        </div></div>
+      </section>
+
+      <section className={styles.card}>
+        <div className={styles.cardHeader}><div><h2>Marca e SEO padrão</h2><p>Configuração central da identidade do site.</p></div>{!canAdmin ? <span className="adminBadge">Somente leitura</span> : null}</div>
+        <div className={styles.cardBody}><form action={updateIdentitySettings} className={styles.form}>
+          <div className={styles.grid}>
+            <label className={styles.field}><span>Marca</span><input disabled={!canAdmin} name="brandName" defaultValue={settings.brandName}/></label>
+            <label className={styles.field}><span>Tagline</span><input disabled={!canAdmin} name="tagline" defaultValue={settings.tagline}/></label>
+            <label className={styles.field}><span>Logo</span><select disabled={!canAdmin} name="logoMediaId" defaultValue={settings.logoMediaId || ""}><option value="">Logo estática atual</option>{media.map((item)=><option key={item.id} value={item.id}>{item.originalFilename}</option>)}</select></label>
+            <label className={styles.field}><span>Imagem social padrão</span><select disabled={!canAdmin} name="socialImageMediaId" defaultValue={settings.socialImageMediaId || ""}><option value="">Nenhuma</option>{media.map((item)=><option key={item.id} value={item.id}>{item.originalFilename}</option>)}</select></label>
+            <label className={styles.field}><span>Título SEO padrão</span><input disabled={!canAdmin} name="defaultSeoTitle" defaultValue={settings.defaultSeoTitle}/></label>
+            <label className={`${styles.field} ${styles.fieldWide}`}><span>Descrição SEO padrão</span><textarea disabled={!canAdmin} name="defaultSeoDescription" defaultValue={settings.defaultSeoDescription}/></label>
+          </div>{canAdmin ? <div className={styles.formActions}><button className="adminButton primary" type="submit">Salvar identidade</button></div> : null}
+        </form></div>
+      </section>
+    </div>
+
+    <section className={styles.card}>
+      <div className={styles.cardHeader}><div><h2>Redes sociais</h2><p>Links públicos mantidos na fonte de dados oficial do site.</p></div>{!canEdit ? <span className="adminBadge">Somente leitura</span> : null}</div>
+      <div className={styles.cardBody}><div className={styles.stack}>{socials.map((social) => <form action={upsertSocialLink} className={styles.row} key={social.id}><input type="hidden" name="id" value={social.id}/><input aria-label="Plataforma" disabled={!canEdit} name="platform" defaultValue={social.platform}/><input aria-label="Rótulo" disabled={!canEdit} name="label" defaultValue={social.label}/><input aria-label="URL" disabled={!canEdit} name="url" type="url" defaultValue={social.url}/><input aria-label="Posição" disabled={!canEdit} name="position" type="number" defaultValue={social.position}/><label className={styles.check}><input disabled={!canEdit} name="active" type="checkbox" defaultChecked={social.active}/> Ativa</label>{canEdit ? <button className="adminButton" type="submit">Salvar</button> : <span className="adminBadge">Leitura</span>}</form>)}
+        {canEdit ? <form action={upsertSocialLink} className={`${styles.row} ${styles.newRow}`}><input name="platform" placeholder="instagram" required/><input name="label" placeholder="Instagram" required/><input name="url" type="url" placeholder="https://..."/><input name="position" type="number" defaultValue={0}/><label className={styles.check}><input name="active" type="checkbox" defaultChecked/> Ativa</label><button className="adminButton primary" type="submit">Adicionar</button></form> : null}</div></div>
+    </section>
+  </div>;
+
+  const automations = <section className={styles.card}><div className={styles.cardHeader}><div><h2>Automações</h2><p>Fluxos automáticos disponíveis a partir das integrações e regras reais do projeto.</p></div></div><div className={styles.cardBody}><div className={styles.featureList}>
+    <div className={styles.featureRow}><div><strong>Publicação e revalidação</strong><small>As ações editoriais revalidam as rotas públicas conforme os contratos atuais.</small></div><span className={styles.toggleVisual} aria-label="Ativo"/></div>
+    <div className={styles.featureRow}><div><strong>Sincronização de integrações</strong><small>Executada somente quando o serviço correspondente estiver realmente configurado.</small></div><Link className="adminButton" href="/admin/settings/lander-records">Gerenciar integrações</Link></div>
+    <div className={styles.featureRow}><div><strong>Automações adicionais</strong><small>Nenhum controle sem persistência é apresentado como funcional. Novas automações devem usar a lógica existente do projeto.</small></div><span className="adminBadge">Não configurado</span></div>
+  </div></div></section>;
+
+  const security = <section className={styles.card}><div className={styles.cardHeader}><div><h2>Segurança da conta</h2><p>Autenticação, sessão e permissões protegidas pelos contratos atuais.</p></div></div><div className={styles.cardBody}><div className={styles.securityGrid}>
+    <div className={styles.securityBox}><div><strong>Alterar senha</strong><small>Atualize sua credencial usando o fluxo autenticado existente.</small></div>{persistent ? <Link className="adminButton" href="/admin/change-password">Alterar senha</Link> : <span className="adminBadge">Somente leitura</span>}</div>
+    <div className={styles.securityBox}><div><strong>Sessão atual</strong><small>{session.user.email} · papel {session.user.role}</small></div><span className={styles.statusConnected}>Ativa</span></div>
+    <div className={styles.securityBox}><div><strong>Controle de acesso</strong><small>RBAC aplicado no servidor em todas as mutações administrativas.</small></div><span className="adminBadge live">Protegido</span></div>
+    <div className={styles.securityBox}><div><strong>Ambiente</strong><small>A prévia de desenvolvimento permanece isolada das mutações persistentes.</small></div><span className="adminBadge">Bloqueio seguro</span></div>
+  </div></div></section>;
+
+  const integrations = <section className={styles.card}><div className={styles.cardHeader}><div><h2>Integrações</h2><p>Conecte e acompanhe serviços externos usados pela operação.</p></div><Link className="adminButton primary" href="/admin/settings/lander-records">Abrir integrações</Link></div><div className={styles.cardBody}><div className={styles.portalGrid}>
+    <article className={styles.portalCard}><span><AdminIcon name="integration" size={17}/></span><strong>Serviços e credenciais</strong><p>Status, configurações e sincronizações permanecem no módulo oficial de integrações.</p><Link className="adminButton" href="/admin/settings/lander-records">Gerenciar</Link></article>
+    <article className={styles.portalCard}><span><AdminIcon name="activity" size={17}/></span><strong>Sincronização</strong><p>As rotinas e ações usam somente integrações existentes, sem simular conexões.</p><Link className="adminButton" href="/admin/settings/lander-records">Ver estado</Link></article>
+  </div></div></section>;
+
+  const users = <section className={styles.card}><div className={styles.cardHeader}><div><h2>Usuários e permissões</h2><p>Gerencie equipe, papéis e acesso usando o RBAC atual.</p></div>{canManageUsers ? <Link className="adminButton primary" href="/admin/users">Gerenciar usuários</Link> : null}</div><div className={styles.cardBody}><div className={styles.portalGrid}>
+    <article className={styles.portalCard}><span><AdminIcon name="users" size={17}/></span><strong>Equipe administrativa</strong><p>Contas e permissões são lidas e alteradas pelo módulo persistente de usuários.</p>{canManageUsers ? <Link className="adminButton" href="/admin/users">Abrir equipe</Link> : <span className="adminBadge">Sem permissão</span>}</article>
+    <article className={styles.portalCard}><span><AdminIcon name="shield" size={17}/></span><strong>Papéis e acesso</strong><p>O papel da sessão atual é <b>{session.user.role}</b>; as regras são aplicadas no servidor.</p></article>
+  </div></div></section>;
+
+  return <div className={styles.page} data-testid="settings-manager">
+    <SettingsTabs automations={automations} canManageUsers={canManageUsers} company={company} identity={identity} integrations={integrations} security={security} users={users}/>
+  </div>;
+}

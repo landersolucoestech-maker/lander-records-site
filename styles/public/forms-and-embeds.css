@@ -1,0 +1,8 @@
+/* Public rules formerly coupled to admin.css; preserve their exact behavior. */
+.contactHoneypot{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;overflow:hidden!important}
+.contactConsent{display:flex!important;flex-direction:row;align-items:flex-start;gap:8px}
+.contactConsent input{width:auto;margin-top:3px}
+.contactFormStatus{margin-top:10px;font-size:13px}
+.contactFormStatus.success{color:#1d6d35}
+.contactFormStatus.error{color:#a51f18}
+.artistEmbed iframe{width:100%;min-height:280px;border:0}

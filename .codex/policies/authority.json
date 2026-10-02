@@ -1,0 +1,26 @@
+{
+  "id": "authority",
+  "default": "A3",
+  "rules": [
+    {
+      "action": "read/analyze/local-test",
+      "max": "A3",
+      "decision": "allow"
+    },
+    {
+      "action": "local-in-scope-edit",
+      "max": "A3",
+      "decision": "allow"
+    },
+    {
+      "action": "external-write/staging",
+      "min": "A4",
+      "decision": "require-explicit-authorization"
+    },
+    {
+      "action": "production/destructive/credential/purchase",
+      "min": "A5",
+      "decision": "require-explicit-authorization"
+    }
+  ]
+}

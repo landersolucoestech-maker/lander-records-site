@@ -1,0 +1,16 @@
+{
+  "result": "PASS",
+  "verifiedAt": "2999-01-01T00:00:00.000Z",
+  "retention": "7 days",
+  "earliestRestorePoint": "2026-08-28T00:00:00.000Z",
+  "latestRestorePoint": "2026-08-29T00:00:00.000Z",
+  "changeTicket": "TEST-FUTURE",
+  "target": {
+    "host": "localhost",
+    "port": "5432",
+    "serverAddress": "127.0.0.1",
+    "serverPort": "5432",
+    "database": "lander_restore",
+    "user": "restore_user"
+  }
+}
