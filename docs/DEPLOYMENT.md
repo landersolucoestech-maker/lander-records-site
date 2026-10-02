@@ -32,7 +32,7 @@ Nenhum workflow deste repositório publica automaticamente em produção. A ativ
 
 ## Preview de validação via GitHub Actions
 
-A branch `main` é a única branch permitida e possui um preview temporário em `.github/workflows/dev-preview.yml` para revisão visual sem promover produção.
+A branch `dev` é a branch operacional e possui um preview temporário; `main` permanece congelada até ordem explícita do usuário em `.github/workflows/dev-preview.yml` para revisão visual sem promover produção.
 
 O workflow:
 
@@ -40,8 +40,8 @@ O workflow:
 - executa preflight do Engineering OS, gate de origem, migrações, regressões focadas, typecheck e build;
 - inicia o runtime Next.js de produção dentro do runner;
 - expõe temporariamente o runtime por um túnel HTTPS sem carregar secrets de produção;
-- publica no resumo do job a URL de `/admin` e um artefato `main-preview-url`;
-- cancela o preview anterior quando um novo push chega em `main`;
+- publica no resumo do job a URL de `/admin` e um artefato `dev-preview-url`;
+- cancela o preview anterior quando um novo push chega em `dev`;
 - expira automaticamente quando o job termina.
 
 Esse preview é ambiente descartável de demonstração. Ele não é produção, não autoriza migração de banco real, não utiliza credenciais administrativas reais e não substitui o cutover formal descrito abaixo.
