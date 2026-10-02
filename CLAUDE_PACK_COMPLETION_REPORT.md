@@ -2,14 +2,14 @@
 
 Date: 2026-10-02
 Validated branch: main
-Validated SHA: f526ff9eeb6ff31896708164f1a80f0e6016bec0
+Validated SHA: f469a1ffebe6d73f7dd935321a4451ae334a92fc
 
 ## Result
 Claude/Claude Code control plane is materialized and operational on main.
 
 ## Evidence
-- CMS Foundation CI: PASS — run 37038800697.
-- Main Preview: PASS — run 37038800787.
+- CMS Foundation CI: PASS — run 37042290577.
+- Main Preview: PASS — run 37042290555.
 - Claude pack validation: PASS.
 - Claude Engineering OS self-test/integrity: PASS.
 - Database migrations: PASS.
@@ -23,6 +23,8 @@ Claude/Claude Code control plane is materialized and operational on main.
 - Repository legacy-residue search: zero current code hits.
 
 ## Claude OS
+- Contract schemas are strict and compile under JSON Schema 2020-12/Ajv.
+- Runtime tests execute the canonical lifecycle, reject invalid transitions, require evidence before completion and verify recovery/resume behavior.
 Canonical lifecycle: mission -> investigate -> plan -> route -> execute -> validate -> evidence -> completion, with recovery.
 Runtime includes mission, preflight, orchestration, pack validation, integrity verification, evidence, recovery, completion gate and self-test.
 Commands and lifecycle hooks are materialized under .claude.
