@@ -19,3 +19,6 @@ test("canonical overrides preserve valid HTTP(S) URLs but remove fragments", () 
   assert.equal(resolveCanonicalUrl("https://example.com/editorial/item#section", "/fallback"), "https://example.com/editorial/item");
   assert.equal(resolveCanonicalUrl("http://example.com/editorial/item", "/fallback"), "http://example.com/editorial/item");
 });
+
+
+test("metadata builder routes supplied canonical values through canonical normalization",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../lib/seo.ts",import.meta.url),"utf8");assert.match(source,/input\.canonical \? resolveCanonicalUrl\(input\.canonical, "\/"\) : absoluteUrl\("\/"\)/)});
