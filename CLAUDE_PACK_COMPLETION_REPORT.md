@@ -2,14 +2,14 @@
 
 Date: 2026-10-02
 Validated branch: dev
-Validated SHA: c9451c5054370d2c2f24d9a48924dde1e11b3509
+Validated SHA: c8995dd810e7b6d339a7113700ac0acacf6bde52
 
 ## Result
 Claude/Claude Code control plane is materialized and operational on dev. main is frozen until explicit user authorization.
 
 ## Evidence
-- CMS Foundation CI: PASS — run 37075747333.
-- Dev Preview: PASS — run 37075747397.
+- CMS Foundation CI: PASS — run 37079036165.
+- Dev Preview: PASS — run 37079036169.
 - Claude pack validation: PASS.
 - Claude Engineering OS self-test/integrity: PASS.
 - Database migrations: PASS.
@@ -67,3 +67,14 @@ Hostinger is the authorized hosting/deployment target. Vercel is prohibited by r
 - Production readiness language now distinguishes repository readiness from the still-unverified Hostinger environment.
 - README uses reproducible npm ci installation and states the current dev-only/main-frozen/Hostinger policy.
 - Infrastructure templates are explicitly subordinate to the Hostinger capability contract.
+
+
+## Exhaustive continuation closure — 2026-10-02
+- Reverse-proxy upload ceiling aligned to the valid 50 MB Hero media contract (64 MB transport ceiling).
+- CI now proves migration repeatability with a second migration pass.
+- Migrated schema and baseline content are validated in CI through `validate:content`.
+- Canonical runtime smoke is required and verifies health plus visitor fail-closed admin behavior.
+- Full Playwright browser regression is now a required CI gate.
+- The stale admin preview Playwright suite was reconciled to current UI invariants rather than bypassed.
+- Prefetch-timing-dependent loading coverage was replaced with a deterministic accessible loading contract test.
+- Final validated browser run: 68 passed, 1 skipped; build and runtime smoke passed in the same required workflow.
