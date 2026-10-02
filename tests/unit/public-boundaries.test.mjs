@@ -28,3 +28,6 @@ test("dynamic catalog loading states are inline and accessible", async () => {
   assert.match(artists, /Carregando artistas/);
   assert.match(news, /Carregando notícias/);
 });
+
+
+test("not-found boundary gives users an explicit recovery path",async()=>{const source=await readFile(new URL("../../app/not-found.tsx",import.meta.url),"utf8");assert.match(source,/Página não encontrada/);assert.match(source,/href="\/"|href=\{"\/"\}|href="\/" /);assert.match(source,/Voltar para o início/)});
