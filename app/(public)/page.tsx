@@ -80,7 +80,7 @@ export default async function Home() {
                 <source src={hero.mediaUrl} type={hero.mediaMimeType} />
               </video>
             ) : (
-              <>{/* eslint-disable-next-line @next/next/no-img-element */}<img className="homeHeroMedia" src={hero.mediaUrl} alt="" aria-hidden="true" /></>
+              <img className="homeHeroMedia" src={hero.mediaUrl} alt="" aria-hidden="true" />
             )
           ) : null}
           <div className="homeHeroBackdrop" />
