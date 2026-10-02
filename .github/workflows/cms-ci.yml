@@ -51,7 +51,7 @@ jobs:
           node .claude/runtime/validate-pack.mjs
           npm run test:engineering-os
           node .claude/runtime/verify-integrity.mjs
-      - name: Agentic Engineering OS self-test
+      - name: Claude Engineering OS self-test
         run: node .claude/runtime/self-test.mjs
       - name: Apply CMS migrations
         run: npm run db:migrate
@@ -59,6 +59,8 @@ jobs:
         run: npm test
       - name: Integration checks
         run: npm run test:integration
+      - name: Lint
+        run: npm run lint
       - name: Typecheck
         run: npm run typecheck
       - name: Build
