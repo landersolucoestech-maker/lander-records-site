@@ -122,7 +122,7 @@ export async function Footer() {
           </div>
         </div>
       </div>
-      <div className="footerBottom"><span>2026 © Produtora em Governador Valadares | Lander Records. Todos os direitos reservados.</span><span>Feito por <strong>Lander</strong></span></div>
+      <div className="footerBottom"><span>{new Date().getFullYear()} © {settings.brandName}. Todos os direitos reservados.</span><span>Feito por <strong>Lander</strong></span></div>
     </footer>
   );
 }
