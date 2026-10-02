@@ -2,7 +2,10 @@
   "version": 1,
   "runtime": "claude-code",
   "branchPolicy": {
-    "only": "main",
+    "only": "dev",
+    "frozen": [
+      "main"
+    ],
     "pullRequests": false,
     "forcePush": false
   },
