@@ -26,3 +26,6 @@ test("a retry of the same failed operation preserves its key", () => {
 
   assert.equal(idempotencyKeyAfterAttempt(current, false, randomUuid), current);
 });
+
+
+test("contact UI tolerates non-JSON gateway failures",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../app/(public)/contato/ContactForm.tsx",import.meta.url),"utf8");assert.match(source,/content-type/);assert.match(source,/includes\("application\/json"\)/);assert.match(source,/result\?\.error/)});
