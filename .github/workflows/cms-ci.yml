@@ -48,11 +48,11 @@ jobs:
         run: npm ci
       - name: Engineering OS contracts and adversarial regressions
         run: |
-          node .codex/runtime/validate-pack.mjs
+          node .claude/runtime/validate-pack.mjs
           npm run test:engineering-os
-          node .codex/runtime/verify-integrity.mjs
+          node .claude/runtime/verify-integrity.mjs
       - name: Agentic Engineering OS self-test
-        run: node .codex/runtime/self-test.mjs
+        run: node .claude/runtime/self-test.mjs
       - name: Apply CMS migrations
         run: npm run db:migrate
       - name: Security and hardening tests
