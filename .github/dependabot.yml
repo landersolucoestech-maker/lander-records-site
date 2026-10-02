@@ -5,6 +5,4 @@ updates:
     schedule:
       interval: weekly
     target-branch: dev
-    open-pull-requests-limit: 5
-    labels:
-      - dependencies
+    open-pull-requests-limit: 0
