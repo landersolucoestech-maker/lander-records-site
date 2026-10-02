@@ -2,14 +2,14 @@
 
 Date: 2026-10-02
 Validated branch: dev
-Validated SHA: 389db87ec8418a135616d87a680626ee4fda4866
+Validated SHA: c9451c5054370d2c2f24d9a48924dde1e11b3509
 
 ## Result
 Claude/Claude Code control plane is materialized and operational on dev. main is frozen until explicit user authorization.
 
 ## Evidence
-- CMS Foundation CI: PASS — run 37073453449.
-- Dev Preview: PASS — run 37073453442.
+- CMS Foundation CI: PASS — run 37075747333.
+- Dev Preview: PASS — run 37075747397.
 - Claude pack validation: PASS.
 - Claude Engineering OS self-test/integrity: PASS.
 - Database migrations: PASS.
@@ -56,3 +56,14 @@ Hostinger is the authorized hosting/deployment target. Vercel is prohibited by r
 - React 19 hook lint gates are strict again; no React hook errors remain.
 - Lint completes with zero warnings on the validated SHA.
 - CMS/object-storage media surfaces intentionally permit raw image elements through a narrowly scoped ESLint boundary; this preserves dynamic CMS media behavior without globally disabling the Next.js rule.
+
+
+## Product audit closure — 2026-10-02
+- Contact UI safely handles non-JSON upstream/gateway failures.
+- Public footer business hours are CMS-driven; stale hard-coded weekend status was removed.
+- Footer copyright year is runtime-derived and brand identity comes from settings.
+- CMS canonical metadata inputs are normalized through the canonical URL safety boundary.
+- First-party web manifest is materialized with branded icon metadata.
+- Production readiness language now distinguishes repository readiness from the still-unverified Hostinger environment.
+- README uses reproducible npm ci installation and states the current dev-only/main-frozen/Hostinger policy.
+- Infrastructure templates are explicitly subordinate to the Hostinger capability contract.
