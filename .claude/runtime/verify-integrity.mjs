@@ -1,7 +1,12 @@
-import {readJson,exists,die} from "./common.mjs";
-const req=["agent.schema.json","skill.schema.json","task.schema.json","workflow.schema.json","approval.schema.json","evidence.schema.json"];let bad=[];
-for(const f of req){const x=readJson(".claude/contracts/"+f);if(x.type!=="object"||!Array.isArray(x.required)||!x.required.length)bad.push("invalid contract "+f)}
+import fs from "node:fs";import path from "node:path";import {readJson,exists,die} from "./common.mjs";
+const req=["agent.schema.json","skill.schema.json","task.schema.json","workflow.schema.json","approval.schema.json","evidence.schema.json"],bad=[];
+for(const f of req){const x=readJson(".claude/contracts/"+f);if(x.type!=="object"||x.additionalProperties!==false||!Array.isArray(x.required)||!x.required.length||!x.properties)bad.push("invalid contract "+f)}
 const sm=readJson(".claude/state-machine.json");if(!sm.states||!sm.transitions)bad.push("invalid state machine");
 for(const f of ["mission.mjs","preflight.mjs","orchestrate.mjs","evidence.mjs","recovery.mjs","completion-gate.mjs","self-test.mjs"])if(!exists(".claude/runtime/"+f))bad.push("missing runtime "+f);
 const pkg=readJson("package.json");if(String(pkg.scripts?.["test:engineering-os"]||"").includes(".codex"))bad.push("Codex test entrypoint");
-if(bad.length)die(bad.join("\n"));console.log("Claude integrity verified");
+const settings=readJson(".claude/settings.json");if(settings.branchPolicy?.only!=="dev"||!settings.branchPolicy?.frozen?.includes("main"))bad.push("branch policy must be dev-only/main-frozen");
+for(const f of [".claude/runtime/preflight.mjs",".claude/hooks/main-only.mjs",".claude/hooks/pre-task.mjs"]){const t=fs.readFileSync(f,"utf8");if(!t.includes('!=="dev"'))bad.push(f+" does not enforce dev")}
+const commands=["audit","investigate","plan","implement","fix","refactor","review","test","visual-audit","security-audit","validate","quality-gate","release-check","automation-audit"];for(const n of commands){const f=".claude/commands/"+n+".md";if(!exists(f))bad.push("missing command "+n);else{const t=fs.readFileSync(f,"utf8");for(const h of ["Route through","## Flow","## Required gates","## Failure"])if(!t.includes(h))bad.push(n+" missing "+h)}}
+const ar=readJson(".claude/agents/registry.json"),sr=readJson(".claude/skills/registry.json");const agents=new Set([ar.orchestration.primary,...ar.orchestration.agents,...ar.investigation,...ar.engineering,...ar.quality,...ar.ai,...ar.domain,...ar.operational]);const skills=new Set([...sr.core,...sr.audit,...sr.validation,...sr.ai,...sr.operational]);if(agents.size!==151)bad.push("unexpected agent registry size "+agents.size);if(skills.size!==198)bad.push("unexpected skill registry size "+skills.size);
+const auto=readJson(".claude/automation/registry.json");for(const w of auto.workflows){for(const a of w.agents||[])if(!agents.has(a))bad.push(w.id+" unknown agent "+a);for(const s of w.skills||[])if(!skills.has(s))bad.push(w.id+" unknown skill "+s)}
+if(bad.length)die(bad.join("\n"));console.log("Claude integrity verified:",agents.size,"agents,",skills.size,"skills,",commands.length,"commands,",auto.workflows.length,"operational workflows");
