@@ -236,13 +236,16 @@ jobs:
           )
           failed=0
           for route in "${routes[@]}"; do
-            code=$(curl --silent --show-error --location --max-redirs 5 \
-              --retry 8 --retry-delay 1 --retry-all-errors --connect-timeout 5 --max-time 20 \
-              --output /dev/null --write-out '%{http_code}' "${PREVIEW_URL}${route}" || true)
-            echo "${code} ${route}"
-            if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
-              failed=1
-            fi
+            code="000"
+            for attempt in $(seq 1 8); do
+              code=$(curl --silent --show-error --location --max-redirs 5 \
+                --connect-timeout 5 --max-time 20 \
+                --output /dev/null --write-out '%{http_code}' "${PREVIEW_URL}${route}" || true)
+              echo "attempt ${attempt}: ${code} ${route}"
+              if [ "$code" -ge 200 ] && [ "$code" -lt 300 ]; then break; fi
+              sleep 2
+            done
+            if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then failed=1; fi
           done
           if [ "$failed" != "0" ]; then
             echo "One or more pages are not navigable through the public preview URL."
