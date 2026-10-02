@@ -177,7 +177,7 @@ export default async function Home() {
         {advertiseSection && advertiseBanner?.mediaUrl ? (
           <section aria-label={advertiseBanner.title || "Anuncie com a Lander Records"} style={{ marginTop: 24 }}>
             {/* CMS media can come from the static bundle or object storage. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {}
             <img
               src={advertiseBanner.mediaUrl}
               alt={advertiseBanner.mediaAltText || advertiseBanner.title || "Anuncie com a gente — Lander Records"}

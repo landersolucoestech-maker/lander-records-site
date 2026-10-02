@@ -97,7 +97,7 @@ function SectionMediaPreview({ media }: { media: PageMediaOption }) {
   if (media.mimeType.startsWith("video/")) {
     return <video className={styles.heroMediaPreview} controls muted playsInline preload="metadata" src={media.url} />;
   }
-  return <>{/* eslint-disable-next-line @next/next/no-img-element */}<img className={styles.heroMediaPreview} src={media.url} alt={media.altText || media.originalFilename} /></>;
+  return <>{}<img className={styles.heroMediaPreview} src={media.url} alt={media.altText || media.originalFilename} /></>;
 }
 
 export default function PageContentWorkbench({ page, publicRoute, sections, items, mediaOptions = [], initialSectionId }: Props) {
@@ -211,7 +211,7 @@ export default function PageContentWorkbench({ page, publicRoute, sections, item
       {contract?.media === "item-image" ? <section className={styles.mediaCard}>
         <div className={styles.mediaHeading}><div><span>{title.toUpperCase()}</span><h2>{contract.mediaLabel || "Mídia da seção"}</h2></div><span className={styles.mediaState}>{itemMediaOption ? "Configurada" : "Sem mídia"}</span></div>
         <p>Este asset possui consumidor real no frontend público da Lander Records.</p>
-        <div className={styles.mediaPreview}>{itemMediaOption ? <>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={itemMediaOption.url} alt={itemMediaOption.altText || itemMediaOption.originalFilename} /><strong>{itemMediaOption.originalFilename}</strong></> : <><AdminIcon name="image" size={30}/><strong>Nenhuma mídia vinculada</strong><small>Selecione um asset no formulário do item abaixo.</small></>}</div>
+        <div className={styles.mediaPreview}>{itemMediaOption ? <>{}<img src={itemMediaOption.url} alt={itemMediaOption.altText || itemMediaOption.originalFilename} /><strong>{itemMediaOption.originalFilename}</strong></> : <><AdminIcon name="image" size={30}/><strong>Nenhuma mídia vinculada</strong><small>Selecione um asset no formulário do item abaixo.</small></>}</div>
         <Link className={styles.uploadButton} href="/admin/media"><AdminIcon name="upload" size={14}/><span>Gerenciar biblioteca de mídia</span></Link>
       </section> : null}
 

@@ -24,6 +24,7 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
   const session = await requireAdmin();
   const filters = await searchParams;
   const canEdit = session.source === "session" && session.user.role !== "viewer";
+  void canEdit;
   if (mockDataEnabled()) {
     const initialMode = filters.create === "1" ? "create" : filters.edit ? "edit" : filters.view ? "view" : undefined;
     const initialId = filters.edit || filters.view || undefined;
