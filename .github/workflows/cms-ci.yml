@@ -55,6 +55,8 @@ jobs:
         run: node .claude/runtime/self-test.mjs
       - name: Apply CMS migrations
         run: npm run db:migrate
+      - name: Verify migration repeatability
+        run: npm run db:migrate
       - name: Security and hardening tests
         run: npm test
       - name: Integration checks
@@ -87,6 +89,7 @@ jobs:
             cat /tmp/lander-next.log
             exit 1
           fi
+          SITE_URL=http://127.0.0.1:3000 npm run smoke
           curl --fail --silent --show-error http://127.0.0.1:3000/artistas/ > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:3000/noticias/ > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:3000/politica-de-privacidade/ > /dev/null
