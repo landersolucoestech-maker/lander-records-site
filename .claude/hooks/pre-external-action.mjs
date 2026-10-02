@@ -1,0 +1,1 @@
+const approved=process.env.CLAUDE_HUMAN_APPROVAL==="approved";if(!approved){console.error("external action blocked: explicit human approval required");process.exit(1)}console.log("external-action approval PASS");

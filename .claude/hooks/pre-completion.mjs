@@ -1,0 +1,1 @@
+import {execFileSync} from "node:child_process";for(const [c,a] of [[process.execPath,[".claude/runtime/validate-pack.mjs"]],[process.execPath,[".claude/runtime/verify-integrity.mjs"]]])execFileSync(c,a,{stdio:"inherit"});console.log("pre-completion PASS");
