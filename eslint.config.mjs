@@ -8,7 +8,7 @@ const config = [
     ignores: [".next/**", "node_modules/**", "public/**", "assets/**", "next-env.d.ts"],
   },
   {
-    files: ["app/(public)/page.tsx", "app/admin/(protected)/media-kit/components/*.tsx", "app/admin/(protected)/pages/\[id\]/PageContentWorkbench.tsx"],
+    files: ["app/(public)/page.tsx", "app/admin/(protected)/media-kit/components/*.tsx", "**/PageContentWorkbench.tsx"],
     rules: { "@next/next/no-img-element": "off" },
   },
   {
