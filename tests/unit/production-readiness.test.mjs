@@ -9,7 +9,7 @@ test("production deployment remains manual and fail-closed during readiness", ()
   const deployment = read("docs/DEPLOYMENT.md");
   const runbook = read("docs/DEPLOYMENT_RUNBOOK.md");
 
-  assert.match(infrastructure, /NOT READY — deployment blocked/);
+  assert.match(infrastructure, /REPOSITORY READY \/ ENVIRONMENT UNVERIFIED/);
   assert.match(infrastructure, /dev` não deve publicar automaticamente em produção/);
   assert.match(deployment, /Nenhum workflow deste repositório publica automaticamente em produção/);
   assert.match(runbook, /Qualquer operação que altere produção permanece bloqueada/);
