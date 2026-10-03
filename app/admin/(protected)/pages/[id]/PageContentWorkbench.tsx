@@ -53,6 +53,7 @@ type Props = {
   items: PageEditorItem[];
   mediaOptions?: PageMediaOption[];
   initialSectionId?: string;
+  readOnly?: boolean;
 };
 
 const allSectionFields: SectionFieldName[] = ["eyebrow", "title", "subtitle", "body"];
@@ -100,7 +101,7 @@ function SectionMediaPreview({ media }: { media: PageMediaOption }) {
   return <>{}<img className={styles.heroMediaPreview} src={media.url} alt={media.altText || media.originalFilename} /></>;
 }
 
-export default function PageContentWorkbench({ page, publicRoute, sections, items, mediaOptions = [], initialSectionId }: Props) {
+export default function PageContentWorkbench({ page, publicRoute, sections, items, mediaOptions = [], initialSectionId, readOnly = false }: Props) {
   const ordered = useMemo(() => [...sections].sort((a, b) => a.position - b.position), [sections]);
   const firstId = ordered[0]?.id || "";
   const [selectedId, setSelectedId] = useState(initialSectionId && ordered.some((section) => section.id === initialSectionId) ? initialSectionId : firstId);
