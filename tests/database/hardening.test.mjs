@@ -120,4 +120,4 @@ test("category update and delete actions verify affected rows before auditing su
 
 test("site settings self-heal the singleton row and social mutations verify affected records",async()=>{const source=await read("app/admin/actions.ts");assert.match(source,/insert\(siteSettings\)[\s\S]*onConflictDoUpdate/);assert.match(source,/Link social não encontrado\./);assert.match(source,/returning\(\{ id: socialLinks\.id \}\)/);assert.match(source,/resolvedId = inserted\[0\]\?\.id/);});
 
-test("site identity media references must resolve to active images",async()=>{const source=await read("app/admin/actions.ts");assert.match(source,/activeImageMediaIdOrNull/);assert.match(source,/eq\(mediaAssets\.status, "active"\)/);assert.match(source,/media\.mimeType\.startsWith\("image\/"\)/);});
+test("site identity media references must resolve to active images",async()=>{const source=await read("app/admin/actions.ts");assert.match(source,/activeImageMediaIdOrNull/);assert.match(source,/eq\(mediaAssets\.status, "active"\)/);assert.match(source,/allowedImageTypes\.has\(media\.mimeType\.toLowerCase\(\)\)/);});
