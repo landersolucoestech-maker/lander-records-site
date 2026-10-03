@@ -162,6 +162,8 @@ export default function PageContentWorkbench({ page, publicRoute, sections, item
     setAddingItem(false);
   };
 
+  if (readOnly) return <div className={styles.detailCard}><header><h3>Modo somente leitura</h3><p>Este preview permite inspecionar a estrutura da página sem executar alterações persistentes.</p></header>{publicRoute ? <Link className="adminButton" href={publicRoute} target="_blank">Abrir página pública</Link> : null}</div>;
+
   return <div className={styles.workbench} data-testid="page-section-workbench" data-site-source="lander-records">
     <aside className={styles.editorRail} aria-label="Configuração da seção da Lander Records">
       <section className={styles.sectionSelector}>
