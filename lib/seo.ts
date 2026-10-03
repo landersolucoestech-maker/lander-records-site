@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
 
 export function absoluteUrl(pathname: string) {
-  const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://landerrecords.com").replace(/\/$/, "");
-  return `${base}${pathname.startsWith("/") ? pathname : `/${pathname}`}`;
+  const configured = (process.env.NEXT_PUBLIC_SITE_URL || "https://landerrecords.com").trim();
+  let base: URL;
+  try { base = new URL(configured); } catch { throw new Error("NEXT_PUBLIC_SITE_URL inválida."); }
+  const loopback = base.hostname === "localhost" || base.hostname === "127.0.0.1" || base.hostname === "[::1]";
+  if ((base.protocol !== "https:" && !(process.env.NODE_ENV !== "production" && loopback && base.protocol === "http:"))
+    || base.username || base.password || base.search || base.hash) throw new Error("NEXT_PUBLIC_SITE_URL inválida.");
+  const origin = base.toString().replace(/\/$/, "");
+  return `${origin}${pathname.startsWith("/") ? pathname : `/${pathname}`}`;
 }
 
 export function normalizeCanonicalOverride(value: string | null | undefined) {
