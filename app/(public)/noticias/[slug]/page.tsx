@@ -63,6 +63,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
               {article.authorName}
             </span>
           </div>
+          {article.tags.length ? <div className="articleTags" aria-label="Tags da publicação">{article.tags.map((tag) => <span key={tag.id}>#{tag.name}</span>)}</div> : null}
         </div>
         <div className="articleBody">
           <div className="articleContent markdownContent">
@@ -99,6 +100,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
             publisher: { "@type": "Organization", name: "Lander Records" },
             mainEntityOfPage: canonicalUrl,
             image: article.coverImage || undefined,
+            keywords: article.tags.map((tag) => tag.name),
           }),
         }}
       />
