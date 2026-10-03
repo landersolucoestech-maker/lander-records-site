@@ -182,3 +182,6 @@ test("Portal Lander remains an admin UX reference, not a content source", () => 
   assert.doesNotMatch(manager, /Portal Lander/);
   assert.doesNotMatch(workbench, /PortalPagePreview|LANDER RECORDS · EM DESTAQUE|EXPLORAR DESTAQUES|Mais Lidas|Publicidade Lateral/);
 });
+
+
+test("page section creation and attachment serialize per-page position and duplicate checks",()=>{assert.match(pageActions,/pg_advisory_xact_lock\(hashtext\(\$\{pageId\}\)::bigint\)/);assert.match(pageActions,/const existing = await tx\.select/);assert.match(pageActions,/const positions = await tx\.select/);assert.match(pageActions,/const attached = await db\.transaction/);});
