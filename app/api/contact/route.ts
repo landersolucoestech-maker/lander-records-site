@@ -1,11 +1,13 @@
 import { NextRequest } from "next/server";
 import { logger } from "../../../lib/logging";
-import { eq } from "drizzle-orm";
+import { and, eq, gte, sql } from "drizzle-orm";
 import { isContactIdempotencyConflict } from "../../../lib/contact-idempotency";
 import { z } from "zod";
 import { getDb } from "../../../lib/db";
 import { contactSubmissions, contactTopics, integrationOutbox } from "../../../lib/db/schema";
-import { dispatchOutboxEvent, hashIp, isContactRateLimited } from "../../../lib/contact";
+import { dispatchOutboxEvent, hashIp } from "../../../lib/contact";
+
+class ContactRateLimitError extends Error {}
 
 const payloadSchema = z.object({
   idempotencyKey: z.string().uuid(),
@@ -59,10 +61,6 @@ export async function POST(request: NextRequest) {
     const ip = forwardedFor || request.headers.get("x-real-ip") || "unknown";
     const ipHash = hashIp(ip);
 
-    if (await isContactRateLimited(ipHash)) {
-      return Response.json({ error: "Muitas tentativas em pouco tempo. Tente novamente em alguns minutos." }, { status: 429 });
-    }
-
     const topicRows = await db
       .select()
       .from(contactTopics)
@@ -76,6 +74,11 @@ export async function POST(request: NextRequest) {
     let result: { submissionId: string; outboxId: string };
     try {
       result = await db.transaction(async (tx) => {
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${ipHash}))`);
+      const since = new Date(Date.now() - 10 * 60 * 1000);
+      const rateRows = await tx.select({ count: sql<number>`count(*)::int` }).from(contactSubmissions)
+        .where(and(eq(contactSubmissions.ipHash, ipHash), gte(contactSubmissions.createdAt, since)));
+      if ((rateRows[0]?.count ?? 0) >= 5) throw new ContactRateLimitError();
       const submissionRows = await tx.insert(contactSubmissions).values({
         idempotencyKey: parsed.data.idempotencyKey,
         name: parsed.data.name,
@@ -126,6 +129,9 @@ export async function POST(request: NextRequest) {
       return { submissionId: submission.id, outboxId: outboxRows[0].id };
       });
     } catch (error) {
+      if (error instanceof ContactRateLimitError) {
+        return Response.json({ error: "Muitas tentativas em pouco tempo. Tente novamente em alguns minutos." }, { status: 429 });
+      }
       if (!isContactIdempotencyConflict(error)) throw error;
       const duplicate = await db.select({ id: contactSubmissions.id }).from(contactSubmissions)
         .where(eq(contactSubmissions.idempotencyKey, parsed.data.idempotencyKey)).limit(1);
