@@ -12,6 +12,7 @@ import { normalizeExternalUrl, spotifyArtistIdFromUrl } from "./identity";
 import { fetchSoundchartsArtistMetrics, resolveSoundchartsArtist, soundchartsCredentialsConfigured } from "./soundcharts";
 import { fetchLatestSpotifyPlaylistReleases, spotifyCredentialsConfigured } from "./spotify";
 import { mockDataEnabled, mockSocialMetrics, mockSpotifyFeed } from "../mocks";
+import { logger } from "../logging";
 
 const LANDER_ENTITY_ID = "lander_records";
 const SOUNDCHARTS_TTL_MS = 24 * 60 * 60 * 1000;
@@ -330,7 +331,7 @@ export async function getHomeSpotifyReleaseFeed() {
       await syncSpotifyReleases(false);
       releases = await getCachedSpotifyReleases(settings.spotifyPlaylistId);
     } catch (error) {
-      console.error("[spotify-home] Falha ao atualizar automaticamente os Últimos Lançamentos.", error instanceof Error ? error.message : error);
+      logger.error("spotify_home_refresh_failed");
     }
   }
 
