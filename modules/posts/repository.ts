@@ -18,14 +18,15 @@ export async function getPublishedPosts(featuredOnly = false): Promise<PublicPos
   if (mockDataEnabled()) return featuredOnly ? mockPosts.slice(0, 3) : mockPosts;
   const db = getDb();
   const where = featuredOnly ? and(publishablePostWhere(), eq(posts.featuredOnHome, true)) : publishablePostWhere();
-  const [rows, tagRows] = await Promise.all([
-    db.select({ post: posts, categoryId: postCategories.id, categoryName: postCategories.name, categorySlug: postCategories.slug, coverUrl: mediaAssets.url })
-      .from(posts).leftJoin(postCategories, eq(posts.categoryId, postCategories.id)).leftJoin(mediaAssets, eq(posts.coverMediaId, mediaAssets.id)).where(where)
-      .orderBy(featuredOnly ? asc(posts.homePosition) : desc(posts.publishedAt), desc(posts.createdAt)),
-    db.select({ postId: postTags.postId, id: tags.id, name: tags.name, slug: tags.slug }).from(postTags).innerJoin(tags, eq(postTags.tagId, tags.id)),
-  ]);
+  const rows = await db.select({ post: posts, categoryId: postCategories.id, categoryName: postCategories.name, categorySlug: postCategories.slug, coverUrl: mediaAssets.url })
+    .from(posts).leftJoin(postCategories, eq(posts.categoryId, postCategories.id)).leftJoin(mediaAssets, eq(posts.coverMediaId, mediaAssets.id)).where(where)
+    .orderBy(featuredOnly ? asc(posts.homePosition) : desc(posts.publishedAt), desc(posts.createdAt));
+  const postIds = rows.map(({ post }) => post.id);
   const ogMediaIds = [...new Set(rows.map(({ post }) => post.ogMediaId).filter((id): id is string => Boolean(id)))];
-  const ogMediaRows = ogMediaIds.length ? await db.select().from(mediaAssets).where(and(eq(mediaAssets.status, "active"), inArray(mediaAssets.id, ogMediaIds))) : [];
+  const [tagRows, ogMediaRows] = await Promise.all([
+    postIds.length ? db.select({ postId: postTags.postId, id: tags.id, name: tags.name, slug: tags.slug }).from(postTags).innerJoin(tags, eq(postTags.tagId, tags.id)).where(inArray(postTags.postId, postIds)) : Promise.resolve([]),
+    ogMediaIds.length ? db.select().from(mediaAssets).where(and(eq(mediaAssets.status, "active"), inArray(mediaAssets.id, ogMediaIds))) : Promise.resolve([]),
+  ]);
   const mediaMap = new Map(ogMediaRows.map((media) => [media.id, media.url]));
   return rows.map(({ post, categoryId, categoryName, categorySlug, coverUrl }) => ({
     ...post,
