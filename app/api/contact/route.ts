@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { logger } from "../../../lib/logging";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "../../../lib/db";
@@ -126,7 +127,7 @@ export async function POST(request: NextRequest) {
     return Response.json({ ok: true, id: result.submissionId, integration: delivery.delivered ? "delivered" : "queued" }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    console.error("contact_submission_failed", message);
+    logger.error("contact_submission_failed", { configurationError: message.includes("CONTACT_IP_HASH_SALT") || message.includes("DATABASE_URL") });
     const configurationError = message.includes("CONTACT_IP_HASH_SALT") || message.includes("DATABASE_URL");
     return Response.json(
       { error: configurationError ? "O formulário está temporariamente indisponível por configuração do servidor." : "Não foi possível registrar o contato." },
