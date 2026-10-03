@@ -48,7 +48,7 @@ test("admin data surfaces use the centralized demo scenario",()=>{
     "app/admin/(protected)/navigation/page.tsx","app/admin/(protected)/settings/page.tsx",
     "app/admin/(protected)/settings/lander-records/page.tsx","app/admin/(protected)/users/page.tsx",
     "app/admin/(protected)/audit/page.tsx","app/admin/(protected)/media-kit/page.tsx",
-    "app/admin/(protected)/layout.tsx",
+    "app/admin/(protected)/layout.tsx","app/admin/(protected)/page.tsx",
   ]) assert.match(read(file),/mockData|mock[A-Z]/,file);
 });
 
@@ -72,6 +72,8 @@ test("mock mode does not grant persistent write permissions",()=>{
 
 
 test("mock-mode admin surfaces are read-only and isolate persistent inbox data",()=>{
+  assert.match(read("app/admin/(protected)/page.tsx"),/const mockMode = mockDataEnabled\(\)/);
+  assert.match(read("app/admin/(protected)/page.tsx"),/data=\{mockMode \? mockDashboardData/);
   assert.match(read("app/admin/(protected)/media/page.tsx"),/persistent = !mockMode && session\.source === "session"/);
   assert.match(read("app/admin/(protected)/navigation/page.tsx"),/canEdit=\{!mockMode && session\.source === "session"/);
   assert.match(read("app/admin/(protected)/pages/page.tsx"),/canEdit=\{!mockMode && session\.source === "session"/);
