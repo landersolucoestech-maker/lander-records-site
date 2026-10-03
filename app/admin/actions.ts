@@ -84,7 +84,7 @@ function assertMaxLength(value: string, max: number, label: string) {
 }
 
 function assertAdminIdentity(name: string, email?: string) {
-  if (!name || name.length > 180) throw new Error("Nome de usuário inválido.");
+  if (!name || name.length > 160) throw new Error("Nome de usuário inválido.");
   if (email !== undefined && !validAdminEmail(email)) throw new Error("E-mail de usuário inválido.");
 }
 
@@ -366,7 +366,7 @@ export async function upsertSocialLink(formData: FormData) {
   const platform = text(formData, "platform");
   const label = text(formData, "label");
   assertMaxLength(platform, 80, "Plataforma");
-  assertMaxLength(label, 180, "Rótulo");
+  assertMaxLength(label, 120, "Rótulo");
   assertMaxLength(url, 2000, "URL social");
   const values = {
     platform,
