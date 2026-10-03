@@ -561,6 +561,9 @@ export async function updateAdminUser(formData: FormData) {
       isActive,
       updatedAt: new Date(),
     }).where(eq(adminUsers.id, id));
+    if (!isActive) {
+      await tx.delete(adminSessions).where(eq(adminSessions.userId, id));
+    }
   });
   await audit(session.user.id, "admin_user.updated", "admin_user", id, { role: roleValue });
   revalidatePath("/admin/users");
