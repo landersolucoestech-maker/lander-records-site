@@ -82,12 +82,14 @@ export async function uploadPageSectionMedia(formData: FormData) {
   if (!(upload instanceof File) || upload.size === 0) throw new Error("Selecione uma imagem ou vídeo para enviar.");
   if (!isHeroMediaMimeType(upload.type)) throw new Error("O Hero aceita somente arquivos de imagem ou vídeo.");
   if (upload.size > MAX_HERO_MEDIA_BYTES) throw new Error("O arquivo do Hero deve ter no máximo 50 MB.");
+  if (upload.name.length > 500) throw new Error("Nome do arquivo inválido.");
+  const altText = text(formData, "altText");
+  if (altText.length > 500) throw new Error("Texto alternativo inválido.");
 
   const storageKey = `page-sections/${pageId}/${sectionId}/${randomUUID()}-${safeFilename(upload.name)}`;
   const bytes = new Uint8Array(await upload.arrayBuffer());
   if (!matchesHeroMediaSignature(bytes, upload.type)) throw new Error("O conteúdo do arquivo não corresponde ao tipo de mídia informado.");
   const stored = await uploadStoredMedia(storageKey, bytes, upload.type);
-  const altText = text(formData, "altText");
   const db = getDb();
   let mediaId = "";
 
