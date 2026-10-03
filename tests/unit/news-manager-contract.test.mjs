@@ -55,3 +55,5 @@ test("News preview is fixture-only and imports no write primitive", () => {
 
 
 test("archived media never hydrates public post covers or social images",()=>{assert.match(publicRepository,/leftJoin\(mediaAssets, and\(eq\(posts\.coverMediaId, mediaAssets\.id\), eq\(mediaAssets\.status, "active"\)\)\)/);assert.match(publicRepository,/eq\(mediaAssets\.status, "active"\)/);});
+
+test("public article surfaces persisted tags and publishes them as structured keywords",()=>{const article=read("app/(public)/noticias/[slug]/page.tsx");assert.match(article,/className="articleTags"/);assert.match(article,/article\.tags\.map\(\(tag\) => <span/);assert.match(article,/keywords: article\.tags\.map\(\(tag\) => tag\.name\)/);});
