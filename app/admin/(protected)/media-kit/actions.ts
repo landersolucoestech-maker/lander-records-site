@@ -287,7 +287,8 @@ export async function updateMediaKitSection(formData: FormData) {
   const db = getDb();
   const current = (await db.select({ id: mediaKitSections.id }).from(mediaKitSections).where(eq(mediaKitSections.id, id)).limit(1))[0];
   if (!current) throw new Error("Seção não encontrada.");
-  await db.update(mediaKitSections).set(values).where(eq(mediaKitSections.id, id));
+  const updated = await db.update(mediaKitSections).set(values).where(eq(mediaKitSections.id, id)).returning({ id: mediaKitSections.id });
+  if (!updated[0]) throw new Error("Seção não encontrada.");
   await audit(session.user.id, "media_kit.section_updated", "media_kit_section", id, { type, title: values.title, position: values.position, enabled: values.enabled });
   refresh();
 }
@@ -298,7 +299,8 @@ export async function deleteMediaKitSection(formData: FormData) {
   const db = getDb();
   const current = (await db.select({ id: mediaKitSections.id, title: mediaKitSections.title }).from(mediaKitSections).where(eq(mediaKitSections.id, id)).limit(1))[0];
   if (!current) throw new Error("Seção não encontrada.");
-  await db.delete(mediaKitSections).where(eq(mediaKitSections.id, id));
+  const deleted = await db.delete(mediaKitSections).where(eq(mediaKitSections.id, id)).returning({ id: mediaKitSections.id });
+  if (!deleted[0]) throw new Error("Seção não encontrada.");
   await audit(session.user.id, "media_kit.section_deleted", "media_kit_section", id, { title: current.title });
   refresh();
 }
@@ -367,7 +369,8 @@ export async function updateMediaKitItem(formData: FormData) {
   const db = getDb();
   const current = (await db.select({ id: mediaKitItems.id }).from(mediaKitItems).where(and(eq(mediaKitItems.id, id), eq(mediaKitItems.sectionId, sectionId))).limit(1))[0];
   if (!current) throw new Error("Item não encontrado.");
-  await db.update(mediaKitItems).set(values).where(and(eq(mediaKitItems.id, id), eq(mediaKitItems.sectionId, sectionId)));
+  const updated = await db.update(mediaKitItems).set(values).where(and(eq(mediaKitItems.id, id), eq(mediaKitItems.sectionId, sectionId))).returning({ id: mediaKitItems.id });
+  if (!updated[0]) throw new Error("Item não encontrado.");
   await audit(session.user.id, "media_kit.item_updated", "media_kit_item", id, { sectionId, kind, sourceKey, position: values.position, enabled: values.enabled });
   refresh();
 }
@@ -379,7 +382,8 @@ export async function deleteMediaKitItem(formData: FormData) {
   const db = getDb();
   const current = (await db.select({ id: mediaKitItems.id, title: mediaKitItems.title }).from(mediaKitItems).where(and(eq(mediaKitItems.id, id), eq(mediaKitItems.sectionId, sectionId))).limit(1))[0];
   if (!current) throw new Error("Item não encontrado.");
-  await db.delete(mediaKitItems).where(and(eq(mediaKitItems.id, id), eq(mediaKitItems.sectionId, sectionId)));
+  const deleted = await db.delete(mediaKitItems).where(and(eq(mediaKitItems.id, id), eq(mediaKitItems.sectionId, sectionId))).returning({ id: mediaKitItems.id });
+  if (!deleted[0]) throw new Error("Item não encontrado.");
   await audit(session.user.id, "media_kit.item_deleted", "media_kit_item", id, { sectionId, title: current.title });
   refresh();
 }
