@@ -34,3 +34,6 @@ test("news public page renders only trusted social destinations", () => {
   assert.match(publicPage, /trustedSocialLinks\.map/);
   assert.doesNotMatch(publicPage, /Object\.entries\(presentation\.links\)\.map\(\(\[platform, url\]\) => <a/);
 });
+
+
+test("unexpected post persistence failures are not returned verbatim",()=>{assert.match(postAction,/Não foi possível salvar a notícia\. Tente novamente\./);assert.doesNotMatch(postAction,/return \{ ok: false, error: message \}/);});
