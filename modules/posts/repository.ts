@@ -19,7 +19,7 @@ export async function getPublishedPosts(featuredOnly = false): Promise<PublicPos
   const db = getDb();
   const where = featuredOnly ? and(publishablePostWhere(), eq(posts.featuredOnHome, true)) : publishablePostWhere();
   const rows = await db.select({ post: posts, categoryId: postCategories.id, categoryName: postCategories.name, categorySlug: postCategories.slug, coverUrl: mediaAssets.url })
-    .from(posts).leftJoin(postCategories, eq(posts.categoryId, postCategories.id)).leftJoin(mediaAssets, eq(posts.coverMediaId, mediaAssets.id)).where(where)
+    .from(posts).leftJoin(postCategories, eq(posts.categoryId, postCategories.id)).leftJoin(mediaAssets, and(eq(posts.coverMediaId, mediaAssets.id), eq(mediaAssets.status, "active"))).where(where)
     .orderBy(featuredOnly ? asc(posts.homePosition) : desc(posts.publishedAt), desc(posts.createdAt));
   const postIds = rows.map(({ post }) => post.id);
   const ogMediaIds = [...new Set(rows.map(({ post }) => post.ogMediaId).filter((id): id is string => Boolean(id)))];
@@ -41,7 +41,7 @@ export async function getPublishedPostBySlug(slug: string): Promise<PublicPost |
   if (mockDataEnabled()) return mockPosts.find((post) => post.slug === slug) ?? null;
   const db = getDb();
   const rows = await db.select({ post: posts, categoryId: postCategories.id, categoryName: postCategories.name, categorySlug: postCategories.slug, coverUrl: mediaAssets.url })
-    .from(posts).leftJoin(postCategories, eq(posts.categoryId, postCategories.id)).leftJoin(mediaAssets, eq(posts.coverMediaId, mediaAssets.id)).where(and(eq(posts.slug, slug), publishablePostWhere())).limit(1);
+    .from(posts).leftJoin(postCategories, eq(posts.categoryId, postCategories.id)).leftJoin(mediaAssets, and(eq(posts.coverMediaId, mediaAssets.id), eq(mediaAssets.status, "active"))).where(and(eq(posts.slug, slug), publishablePostWhere())).limit(1);
   const row = rows[0];
   if (!row) return null;
   const [mediaRows, tagRows] = await Promise.all([
