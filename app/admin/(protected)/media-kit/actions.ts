@@ -54,8 +54,26 @@ function enumValue(formData: FormData, name: string, allowed: Set<string>, fallb
 function destination(formData: FormData, name: string) {
   const value = text(formData, name);
   if (!value) return "";
-  if (value.startsWith("/") || /^https?:\/\//i.test(value) || /^(mailto|tel):/i.test(value)) return value;
-  throw new Error("Destino inválido. Use URL completa, rota interna, mailto: ou tel:.");
+  if (value.length > 2000 || /[\u0000-\u001f\u007f\\]/.test(value)) throw new Error("Destino inválido.");
+  if (value.startsWith("/") && !value.startsWith("//")) {
+    try {
+      const parsed = new URL(value, "https://landerrecords.local");
+      if (parsed.origin === "https://landerrecords.local") return value;
+    } catch {}
+    throw new Error("Destino interno inválido.");
+  }
+  if (/^https:\/\//i.test(value)) {
+    try {
+      const parsed = new URL(value);
+      if (parsed.protocol === "https:" && !parsed.username && !parsed.password) return parsed.toString();
+    } catch {}
+  }
+  if (/^mailto:/i.test(value)) {
+    const address = value.slice(7);
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)) return value;
+  }
+  if (/^tel:/i.test(value) && /^tel:\+?[0-9().\s-]{6,30}$/i.test(value)) return value;
+  throw new Error("Destino inválido. Use HTTPS, rota interna, mailto: ou tel:.");
 }
 
 async function selectedMediaId(formData: FormData, name: string) {
