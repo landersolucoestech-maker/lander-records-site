@@ -1,6 +1,7 @@
 import { desc, eq, sql } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
+import { mockDataEnabled } from "../../../../lib/mocks";
 import { contactSubmissions, contactTopics } from "../../../../lib/db/schema";
 import { updateContactSubmissionStatus } from "../../actions";
 import { AdminIcon } from "../../components/AdminIcon";
@@ -17,7 +18,11 @@ function Metric({ label, value, hint }: { label: string; value: number; hint: st
 
 export default async function ContactsPage() {
   const session = await requireAdmin();
-  const canEdit = session.source === "session" && session.user.role !== "viewer";
+  const mockMode = mockDataEnabled();
+  const canEdit = !mockMode && session.source === "session" && session.user.role !== "viewer";
+  if (mockMode) {
+    return <div className="adminDashboard" data-testid="contacts-manager"><section className={`adminDashboardPanel ${styles.panel}`}><div className="adminAnalyticsPanelHeading"><div className="adminPanelHeadingIdentity"><span className="adminPanelHeadingIcon"><AdminIcon name="mail" size={20}/></span><div><h2>Contatos recebidos</h2><p>O preview usa dados descartáveis e não expõe mensagens reais.</p></div></div></div><div className={styles.empty}>Nenhum contato persistente é carregado no modo de demonstração.</div></section></div>;
+  }
   const db = getDb();
   const [rows, counts] = await Promise.all([
     db.select({ submission: contactSubmissions, topicName: contactTopics.name }).from(contactSubmissions).leftJoin(contactTopics, eq(contactSubmissions.topicId, contactTopics.id)).orderBy(desc(contactSubmissions.createdAt)).limit(500),
