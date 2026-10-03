@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: article.seoTitle || article.title,
     description: article.seoDescription || article.excerpt,
     canonical: canonicalUrl,
-    image: article.coverImage || undefined,
+    image: article.ogImage || article.coverImage || undefined,
     type: "article",
   });
 }
