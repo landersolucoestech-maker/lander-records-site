@@ -153,7 +153,8 @@ export async function upsertArtistCategory(formData: FormData) {
   const db = getDb();
 
   if (id) {
-    await db.update(artistCategories).set(values).where(eq(artistCategories.id, id));
+    const updated = await db.update(artistCategories).set(values).where(eq(artistCategories.id, id)).returning({ id: artistCategories.id });
+    if (!updated[0]) throw new Error("Categoria de artista não encontrada.");
     await audit(session.user.id, "artist_category.updated", "artist_category", id, { name, slug });
   } else {
     const rows = await db.insert(artistCategories).values({ ...values, createdBy: session.user.id }).returning({ id: artistCategories.id });
@@ -169,7 +170,8 @@ export async function deleteArtistCategory(formData: FormData) {
   const db = getDb();
   const relations = await db.select({ artistId: artistCategoryRelations.artistId }).from(artistCategoryRelations).where(eq(artistCategoryRelations.categoryId, id)).limit(1);
   if (relations.length) throw new Error("Não é possível excluir uma categoria associada a artistas. Desassocie primeiro.");
-  await db.delete(artistCategories).where(eq(artistCategories.id, id));
+  const deleted = await db.delete(artistCategories).where(eq(artistCategories.id, id)).returning({ id: artistCategories.id });
+  if (!deleted[0]) throw new Error("Categoria de artista não encontrada.");
   await audit(session.user.id, "artist_category.deleted", "artist_category", id);
   revalidatePublic();
   revalidatePath("/admin/categories");
@@ -195,7 +197,8 @@ export async function upsertPostCategory(formData: FormData) {
   };
   const db = getDb();
   if (id) {
-    await db.update(postCategories).set(values).where(eq(postCategories.id, id));
+    const updated = await db.update(postCategories).set(values).where(eq(postCategories.id, id)).returning({ id: postCategories.id });
+    if (!updated[0]) throw new Error("Categoria de notícia não encontrada.");
     await audit(session.user.id, "post_category.updated", "post_category", id, { name });
   } else {
     const rows = await db.insert(postCategories).values(values).returning({ id: postCategories.id });
@@ -211,7 +214,8 @@ export async function deletePostCategory(formData: FormData) {
   const db = getDb();
   const usage = await db.select({ id: posts.id }).from(posts).where(eq(posts.categoryId, id)).limit(1);
   if (usage.length) throw new Error("Não é possível excluir uma categoria usada por publicações. Reclassifique os posts primeiro.");
-  await db.delete(postCategories).where(eq(postCategories.id, id));
+  const deleted = await db.delete(postCategories).where(eq(postCategories.id, id)).returning({ id: postCategories.id });
+  if (!deleted[0]) throw new Error("Categoria de notícia não encontrada.");
   await audit(session.user.id, "post_category.deleted", "post_category", id);
   revalidatePublic();
   revalidatePath("/admin/categories");
