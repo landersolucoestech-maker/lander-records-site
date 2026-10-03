@@ -25,3 +25,6 @@ test("metadata builder routes supplied canonical values through canonical normal
 
 
 test("site exposes a first-party web manifest with branded icon",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../app/manifest.ts",import.meta.url),"utf8");assert.match(source,/name: "Lander Records"/);assert.match(source,/\/lander-records-logo\.webp/);assert.match(source,/start_url: "\/"/)});
+
+
+test("robots excludes admin, API and disposable CMS preview surfaces",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../app/robots.ts",import.meta.url),"utf8");for(const path of ["/admin/","/api/","/cms-preview/"])assert.match(source,new RegExp(path.replaceAll("/","\\/")))});
