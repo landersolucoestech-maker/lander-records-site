@@ -36,4 +36,4 @@ test("news public page renders only trusted social destinations", () => {
 });
 
 
-test("unexpected post persistence failures are not returned verbatim",()=>{assert.match(postAction,/Não foi possível salvar a notícia\. Tente novamente\./);assert.doesNotMatch(postAction,/return \{ ok: false, error: message \}/);});
+test("unexpected post persistence failures are not returned verbatim",()=>{assert.match(actions,/Não foi possível salvar a notícia\. Tente novamente\./);assert.doesNotMatch(actions,/return \{ ok: false, error: message \}/);});
