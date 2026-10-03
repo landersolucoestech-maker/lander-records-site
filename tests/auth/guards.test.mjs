@@ -223,3 +223,5 @@ test("admin password change rejects reuse of the current credential",async()=>{c
 test("disabling an admin revokes all existing sessions",async()=>{const actions=await source("app/admin/actions.ts");assert.match(actions,/if \(!isActive\) \{[\s\S]*tx\.delete\(adminSessions\)\.where\(eq\(adminSessions\.userId, id\)\)/);});
 
 test("password changes revoke sessions in the same transaction as the hash update",async()=>{const actions=await source("app/admin/actions.ts");assert.match(actions,/changeOwnPassword[\s\S]*db\.transaction\(async \(tx\) => \{[\s\S]*tx\.update\(adminUsers\)[\s\S]*tx\.delete\(adminSessions\)/);assert.match(actions,/resetAdminPassword[\s\S]*db\.transaction\(async \(tx\) => \{[\s\S]*tx\.update\(adminUsers\)[\s\S]*tx\.delete\(adminSessions\)/);});
+
+test("changing own password rotates the current admin session token",async()=>{const actions=await source("app/admin/actions.ts");assert.match(actions,/changeOwnPassword[\s\S]*tx\.delete\(adminSessions\)\.where\(eq\(adminSessions\.userId, user\.id\)\)[\s\S]*createAdminSession\(user\.id\)/);assert.doesNotMatch(actions,/ne\(adminSessions\.id, session\.sessionId\)/);});
