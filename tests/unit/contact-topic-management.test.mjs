@@ -17,6 +17,7 @@ test("contact topics have persistent admin management wired to the public form",
   assert.match(settings, /getDb\(\)\.select\(\)\.from\(contactTopics\)/);
   assert.match(settings, /action=\{upsertContactTopic\}/);
   assert.match(settings, /formAction=\{deleteContactTopic\}/);
+  assert.match(settings, /mockContactTopics/);
   assert.match(tabs, /key: "contact", label: "Contato"/);
   assert.match(contactPage, /getContactTopics\(\)/);
   assert.match(contactPage, /<ContactForm topics=/);
