@@ -69,3 +69,14 @@ test("mock mode does not grant persistent write permissions",()=>{
   assert.match(read("app/admin/(protected)/pages/page.tsx"),/canEdit=\{session\.source === "session"/);
   assert.match(read("app/admin/(protected)/users/page.tsx"),/const canManage = !mockMode && session\.source === "session"/);
 });
+
+
+test("mock-mode admin surfaces are read-only and isolate persistent inbox data",()=>{
+  assert.match(read("app/admin/(protected)/media/page.tsx"),/persistent = !mockMode && session\\.source === "session"/);
+  assert.match(read("app/admin/(protected)/navigation/page.tsx"),/canEdit=\\{!mockMode && session\\.source === "session"/);
+  assert.match(read("app/admin/(protected)/pages/page.tsx"),/canEdit=\\{!mockMode && session\\.source === "session"/);
+  assert.match(read("app/admin/(protected)/header/page.tsx"),/viewer=\\{mockDataEnabled\\(\\)/);
+  assert.match(read("app/admin/(protected)/home/page.tsx"),/canEdit=\\{!mockDataEnabled\\(\\)/);
+  assert.match(read("app/admin/(protected)/contacts/page.tsx"),/Nenhum contato persistente é carregado no modo de demonstração/);
+  assert.match(read("app/admin/(protected)/tags/page.tsx"),/const canEdit = !mockMode/);
+});
