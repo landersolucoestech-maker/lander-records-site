@@ -24,8 +24,8 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
   const session = await requireAdmin();
   const filters = await searchParams;
   const mockMode = mockDataEnabled();
-  const canEdit = session.source === "session" && session.user.role !== "viewer";
-  const canDelete = session.source === "session" && (session.user.role === "admin" || session.user.role === "owner");
+  const canEdit = !mockMode && session.source === "session" && session.user.role !== "viewer";
+  const canDelete = !mockMode && session.source === "session" && (session.user.role === "admin" || session.user.role === "owner");
   const developmentMode = mockMode && session.source === "development-auth-bypass";
   if (mockMode) {
     const initialMode = filters.create === "1" ? "create" : filters.edit ? "edit" : filters.view ? "view" : undefined;
