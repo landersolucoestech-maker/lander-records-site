@@ -31,9 +31,17 @@ export function assertItemCapacity(contract: SiteSectionContract | null, canonic
 export function normalizeCmsDestination(rawValue: string) {
   const value = rawValue.trim();
   if (!value) return "";
-  if (/[\\\u0000-\u001f\u007f]/.test(value)) throw new Error("Destino inválido.");
+  if (value.length > 2000 || /[\\\u0000-\u001f\u007f]/.test(value)) throw new Error("Destino inválido.");
   if (value.startsWith("/") && !value.startsWith("//")) return value;
-  if (/^(mailto:|tel:)/i.test(value)) return value;
+  if (/^mailto:/i.test(value)) {
+    const address = value.slice(7);
+    if (/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(address)) return value;
+    throw new Error("Destino inválido.");
+  }
+  if (/^tel:/i.test(value)) {
+    if (/^tel:\\+?[0-9().\\s-]{6,30}$/i.test(value)) return value;
+    throw new Error("Destino inválido.");
+  }
   let parsed: URL;
   try {
     parsed = new URL(value);
