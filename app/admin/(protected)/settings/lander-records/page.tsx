@@ -24,10 +24,11 @@ function Status({ ready, label }: { ready: boolean; label: string }) {
 
 export default async function LanderRecordsIntegrationSettingsPage({ searchParams }: { searchParams: Promise<{ saved?: string; synced?: string; spotify?: string }> }) {
   const session = await requireAdmin();
-  const persistent = session.source === "session";
+  const mockMode = mockDataEnabled();
+  const persistent = !mockMode && session.source === "session";
   const canEdit = persistent && hasMinimumRole(session.user.role, "editor");
   const canManageUsers = persistent && session.user.role === "owner";
-  const realData = mockDataEnabled() ? null : await Promise.all([
+  const realData = mockMode ? null : await Promise.all([
     getDb().select().from(landerRecordsIntegrationSettings).where(eq(landerRecordsIntegrationSettings.key, "lander_records")).limit(1),
     getDb().select().from(integrationMetricCache).where(eq(integrationMetricCache.entityType, "lander_records")),
   ]);
@@ -38,8 +39,8 @@ export default async function LanderRecordsIntegrationSettingsPage({ searchParam
   };
   const metrics = Object.fromEntries(metricRows.map((row) => [`${row.platform}:${row.metric}`, row.value]));
   const params = await searchParams;
-  const spotifyReady = mockDataEnabled() || (spotifyCredentialsConfigured() && Boolean(process.env.INTEGRATION_TOKEN_ENCRYPTION_KEY?.trim()));
-  const soundchartsReady = mockDataEnabled() || soundchartsCredentialsConfigured();
+  const spotifyReady = mockMode || (spotifyCredentialsConfigured() && Boolean(process.env.INTEGRATION_TOKEN_ENCRYPTION_KEY?.trim()));
+  const soundchartsReady = mockMode || soundchartsCredentialsConfigured();
   const spotifyConnected = spotifyReady && Boolean(settings.spotifyConnectedAt);
   const soundchartsConnected = soundchartsReady && settings.soundchartsResolutionStatus === "resolved";
 
