@@ -56,11 +56,11 @@ function httpUrlOrEmpty(value: string, label: string) {
   if (!value) return "";
   try {
     const url = new URL(value);
-    if ((url.protocol !== "http:" && url.protocol !== "https:") || url.username || url.password || !url.hostname) throw new Error("invalid URL");
+    if (url.protocol !== "https:" || url.username || url.password || !url.hostname) throw new Error("invalid URL");
     url.hash = "";
     return url.toString();
   } catch {
-    throw new Error(`${label} precisa ser uma URL HTTP(S) válida.`);
+    throw new Error(`${label} precisa ser uma URL HTTPS válida.`);
   }
 }
 
