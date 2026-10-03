@@ -199,3 +199,6 @@ test("retired parallel admin mutations cannot reintroduce duplicate write paths"
     assert.doesNotMatch(contents, new RegExp(`export async function ${name}\\b`), `${name} must stay retired`);
   }
 });
+
+
+test("login UI does not disclose whether a known account is locked",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../app/admin/login/page.tsx",import.meta.url),"utf8");assert.doesNotMatch(source,/params\.error === "locked"/);assert.match(source,/Verifique as credenciais ou tente novamente mais tarde/)});
