@@ -90,7 +90,8 @@ test("Artists keeps the table-first manager and one shared page heading", () => 
 test("Contents uses category and tags as persistent taxonomies without redundant publications tab", () => {
   assert.match(postManager, /data-testid="posts-manager"/);
   assert.doesNotMatch(postManager, /aria-label="Seção de conteúdos"/);
-  assert.match(postManager, /tagIds: string\[\]/);\n  assert.match(postManager, /multiple name="tagIds"/);
+  assert.match(postManager, /tagIds: string\[\]/);
+  assert.match(postManager, /multiple name="tagIds"/);
   assert.doesNotMatch(postsPage, /postTags|\btags\b|filters\.tag|tagOptionRows|tagRows/);
   assert.match(postActions, /postTags/);
   assert.match(postActions, /formData\\.getAll\\("tagIds"\\)/);
@@ -140,8 +141,10 @@ test("Settings mirrors persistent server RBAC instead of presenting fake write c
   assert.match(adminActions, /export async function upsertSocialLink[\s\S]*requirePersistentAdmin\("editor"\)/);
   assert.match(settingsPage, /contactTopics/);
   assert.match(settingsPage, /upsertContactTopic/);
-  assert.match(adminActions, /export async function upsertContactTopic/);\n  assert.match(adminActions, /const session = await requirePersistentAdmin\("editor"\)/);
-  assert.match(adminActions, /export async function deleteContactTopic/);\n  assert.match(adminActions, /const session = await requirePersistentAdmin\("admin"\)/);
+  assert.match(adminActions, /export async function upsertContactTopic/);
+  assert.match(adminActions, /const session = await requirePersistentAdmin\("editor"\)/);
+  assert.match(adminActions, /export async function deleteContactTopic/);
+  assert.match(adminActions, /const session = await requirePersistentAdmin\("admin"\)/);
 });
 
 test("Integrations exposes mutating controls only to persistent editors", () => {
