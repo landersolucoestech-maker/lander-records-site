@@ -43,3 +43,6 @@ test("webhook delivery validates destination and refuses redirects",()=>{assert.
 
 
 test("webhook signing refuses weak configured secrets",()=>{assert.match(contact,/secret\.length < 32/);assert.match(contact,/at least 32 characters/)});
+
+
+test("webhook delivery rejects partial endpoint or secret configuration",()=>{assert.match(contact,/\(url && !secret\) \|\| \(!url && secret\)/);assert.match(contact,/must be configured together/)});
