@@ -94,3 +94,6 @@ test("protected admin routes render resolved modules without route loading bound
     assert.doesNotMatch(contents, /from\s+["']next\/dynamic["']|React\.lazy\s*\(|\blazy\s*\(\s*\(\)\s*=>|<Suspense\b/, file);
   }
 });
+
+
+test("persistent admin settings expose the real audit module without adding a fake preview route",()=>{const settings=fs.readFileSync("app/admin/(protected)/settings/page.tsx","utf8");assert.match(settings,/href="\/admin\/audit"/);assert.match(settings,/const canAudit = canAdmin/);const navigation=fs.readFileSync("app/admin/components/admin-navigation.ts","utf8");assert.doesNotMatch(navigation,/cms-preview\/audit/);});
