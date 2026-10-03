@@ -202,3 +202,6 @@ test("retired parallel admin mutations cannot reintroduce duplicate write paths"
 
 
 test("login UI does not disclose whether a known account is locked",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../app/admin/login/page.tsx",import.meta.url),"utf8");assert.doesNotMatch(source,/params\.error === "locked"/);assert.match(source,/Verifique as credenciais ou tente novamente mais tarde/)});
+
+
+test("login UI does not offer a remember-session control the backend ignores",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../app/admin/login/page.tsx",import.meta.url),"utf8");assert.doesNotMatch(source,/name="remember"/);assert.match(source,/Sessão administrativa protegida/)});
