@@ -92,9 +92,10 @@ test("Contents uses category and tags as persistent taxonomies without redundant
   assert.doesNotMatch(postManager, /aria-label="Seção de conteúdos"/);
   assert.match(postManager, /tagIds: string\[\]/);
   assert.match(postManager, /multiple name="tagIds"/);
-  assert.doesNotMatch(postsPage, /postTags|\btags\b|filters\.tag|tagOptionRows|tagRows/);
+  assert.match(postsPage, /postTags/);
+  assert.match(postsPage, /tagRows/);
   assert.match(postActions, /postTags/);
-  assert.match(postActions, /formData\\.getAll\\("tagIds"\\)/);
+  assert.match(postActions, /formData\.getAll\("tagIds"\)/);
   assert.match(postManager, /<span>Categoria<\/span>/);
   assert.match(postManager, /<ViewInfo label="Categoria">/);
   assert.match(postActions, /Categoria é obrigatória/);
