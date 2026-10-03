@@ -19,6 +19,7 @@ import {
   adminUsers,
   artistCategories,
   artistCategoryRelations,
+  contactSubmissions,
   contactTopics,
   mediaAssets,
   navigationItems,
@@ -435,6 +436,18 @@ export async function archiveMedia(formData: FormData) {
   await getDb().update(mediaAssets).set({ status: "archived", updatedBy: session.user.id, updatedAt: new Date() }).where(eq(mediaAssets.id, id));
   await audit(session.user.id, "media.archived", "media_asset", id);
   revalidatePath("/admin/media");
+}
+
+export async function updateContactSubmissionStatus(formData: FormData) {
+  const session = await requirePersistentAdmin("editor");
+  const id = requiredUuid(formData, "id", "Contato");
+  const status = text(formData, "status");
+  const allowed = ["new", "processing", "exported", "spam", "archived"] as const;
+  if (!allowed.includes(status as (typeof allowed)[number])) throw new Error("Status de contato inválido.");
+  const updated = await getDb().update(contactSubmissions).set({ status: status as (typeof allowed)[number] }).where(eq(contactSubmissions.id, id)).returning({ id: contactSubmissions.id });
+  if (!updated[0]) throw new Error("Contato não encontrado.");
+  await audit(session.user.id, "contact_submission.status_updated", "contact_submission", id, { status });
+  revalidatePath("/admin/contacts");
 }
 
 export async function upsertContactTopic(formData: FormData) {
