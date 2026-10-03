@@ -99,7 +99,7 @@ async function resolveMediaInput(formData: FormData, session: MediaKitMutationSe
     return selectedMediaId(formData, "mediaId");
   }
 
-  if (!file.type.startsWith("image/")) throw new Error("Selecione um arquivo de imagem.");
+  if (!["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"].includes(file.type.toLowerCase())) throw new Error("Selecione uma imagem JPEG, PNG, WebP, GIF ou AVIF.");
   if (file.size > 12 * 1024 * 1024) throw new Error("Imagem maior que 12 MB.");
 
   const fallbackAlt = text(formData, "title") || text(formData, "label") || "Imagem do Mídia Kit";
