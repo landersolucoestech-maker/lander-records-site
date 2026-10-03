@@ -82,3 +82,6 @@ test("owner bootstrap validates identity and never logs credentials",()=>{const 
 
 
 test("dev preview repeats migrations and validates the content contract before publication",()=>{const preview=read(".github/workflows/dev-preview.yml");assert.match(preview,/name: Verify preview migration repeatability[\s\S]*run: npm run db:migrate/);assert.match(preview,/name: Validate preview content contract[\s\S]*run: npm run validate:content/);const migrate=preview.indexOf("name: Verify preview migration repeatability");const content=preview.indexOf("name: Validate preview content contract");const tunnel=preview.indexOf("name: Open temporary preview tunnel");assert.ok(migrate>0&&content>migrate&&tunnel>content)});
+
+
+test("CMS CI cancels superseded runs on the same ref",()=>{const ci=read(".github/workflows/cms-ci.yml");assert.match(ci,/concurrency:[\s\S]*group: cms-foundation-ci-/);assert.match(ci,/cancel-in-progress: true/);});
