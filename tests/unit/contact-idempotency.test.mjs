@@ -35,3 +35,6 @@ test("contact UI tolerates non-JSON gateway failures",async()=>{const {readFile}
 
 
 test("contact endpoint rejects oversized declared bodies before JSON parsing",()=>{const guard=route.indexOf("content-length");const parse=route.indexOf("request.json()");assert.ok(guard>=0&&parse>guard);assert.match(route,/16_384/);assert.match(route,/status: 413/)});
+
+
+test("contact endpoint requires JSON content type before parsing",()=>{const guard=route.indexOf("content-type");const parse=route.indexOf("request.json()");assert.ok(guard>=0&&parse>guard);assert.match(route,/application\/json/);assert.match(route,/status: 415/)});
