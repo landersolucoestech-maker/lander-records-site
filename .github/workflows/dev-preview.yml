@@ -69,6 +69,9 @@ jobs:
       - name: Full regression suite
         run: npm test
 
+      - name: Integration checks
+        run: npm run test:integration
+
       - name: Lint
         run: npm run lint
 
