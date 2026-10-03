@@ -28,6 +28,10 @@ const payloadSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    const contentLength = Number(request.headers.get("content-length") || "0");
+    if (Number.isFinite(contentLength) && contentLength > 16_384) {
+      return Response.json({ error: "Solicitação muito grande." }, { status: 413 });
+    }
     const raw = await request.json();
     const parsed = payloadSchema.safeParse(raw);
     if (!parsed.success) {
