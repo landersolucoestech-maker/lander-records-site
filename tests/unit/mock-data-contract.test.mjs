@@ -83,6 +83,9 @@ test("mock-mode admin surfaces are read-only and isolate persistent inbox data",
   assert.match(read("app/admin/(protected)/tags/page.tsx"),/const canEdit = !mockMode/);
   assert.match(read("app/admin/(protected)/categories/page.tsx"),/const canEdit = !mockMode/);
   assert.match(read("app/admin/(protected)/categories/page.tsx"),/canDelete=\{false\} canEdit=\{false\}/);
+  assert.match(read("app/admin/(protected)/artists/page.tsx"),/canDelete=\{false\} canEdit=\{false\}/);
+  assert.match(read("app/admin/(protected)/posts/page.tsx"),/const canEdit = !mockMode/);
+  assert.match(read("app/admin/(protected)/pages/page.tsx"),/const db = mockMode \? null : getDb\(\)/);
   assert.match(read("app/admin/(protected)/settings/lander-records/page.tsx"),/const persistent = !mockMode && session\.source === "session"/);
   assert.match(read("app/admin/(protected)/settings/page.tsx"),/const persistent = !mockMode && session\.source === "session"/);
   assert.match(read("app/admin/(protected)/pages/[id]/page.tsx"),/const db = mockMode \? null : getDb\(\)/);
