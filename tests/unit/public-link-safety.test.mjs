@@ -42,3 +42,6 @@ test("artist public links and sameAs metadata expose only trusted external URLs"
   assert.match(artist, /sameAs: trustedArtistLinks\.map/);
   assert.doesNotMatch(artist, /href=\{link\.url\}/);
 });
+
+
+test("admin settings enforce server-side bounds for configurable public text",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../app/admin/actions.ts",import.meta.url),"utf8");assert.match(source,/function assertMaxLength/);for(const token of ["assertMaxLength(contactPhone, 80","assertMaxLength(location, 180","assertMaxLength(address, 500","assertMaxLength(hours, 500","assertMaxLength(tagline, 500","assertMaxLength(defaultSeoDescription, 1000","assertMaxLength(platform, 80","assertMaxLength(label, 180","assertMaxLength(url, 2000"])assert.ok(source.includes(token),token)});
