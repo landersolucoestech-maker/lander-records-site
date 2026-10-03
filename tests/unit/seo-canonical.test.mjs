@@ -31,3 +31,5 @@ test("robots excludes admin, API and disposable CMS preview surfaces",async()=>{
 
 
 test("public index pages declare route-specific canonical fallbacks",async()=>{const {readFile}=await import("node:fs/promises");for(const [file,route] of [["page.tsx","/"],["artistas/page.tsx","/artistas"],["noticias/page.tsx","/noticias"],["contato/page.tsx","/contato"],["sobre-nos/page.tsx","/sobre-nos"],["politica-de-privacidade/page.tsx","/politica-de-privacidade"],["termos-e-condicoes/page.tsx","/termos-e-condicoes"]]){const source=await readFile(new URL(`../../app/(public)/${file}`,import.meta.url),"utf8");assert.match(source,new RegExp(`canonical: content\\?\\.page\\.canonicalUrl \\|\\| "${route.replaceAll("/","\\/")}"`));}});
+
+test("article metadata prefers the dedicated social image over the cover",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../app/(public)/noticias/[slug]/page.tsx",import.meta.url),"utf8");assert.match(source,/image: article\.ogImage \|\| article\.coverImage \|\| undefined/);});
