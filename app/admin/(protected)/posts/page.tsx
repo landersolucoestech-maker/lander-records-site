@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, ilike, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
-import { mockDataEnabled, mockMediaOptions, mockPostCategories, mockPostRecords } from "../../../../lib/mocks";
+import { mockDataEnabled, mockMediaOptions, mockPostCategories, mockPostRecords, mockPostTags } from "../../../../lib/mocks";
 import { postLinks, postProfiles } from "../../../../lib/db/news-management-schema";
 import { mediaAssets, postCategories, posts, postTags, tags } from "../../../../lib/db/schema";
 import PostManager, { type PostRecord } from "./PostManager";
@@ -25,6 +25,7 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
   const filters = await searchParams;
   const canEdit = session.source === "session" && session.user.role !== "viewer";
   const canDelete = session.source === "session" && (session.user.role === "admin" || session.user.role === "owner");
+  const developmentMode = session.source === "development-auth-bypass";
   if (mockDataEnabled()) {
     const initialMode = filters.create === "1" ? "create" : filters.edit ? "edit" : filters.view ? "view" : undefined;
     const initialId = filters.edit || filters.view || undefined;
@@ -38,7 +39,7 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
       initialMode={initialMode}
       media={mockMediaOptions}
       posts={mockPostRecords.map((post) => ({ ...post, tagIds: post.tagIds || [] }))}
-      tags={[]}
+      tags={mockPostTags}
       saved={filters.saved === "1"}
     />;
   }
@@ -144,7 +145,7 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
     canEdit={session.source === "session" && session.user.role !== "viewer"}
     categories={categoryRows}
     deleted={filters.deleted === "1"}
-    developmentMode={session.source === "development-auth-bypass"}
+    developmentMode={developmentMode}
     initialId={initialId}
     initialMode={initialMode}
     media={mediaRows}
