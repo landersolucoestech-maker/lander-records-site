@@ -442,8 +442,12 @@ export async function updateAdminUser(formData: FormData) {
   if (id === session.user.id && !isActive) throw new Error("O usuário atual não pode desativar a própria conta.");
   if (id === session.user.id && roleValue !== "owner") throw new Error("O proprietário atual não pode remover o próprio papel de proprietário.");
   const db = getDb();
-  const current = (await db.select({ id: adminUsers.id }).from(adminUsers).where(eq(adminUsers.id, id)).limit(1))[0];
+  const current = (await db.select({ id: adminUsers.id, role: adminUsers.role, isActive: adminUsers.isActive }).from(adminUsers).where(eq(adminUsers.id, id)).limit(1))[0];
   if (!current) throw new Error("Usuário não encontrado.");
+  if (current.role === "owner" && current.isActive && (!isActive || roleValue !== "owner")) {
+    const activeOwners = await db.select({ id: adminUsers.id }).from(adminUsers).where(and(eq(adminUsers.role, "owner"), eq(adminUsers.isActive, true))).limit(2);
+    if (activeOwners.length <= 1) throw new Error("O último proprietário ativo não pode ser desativado ou rebaixado.");
+  }
   await db.update(adminUsers).set({
     name,
     role: roleValue,
