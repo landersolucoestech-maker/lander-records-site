@@ -24,6 +24,7 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
   const session = await requireAdmin();
   const filters = await searchParams;
   const canEdit = session.source === "session" && session.user.role !== "viewer";
+  const canDelete = session.source === "session" && (session.user.role === "admin" || session.user.role === "owner");
   if (mockDataEnabled()) {
     const initialMode = filters.create === "1" ? "create" : filters.edit ? "edit" : filters.view ? "view" : undefined;
     const initialId = filters.edit || filters.view || undefined;
@@ -139,7 +140,7 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
   const initialId = filters.edit || filters.view || undefined;
 
   return <PostManager
-    canDelete={session.source === "session" && (session.user.role === "admin" || session.user.role === "owner")}
+    canDelete={canDelete}
     canEdit={session.source === "session" && session.user.role !== "viewer"}
     categories={categoryRows}
     deleted={filters.deleted === "1"}
