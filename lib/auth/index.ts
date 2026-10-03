@@ -13,7 +13,7 @@ import {
 } from "./development-bypass";
 
 export const SESSION_COOKIE = "lander_admin_session";
-const SESSION_DAYS = 7;
+const SESSION_DAYS = 1;
 
 export type { AdminRole } from "./policy";
 
