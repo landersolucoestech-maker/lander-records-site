@@ -11,13 +11,16 @@ import { deleteMedia as deleteStoredMedia, uploadMedia as uploadStoredMedia } fr
 import {
   artistGenreRelations,
   artistMetrics,
+  artistRoles,
   artistProfiles,
   artistPublicationDestinations,
   artistPublicationPlacements,
   artistRoleRelations,
+  musicGenres,
 } from "../../lib/db/artist-management-schema";
 import { artistExternalIdentities, integrationMetricCache } from "../../lib/db/integration-schema";
 import {
+  artistCategories,
   artistCategoryRelations,
   artistEmbeds,
   artistLinks,
@@ -49,7 +52,7 @@ function uuidOrNull(value: string) {
 }
 
 function uuidList(formData: FormData, name: string) {
-  return formData.getAll(name).map(String).map(uuidOrNull).filter((value): value is string => Boolean(value));
+  return [...new Set(formData.getAll(name).map(String).map(uuidOrNull).filter((value): value is string => Boolean(value)))];
 }
 
 function httpUrlOrEmpty(value: string, label: string) {
@@ -121,6 +124,7 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
   const roleIds = uuidList(formData, "roleIds");
   const genreIds = uuidList(formData, "genreIds");
   const destinationIds = uuidList(formData, "destinationIds");
+  const ogMediaId = uuidOrNull(text(formData, "ogMediaId"));
   if (!roleIds.length) return { ok: false, error: "Selecione ao menos uma função do artista." };
   if (!genreIds.length) return { ok: false, error: "Selecione ao menos um gênero musical." };
 
@@ -169,6 +173,31 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
     artistId = await db.transaction(async (tx) => {
       let cardMediaId = uuidOrNull(text(formData, "cardMediaId"));
       let heroMediaId = uuidOrNull(text(formData, "heroMediaId"));
+
+      const [validCategories, validRoles, validGenres, validDestinations] = await Promise.all([
+        categoryIds.length ? tx.select({ id: artistCategories.id }).from(artistCategories).where(and(inArray(artistCategories.id, categoryIds), eq(artistCategories.active, true))) : Promise.resolve([]),
+        tx.select({ id: artistRoles.id }).from(artistRoles).where(and(inArray(artistRoles.id, roleIds), eq(artistRoles.active, true))),
+        tx.select({ id: musicGenres.id }).from(musicGenres).where(and(inArray(musicGenres.id, genreIds), eq(musicGenres.active, true))),
+        destinationIds.length ? tx.select({ id: artistPublicationDestinations.id }).from(artistPublicationDestinations).where(and(inArray(artistPublicationDestinations.id, destinationIds), eq(artistPublicationDestinations.active, true))) : Promise.resolve([]),
+      ]);
+      if (validCategories.length !== categoryIds.length) throw new Error("Uma ou mais categorias do artista estão inativas ou inválidas.");
+      if (validRoles.length !== roleIds.length) throw new Error("Uma ou mais funções do artista estão inativas ou inválidas.");
+      if (validGenres.length !== genreIds.length) throw new Error("Um ou mais gêneros musicais estão inativos ou inválidos.");
+      if (validDestinations.length !== destinationIds.length) throw new Error("Um ou mais destinos de publicação estão inativos ou inválidos.");
+
+      const selectedMediaIds = [...new Set([
+        cardUpload ? null : cardMediaId,
+        heroUpload ? null : heroMediaId,
+        ogMediaId,
+      ].filter((value): value is string => Boolean(value)))];
+      if (selectedMediaIds.length) {
+        const selectedMedia = await tx.select({ id: mediaAssets.id, mimeType: mediaAssets.mimeType }).from(mediaAssets)
+          .where(and(inArray(mediaAssets.id, selectedMediaIds), eq(mediaAssets.status, "active")));
+        if (selectedMedia.length !== selectedMediaIds.length || selectedMedia.some((media) => !media.mimeType.startsWith("image/"))) {
+          throw new Error("As mídias selecionadas do artista precisam ser imagens ativas.");
+        }
+      }
+
       if (cardUpload) {
         const rows = await tx.insert(mediaAssets).values({ ...cardUpload, altText: `${name} — imagem principal`, status: "active", createdBy: session.user.id, updatedBy: session.user.id }).returning({ id: mediaAssets.id });
         cardMediaId = rows[0].id;
@@ -185,7 +214,7 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
         previousSlug = current.slug;
         await tx.update(artists).set({
           name, slug, shortBio: text(formData, "shortBio"), biography: text(formData, "biography"), cardMediaId, heroMediaId,
-          ogMediaId: uuidOrNull(text(formData, "ogMediaId")), isPublished: status === "published",
+          ogMediaId, isPublished: status === "published",
           publishedAt: status === "published" ? (current.publishedAt || new Date()) : null, featureOnHome: false,
           homePosition: integer(formData, "homePosition"), listPosition: integer(formData, "listPosition"),
           seoTitle: text(formData, "seoTitle"), seoDescription: text(formData, "seoDescription"), canonicalUrl,
@@ -194,7 +223,7 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
       } else {
         const inserted = await tx.insert(artists).values({
           name, slug, shortBio: text(formData, "shortBio"), biography: text(formData, "biography"), cardMediaId, heroMediaId,
-          ogMediaId: uuidOrNull(text(formData, "ogMediaId")), isPublished: status === "published", publishedAt: status === "published" ? new Date() : null,
+          ogMediaId, isPublished: status === "published", publishedAt: status === "published" ? new Date() : null,
           featureOnHome: false, homePosition: integer(formData, "homePosition"), listPosition: integer(formData, "listPosition"),
           seoTitle: text(formData, "seoTitle"), seoDescription: text(formData, "seoDescription"), canonicalUrl,
           createdBy: session.user.id, updatedBy: session.user.id,
