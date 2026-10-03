@@ -1,15 +1,13 @@
-import { timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { retryDueOutboxEvents } from "../../../../lib/contact";
 import { syncAllIntegrations } from "../../../../lib/integrations/sync";
+import { safeCompare } from "../../../../lib/security";
 
 export const dynamic = "force-dynamic";
 
 function authorized(actual: string | null, secret: string) {
   if (!actual?.startsWith("Bearer ")) return false;
-  const supplied = Buffer.from(actual.slice(7));
-  const expected = Buffer.from(secret);
-  return supplied.length === expected.length && timingSafeEqual(supplied, expected);
+  return safeCompare(actual.slice(7), secret);
 }
 
 export async function GET(request: NextRequest) {
