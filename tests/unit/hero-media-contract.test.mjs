@@ -79,3 +79,5 @@ test("hero upload registers media and section reference atomically",()=>{assert.
 test("hero upload metadata is bounded before persistence",()=>{assert.match(actions,/upload\.name\.length > 500/);assert.match(actions,/altText\.length > 500/);});
 
 test("media archive is blocked while any public or CMS reference still points to the asset",()=>{const source=fs.readFileSync(new URL("../../app/admin/actions.ts",import.meta.url),"utf8");for(const token of ["artists.cardMediaId","posts.coverMediaId","releases.coverMediaId","pages.ogMediaId","pageSectionItems.mediaId","pageSections.settings","siteSettings.logoMediaId","mediaKitSections.mediaId","mediaKitItems.mediaId"])assert.match(source,new RegExp(token.replaceAll(".","\\.")));assert.match(source,/Não é possível arquivar uma mídia em uso/);});
+
+test("identity media selection rejects unsupported image subtypes",()=>{const source=fs.readFileSync(new URL("../../app/admin/actions.ts",import.meta.url),"utf8");assert.match(source,/allowedImageTypes = new Set/);assert.match(source,/image\/webp/);assert.doesNotMatch(source,/mimeType\.startsWith\("image\/"\)/);});
