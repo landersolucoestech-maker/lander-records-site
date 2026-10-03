@@ -89,3 +89,15 @@ Hostinger is the authorized hosting/deployment target. Vercel is prohibited by r
 - Robots policy excludes the disposable CMS preview in addition to admin/API surfaces.
 - Login failures no longer disclose account lock state and the nonfunctional remember-session control was removed.
 - The established 50 MB hero-upload contract remains intact; an attempted tighter global body cap was rejected by regression evidence and reverted rather than weakening functionality.
+
+
+## Continued exhaustive audit — 2026-10-03
+- User-management authorization now preserves at least one active owner; the final active owner cannot be disabled or demoted.
+- Login credential sizes are bounded before database lookup or password hashing.
+- Configurable site identity, company, social-link, category and navigation inputs now enforce server-side bounds aligned with database contracts.
+- Admin bootstrap and admin-user name validation are aligned to the actual 160-character database column.
+- External URL normalization rejects oversized input globally.
+- Public contact ingestion now rejects oversized declared bodies, requires JSON media type, and bounds stored user-agent metadata.
+- Admin session user-agent metadata is bounded before persistence.
+- SaaS webhook configuration must be paired, uses a minimum 32-character signing secret, validates HTTPS destination and refuses redirects.
+- Soundcharts token/API requests now have a 10-second timeout and refuse redirects before sending credentials/bearer tokens.
