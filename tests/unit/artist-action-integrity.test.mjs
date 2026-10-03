@@ -32,3 +32,6 @@ test("artist public page renders only trusted external links", () => {
   assert.doesNotMatch(publicPage, /href=\{link\.url\}/);
   assert.match(publicPage, /sameAs: trustedArtistLinks\.map/);
 });
+
+
+test("unexpected artist persistence failures are not returned verbatim",()=>{assert.match(artistAction,/Não foi possível salvar o artista\. Tente novamente\./);assert.doesNotMatch(artistAction,/return \{ ok: false, error: message \}/);});
