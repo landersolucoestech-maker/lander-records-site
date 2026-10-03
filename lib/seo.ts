@@ -14,7 +14,7 @@ export function normalizeCanonicalOverride(value: string | null | undefined) {
   } catch {
     throw new Error("URL canônica inválida.");
   }
-  if ((url.protocol !== "https:" && url.protocol !== "http:") || url.username || url.password || !url.hostname) {
+  if (url.protocol !== "https:" || url.username || url.password || !url.hostname) {
     throw new Error("URL canônica inválida.");
   }
   url.hash = "";
