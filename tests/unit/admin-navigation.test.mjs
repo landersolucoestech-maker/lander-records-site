@@ -42,6 +42,8 @@ test("admin navigation selects the most specific real route", () => {
   assert.equal(resolveAdminLocation("/admin/artists/new", "owner", false).activeHref, "/admin/artists");
   assert.equal(resolveAdminLocation("/admin/artists/new", "owner", false).breadcrumbs.at(-1).label, "Criar");
   assert.equal(resolveAdminLocation("/admin/media-kit", "owner", false).activeHref, "/admin/media-kit");
+  assert.equal(resolveAdminLocation("/cms-preview/contacts", "owner", true).activeHref, "/cms-preview/contacts");
+  assert.equal(resolveAdminLocation("/cms-preview/tags", "owner", true).activeHref, "/cms-preview/tags");
   assert.equal(resolveAdminLocation("/admin/artists-unrelated", "owner", false).activeHref, undefined);
 });
 
