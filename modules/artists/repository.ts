@@ -14,12 +14,13 @@ async function hydrateArtists(baseArtists: Array<typeof artists.$inferSelect>): 
   if (!baseArtists.length) return [];
   const db = getDb();
   const ids = baseArtists.map((artist) => artist.id);
+  const mediaIds = [...new Set(baseArtists.flatMap((artist) => [artist.cardMediaId, artist.heroMediaId, artist.ogMediaId]).filter((id): id is string => Boolean(id)))];
   const [relationRows, linkRows, embedRows, mediaRows, roleRows, genreRows, metricRows, profileRows, placementRows] = await Promise.all([
     db.select({ artistId: artistCategoryRelations.artistId, categoryId: artistCategories.id, name: artistCategories.name, slug: artistCategories.slug, isPrimary: artistCategoryRelations.isPrimary, position: artistCategoryRelations.position })
       .from(artistCategoryRelations).innerJoin(artistCategories, eq(artistCategoryRelations.categoryId, artistCategories.id)).where(and(inArray(artistCategoryRelations.artistId, ids), eq(artistCategories.active, true))).orderBy(asc(artistCategoryRelations.position)),
     db.select().from(artistLinks).where(and(inArray(artistLinks.artistId, ids), eq(artistLinks.active, true))).orderBy(asc(artistLinks.position)),
     db.select().from(artistEmbeds).where(and(inArray(artistEmbeds.artistId, ids), eq(artistEmbeds.active, true))).orderBy(asc(artistEmbeds.position)),
-    db.select().from(mediaAssets).where(and(eq(mediaAssets.status, "active"), inArray(mediaAssets.id, [...new Set(baseArtists.flatMap((artist) => [artist.cardMediaId, artist.heroMediaId, artist.ogMediaId]).filter((id): id is string => Boolean(id)))]))),
+    mediaIds.length ? db.select().from(mediaAssets).where(and(eq(mediaAssets.status, "active"), inArray(mediaAssets.id, mediaIds))) : Promise.resolve([]),
     db.select({ artistId: artistRoleRelations.artistId, name: artistRoles.name }).from(artistRoleRelations).innerJoin(artistRoles, eq(artistRoleRelations.roleId, artistRoles.id)).where(and(inArray(artistRoleRelations.artistId, ids), eq(artistRoles.active, true))).orderBy(asc(artistRoleRelations.position)),
     db.select({ artistId: artistGenreRelations.artistId, name: musicGenres.name }).from(artistGenreRelations).innerJoin(musicGenres, eq(artistGenreRelations.genreId, musicGenres.id)).where(and(inArray(artistGenreRelations.artistId, ids), eq(musicGenres.active, true))).orderBy(asc(artistGenreRelations.position)),
     db.select().from(artistMetrics).where(and(inArray(artistMetrics.artistId, ids), eq(artistMetrics.source, "soundcharts"))),
