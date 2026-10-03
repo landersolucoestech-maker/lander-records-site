@@ -123,7 +123,7 @@ export default async function AdminDashboardPage() {
   const dateOnly = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "America/Sao_Paulo" });
 
   return <DashboardView
-    data={mockMode ? mockAdminDashboard : {
+    data={mockMode ? mockDashboardData : {
       analytics: databaseAvailable && leadCount !== null ? { visitors: null, views: null, engagementRate: null, conversions: leadCount, previousConversionsChange: previousLeadChange } : null,
       recentActivity: databaseAvailable ? recentAudits.map((item) => ({ id: item.id, label: activityLabel(item.action), meta: `${entityLabel(item.entityType)} · ${dateTime.format(item.createdAt)}` })) : [],
       recentPublications: databaseAvailable ? recentPublications.map((item) => ({ id: item.id, title: item.title, type: item.type, status: item.status, updatedAt: dateOnly.format(item.updatedAt), href: item.href })) : [],
