@@ -221,3 +221,5 @@ test("unknown admin accounts execute bcrypt work instead of a fixed sleep",async
 test("admin password change rejects reuse of the current credential",async()=>{const actions=await source("app/admin/actions.ts");assert.match(actions,/verifyPassword\(newPassword, user\.passwordHash\)/);assert.match(actions,/change-password\?error=reused/);});
 
 test("disabling an admin revokes all existing sessions",async()=>{const actions=await source("app/admin/actions.ts");assert.match(actions,/if \(!isActive\) \{[\s\S]*tx\.delete\(adminSessions\)\.where\(eq\(adminSessions\.userId, id\)\)/);});
+
+test("password changes revoke sessions in the same transaction as the hash update",async()=>{const actions=await source("app/admin/actions.ts");assert.match(actions,/changeOwnPassword[\s\S]*db\.transaction\(async \(tx\) => \{[\s\S]*tx\.update\(adminUsers\)[\s\S]*tx\.delete\(adminSessions\)/);assert.match(actions,/resetAdminPassword[\s\S]*db\.transaction\(async \(tx\) => \{[\s\S]*tx\.update\(adminUsers\)[\s\S]*tx\.delete\(adminSessions\)/);});
