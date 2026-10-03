@@ -15,7 +15,7 @@ test("News read model mirrors the public publication predicate and category plus
   assert.match(page, /conditions\.push\(publicPost\)/);
   assert.match(page, /and\(eq\(posts\.status, "draft"\), isNull\(posts\.archivedAt\)\)/);
   assert.match(page, /ilike\(posts\.title, pattern\)/);
-  assert.doesNotMatch(page, /postTags|\btags\b|filters\.tag/);
+  assert.match(page, /postTags/);\n  assert.match(page, /tags\\.id/);\n  assert.match(page, /tagIds: postTagRows\\.filter/);
   assert.match(page, /post\.isPubliclyVisible \? "published"[\s\S]*"unpublished"/);
 });
 
