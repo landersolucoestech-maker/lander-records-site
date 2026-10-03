@@ -112,7 +112,7 @@ export async function createAdminSession(userId: string) {
   const rawToken = randomBytes(32).toString("base64url");
   const expiresAt = new Date(Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000);
   const headerStore = await headers();
-  const userAgent = headerStore.get("user-agent") || "";
+  const userAgent = (headerStore.get("user-agent") || "").slice(0, 1000);
 
   await db.insert(adminSessions).values({
     userId,
