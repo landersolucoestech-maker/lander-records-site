@@ -211,3 +211,6 @@ test("user management preserves at least one active owner",async()=>{const {read
 
 
 test("login rejects oversized credential inputs before database or bcrypt work",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../app/admin/login/actions.ts",import.meta.url),"utf8");const guard=source.indexOf("email.length > 320 || password.length > 1024");const db=source.indexOf("const db = getDb()");assert.ok(guard>=0&&db>guard)});
+
+
+test("admin session metadata bounds stored user-agent length",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../lib/auth/index.ts",import.meta.url),"utf8");assert.match(source,/user-agent[^\n]*slice\(0, 1000\)/)});
