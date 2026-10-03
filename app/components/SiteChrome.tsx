@@ -71,7 +71,7 @@ function SocialIcon({ label, href, icon }: { label: string; href: string; icon: 
 
 export async function Header() {
   const { settings, logoUrl, navigation } = await getChromeView();
-  const primary = navigation.filter((item) => item.menuKey === "primary" && !item.parentId && item.enabled);
+  const primary = navigation.filter((item) => item.menuKey === "primary" && !item.parentId);
   const logoSrc = logoUrl || fallbackLogo;
 
   return (
