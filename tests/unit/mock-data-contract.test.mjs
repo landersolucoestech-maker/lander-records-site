@@ -29,6 +29,8 @@ test("central scenario has representative depth across every visible domain",()=
   assert.match(read("lib/mocks/integrations.ts"),/releases:\s*\[/);
   assert.match(read("lib/mocks/admin.ts"),/series:\s*\[/);
   assert.match(read("lib/mocks/admin.ts"),/devices:\s*\[/);
+  assert.match(read("lib/mocks/site.ts"),/mockContactTopics/);
+  assert.match(read("lib/mocks/site.ts"),/saasType:/);
 });
 
 test("public read models switch to centralized demo data without component fixtures",()=>{
