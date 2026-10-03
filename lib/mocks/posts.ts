@@ -23,7 +23,7 @@ function post(input: {
     publishedAt: new Date(input.publishedAt), scheduledAt: null,
     seoTitle: input.title, seoDescription: input.excerpt,
     canonicalUrl: `https://landerrecords.com/noticias/${input.slug}`,
-    category: { id: category.id, name: category.name, slug: category.slug },
+    category: { id: category.id, name: category.name, slug: category.slug }, tags: [],
     coverImage: input.coverImage, ogImage: input.coverImage, updatedAt: new Date(input.publishedAt),
   };
 }
