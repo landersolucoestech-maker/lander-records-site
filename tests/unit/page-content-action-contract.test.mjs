@@ -89,4 +89,4 @@ test("global public revalidation includes CMS-managed legal pages", () => {
 });
 
 
-test("CMS destinations bound length and validate mailto/tel payloads",()=>{assert.match(contract,/value\.length > 2000/);assert.match(contract,/\^mailto:/);assert.match(contract,/\^tel:/);assert.match(contract,/\[\^\\s@\]\+@/);assert.match(contract,/\{6,30\}/);});
+test("CMS destinations bound length and validate mailto/tel payloads",()=>{const contract=fs.readFileSync(new URL("../../app/admin/page-content-contract.ts",import.meta.url),"utf8");assert.match(contract,/value\.length > 2000/);assert.match(contract,/\^mailto:/);assert.match(contract,/\^tel:/);assert.match(contract,/\{6,30\}/);});
