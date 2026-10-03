@@ -38,3 +38,6 @@ test("contact endpoint rejects oversized declared bodies before JSON parsing",()
 
 
 test("contact endpoint requires JSON content type before parsing",()=>{const guard=route.indexOf("content-type");const parse=route.indexOf("request.json()");assert.ok(guard>=0&&parse>guard);assert.match(route,/application\/json/);assert.match(route,/status: 415/)});
+
+
+test("contact storage bounds user-agent metadata",()=>{assert.match(route,/user-agent[^\n]*slice\(0, 1000\)/)});
