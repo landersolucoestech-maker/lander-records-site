@@ -48,7 +48,7 @@ test("Spotify OAuth rejects a development-only principal without a persistent us
     "app/api/integrations/spotify/callback/route.ts",
   ]) {
     const contents = await source(relativePath);
-    const syntheticGuard = contents.indexOf('session.source === "development-auth-bypass"');
+    const syntheticGuard = contents.indexOf('session.source !== "session"');
     const oauthSideEffect = Math.min(
       ...["createSpotifyAuthorizationUrl(", "completeSpotifyAuthorization("]
         .map((needle) => contents.indexOf(needle))
