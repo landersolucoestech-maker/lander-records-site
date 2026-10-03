@@ -12,7 +12,7 @@ const postManager = read("app/admin/(protected)/posts/PostManager.tsx");
 const postActions = read("app/admin/post-actions.ts");
 
 test("mock artist catalog supports isolated add edit view and delete without weakening persistent actions", () => {
-  assert.match(artistPage, /<ArtistManager artists=\{mockArtistSummaries\} canDelete canEdit[\s\S]*developmentMode/);
+  assert.match(artistPage, /<ArtistManager artists=\{mockArtistSummaries\} canDelete=\{false\} canEdit=\{false\}[\s\S]*developmentMode/);
   assert.match(artistManager, /const \[localArtists, setLocalArtists\] = useState\(initialArtists\)/);
   assert.match(artistManager, /const saveLocalArtist = async \(formData: FormData\)/);
   assert.match(artistManager, /const deleteLocalArtist = \(artist: ArtistSummary\)/);
