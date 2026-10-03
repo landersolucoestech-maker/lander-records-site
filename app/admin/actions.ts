@@ -128,14 +128,17 @@ export async function changeOwnPassword(formData: FormData) {
     redirect("/admin/change-password?error=reused");
   }
   const passwordHash = await hashPassword(newPassword);
-  await db.update(adminUsers).set({
-    passwordHash,
-    mustChangePassword: false,
-    failedLoginAttempts: 0,
-    lockedUntil: null,
-    updatedAt: new Date(),
-  }).where(eq(adminUsers.id, user.id));
-  await db.delete(adminSessions).where(and(eq(adminSessions.userId, user.id), ne(adminSessions.id, session.sessionId)));
+  await db.transaction(async (tx) => {
+    const updated = await tx.update(adminUsers).set({
+      passwordHash,
+      mustChangePassword: false,
+      failedLoginAttempts: 0,
+      lockedUntil: null,
+      updatedAt: new Date(),
+    }).where(eq(adminUsers.id, user.id)).returning({ id: adminUsers.id });
+    if (!updated[0]) throw new Error("Usuário não encontrado.");
+    await tx.delete(adminSessions).where(and(eq(adminSessions.userId, user.id), ne(adminSessions.id, session.sessionId)));
+  });
   await audit(user.id, "auth.password_changed", "admin_user", user.id);
   redirect("/admin");
 }
@@ -577,14 +580,17 @@ export async function resetAdminPassword(formData: FormData) {
   if (!current) throw new Error("Usuário não encontrado.");
   const temporaryPassword = text(formData, "temporaryPassword");
   const passwordHash = await hashPassword(temporaryPassword);
-  await db.update(adminUsers).set({
-    passwordHash,
-    mustChangePassword: true,
-    failedLoginAttempts: 0,
-    lockedUntil: null,
-    updatedAt: new Date(),
-  }).where(eq(adminUsers.id, id));
-  await db.delete(adminSessions).where(eq(adminSessions.userId, id));
+  await db.transaction(async (tx) => {
+    const updated = await tx.update(adminUsers).set({
+      passwordHash,
+      mustChangePassword: true,
+      failedLoginAttempts: 0,
+      lockedUntil: null,
+      updatedAt: new Date(),
+    }).where(eq(adminUsers.id, id)).returning({ id: adminUsers.id });
+    if (!updated[0]) throw new Error("Usuário não encontrado.");
+    await tx.delete(adminSessions).where(eq(adminSessions.userId, id));
+  });
   await audit(session.user.id, "admin_user.password_reset", "admin_user", id);
   revalidatePath("/admin/users");
 }
