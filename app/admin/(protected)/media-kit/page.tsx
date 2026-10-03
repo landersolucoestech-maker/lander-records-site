@@ -101,7 +101,7 @@ export default async function MediaKitPage() {
   const visibleItems = itemRows.filter((item) => item.enabled).length;
   const instagram = socialRows.find((item) => item.platform.toLowerCase().includes("instagram"));
   const company = siteSettingsRows[0];
-  const contactEmail = company?.contactEmail || "contato@landerrecords.com";
+  const contactEmail = company?.contactEmail || "Não configurado";
   const contactPhone = company?.contactPhone || "Não configurado";
   const location = company?.address || company?.location || "Não configurado";
   const website = settings.footerWebsite || "landerrecords.com";
