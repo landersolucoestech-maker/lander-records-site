@@ -35,12 +35,12 @@ export const mockNavigation = [
 ];
 
 export const mockContactTopics = [
-  { id:"mock-topic-booking", name:"Contratação de artista", slug:"contratacao-de-artista", position:1, active:true },
-  { id:"mock-topic-partnership", name:"Parcerias e marcas", slug:"parcerias-e-marcas", position:2, active:true },
-  { id:"mock-topic-release", name:"Lançamentos e distribuição", slug:"lancamentos-e-distribuicao", position:3, active:true },
-  { id:"mock-topic-press", name:"Imprensa e conteúdo", slug:"imprensa-e-conteudo", position:4, active:true },
-  { id:"mock-topic-demo", name:"Envio de material artístico", slug:"envio-de-material", position:5, active:true },
-  { id:"mock-topic-other", name:"Outros assuntos", slug:"outros", position:6, active:true },
+  { id:"mock-topic-booking", name:"Contratação de artista", slug:"contratacao-de-artista", saasType:"booking", position:1, active:true },
+  { id:"mock-topic-partnership", name:"Parcerias e marcas", slug:"parcerias-e-marcas", saasType:"partnership", position:2, active:true },
+  { id:"mock-topic-release", name:"Lançamentos e distribuição", slug:"lancamentos-e-distribuicao", saasType:"release", position:3, active:true },
+  { id:"mock-topic-press", name:"Imprensa e conteúdo", slug:"imprensa-e-conteudo", saasType:"press", position:4, active:true },
+  { id:"mock-topic-demo", name:"Envio de material artístico", slug:"envio-de-material", saasType:"demo", position:5, active:true },
+  { id:"mock-topic-other", name:"Outros assuntos", slug:"outros", saasType:"other", position:6, active:true },
 ];
 
 const page = (id:string,key:string,title:string,slug:string,seoDescription:string) => ({
