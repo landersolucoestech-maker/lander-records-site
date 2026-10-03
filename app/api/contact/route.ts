@@ -32,6 +32,10 @@ export async function POST(request: NextRequest) {
     if (Number.isFinite(contentLength) && contentLength > 16_384) {
       return Response.json({ error: "Solicitação muito grande." }, { status: 413 });
     }
+    const contentType = request.headers.get("content-type") || "";
+    if (!contentType.toLowerCase().startsWith("application/json")) {
+      return Response.json({ error: "Tipo de conteúdo não suportado." }, { status: 415 });
+    }
     const raw = await request.json();
     const parsed = payloadSchema.safeParse(raw);
     if (!parsed.success) {
