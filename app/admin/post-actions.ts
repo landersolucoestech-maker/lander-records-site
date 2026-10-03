@@ -233,7 +233,8 @@ export async function deletePostAction(formData: FormData) {
   const db = getDb();
   const current = (await db.select({ slug: posts.slug, title: posts.title }).from(posts).where(eq(posts.id, id)).limit(1))[0];
   if (!current) throw new Error("Notícia não encontrada.");
-  await db.delete(posts).where(eq(posts.id, id));
+  const deleted = await db.delete(posts).where(eq(posts.id, id)).returning({ id: posts.id });
+  if (!deleted[0]) throw new Error("Notícia não encontrada.");
   await audit(session.user.id, "post.deleted", "post", id, { title: current.title, slug: current.slug });
   revalidatePostContent([current.slug]);
   redirect("/admin/posts?deleted=1");
