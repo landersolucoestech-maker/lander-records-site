@@ -55,3 +55,6 @@ test("Soundcharts identity resolution fails closed when identifier ownership can
   assert.doesNotMatch(soundcharts, /respondeu 403"\)\) return true/);
   assert.match(soundcharts, /if \(verified\) return \{ uuid, matchedViaPlatform:/);
 });
+
+
+test("external URL normalization rejects oversized inputs",()=>{assert.throws(()=>normalizeExternalUrl("https://example.com/"+("a".repeat(2100))),/limite permitido/)});
