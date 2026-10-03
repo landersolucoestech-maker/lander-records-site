@@ -14,6 +14,7 @@ test("tags are managed as a real persistent taxonomy", () => {
   assert.match(page, /select\(\)\.from\(tags\)/);
   assert.match(page, /mockDataEnabled\(\)/);
   assert.match(page, /mockPostTags/);
+  assert.match(page, /disabled=\{!canEdit\}/);
   assert.match(page, /action=\{upsertTag\}/);
   assert.match(actions, /requirePersistentAdmin\("editor"\)/);
   assert.match(actions, /requirePersistentAdmin\("admin"\)/);
