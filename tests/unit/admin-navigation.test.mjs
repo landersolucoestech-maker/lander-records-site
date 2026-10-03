@@ -25,13 +25,15 @@ test("admin navigation exposes settings as one sidebar module", () => {
     "Mídias",
     "Páginas",
     "Mídia Kit",
+    "Contatos",
+    "Tags",
     "Configurações",
   ]);
   const forbiddenSidebarItems = ["Empresa", "Identidade do Site", "Automações", "Segurança", "Integrações", "Usuários"];
   assert.ok(forbiddenSidebarItems.every((label) => !groups.flatMap((group) => group.items).some((item) => item.label === label)));
   const site = groups.find((group) => group.module?.label === "Site");
   assert.ok(site);
-  assert.deepEqual(site.items.map((item) => item.href), ["/admin/posts", "/admin/artists", "/admin/media", "/admin/pages", "/admin/media-kit"]);
+  assert.deepEqual(site.items.map((item) => item.href), ["/admin/posts", "/admin/artists", "/admin/media", "/admin/pages", "/admin/media-kit", "/admin/contacts", "/admin/tags"]);
 });
 
 test("admin navigation selects the most specific real route", () => {
