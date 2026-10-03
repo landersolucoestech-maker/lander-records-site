@@ -216,7 +216,7 @@ export async function savePostAction(_: PostActionState, formData: FormData): Pr
     await cleanupPreparedUploads(coverUpload, authorUpload);
     const message = error instanceof Error ? error.message : "Falha ao salvar notícia.";
     if (/duplicate key|unique/i.test(message)) return { ok: false, error: "Já existe uma notícia com esse slug." };
-    return { ok: false, error: message };
+    return { ok: false, error: "Não foi possível salvar a notícia. Tente novamente." };
   }
 
   await audit(session.user.id, id ? "post.updated" : "post.created", "post", postId, { title, slug, status });
