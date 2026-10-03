@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { loadArtistEditor, loadArtistOptions } from "../../editor-data";
+import { mockDataEnabled } from "../../../../../../lib/mocks";
 import styles from "../../ArtistView.module.css";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,7 @@ const metricLabels: Record<string, string> = {
 
 export default async function ArtistViewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const mockMode = mockDataEnabled();
   const [artist, options] = await Promise.all([loadArtistEditor(id), loadArtistOptions()]);
   if (!artist) notFound();
 
@@ -30,7 +32,7 @@ export default async function ArtistViewPage({ params }: { params: Promise<{ id:
     <div className="adminPage">
       <header className="adminPageHeader">
         <div><p className="adminEyebrow">CONSULTA DO ARTISTA</p><h1>{artist.name}</h1><p>Visão consolidada das informações principais, métricas, plataformas, conteúdo público e publicação.</p></div>
-        <div className="adminActions"><Link className="adminButton primary" href={`/admin/artists/${id}`}>Editar artista</Link><Link className="adminButton" href="/admin/artists">Voltar</Link></div>
+        <div className="adminActions">{!mockMode ? <Link className="adminButton primary" href={`/admin/artists/${id}`}>Editar artista</Link> : null}<Link className="adminButton" href="/admin/artists">Voltar</Link></div>
       </header>
 
       <section className={styles.hero}>
