@@ -2,6 +2,7 @@ import { asc } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
 import { tags } from "../../../../lib/db/schema";
+import { mockDataEnabled, mockPostTags } from "../../../../lib/mocks";
 import { deleteTag, upsertTag } from "../../tag-actions";
 import { AdminIcon } from "../../components/AdminIcon";
 import styles from "../DashboardCrud.module.css";
@@ -10,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export default async function TagsPage() {
   const session = await requireAdmin();
-  const rows = await getDb().select().from(tags).orderBy(asc(tags.name));
+  const rows = mockDataEnabled() ? mockPostTags.map((tag) => ({ ...tag, slug: tag.name.toLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") })) : await getDb().select().from(tags).orderBy(asc(tags.name));
   const canEdit = session.source === "session" && session.user.role !== "viewer";
   const canDelete = session.source === "session" && (session.user.role === "admin" || session.user.role === "owner");
   return <div className="adminDashboard" data-testid="tags-manager">
