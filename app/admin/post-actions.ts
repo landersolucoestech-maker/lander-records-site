@@ -45,7 +45,7 @@ function parseDate(value: string) {
 async function prepareImage(formData: FormData, fieldName: string, slug: string, kind: "cover" | "author") {
   const file = formData.get(fieldName);
   if (!(file instanceof File) || file.size === 0) return null;
-  if (!file.type.startsWith("image/")) throw new Error("O arquivo enviado precisa ser uma imagem válida.");
+  if (!["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"].includes(file.type.toLowerCase())) throw new Error("O arquivo enviado precisa ser JPEG, PNG, WebP, GIF ou AVIF.");
   if (file.size > MAX_IMAGE_BYTES) throw new Error("A imagem enviada excede o limite de 12 MB.");
   const source = Buffer.from(await file.arrayBuffer());
   const output = await sharp(source).rotate().resize({ width: 2400, height: 2400, fit: "inside", withoutEnlargement: true }).webp({ quality: 84 }).toBuffer({ resolveWithObject: true });
