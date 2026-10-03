@@ -23,10 +23,11 @@ const publicPost = sql<boolean>`${posts.status} = 'published' AND ${posts.archiv
 export default async function AdminPostsPage({ searchParams }: { searchParams: Promise<PostFilters> }) {
   const session = await requireAdmin();
   const filters = await searchParams;
-  const canEdit = session.source === "session" && session.user.role !== "viewer";
-  const canDelete = session.source === "session" && (session.user.role === "admin" || session.user.role === "owner");
-  const developmentMode = session.source === "development-auth-bypass";
-  if (mockDataEnabled()) {
+  const mockMode = mockDataEnabled();
+  const canEdit = !mockMode && session.source === "session" && session.user.role !== "viewer";
+  const canDelete = !mockMode && session.source === "session" && (session.user.role === "admin" || session.user.role === "owner");
+  const developmentMode = mockMode && session.source === "development-auth-bypass";
+  if (mockMode) {
     const initialMode = filters.create === "1" ? "create" : filters.edit ? "edit" : filters.view ? "view" : undefined;
     const initialId = filters.edit || filters.view || undefined;
     return <PostManager
