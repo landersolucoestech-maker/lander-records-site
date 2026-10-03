@@ -10,10 +10,11 @@ export const dynamic = "force-dynamic";
 
 export default async function MediaPage() {
   const session = await requireAdmin();
-  const persistent = session.source === "session";
+  const mockMode = mockDataEnabled();
+  const persistent = !mockMode && session.source === "session";
   const canUpload = persistent && session.user.role !== "viewer";
   const canArchive = persistent && (session.user.role === "admin" || session.user.role === "owner");
-  if (mockDataEnabled()) {
+  if (mockMode) {
     return <MediaLibrary archiveAction={archiveMedia} canArchive={false} canUpload={canUpload} items={mockMedia.map((item) => ({ ...item }))} uploadAction={uploadMedia} />;
   }
   const rows = await getDb().select().from(mediaAssets).orderBy(desc(mediaAssets.createdAt));
