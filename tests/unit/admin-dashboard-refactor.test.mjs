@@ -105,7 +105,7 @@ test("admin shell keeps canonical navigation and account chrome without fake cap
   assert.match(shell, /notificationLabel/);
   assert.match(shell, /name="bell"/);
   assert.match(protectedLayout, /auditLogs/);
-  assert.match(protectedLayout, /inArray\(auditLogs\.entityType, \["artist", "post", "media_asset"\]\)/);
+  assert.match(protectedLayout, /inArray\(auditLogs\.entityType, \["artist", "post", "media_asset", "contact_submission", "contact_topic", "tag"\]\)/);
   assert.doesNotMatch(protectedLayout, /"admin_user"|"site_settings"/);
   assert.match(shell, /adminAccountPopover/);
   assert.match(shell, /const showReadOnlyChrome = preview/);
