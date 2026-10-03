@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
         utmCampaign: parsed.data.utm.campaign,
         utmTerm: parsed.data.utm.term,
         utmContent: parsed.data.utm.content,
-        userAgent: request.headers.get("user-agent") || "",
+        userAgent: (request.headers.get("user-agent") || "").slice(0, 1000),
         ipHash,
         status: "new",
       }).returning({ id: contactSubmissions.id, createdAt: contactSubmissions.createdAt });
