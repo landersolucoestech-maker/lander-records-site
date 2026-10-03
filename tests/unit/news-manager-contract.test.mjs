@@ -6,6 +6,7 @@ const page = fs.readFileSync(new URL("../../app/admin/(protected)/posts/page.tsx
 const manager = fs.readFileSync(new URL("../../app/admin/(protected)/posts/PostManager.tsx", import.meta.url), "utf8");
 const preview = fs.readFileSync(new URL("../../app/cms-preview/AdminPreview.tsx", import.meta.url), "utf8");
 const pagination = fs.readFileSync(new URL("../../app/admin/components/AdminPagination.tsx", import.meta.url), "utf8");
+const publicRepository = fs.readFileSync(new URL("../../modules/posts/repository.ts", import.meta.url), "utf8");
 
 test("News read model mirrors the public publication predicate and category plus tag taxonomy", () => {
   assert.match(page, /status.*published[\s\S]*archivedAt.*IS NULL[\s\S]*publishedAt.*now\(\)[\s\S]*scheduledAt.*now\(\)/);
@@ -51,3 +52,6 @@ test("News preview is fixture-only and imports no write primitive", () => {
   assert.match(preview, /previewPosts/);
   assert.doesNotMatch(preview, /post-actions|savePostAction|deletePostAction/);
 });
+
+
+test("archived media never hydrates public post covers or social images",()=>{assert.match(publicRepository,/leftJoin\(mediaAssets, and\(eq\(posts\.coverMediaId, mediaAssets\.id\), eq\(mediaAssets\.status, "active"\)\)\)/);assert.match(publicRepository,/eq\(mediaAssets\.status, "active"\)/);});
