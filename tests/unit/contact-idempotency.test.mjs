@@ -51,3 +51,5 @@ test("contact endpoint does not emit raw caught error details",()=>{const source
 test("only the contact idempotency unique constraint is treated as a duplicate race",()=>{assert.equal(isContactIdempotencyConflict({code:"23505",constraint:"contact_submissions_idempotency_key_key"}),true);assert.equal(isContactIdempotencyConflict({code:"23505",constraint:"other_unique"}),false);assert.equal(isContactIdempotencyConflict(new Error("duplicate")),false);});
 
 test("idempotent contact retries resolve before rate limiting",()=>{const duplicate=route.indexOf("if (existing[0])");const limiter=route.indexOf("isContactRateLimited(ipHash)");assert.ok(duplicate>=0&&limiter>duplicate);});
+
+test("contact rate limiting is serialized with the insert",()=>{const source=readFileSync(new URL("../../app/api/contact/route.ts",import.meta.url),"utf8");assert.match(source,/pg_advisory_xact_lock\(hashtext\(\$\{ipHash\}\)\)/);assert.match(source,/count\(\*\)::int/);assert.match(source,/throw new ContactRateLimitError\(\)/);assert.doesNotMatch(source,/isContactRateLimited\(ipHash\)/);});
