@@ -57,8 +57,8 @@ export async function POST(request: NextRequest) {
       return Response.json({ ok: true, id: existing[0].id, duplicate: true });
     }
 
-    const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-    const ip = forwardedFor || request.headers.get("x-real-ip") || "unknown";
+    const forwardedFor = request.headers.get("x-forwarded-for")?.split(",").map((value) => value.trim()).filter(Boolean);
+    const ip = request.headers.get("x-real-ip")?.trim() || forwardedFor?.at(-1) || "unknown";
     const ipHash = hashIp(ip);
 
     const topicRows = await db
