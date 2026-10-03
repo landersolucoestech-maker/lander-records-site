@@ -34,3 +34,6 @@ test("not-found boundary gives users an explicit recovery path",async()=>{const 
 
 
 test("integration cron compares bearer secrets in constant time",async()=>{const source=await readFile(new URL("../../app/api/cron/integrations/route.ts",import.meta.url),"utf8");assert.match(source,/timingSafeEqual/);assert.match(source,/supplied\.length === expected\.length/);assert.doesNotMatch(source,/authorization\"\) !==/)});
+
+
+test("public chrome excludes disabled navigation items",()=>{const source=read("app/components/SiteChrome.tsx");assert.match(source,/menuKey === "primary" && !item\.parentId && item\.enabled/);assert.match(source,/menuKey === "footer" && !item\.parentId && item\.enabled/);});
