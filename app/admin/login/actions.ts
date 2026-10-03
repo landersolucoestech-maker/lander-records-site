@@ -6,6 +6,8 @@ import { getDb } from "../../../lib/db";
 import { adminUsers } from "../../../lib/db/schema";
 import { audit, createAdminSession, verifyPassword } from "../../../lib/auth";
 
+const UNKNOWN_ACCOUNT_HASH = "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6Ttx9XJm5u4Qf8uQWmF8vYqLz6x9u";
+
 export async function loginAction(formData: FormData) {
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
@@ -21,8 +23,8 @@ export async function loginAction(formData: FormData) {
   const user = rows[0];
 
   if (!user) {
-    // Keep the unknown-account path deliberately non-instant to reduce account-enumeration timing signal.
-    await new Promise((resolve) => setTimeout(resolve, 350));
+    // Perform the same expensive password primitive used for known accounts to reduce timing-based enumeration.
+    await verifyPassword(password, UNKNOWN_ACCOUNT_HASH);
     redirect("/admin/login?error=credentials");
   }
 
