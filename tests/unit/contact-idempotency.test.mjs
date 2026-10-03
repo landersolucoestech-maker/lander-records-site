@@ -41,3 +41,6 @@ test("contact endpoint requires JSON content type before parsing",()=>{const gua
 
 
 test("contact storage bounds user-agent metadata",()=>{assert.match(route,/user-agent[^\n]*slice\(0, 1000\)/)});
+
+
+test("contact client bounds stalled submissions",()=>{const source=readFileSync(new URL("../../app/(public)/contato/ContactForm.tsx",import.meta.url),"utf8");assert.match(source,/signal: AbortSignal\.timeout\(15_000\)/);});
