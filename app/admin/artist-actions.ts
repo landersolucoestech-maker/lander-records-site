@@ -203,6 +203,8 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
       }
 
       if (previousSlug && previousSlug !== slug) {
+        await tx.delete(slugRedirects).where(and(eq(slugRedirects.entityType, "artist"), eq(slugRedirects.oldSlug, slug)));
+        await tx.update(slugRedirects).set({ newSlug: slug }).where(and(eq(slugRedirects.entityType, "artist"), eq(slugRedirects.newSlug, previousSlug)));
         await tx.insert(slugRedirects).values({ entityType: "artist", oldSlug: previousSlug, newSlug: slug }).onConflictDoUpdate({ target: [slugRedirects.entityType, slugRedirects.oldSlug], set: { newSlug: slug } });
       }
 
