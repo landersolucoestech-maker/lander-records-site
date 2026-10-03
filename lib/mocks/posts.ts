@@ -45,7 +45,7 @@ export const mockPostRecords = mockPosts.map((item, index) => ({
   id:item.id, title:item.title, slug:item.slug, excerpt:item.excerpt, contentMarkdown:item.contentMarkdown,
   status: index === 8 ? "draft" as const : "published" as const,
   editorStatus: index === 8 ? "draft" as const : "published" as const,
-  category:item.category?.name || "Editorial", categoryId:item.category?.id || "",
+  category:item.category?.name || "Editorial", categoryId:item.category?.id || "", tagIds:item.tags.map((tag) => tag.id),
   authorName:item.authorName, publishedAt:item.publishedAt ? new Intl.DateTimeFormat("pt-BR").format(item.publishedAt) : "",
   publishedAtInput:item.publishedAt?.toISOString() || "",
   coverImage:item.coverImage, coverMediaId:"mock-media-news-studio", authorMediaId:"mock-media-logo", authorImage:"/lander-records-logo.webp",
