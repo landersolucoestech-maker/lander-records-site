@@ -68,3 +68,6 @@ test("Soundcharts bearer requests have timeout and refuse redirects",()=>{assert
 
 
 test("Soundcharts token cache bounds provider expiry metadata",()=>{assert.match(soundchartsSource,/payload\.expires_in > 0 && payload\.expires_in <= 86_400/)});
+
+
+test("Soundcharts bearer requests are pinned to the trusted API origin",()=>{const source=fs.readFileSync(new URL("../../lib/integrations/soundcharts.ts",import.meta.url),"utf8");assert.match(source,/url\.origin !== API_BASE/);assert.match(source,/path\.startsWith\("\/\/"\)/);assert.match(source,/Endpoint Soundcharts não permitido/);});
