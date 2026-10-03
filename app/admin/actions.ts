@@ -397,7 +397,7 @@ export async function uploadMedia(formData: FormData) {
   const file = formData.get("file");
   const altText = text(formData, "altText");
   if (!(file instanceof File) || file.size === 0) throw new Error("Selecione um arquivo.");
-  if (!file.type.startsWith("image/")) throw new Error("A biblioteca de mídia aceita imagens neste estágio.");
+  if (!["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"].includes(file.type.toLowerCase())) throw new Error("A biblioteca aceita imagens JPEG, PNG, WebP, GIF ou AVIF.");
   if (file.size > 12 * 1024 * 1024) throw new Error("Arquivo maior que 12 MB.");
   if (!altText || altText.length > 500) throw new Error("Texto alternativo inválido.");
 
