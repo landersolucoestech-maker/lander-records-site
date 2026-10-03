@@ -15,9 +15,9 @@ test("canonical URLs use the configured site route when no valid override exists
   }
 });
 
-test("canonical overrides preserve valid HTTP(S) URLs but remove fragments", () => {
+test("canonical overrides preserve valid HTTPS URLs, remove fragments, and reject HTTP", () => {
   assert.equal(resolveCanonicalUrl("https://example.com/editorial/item#section", "/fallback"), "https://example.com/editorial/item");
-  assert.equal(resolveCanonicalUrl("http://example.com/editorial/item", "/fallback"), "http://example.com/editorial/item");
+  assert.equal(resolveCanonicalUrl("http://example.com/editorial/item", "/fallback"), "https://landerrecords.com/fallback");
 });
 
 
