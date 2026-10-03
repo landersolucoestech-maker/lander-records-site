@@ -1,4 +1,4 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
 import { mockArtistEditor, mockArtistEditorOptions, mockDataEnabled } from "../../../../lib/mocks";
@@ -49,12 +49,14 @@ export async function loadArtistEditor(id: string) {
     db.select().from(artistMetrics).where(and(eq(artistMetrics.artistId, id), eq(artistMetrics.source, "soundcharts"))),
     db.select().from(artistLinks).where(and(eq(artistLinks.artistId, id), eq(artistLinks.active, true))).orderBy(asc(artistLinks.position)),
     db.select().from(artistEmbeds).where(and(eq(artistEmbeds.artistId, id), eq(artistEmbeds.active, true))).orderBy(asc(artistEmbeds.position)),
-    db.select({ id: mediaAssets.id, url: mediaAssets.url }).from(mediaAssets).where(eq(mediaAssets.status, "active")),
+    Promise.resolve([] as Array<{ id: string; url: string }>),
   ]);
   const artist = artistRows[0];
   if (!artist) return null;
   const profile = profileRows[0];
-  const mediaMap = new Map(mediaRows.map((media) => [media.id, media.url]));
+  const mediaIds = [artist.cardMediaId, artist.heroMediaId, artist.ogMediaId].filter((mediaId): mediaId is string => Boolean(mediaId));
+  const resolvedMediaRows = mediaIds.length ? await db.select({ id: mediaAssets.id, url: mediaAssets.url }).from(mediaAssets).where(and(eq(mediaAssets.status, "active"), inArray(mediaAssets.id, mediaIds))) : mediaRows;
+  const mediaMap = new Map(resolvedMediaRows.map((media) => [media.id, media.url]));
   const linkMap = Object.fromEntries(links.map((link) => [link.platform.toLowerCase(), link.url]));
   const metricMap = Object.fromEntries(metrics.map((item) => [item.platform, item.value]));
   const youtubeVideo = embeds.find((embed) => embed.type.toLowerCase() === "youtube")?.url || "";
