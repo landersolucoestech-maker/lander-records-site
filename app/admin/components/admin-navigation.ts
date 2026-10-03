@@ -26,6 +26,8 @@ export const adminNavigation: AdminNavGroup[] = [
       { label: "Mídias", href: "/admin/media", previewHref: "/cms-preview/media", icon: "media" },
       { label: "Páginas", href: "/admin/pages", previewHref: "/cms-preview/pages", icon: "pages" },
       { label: "Mídia Kit", href: "/admin/media-kit", previewHref: "/cms-preview/media-kit", icon: "media" },
+      { label: "Contatos", href: "/admin/contacts", previewHref: "/cms-preview/dashboard", icon: "mail" },
+      { label: "Tags", href: "/admin/tags", previewHref: "/cms-preview/dashboard", icon: "tags" },
     ],
   },
   {
