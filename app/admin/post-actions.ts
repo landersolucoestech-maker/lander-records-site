@@ -184,6 +184,8 @@ export async function savePostAction(_: PostActionState, formData: FormData): Pr
       }
 
       if (previousSlug && previousSlug !== slug) {
+        await tx.delete(slugRedirects).where(and(eq(slugRedirects.entityType, "post"), eq(slugRedirects.oldSlug, slug)));
+        await tx.update(slugRedirects).set({ newSlug: slug }).where(and(eq(slugRedirects.entityType, "post"), eq(slugRedirects.newSlug, previousSlug)));
         await tx.insert(slugRedirects).values({ entityType: "post", oldSlug: previousSlug, newSlug: slug }).onConflictDoUpdate({
           target: [slugRedirects.entityType, slugRedirects.oldSlug],
           set: { newSlug: slug },
