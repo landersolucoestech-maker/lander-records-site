@@ -19,6 +19,7 @@ import {
   adminUsers,
   artistCategories,
   artistCategoryRelations,
+  contactTopics,
   mediaAssets,
   navigationItems,
   postCategories,
@@ -434,6 +435,40 @@ export async function archiveMedia(formData: FormData) {
   await getDb().update(mediaAssets).set({ status: "archived", updatedBy: session.user.id, updatedAt: new Date() }).where(eq(mediaAssets.id, id));
   await audit(session.user.id, "media.archived", "media_asset", id);
   revalidatePath("/admin/media");
+}
+
+export async function upsertContactTopic(formData: FormData) {
+  const session = await requirePersistentAdmin("editor");
+  const id = optionalUuid(formData, "id", "Assunto");
+  const name = text(formData, "name");
+  const slug = slugify(text(formData, "slug") || name);
+  const saasType = text(formData, "saasType");
+  const position = integer(formData, "position");
+  const active = checked(formData, "active");
+  if (!name || name.length > 180) throw new Error("Nome do assunto inválido.");
+  if (!slug || slug.length > 180) throw new Error("Slug do assunto inválido.");
+  if (saasType.length > 120) throw new Error("Tipo de integração inválido.");
+  const values = { name, slug, saasType, position, active, updatedAt: new Date() };
+  if (id) {
+    const updated = await getDb().update(contactTopics).set(values).where(eq(contactTopics.id, id)).returning({ id: contactTopics.id });
+    if (!updated[0]) throw new Error("Assunto não encontrado.");
+    await audit(session.user.id, "contact_topic.updated", "contact_topic", id, { slug, active });
+  } else {
+    const rows = await getDb().insert(contactTopics).values(values).returning({ id: contactTopics.id });
+    await audit(session.user.id, "contact_topic.created", "contact_topic", rows[0].id, { slug, active });
+  }
+  revalidatePath("/contato");
+  revalidatePath("/admin/settings");
+}
+
+export async function deleteContactTopic(formData: FormData) {
+  const session = await requirePersistentAdmin("admin");
+  const id = requiredUuid(formData, "id", "Assunto");
+  const deleted = await getDb().delete(contactTopics).where(eq(contactTopics.id, id)).returning({ id: contactTopics.id });
+  if (!deleted[0]) throw new Error("Assunto não encontrado.");
+  await audit(session.user.id, "contact_topic.deleted", "contact_topic", id);
+  revalidatePath("/contato");
+  revalidatePath("/admin/settings");
 }
 
 export async function createAdminUser(formData: FormData) {
