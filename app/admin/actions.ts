@@ -90,7 +90,8 @@ async function activeImageMediaIdOrNull(formData: FormData, name: string, label:
   if (!id) return null;
   const media = (await getDb().select({ id: mediaAssets.id, mimeType: mediaAssets.mimeType }).from(mediaAssets)
     .where(and(eq(mediaAssets.id, id), eq(mediaAssets.status, "active"))).limit(1))[0];
-  if (!media || !media.mimeType.startsWith("image/")) throw new Error(`${label} precisa ser uma imagem ativa.`);
+  const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"]);
+  if (!media || !allowedImageTypes.has(media.mimeType.toLowerCase())) throw new Error(`${label} precisa ser uma imagem ativa compatível.`);
   return media.id;
 }
 
