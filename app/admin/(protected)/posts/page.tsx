@@ -36,7 +36,8 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
       initialId={initialId}
       initialMode={initialMode}
       media={mockMediaOptions}
-      posts={mockPostRecords}
+      posts={mockPostRecords.map((post) => ({ ...post, tagIds: post.tagIds || [] }))}
+      tags={[]}
       saved={filters.saved === "1"}
     />;
   }
