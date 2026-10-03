@@ -64,7 +64,7 @@ test("Artists write routes require a persistent editor while table actions use i
     assert.match(source, /if \(session\.source !== "session"\) redirect\("\/admin\/artists"\)/);
   }
   assert.match(page, /const canEdit = !mockMode && session\.source === "session" && session\.user\.role !== "viewer"/);
-  assert.match(page, /const canDelete = session\.source === "session"/);
+  assert.match(page, /const canDelete = !mockMode && session\.source === "session"/);
   assert.match(manager, /data-artist-action-trigger/);
   assert.match(manager, /data-artist-action-menu/);
   assert.match(manager, /positionFloatingMenu\(trigger\.getBoundingClientRect\(\), menu\.getBoundingClientRect\(\)\)/);
