@@ -8,7 +8,7 @@ export async function generateMetadata() {
   return buildMetadata({
     title: content?.page.seoTitle || content?.page.title || "Termos e Condições",
     description: content?.page.seoDescription || undefined,
-    canonical: content?.page.canonicalUrl || undefined,
+    canonical: content?.page.canonicalUrl || "/termos-e-condicoes",
   });
 }
 
