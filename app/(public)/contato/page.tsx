@@ -10,7 +10,7 @@ export async function generateMetadata() {
   return buildMetadata({
     title: content?.page.seoTitle || content?.page.title,
     description: content?.page.seoDescription || undefined,
-    canonical: content?.page.canonicalUrl || undefined,
+    canonical: content?.page.canonicalUrl || "/contato",
   });
 }
 
