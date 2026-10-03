@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { audit, requirePersistentAdmin } from "../../../lib/auth";
 import { getDb } from "../../../lib/db";
-import { tags } from "../../../lib/db/schema";
+import { postTags, tags } from "../../../lib/db/schema";
 import { slugify } from "../../../lib/slug";
 
 const text = (formData: FormData, name: string) => String(formData.get(name) || "").trim();
@@ -26,14 +26,21 @@ export async function upsertTag(formData: FormData) {
     await audit(session.user.id, "tag.created", "tag", rows[0].id, { slug });
   }
   revalidatePath("/admin/tags");
+  revalidatePath("/admin/posts");
+  revalidatePath("/noticias");
 }
 
 export async function deleteTag(formData: FormData) {
   const session = await requirePersistentAdmin("admin");
   const id = uuid(text(formData, "id"));
   if (!id) throw new Error("Tag inválida.");
-  const rows = await getDb().delete(tags).where(eq(tags.id, id)).returning({ id: tags.id });
+  const db = getDb();
+  const usage = await db.select({ postId: postTags.postId }).from(postTags).where(eq(postTags.tagId, id)).limit(1);
+  if (usage.length) throw new Error("Não é possível excluir uma tag associada a publicações. Desassocie primeiro.");
+  const rows = await db.delete(tags).where(eq(tags.id, id)).returning({ id: tags.id });
   if (!rows[0]) throw new Error("Tag não encontrada.");
   await audit(session.user.id, "tag.deleted", "tag", id);
   revalidatePath("/admin/tags");
+  revalidatePath("/admin/posts");
+  revalidatePath("/noticias");
 }
