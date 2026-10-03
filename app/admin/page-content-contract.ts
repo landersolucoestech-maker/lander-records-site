@@ -35,11 +35,11 @@ export function normalizeCmsDestination(rawValue: string) {
   if (value.startsWith("/") && !value.startsWith("//")) return value;
   if (/^mailto:/i.test(value)) {
     const address = value.slice(7);
-    if (/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(address)) return value;
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)) return value;
     throw new Error("Destino inválido.");
   }
   if (/^tel:/i.test(value)) {
-    if (/^tel:\\+?[0-9().\\s-]{6,30}$/i.test(value)) return value;
+    if (/^tel:\+?[0-9().\s-]{6,30}$/i.test(value)) return value;
     throw new Error("Destino inválido.");
   }
   let parsed: URL;
