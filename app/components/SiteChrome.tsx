@@ -71,7 +71,7 @@ function SocialIcon({ label, href, icon }: { label: string; href: string; icon: 
 
 export async function Header() {
   const { settings, logoUrl, navigation } = await getChromeView();
-  const primary = navigation.filter((item) => item.menuKey === "primary" && !item.parentId);
+  const primary = navigation.filter((item) => item.menuKey === "primary" && !item.parentId && item.enabled);
   const logoSrc = logoUrl || fallbackLogo;
 
   return (
@@ -94,7 +94,7 @@ export async function Header() {
 
 export async function Footer() {
   const { settings, logoUrl, navigation, socials } = await getChromeView();
-  const footerLinks = navigation.filter((item) => item.menuKey === "footer" && !item.parentId);
+  const footerLinks = navigation.filter((item) => item.menuKey === "footer" && !item.parentId && item.enabled);
   const logoSrc = logoUrl || fallbackLogo;
 
   return (
