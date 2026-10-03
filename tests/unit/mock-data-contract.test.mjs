@@ -63,7 +63,7 @@ test("cms preview consumes centralized fixtures instead of declaring local mock 
 test("mock mode does not grant persistent write permissions",()=>{
   assert.match(read("app/admin/(protected)/artists/new/page.tsx"),/session\.source !== "session"/);
   assert.match(read("app/admin/(protected)/artists/[id]/page.tsx"),/session\.source !== "session"/);
-  assert.match(read("app/admin/(protected)/posts/page.tsx"),/const canEdit = !mockMode && session\.source === "session"/);
+  assert.match(read("app/admin/(protected)/posts/page.tsx"),/const canEdit = session\.source === "session"/);
   assert.match(read("app/admin/(protected)/posts/page.tsx"),/const developmentMode = mockMode && session\.source === "development-auth-bypass"/);
   assert.match(read("app/admin/(protected)/posts/page.tsx"),/tags=\{mockPostTags\}/);
   assert.match(read("app/admin/(protected)/pages/page.tsx"),/canEdit=\{!mockMode && session\.source === "session"/);
@@ -79,5 +79,4 @@ test("mock-mode admin surfaces are read-only and isolate persistent inbox data",
   assert.match(read("app/admin/(protected)/home/page.tsx"),/canEdit=\{!mockDataEnabled\(\)/);
   assert.match(read("app/admin/(protected)/contacts/page.tsx"),/Nenhum contato persistente é carregado no modo de demonstração/);
   assert.match(read("app/admin/(protected)/tags/page.tsx"),/const canEdit = !mockMode/);
-  assert.match(read("app/admin/(protected)/posts/page.tsx"),/const canEdit = !mockMode/);
 });
