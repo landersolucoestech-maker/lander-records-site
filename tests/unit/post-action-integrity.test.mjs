@@ -39,3 +39,5 @@ test("news public page renders only trusted social destinations", () => {
 test("unexpected post persistence failures are not returned verbatim",()=>{assert.match(actions,/Não foi possível salvar a notícia\. Tente novamente\./);assert.doesNotMatch(actions,/return \{ ok: false, error: message \}/);});
 
 test("image upload MIME types use an explicit raster allowlist",()=>{assert.match(actions,/image\/jpeg/);assert.match(actions,/image\/avif/);assert.doesNotMatch(actions,/file\.type\.startsWith\("image\/"\)/);});
+
+test("post slug changes collapse redirect chains and clear reclaimed slugs",()=>{assert.match(actions,/delete\(slugRedirects\)[\s\S]*oldSlug, slug/);assert.match(actions,/update\(slugRedirects\)\.set\(\{ newSlug: slug \}\)[\s\S]*newSlug, previousSlug/);});
