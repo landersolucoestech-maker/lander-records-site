@@ -39,4 +39,4 @@ test("integration cron drains the durable contact outbox behind the existing sec
 });
 
 
-test("webhook delivery validates destination and refuses redirects",()=>{assert.match(source,/validatedWebhookUrl\(url\)/);assert.match(source,/url\.protocol !== "https:"/);assert.match(source,/redirect: "error"/);assert.match(source,/WEBHOOK_TIMEOUT_MS = 4_000/)});
+test("webhook delivery validates destination and refuses redirects",()=>{assert.match(contact,/validatedWebhookUrl\(url\)/);assert.match(contact,/url\.protocol !== "https:"/);assert.match(contact,/redirect: "error"/);assert.match(contact,/WEBHOOK_TIMEOUT_MS = 4_000/)});
