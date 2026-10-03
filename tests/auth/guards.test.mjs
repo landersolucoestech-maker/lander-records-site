@@ -205,3 +205,6 @@ test("login UI does not disclose whether a known account is locked",async()=>{co
 
 
 test("login UI does not offer a remember-session control the backend ignores",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../app/admin/login/page.tsx",import.meta.url),"utf8");assert.doesNotMatch(source,/name="remember"/);assert.match(source,/Sessão administrativa protegida/)});
+
+
+test("user management preserves at least one active owner",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../app/admin/actions.ts",import.meta.url),"utf8");assert.match(source,/current\.role === "owner" && current\.isActive/);assert.match(source,/eq\(adminUsers\.role, "owner"\)/);assert.match(source,/eq\(adminUsers\.isActive, true\)/);assert.match(source,/último proprietário ativo não pode ser desativado ou rebaixado/)});
