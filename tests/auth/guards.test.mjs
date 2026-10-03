@@ -214,3 +214,6 @@ test("login rejects oversized credential inputs before database or bcrypt work",
 
 
 test("admin session metadata bounds stored user-agent length",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../lib/auth/index.ts",import.meta.url),"utf8");assert.match(source,/user-agent[^\n]*slice\(0, 1000\)/)});
+
+
+test("unknown admin accounts execute bcrypt work instead of a fixed sleep",()=>{assert.match(loginActions,/UNKNOWN_ACCOUNT_HASH/);assert.match(loginActions,/await verifyPassword\(password, UNKNOWN_ACCOUNT_HASH\)/);assert.doesNotMatch(loginActions,/setTimeout\(resolve, 350\)/);});
