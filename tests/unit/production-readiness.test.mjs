@@ -73,3 +73,6 @@ test("production smoke validates health payload and visitor admin protection", (
   assert.match(smoke, /redirect: "manual"/);
   assert.match(smoke, /\[307, 401, 403\]/);
 });
+
+
+test("dev preview cannot publish before full regression, lint and typecheck gates",()=>{const preview=read(".github/workflows/dev-preview.yml");const tests=preview.indexOf("name: Full regression suite");const lint=preview.indexOf("name: Lint");const types=preview.indexOf("name: Typecheck");const tunnel=preview.indexOf("name: Open temporary preview tunnel");assert.ok(tests>0&&lint>tests&&types>lint&&tunnel>types);assert.match(preview,/name: Full regression suite\s*\n\s*run: npm test/);assert.match(preview,/name: Lint\s*\n\s*run: npm run lint/)});
