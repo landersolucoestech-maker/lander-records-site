@@ -20,12 +20,19 @@ import {
   adminUsers,
   artistCategories,
   artistCategoryRelations,
+  artists,
   contactSubmissions,
   contactTopics,
   mediaAssets,
+  mediaKitItems,
+  mediaKitSections,
   navigationItems,
+  pageSectionItems,
+  pageSections,
+  pages,
   postCategories,
   posts,
+  releases,
   siteSettings,
   socialLinks,
 } from "../../lib/db/schema";
@@ -464,7 +471,20 @@ export async function uploadMedia(formData: FormData) {
 export async function archiveMedia(formData: FormData) {
   const session = await requirePersistentAdmin("admin");
   const id = requiredUuid(formData, "id", "Mídia");
-  const archived = await getDb().update(mediaAssets).set({ status: "archived", updatedBy: session.user.id, updatedAt: new Date() }).where(eq(mediaAssets.id, id)).returning({ id: mediaAssets.id });
+  const db = getDb();
+  const usageChecks = await Promise.all([
+    db.select({ id: artists.id }).from(artists).where(sql`${artists.cardMediaId} = ${id} or ${artists.heroMediaId} = ${id} or ${artists.ogMediaId} = ${id}`).limit(1),
+    db.select({ id: posts.id }).from(posts).where(sql`${posts.coverMediaId} = ${id} or ${posts.ogMediaId} = ${id}`).limit(1),
+    db.select({ id: releases.id }).from(releases).where(eq(releases.coverMediaId, id)).limit(1),
+    db.select({ id: pages.id }).from(pages).where(eq(pages.ogMediaId, id)).limit(1),
+    db.select({ id: pageSectionItems.id }).from(pageSectionItems).where(eq(pageSectionItems.mediaId, id)).limit(1),
+    db.select({ id: pageSections.id }).from(pageSections).where(sql`${pageSections.settings}->>'mediaId' = ${id}`).limit(1),
+    db.select({ id: siteSettings.id }).from(siteSettings).where(sql`${siteSettings.logoMediaId} = ${id} or ${siteSettings.socialImageMediaId} = ${id}`).limit(1),
+    db.select({ id: mediaKitSections.id }).from(mediaKitSections).where(eq(mediaKitSections.mediaId, id)).limit(1),
+    db.select({ id: mediaKitItems.id }).from(mediaKitItems).where(eq(mediaKitItems.mediaId, id)).limit(1),
+  ]);
+  if (usageChecks.some((rows) => rows.length)) throw new Error("Não é possível arquivar uma mídia em uso. Remova as referências primeiro.");
+  const archived = await db.update(mediaAssets).set({ status: "archived", updatedBy: session.user.id, updatedAt: new Date() }).where(eq(mediaAssets.id, id)).returning({ id: mediaAssets.id });
   if (!archived[0]) throw new Error("Mídia não encontrada.");
   await audit(session.user.id, "media.archived", "media_asset", id);
   revalidatePath("/admin/media");
