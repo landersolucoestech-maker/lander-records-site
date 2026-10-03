@@ -8,7 +8,7 @@ export default async function AdminPreviewPage({
 }: {
   params: Promise<{ section?: string[] }>;
 }) {
-  if (process.env.NODE_ENV !== "development") notFound();
+  if (process.env.NODE_ENV !== "development" && process.env.DEV_PREVIEW_PUBLIC_ACCESS !== "true") notFound();
   const { section = [] } = await params;
   return <AdminPreview section={section[0] || "dashboard"} />;
 }
