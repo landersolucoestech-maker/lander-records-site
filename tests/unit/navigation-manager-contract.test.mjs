@@ -104,3 +104,6 @@ test("Navigation preview reuses the real manager without persistence", () => {
   assert.match(manager, /canEdit && !preview \? <button className="adminButton primary"/);
   assert.match(manager, /preview \? <button aria-label=\{`Editar \$\{item\.label\} indisponível no preview`\} disabled/);
 });
+
+
+test("navigation destination validation rejects oversized URLs server-side",()=>{assert.match(contractSource,/value\.length > 2000/)});
