@@ -106,4 +106,4 @@ test("Navigation preview reuses the real manager without persistence", () => {
 });
 
 
-test("navigation destination validation rejects oversized URLs server-side",()=>{assert.match(contractSource,/value\.length > 2000/)});
+test("navigation destination validation rejects oversized URLs server-side",()=>{assert.match(contract,/value\.length > 2000/)});
