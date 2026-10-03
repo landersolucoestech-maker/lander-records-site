@@ -137,6 +137,8 @@ test("Hero and section editor expose only Lander Records fields and preview the 
   assert.match(editorPage, /const session = await requireAdmin\("editor"\)/);
   assert.doesNotMatch(editorPage, /if \(session\.source !== "session"\) redirect\("\/admin\/pages"\)/);
   assert.match(workbench, /data-site-source="lander-records"/);
+  assert.match(editorPage, /readOnly=\{readOnly\}/);
+  assert.match(workbench, /if \(readOnly\) return/);
   assert.match(workbench, /siteSectionContract\(page\.key, selected\.sectionKey\)/);
   assert.match(workbench, /CTAs do Hero/);
   assert.match(workbench, /Somente itens realmente consumidos pelo frontend público/);
