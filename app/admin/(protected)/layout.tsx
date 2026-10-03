@@ -20,7 +20,7 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
         .select({id:auditLogs.id,action:auditLogs.action,entityType:auditLogs.entityType,entityId:auditLogs.entityId,metadata:auditLogs.metadata,createdAt:auditLogs.createdAt,actorName:adminUsers.name})
         .from(auditLogs)
         .leftJoin(adminUsers, eq(auditLogs.actorUserId, adminUsers.id))
-        .where(inArray(auditLogs.entityType, ["artist", "post", "media_asset"]))
+        .where(inArray(auditLogs.entityType, ["artist", "post", "media_asset", "contact_submission", "contact_topic", "tag"]))
         .orderBy(desc(auditLogs.createdAt))
         .limit(12))
       .map((row)=>({id:row.id,action:row.action,entityType:row.entityType,entityId:row.entityId,metadata:row.metadata,createdAt:row.createdAt.toISOString(),actorName:row.actorName||"Sistema"}));
