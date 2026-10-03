@@ -46,3 +46,6 @@ test("webhook signing refuses weak configured secrets",()=>{assert.match(contact
 
 
 test("webhook delivery rejects partial endpoint or secret configuration",()=>{assert.match(contact,/\(url && !secret\) \|\| \(!url && secret\)/);assert.match(contact,/must be configured together/)});
+
+
+test("webhook failures persist sanitized operational errors only",()=>{assert.match(source,/storedError/);assert.match(source,/Webhook request timed out\./);assert.match(source,/Webhook delivery failed\./);assert.doesNotMatch(source,/lastError: message\.slice/);});
