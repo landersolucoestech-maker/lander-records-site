@@ -3,7 +3,7 @@ import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
 import { mockDataEnabled, mockMediaOptions, mockPostCategories, mockPostRecords } from "../../../../lib/mocks";
 import { postLinks, postProfiles } from "../../../../lib/db/news-management-schema";
-import { mediaAssets, postCategories, posts } from "../../../../lib/db/schema";
+import { mediaAssets, postCategories, posts, postTags, tags } from "../../../../lib/db/schema";
 import PostManager, { type PostRecord } from "./PostManager";
 
 export const dynamic = "force-dynamic";
@@ -58,7 +58,7 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
   if (filters.status === "archived") conditions.push(or(eq(posts.status, "archived"), isNotNull(posts.archivedAt))!);
   if (filters.category && filters.category !== "all") conditions.push(eq(postCategories.name, filters.category));
 
-  const [rows, categoryRows, mediaRows, profileRows, linkRows] = await Promise.all([
+  const [rows, categoryRows, mediaRows, profileRows, linkRows, tagRows, postTagRows] = await Promise.all([
     db.select({
       id: posts.id,
       title: posts.title,
@@ -95,6 +95,8 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
       .orderBy(asc(mediaAssets.originalFilename)),
     db.select().from(postProfiles),
     db.select().from(postLinks),
+    db.select({ id: tags.id, name: tags.name }).from(tags).orderBy(asc(tags.name)),
+    db.select().from(postTags),
   ]);
 
   const profileMap = new Map(profileRows.map((profile) => [profile.postId, profile]));
@@ -121,6 +123,7 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
       authorMediaId: profile?.authorMediaId || "",
       authorImage: profile?.authorMediaId ? mediaMap.get(profile.authorMediaId) || "" : "",
       links: Object.fromEntries(linkRows.filter((row) => row.postId === post.id).map((row) => [row.platform, row.url])),
+      tagIds: postTagRows.filter((row) => row.postId === post.id).map((row) => row.tagId),
       featuredOnHome: post.featuredOnHome,
       homePosition: post.homePosition,
       isPubliclyVisible: post.isPubliclyVisible,
@@ -144,6 +147,7 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
     initialMode={initialMode}
     media={mediaRows}
     posts={records}
+    tags={tagRows}
     saved={filters.saved === "1"}
   />;
 }
