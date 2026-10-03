@@ -177,3 +177,5 @@ test("token exchange disables redirects, has a timeout, and sanitizes provider e
 
 
 test("home Spotify refresh does not log provider error details",()=>{const source=fs.readFileSync(require.resolve("../lib/integrations/sync.ts"),"utf8");assert.match(source,/logger\.error\("spotify_home_refresh_failed"\)/);assert.doesNotMatch(source,/console\.error\("\[spotify-home\]/);});
+
+test("Spotify callback bounds provider-controlled query parameters",()=>{const source=fs.readFileSync(require.resolve("../app/api/integrations/spotify/callback/route.ts"),"utf8");assert.match(source,/code\.length > 4096/);assert.match(source,/state\.length > 128/);assert.match(source,/providerError\?\.length/);});
