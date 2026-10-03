@@ -63,6 +63,12 @@ jobs:
       - name: Apply disposable preview migrations
         run: npm run db:migrate
 
+      - name: Verify preview migration repeatability
+        run: npm run db:migrate
+
+      - name: Validate preview content contract
+        run: npm run validate:content
+
       - name: Admin regression tests
         run: node --test tests/unit/admin-dashboard-refactor.test.mjs tests/unit/admin-dashboard-visual-contract.test.mjs tests/unit/admin-navigation.test.mjs tests/unit/artists-manager-contract.test.mjs tests/unit/pages-manager-contract.test.mjs tests/unit/mock-data-contract.test.mjs tests/unit/news-manager-contract.test.mjs tests/unit/tag-management.test.mjs tests/unit/production-readiness.test.mjs tests/auth/development-bypass.test.mjs
 
