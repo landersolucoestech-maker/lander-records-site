@@ -433,7 +433,8 @@ export async function uploadMedia(formData: FormData) {
 export async function archiveMedia(formData: FormData) {
   const session = await requirePersistentAdmin("admin");
   const id = requiredUuid(formData, "id", "Mídia");
-  await getDb().update(mediaAssets).set({ status: "archived", updatedBy: session.user.id, updatedAt: new Date() }).where(eq(mediaAssets.id, id));
+  const archived = await getDb().update(mediaAssets).set({ status: "archived", updatedBy: session.user.id, updatedAt: new Date() }).where(eq(mediaAssets.id, id)).returning({ id: mediaAssets.id });
+  if (!archived[0]) throw new Error("Mídia não encontrada.");
   await audit(session.user.id, "media.archived", "media_asset", id);
   revalidatePath("/admin/media");
 }
