@@ -63,7 +63,8 @@ function summarize(items: Array<typeof navigationItems.$inferSelect>): Navigatio
 export default async function NavigationPage({ searchParams }: { searchParams: Promise<NavigationFilters> }) {
   const session = await requireAdmin();
   const filters = await searchParams;
-  const items = mockDataEnabled()
+  const mockMode = mockDataEnabled();
+  const items = mockMode
     ? mockNavigation.map((item) => ({
         id:item.id,menuKey:item.menuKey,parentId:item.parentId,parentLabel:null,label:item.label,url:item.url,linkType:item.linkType,
         position:item.position,enabled:item.enabled,newTab:item.newTab,depth:0,childCount:0,issue:null,safeDestination:true,
@@ -73,5 +74,5 @@ export default async function NavigationPage({ searchParams }: { searchParams: P
   const filtered = items.filter((item) => (!needle || `${item.label} ${item.url}`.toLocaleLowerCase("pt-BR").includes(needle)) && (!filters.status || filters.status === "all" || (filters.status === "active" ? item.enabled : !item.enabled)) && (!filters.type || filters.type === "all" || item.linkType === filters.type) && (!filters.menu || filters.menu === "all" || item.menuKey === filters.menu) && (!filters.hierarchy || filters.hierarchy === "all" || (filters.hierarchy === "root" ? !item.parentId : Boolean(item.parentId))));
   const metrics = { total: items.length, active: items.filter((item) => item.enabled).length, inactive: items.filter((item) => !item.enabled).length, external: items.filter((item) => item.linkType === "external").length };
   const message = filters.error ? { kind: "error" as const, text: errorMessages[filters.error] || "A operação não pôde ser concluída." } : filters.saved ? { kind: "success" as const, text: filters.saved === "deleted" ? "Item de navegação excluído." : "Item de navegação salvo." } : null;
-  return <NavigationManager allItems={items} canDelete={session.source === "session" && (session.user.role === "admin" || session.user.role === "owner")} canEdit={session.source === "session" && session.user.role !== "viewer"} initialFilters={filters} items={filtered} message={message} metrics={metrics} />;
+  return <NavigationManager allItems={items} canDelete={!mockMode && session.source === "session" && (session.user.role === "admin" || session.user.role === "owner")} canEdit={!mockMode && session.source === "session" && session.user.role !== "viewer"} initialFilters={filters} items={filtered} message={message} metrics={metrics} />;
 }
