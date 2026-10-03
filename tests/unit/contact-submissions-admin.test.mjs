@@ -21,3 +21,6 @@ test("contact submissions expose a persistent operational workflow", () => {
   assert.match(navigation, /href: "\/admin\/contacts"/);
   assert.match(preview, /"\/admin\/contacts"/);
 });
+
+
+test("contact topics in historical submissions cannot be deleted",()=>{const actions=read("app/admin/actions.ts");assert.match(actions,/from\(contactSubmissions\)\.where\(eq\(contactSubmissions\.topicId, id\)\)/);assert.match(actions,/Desative-o para preservar o histórico/);});
