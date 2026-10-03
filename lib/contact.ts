@@ -88,6 +88,7 @@ export async function retryDueOutboxEvents(limit = OUTBOX_RETRY_BATCH_SIZE) {
 export async function dispatchOutboxEvent(outboxId: string) {
   const url = process.env.LANDER_SAAS_WEBHOOK_URL;
   const secret = process.env.LANDER_SAAS_WEBHOOK_SECRET;
+  if ((url && !secret) || (!url && secret)) throw new Error("LANDER_SAAS_WEBHOOK_URL and LANDER_SAAS_WEBHOOK_SECRET must be configured together.");
   if (secret && secret.length < 32) throw new Error("LANDER_SAAS_WEBHOOK_SECRET must contain at least 32 characters.");
   const db = getDb();
 
