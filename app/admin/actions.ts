@@ -332,14 +332,11 @@ export async function updateCompanySettings(formData: FormData) {
   assertMaxLength(location, 180, "Localização");
   assertMaxLength(address, 500, "Endereço");
   assertMaxLength(hours, 500, "Horários");
-  await getDb().update(siteSettings).set({
-    contactEmail,
-    contactPhone,
-    location,
-    address,
-    hours,
-    updatedAt: new Date(),
-  }).where(eq(siteSettings.id, "site"));
+  const companyValues = { contactEmail, contactPhone, location, address, hours, updatedAt: new Date() };
+  await getDb().insert(siteSettings).values({ id: "site", ...companyValues }).onConflictDoUpdate({
+    target: siteSettings.id,
+    set: companyValues,
+  });
   await audit(session.user.id, "site_settings.company_updated", "site_settings", "site");
   revalidatePublic();
   revalidatePath("/admin/settings");
@@ -355,7 +352,7 @@ export async function updateIdentitySettings(formData: FormData) {
   const defaultSeoDescription = text(formData, "defaultSeoDescription");
   assertMaxLength(tagline, 500, "Tagline");
   assertMaxLength(defaultSeoDescription, 1000, "Descrição SEO padrão");
-  await getDb().update(siteSettings).set({
+  const identityValues = {
     brandName,
     tagline,
     defaultSeoTitle,
@@ -363,7 +360,11 @@ export async function updateIdentitySettings(formData: FormData) {
     logoMediaId: optionalUuid(formData, "logoMediaId", "Logo"),
     socialImageMediaId: optionalUuid(formData, "socialImageMediaId", "Imagem social"),
     updatedAt: new Date(),
-  }).where(eq(siteSettings.id, "site"));
+  };
+  await getDb().insert(siteSettings).values({ id: "site", ...identityValues }).onConflictDoUpdate({
+    target: siteSettings.id,
+    set: identityValues,
+  });
   await audit(session.user.id, "site_settings.identity_updated", "site_settings", "site");
   revalidatePublic();
   revalidatePath("/admin/settings");
@@ -389,9 +390,16 @@ export async function upsertSocialLink(formData: FormData) {
     updatedAt: new Date(),
   };
   const db = getDb();
-  if (id) await db.update(socialLinks).set(values).where(eq(socialLinks.id, id));
-  else await db.insert(socialLinks).values(values);
-  await audit(session.user.id, id ? "social_link.updated" : "social_link.created", "social_link", id || null, values);
+  let resolvedId = id;
+  if (id) {
+    const updated = await db.update(socialLinks).set(values).where(eq(socialLinks.id, id)).returning({ id: socialLinks.id });
+    if (!updated[0]) throw new Error("Link social não encontrado.");
+  } else {
+    const inserted = await db.insert(socialLinks).values(values).returning({ id: socialLinks.id });
+    resolvedId = inserted[0]?.id || null;
+    if (!resolvedId) throw new Error("Não foi possível criar o link social.");
+  }
+  await audit(session.user.id, id ? "social_link.updated" : "social_link.created", "social_link", resolvedId, values);
   revalidatePublic();
   revalidatePath("/admin/settings");
 }
