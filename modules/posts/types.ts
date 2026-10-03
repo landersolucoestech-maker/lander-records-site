@@ -12,6 +12,7 @@ export type PublicPost = {
   seoDescription: string;
   canonicalUrl: string;
   category: { id: string; name: string; slug: string } | null;
+  tags: Array<{ id: string; name: string; slug: string }>;
   coverImage: string;
   ogImage: string;
   updatedAt: Date;
