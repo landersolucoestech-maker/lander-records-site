@@ -8,6 +8,16 @@ const OUTBOX_RETRY_MAX_BATCH_SIZE = 100;
 const OUTBOX_PENDING_RECOVERY_MS = 5 * 60 * 1000;
 const OUTBOX_RETRY_CLAIM_MS = 15 * 60 * 1000;
 const OUTBOX_RETRY_LOCK_KEY = 1735289204;
+const WEBHOOK_TIMEOUT_MS = 4_000;
+
+function validatedWebhookUrl(raw: string) {
+  let url: URL;
+  try { url = new URL(raw); } catch { throw new Error("LANDER_SAAS_WEBHOOK_URL inválida."); }
+  const loopback = url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "[::1]";
+  if ((url.protocol !== "https:" && !(process.env.NODE_ENV !== "production" && loopback && url.protocol === "http:"))
+    || url.username || url.password || url.hash) throw new Error("LANDER_SAAS_WEBHOOK_URL deve usar HTTPS sem credenciais embutidas.");
+  return url.toString();
+}
 
 export function hashIp(ip: string) {
   const salt = process.env.CONTACT_IP_HASH_SALT;
@@ -102,10 +112,10 @@ export async function dispatchOutboxEvent(outboxId: string) {
   });
   const signature = createHmac("sha256", secret).update(body).digest("hex");
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 4000);
+  const timer = setTimeout(() => controller.abort(), WEBHOOK_TIMEOUT_MS);
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch(validatedWebhookUrl(url), {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -114,6 +124,7 @@ export async function dispatchOutboxEvent(outboxId: string) {
       },
       body,
       signal: controller.signal,
+      redirect: "error",
     });
 
     if (!response.ok) {
