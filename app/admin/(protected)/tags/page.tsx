@@ -1,7 +1,6 @@
 import { asc } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/db";
-import { mockDataEnabled } from "../../../../lib/mocks";
 import { tags } from "../../../../lib/db/schema";
 import { mockDataEnabled, mockPostTags } from "../../../../lib/mocks";
 import { deleteTag, upsertTag } from "../../tag-actions";
@@ -12,7 +11,8 @@ export const dynamic = "force-dynamic";
 
 export default async function TagsPage() {
   const session = await requireAdmin();
-  const rows = mockDataEnabled() ? mockPostTags.map((tag) => ({ ...tag, slug: tag.name.toLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") })) : await getDb().select().from(tags).orderBy(asc(tags.name));
+  const mockMode = mockDataEnabled();
+  const rows = mockMode ? mockPostTags.map((tag) => ({ ...tag, slug: tag.name.toLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") })) : await getDb().select().from(tags).orderBy(asc(tags.name));
   const canEdit = !mockMode && session.source === "session" && session.user.role !== "viewer";
   const canDelete = !mockMode && session.source === "session" && (session.user.role === "admin" || session.user.role === "owner");
   return <div className="adminDashboard" data-testid="tags-manager">
