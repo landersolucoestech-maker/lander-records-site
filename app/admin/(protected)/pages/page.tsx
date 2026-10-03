@@ -15,8 +15,8 @@ function Metric({ accent, icon, label, value, hint }: { accent: "red" | "blue" |
 
 export default async function PagesAdminPage() {
   const session = await requireAdmin();
-  const db = getDb();
   const mockMode = mockDataEnabled();
+  const db = mockMode ? null : getDb();
   const [rows, sections] = mockMode ? [
     mockPages.map(({ id, key, title, slug, enabled, seoTitle, seoDescription, updatedAt }) => ({ id, key, title, slug, enabled, seoTitle, seoDescription, updatedAt })),
     mockPageSections.map(({ id, pageId, sectionKey, type, position, enabled, title, subtitle }) => ({ id, pageId, sectionKey, type, position, enabled, title, subtitle })),
