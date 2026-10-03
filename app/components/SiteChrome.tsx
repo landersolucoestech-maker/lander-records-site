@@ -24,17 +24,17 @@ const iconByPlatform: Record<string, ReactNode> = {
 type ChromeView = {
   settings: { brandName: string; contactPhone: string; contactEmail: string; address: string; hours: string };
   logoUrl: string;
-  navigation: Array<{ id: string; menuKey: string; parentId: string | null; label: string; url: string; newTab: boolean }>;
+  navigation: Array<{ id: string; menuKey: string; parentId: string | null; label: string; url: string; newTab: boolean; enabled: boolean }>;
   socials: Array<{ id: string; label: string; url: string; platform: string }>;
 };
 
 const fallbackLogo = "/lander-records-brand.svg";
 const fallbackNavigation: ChromeView["navigation"] = [
-  { id: "fallback-home", menuKey: "primary", parentId: null, label: "Início", url: "/", newTab: false },
-  { id: "fallback-about", menuKey: "primary", parentId: null, label: "Sobre Nós", url: "/sobre-nos/", newTab: false },
-  { id: "fallback-artists", menuKey: "primary", parentId: null, label: "Artistas", url: "/artistas/", newTab: false },
-  { id: "fallback-news", menuKey: "primary", parentId: null, label: "Notícias", url: "/noticias/", newTab: false },
-  { id: "fallback-contact", menuKey: "primary", parentId: null, label: "Contato", url: "/contato/", newTab: false },
+  { id: "fallback-home", menuKey: "primary", parentId: null, label: "Início", url: "/", newTab: false, enabled: true },
+  { id: "fallback-about", menuKey: "primary", parentId: null, label: "Sobre Nós", url: "/sobre-nos/", newTab: false, enabled: true },
+  { id: "fallback-artists", menuKey: "primary", parentId: null, label: "Artistas", url: "/artistas/", newTab: false, enabled: true },
+  { id: "fallback-news", menuKey: "primary", parentId: null, label: "Notícias", url: "/noticias/", newTab: false, enabled: true },
+  { id: "fallback-contact", menuKey: "primary", parentId: null, label: "Contato", url: "/contato/", newTab: false, enabled: true },
 ];
 
 async function getChromeView(): Promise<ChromeView> {
