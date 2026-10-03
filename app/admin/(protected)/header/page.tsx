@@ -1,5 +1,6 @@
 import { requireAdmin } from "../../../../lib/auth";
 import { getSiteChrome } from "../../../../lib/content";
+import { mockDataEnabled } from "../../../../lib/mocks";
 import { HeaderManagerView } from "./HeaderManagerView";
 
 export const dynamic = "force-dynamic";
@@ -16,5 +17,5 @@ export default async function HeaderPage() {
     globalLogoUrl: chrome.logoUrl,
     primaryItems,
     publicLogoSrc: chrome.logoUrl || "/lander-records-brand.svg",
-  }} viewer={session.source !== "session" || session.user.role === "viewer"} />;
+  }} viewer={mockDataEnabled() || session.source !== "session" || session.user.role === "viewer"} />;
 }
