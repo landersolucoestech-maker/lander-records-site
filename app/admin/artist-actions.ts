@@ -256,7 +256,7 @@ export async function saveArtistAction(_: ArtistActionState, formData: FormData)
     await cleanupPreparedUploads(cardUpload, heroUpload);
     const message = error instanceof Error ? error.message : "Falha ao salvar artista.";
     if (/duplicate key|unique/i.test(message)) return { ok: false, error: "Já existe um artista com esse slug." };
-    return { ok: false, error: message };
+    return { ok: false, error: "Não foi possível salvar o artista. Tente novamente." };
   }
 
   await audit(session.user.id, id ? "artist.updated" : "artist.created", "artist", artistId, { name, slug, status, destinations: destinationIds.length, soundchartsIdentityInvalidated: soundchartsLinksChanged });
