@@ -79,6 +79,10 @@ function validAdminEmail(value: string) {
   return value.length <= 320 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
+function assertMaxLength(value: string, max: number, label: string) {
+  if (value.length > max) throw new Error(`${label} excede o limite permitido.`);
+}
+
 function assertAdminIdentity(name: string, email?: string) {
   if (!name || name.length > 180) throw new Error("Nome de usuário inválido.");
   if (email !== undefined && !validAdminEmail(email)) throw new Error("E-mail de usuário inválido.");
@@ -308,12 +312,20 @@ export async function updateCompanySettings(formData: FormData) {
   const session = await requirePersistentAdmin("admin");
   const contactEmail = text(formData, "contactEmail");
   if (contactEmail && !validAdminEmail(contactEmail)) throw new Error("E-mail de contato inválido.");
+  const contactPhone = text(formData, "contactPhone");
+  const location = text(formData, "location");
+  const address = text(formData, "address");
+  const hours = text(formData, "hours");
+  assertMaxLength(contactPhone, 80, "Telefone");
+  assertMaxLength(location, 180, "Localização");
+  assertMaxLength(address, 500, "Endereço");
+  assertMaxLength(hours, 500, "Horários");
   await getDb().update(siteSettings).set({
     contactEmail,
-    contactPhone: text(formData, "contactPhone"),
-    location: text(formData, "location"),
-    address: text(formData, "address"),
-    hours: text(formData, "hours"),
+    contactPhone,
+    location,
+    address,
+    hours,
     updatedAt: new Date(),
   }).where(eq(siteSettings.id, "site"));
   await audit(session.user.id, "site_settings.company_updated", "site_settings", "site");
@@ -327,11 +339,15 @@ export async function updateIdentitySettings(formData: FormData) {
   const defaultSeoTitle = text(formData, "defaultSeoTitle");
   if (!brandName || brandName.length > 180) throw new Error("Nome da marca inválido.");
   if (defaultSeoTitle.length > 180) throw new Error("Título SEO padrão inválido.");
+  const tagline = text(formData, "tagline");
+  const defaultSeoDescription = text(formData, "defaultSeoDescription");
+  assertMaxLength(tagline, 500, "Tagline");
+  assertMaxLength(defaultSeoDescription, 1000, "Descrição SEO padrão");
   await getDb().update(siteSettings).set({
     brandName,
-    tagline: text(formData, "tagline"),
+    tagline,
     defaultSeoTitle,
-    defaultSeoDescription: text(formData, "defaultSeoDescription"),
+    defaultSeoDescription,
     logoMediaId: optionalUuid(formData, "logoMediaId", "Logo"),
     socialImageMediaId: optionalUuid(formData, "socialImageMediaId", "Imagem social"),
     updatedAt: new Date(),
@@ -347,9 +363,14 @@ export async function upsertSocialLink(formData: FormData) {
   const id = idValue ? uuidOrNull(idValue) : null;
   if (idValue && !id) throw new Error("Link social inválido.");
   const url = normalizeExternalUrl(text(formData, "url"));
+  const platform = text(formData, "platform");
+  const label = text(formData, "label");
+  assertMaxLength(platform, 80, "Plataforma");
+  assertMaxLength(label, 180, "Rótulo");
+  assertMaxLength(url, 2000, "URL social");
   const values = {
-    platform: text(formData, "platform"),
-    label: text(formData, "label"),
+    platform,
+    label,
     url,
     position: integer(formData, "position"),
     active: checked(formData, "active"),
