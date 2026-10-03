@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
+import { readFileSync } from "node:fs";
+
+const soundchartsSource = readFileSync(new URL("../../lib/integrations/soundcharts.ts", import.meta.url), "utf8");
 import {
   normalizeExternalUrl,
   normalizePlatformUrl,
@@ -58,3 +61,6 @@ test("Soundcharts identity resolution fails closed when identifier ownership can
 
 
 test("external URL normalization rejects oversized inputs",()=>{assert.throws(()=>normalizeExternalUrl("https://example.com/"+("a".repeat(2100))),/limite permitido/)});
+
+
+test("Soundcharts bearer requests have timeout and refuse redirects",()=>{assert.match(soundchartsSource,/SOUNDCHARTS_REQUEST_TIMEOUT_MS = 10_000/);assert.ok((soundchartsSource.match(/redirect: "error"/g)||[]).length>=2);assert.ok((soundchartsSource.match(/AbortSignal\.timeout\(SOUNDCHARTS_REQUEST_TIMEOUT_MS\)/g)||[]).length>=2)});
