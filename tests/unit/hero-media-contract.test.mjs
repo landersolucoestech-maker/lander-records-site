@@ -64,3 +64,6 @@ test("Public Home resolves and renders the configured hero image or video", () =
   assert.match(homeStyles, /\.homeHeroMedia\s*\{[^}]*object-fit:\s*cover/);
   assert.match(homeStyles, /\.homeHeroHasMedia \.homeHeroBackdrop/);
 });
+
+
+test("privileged storage client validates origin and bucket before use",()=>{const source=fs.readFileSync(new URL("../../lib/storage/supabase-storage.ts",import.meta.url),"utf8");assert.match(source,/url\.protocol !== "https:"/);assert.match(source,/url\.username \|\| url\.password \|\| url\.search \|\| url\.hash/);assert.match(source,/SUPABASE_STORAGE_BUCKET is invalid/);assert.match(source,/\^\[A-Za-z0-9\]/);});
