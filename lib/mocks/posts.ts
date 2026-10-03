@@ -10,6 +10,12 @@ export const mockPostCategories: MockPostCategory[] = [
   { id: "mock-post-cat-editorial", name: "Editorial", slug: "editorial", position: 5, active: true, showAsFilter: true },
 ];
 
+export const mockPostTags = [
+  { id: "mock-tag-lancamento", name: "Lançamento" },
+  { id: "mock-tag-bastidores", name: "Bastidores" },
+  { id: "mock-tag-mercado", name: "Mercado musical" },
+];
+
 const categoryBySlug = Object.fromEntries(mockPostCategories.map((item) => [item.slug, item]));
 
 function post(input: {
