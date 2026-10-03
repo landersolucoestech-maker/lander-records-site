@@ -40,14 +40,14 @@ export async function getPublishedPosts(featuredOnly = false): Promise<PublicPos
 export async function getPublishedPostBySlug(slug: string): Promise<PublicPost | null> {
   if (mockDataEnabled()) return mockPosts.find((post) => post.slug === slug) ?? null;
   const db = getDb();
-  const [rows, mediaRows, tagRows] = await Promise.all([
-    db.select({ post: posts, categoryId: postCategories.id, categoryName: postCategories.name, categorySlug: postCategories.slug, coverUrl: mediaAssets.url })
-      .from(posts).leftJoin(postCategories, eq(posts.categoryId, postCategories.id)).leftJoin(mediaAssets, eq(posts.coverMediaId, mediaAssets.id)).where(and(eq(posts.slug, slug), publishablePostWhere())).limit(1),
-    db.select().from(mediaAssets).where(eq(mediaAssets.status, "active")),
-    db.select({ postId: postTags.postId, id: tags.id, name: tags.name, slug: tags.slug }).from(postTags).innerJoin(tags, eq(postTags.tagId, tags.id)),
-  ]);
+  const rows = await db.select({ post: posts, categoryId: postCategories.id, categoryName: postCategories.name, categorySlug: postCategories.slug, coverUrl: mediaAssets.url })
+    .from(posts).leftJoin(postCategories, eq(posts.categoryId, postCategories.id)).leftJoin(mediaAssets, eq(posts.coverMediaId, mediaAssets.id)).where(and(eq(posts.slug, slug), publishablePostWhere())).limit(1);
   const row = rows[0];
   if (!row) return null;
+  const [mediaRows, tagRows] = await Promise.all([
+    row.post.ogMediaId ? db.select().from(mediaAssets).where(and(eq(mediaAssets.status, "active"), eq(mediaAssets.id, row.post.ogMediaId))).limit(1) : Promise.resolve([]),
+    db.select({ postId: postTags.postId, id: tags.id, name: tags.name, slug: tags.slug }).from(postTags).innerJoin(tags, eq(postTags.tagId, tags.id)).where(eq(postTags.postId, row.post.id)),
+  ]);
   const mediaMap = new Map(mediaRows.map((media) => [media.id, media.url]));
   return {
     ...row.post,
