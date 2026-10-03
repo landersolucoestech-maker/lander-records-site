@@ -82,6 +82,7 @@ test("synthetic admin loaders do not expose persistent edit permissions", () => 
   assert.match(home, /canEdit=\{!mockDataEnabled\(\) && session\.source === "session" && session\.user\.role !== "viewer"\}/);
   const artistsPage = fs.readFileSync("app/admin/(protected)/artists/page.tsx", "utf8");
   assert.match(artistsPage, /const canEdit = !mockMode && session\.source === "session" && session\.user\.role !== "viewer"/);
+  assert.match(artistsPage, /if \(mockMode\)[\s\S]*<ArtistManager artists=\{mockArtistSummaries\} canDelete canEdit[\s\S]*developmentMode/);
   assert.match(artistsPage, /<ArtistManager[\s\S]*canEdit=\{canEdit\}/);
 });
 
