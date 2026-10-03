@@ -210,13 +210,13 @@ export async function spotifyApi(accessToken: string, urlOrPath: string, retryRa
 export async function completeSpotifyAuthorization(code: string, state: string, adminUserId: string) {
   const { redirectUri } = oauthConfig();
   const db = getDb();
-  const rows = await db.select().from(spotifyOauthStates).where(and(
-    eq(spotifyOauthStates.stateHash, hashState(state)),
+  const stateHash = hashState(state);
+  const consumed = await db.delete(spotifyOauthStates).where(and(
+    eq(spotifyOauthStates.stateHash, stateHash),
     eq(spotifyOauthStates.adminUserId, adminUserId),
     gt(spotifyOauthStates.expiresAt, new Date()),
-  )).limit(1);
-  if (!rows[0]) throw new Error("Estado OAuth do Spotify inválido ou expirado.");
-  await db.delete(spotifyOauthStates).where(eq(spotifyOauthStates.stateHash, hashState(state)));
+  )).returning({ stateHash: spotifyOauthStates.stateHash });
+  if (!consumed[0]) throw new Error("Estado OAuth do Spotify inválido ou expirado.");
 
   const token = await spotifyTokenRequest(new URLSearchParams({
     grant_type: "authorization_code",
