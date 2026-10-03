@@ -10,7 +10,7 @@ import { normalizePlatformUrl } from "../../lib/integrations/identity";
 import { normalizeCanonicalOverride } from "../../lib/seo";
 import { deleteMedia as deleteStoredMedia, uploadMedia as uploadStoredMedia } from "@/lib/storage";
 import { postLinks, postProfiles } from "../../lib/db/news-management-schema";
-import { mediaAssets, posts, slugRedirects } from "../../lib/db/schema";
+import { mediaAssets, posts, postTags, slugRedirects, tags } from "../../lib/db/schema";
 import { slugify } from "../../lib/slug";
 
 export type PostActionState = { ok: boolean; error?: string };
@@ -82,6 +82,7 @@ export async function savePostAction(_: PostActionState, formData: FormData): Pr
   const authorName = text(formData, "authorName");
   const excerpt = text(formData, "excerpt");
   const contentMarkdown = text(formData, "contentMarkdown");
+  const tagIds = formData.getAll("tagIds").map((value) => uuidOrNull(String(value))).filter((value): value is string => Boolean(value));
 
   if (!title || !slug) return { ok: false, error: "Título e slug são obrigatórios." };
   if (!authorName) return { ok: false, error: "Autor é obrigatório." };
@@ -201,6 +202,13 @@ export async function savePostAction(_: PostActionState, formData: FormData): Pr
 
       await tx.delete(postLinks).where(and(eq(postLinks.postId, resolvedId), inArray(postLinks.platform, socialPlatforms)));
       if (links.length) await tx.insert(postLinks).values(links.map((item) => ({ postId: resolvedId!, platform: item.platform, url: item.url, updatedAt: new Date() })));
+
+      await tx.delete(postTags).where(eq(postTags.postId, resolvedId));
+      if (tagIds.length) {
+        const validTags = await tx.select({ id: tags.id }).from(tags).where(inArray(tags.id, tagIds));
+        if (validTags.length !== new Set(tagIds).size) throw new Error("Uma ou mais tags são inválidas.");
+        await tx.insert(postTags).values(validTags.map((tag) => ({ postId: resolvedId!, tagId: tag.id })));
+      }
 
       return resolvedId;
     });
