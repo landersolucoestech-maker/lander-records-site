@@ -100,7 +100,8 @@ export async function updatePageSection(formData: FormData) {
     updatedAt: new Date(),
   };
 
-  await context.db.update(pageSections).set(values).where(and(eq(pageSections.id, context.section.id), eq(pageSections.pageId, context.page.id)));
+  const updatedSection = await context.db.update(pageSections).set(values).where(and(eq(pageSections.id, context.section.id), eq(pageSections.pageId, context.page.id))).returning({ id: pageSections.id });
+  if (!updatedSection[0]) throw new Error("Página ou seção não encontrada.");
   await audit(session.user.id, "page_section.updated", "page_section", context.section.id, {
     pageId: context.page.id,
     pageKey: context.page.key,
@@ -186,7 +187,8 @@ export async function updatePageSectionItem(formData: FormData) {
     updatedAt: new Date(),
   };
 
-  await context.db.update(pageSectionItems).set(values).where(and(eq(pageSectionItems.id, context.item.id), eq(pageSectionItems.sectionId, context.section.id)));
+  const updatedItem = await context.db.update(pageSectionItems).set(values).where(and(eq(pageSectionItems.id, context.item.id), eq(pageSectionItems.sectionId, context.section.id))).returning({ id: pageSectionItems.id });
+  if (!updatedItem[0]) throw new Error("Item não encontrado.");
   await audit(session.user.id, "page_section_item.updated", "page_section_item", context.item.id, {
     pageId: context.page.id,
     sectionId: context.section.id,
@@ -207,7 +209,8 @@ export async function deletePageSectionItem(formData: FormData) {
     throw new Error("Esta seção não permite exclusão de itens pelo CMS.");
   }
 
-  await context.db.delete(pageSectionItems).where(and(eq(pageSectionItems.id, context.item.id), eq(pageSectionItems.sectionId, context.section.id)));
+  const deletedItem = await context.db.delete(pageSectionItems).where(and(eq(pageSectionItems.id, context.item.id), eq(pageSectionItems.sectionId, context.section.id))).returning({ id: pageSectionItems.id });
+  if (!deletedItem[0]) throw new Error("Item não encontrado.");
   await audit(session.user.id, "page_section_item.deleted", "page_section_item", context.item.id, {
     pageId: context.page.id,
     sectionId: context.section.id,
