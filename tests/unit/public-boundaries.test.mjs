@@ -38,4 +38,4 @@ test("integration cron compares bearer secrets in constant time",async()=>{const
 
 test("protected admin has a non-leaking recovery boundary",async()=>{const source=await readFile(new URL("../../app/admin/(protected)/error.tsx",import.meta.url),"utf8");assert.match(source,/Tentar novamente/);assert.match(source,/reset\(\)/);assert.doesNotMatch(source,/error\.(message|stack|digest)/);});
 
-test("cron endpoint does not expose missing secret configuration details",()=>{assert.doesNotMatch(cron,/CRON_SECRET not configured/);assert.match(cron,/if \(!secret\) return NextResponse\.json\(\{ ok: false \}, \{ status: 503 \}\)/);});
+test("cron endpoint does not expose missing secret configuration details",async()=>{const cron=await readFile(new URL("../../app/api/cron/integrations/route.ts",import.meta.url),"utf8");assert.doesNotMatch(cron,/CRON_SECRET not configured/);assert.match(cron,/if \(!secret\) return NextResponse\.json\(\{ ok: false \}, \{ status: 503 \}\)/);});
