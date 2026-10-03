@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFile } from "node:fs/promises";
 import { resolveCanonicalUrl } from "../../lib/seo.ts";
 
 test("canonical URLs use the configured site route when no valid override exists", () => {
