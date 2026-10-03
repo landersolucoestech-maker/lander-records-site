@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import sharp from "sharp";
 import {
   audit,
+  createAdminSession,
   destroyAdminSession,
   getAdminSession,
   hashPassword,
@@ -137,8 +138,9 @@ export async function changeOwnPassword(formData: FormData) {
       updatedAt: new Date(),
     }).where(eq(adminUsers.id, user.id)).returning({ id: adminUsers.id });
     if (!updated[0]) throw new Error("Usuário não encontrado.");
-    await tx.delete(adminSessions).where(and(eq(adminSessions.userId, user.id), ne(adminSessions.id, session.sessionId)));
+    await tx.delete(adminSessions).where(eq(adminSessions.userId, user.id));
   });
+  await createAdminSession(user.id);
   await audit(user.id, "auth.password_changed", "admin_user", user.id);
   redirect("/admin");
 }
