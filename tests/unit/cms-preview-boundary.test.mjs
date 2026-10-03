@@ -9,6 +9,8 @@ const layout = readFileSync("app/cms-preview/layout.tsx", "utf8");
 test("CMS preview is guarded twice and has no backend imports", () => {
   assert.match(page, /process\.env\.NODE_ENV !== "development"/);
   assert.match(layout, /process\.env\.NODE_ENV !== "development"/);
+  assert.match(page, /DEV_PREVIEW_PUBLIC_ACCESS !== "true"/);
+  assert.match(layout, /DEV_PREVIEW_PUBLIC_ACCESS !== "true"/);
   const source = `${component}\n${page}\n${layout}`;
   for (const forbidden of ["lib/db", "lib/auth", "db/schema", "admin/actions", "fetch(", '"use server"']) {
     assert.equal(source.includes(forbidden), false, `preview must not contain ${forbidden}`);
