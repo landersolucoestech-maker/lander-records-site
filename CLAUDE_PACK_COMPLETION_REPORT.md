@@ -78,3 +78,14 @@ Hostinger is the authorized hosting/deployment target. Vercel is prohibited by r
 - The stale admin preview Playwright suite was reconciled to current UI invariants rather than bypassed.
 - Prefetch-timing-dependent loading coverage was replaced with a deterministic accessible loading contract test.
 - Final validated browser run: 68 passed, 1 skipped; build and runtime smoke passed in the same required workflow.
+
+
+## Exhaustive follow-up audit — 2026-10-02
+- Dev Preview now runs the full regression suite and lint before publication, in addition to typecheck/build.
+- Disposable CMS preview is reachable only in development or the explicitly flagged disposable preview runtime and is checked through the preview workflow.
+- Integration cron bearer authentication uses constant-time comparison.
+- Outbound SaaS webhook destinations are validated and redirects are refused before signed payload delivery.
+- Owner bootstrap validates email/name inputs before database writes while preserving secret-safe logging.
+- Robots policy excludes the disposable CMS preview in addition to admin/API surfaces.
+- Login failures no longer disclose account lock state and the nonfunctional remember-session control was removed.
+- The established 50 MB hero-upload contract remains intact; an attempted tighter global body cap was rejected by regression evidence and reverted rather than weakening functionality.
