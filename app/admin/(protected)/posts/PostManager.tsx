@@ -22,6 +22,7 @@ export type PostRecord = {
   editorStatus: "draft" | "published" | "archived";
   category: string;
   categoryId: string;
+  tagIds: string[];
   authorName: string;
   publishedAt: string;
   publishedAtInput: string;
@@ -227,7 +228,7 @@ function ContentViewDialog({ canEdit, onClose, onEdit, post }: { canEdit: boolea
   </div>, document.body);
 }
 
-function ContentEditorForm({ canEdit, categories, initial, media, mode, onClose, onLocalSubmit }: { canEdit: boolean; categories: Option[]; initial?: PostRecord; media: MediaOption[]; mode: "create" | "edit"; onClose: () => void; onLocalSubmit?: (formData: FormData) => void | Promise<void> }) {
+function ContentEditorForm({ canEdit, categories, initial, media, mode, onClose, onLocalSubmit, tags }: { canEdit: boolean; categories: Option[]; initial?: PostRecord; media: MediaOption[]; tags: Option[]; mode: "create" | "edit"; onClose: () => void; onLocalSubmit?: (formData: FormData) => void | Promise<void> }) {
   const [state, action] = useActionState<PostActionState, FormData>(savePostAction, { ok: false });
   const [title, setTitle] = useState(initial?.title || "");
   const [slug, setSlug] = useState(initial?.slug || "");
@@ -257,7 +258,7 @@ function ContentEditorForm({ canEdit, categories, initial, media, mode, onClose,
           <div className={styles.formGrid}>
             <label><span>Título</span><input maxLength={240} name="title" onChange={(event) => changeTitle(event.target.value)} ref={titleRef} required value={title}/></label>
             <label><span>Slug</span><input maxLength={260} name="slug" onChange={(event) => { setSlugTouched(true); setSlug(event.target.value); }} placeholder="slug-da-publicacao" required value={slug}/></label>
-            <label><span>Categoria</span><select defaultValue={initial?.categoryId || ""} name="categoryId" required><option value="">Selecione</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></label>
+            <label><span>Categoria</span><select defaultValue={initial?.categoryId || ""} name="categoryId" required><option value="">Selecione</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></label><label><span>Tags</span><select defaultValue={initial?.tagIds || []} multiple name="tagIds" size={Math.min(Math.max(tags.length, 2), 6)}>{tags.map((tag) => <option key={tag.id} value={tag.id}>{tag.name}</option>)}</select></label>
             <label><span>Status</span><select defaultValue={initial?.editorStatus || "draft"} name="status"><option value="draft">Rascunho</option><option value="published">Publicado</option><option value="archived">Arquivado</option></select></label>
             <label><span>Data de publicação</span><input defaultValue={localDateTime(initial?.publishedAtInput)} name="publishedAt" type="datetime-local"/></label>
             <label><span>Autor</span><input maxLength={180} name="authorName" onChange={(event) => setAuthor(event.target.value)} required value={author}/></label>
@@ -314,7 +315,7 @@ function ContentEditorForm({ canEdit, categories, initial, media, mode, onClose,
   </>;
 }
 
-function ContentEditorModal({ canEdit, categories, media, mode, onClose, onLocalSubmit, post }: { canEdit: boolean; categories: Option[]; media: MediaOption[]; mode: "create" | "edit"; onClose: () => void; onLocalSubmit?: (formData: FormData) => void | Promise<void>; post?: PostRecord }) {
+function ContentEditorModal({ canEdit, categories, media, mode, onClose, onLocalSubmit, post, tags }: { canEdit: boolean; categories: Option[]; media: MediaOption[]; tags: Option[]; mode: "create" | "edit"; onClose: () => void; onLocalSubmit?: (formData: FormData) => void | Promise<void>; post?: PostRecord }) {
   const dialogRef = useRef<HTMLElement>(null);
   useDialogLifecycle(true, onClose, dialogRef);
   if (mode === "edit" && !post) return null;
@@ -324,12 +325,12 @@ function ContentEditorModal({ canEdit, categories, media, mode, onClose, onLocal
   return <div className={styles.modalBackdrop} onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }} role="presentation">
     <section aria-labelledby="content-modal-title" aria-modal="true" className={styles.modal} ref={dialogRef} role="dialog" tabIndex={-1}>
       <header className={styles.modalHeader}><div><span>{eyebrow}</span><h2 id="content-modal-title">{title}</h2><p>Preencha as informações editoriais da publicação em um único fluxo.</p></div><button aria-label="Fechar modal" className={styles.modalClose} onClick={onClose} type="button">×</button></header>
-      <ContentEditorForm canEdit={canEdit} categories={categories} initial={mode === "edit" ? post : undefined} media={media} mode={mode} onClose={onClose} onLocalSubmit={onLocalSubmit}/>
+      <ContentEditorForm canEdit={canEdit} categories={categories} tags={tags} initial={mode === "edit" ? post : undefined} media={media} mode={mode} onClose={onClose} onLocalSubmit={onLocalSubmit}/>
     </section>
   </div>;
 }
 
-export default function PostManager({ canDelete = false, canEdit = true, categories = [], deleted, developmentMode = false, initialId, initialMode, media = [], posts: initialPosts, preview = false, saved }: { canDelete?: boolean; canEdit?: boolean; categories?: Option[]; deleted?: boolean; developmentMode?: boolean; initialId?: string; initialMode?: ModalMode; media?: MediaOption[]; posts: PostRecord[]; preview?: boolean; saved?: boolean }) {
+export default function PostManager({ canDelete = false, canEdit = true, categories = [], deleted, developmentMode = false, initialId, initialMode, media = [], posts: initialPosts, preview = false, saved, tags = [] }: { canDelete?: boolean; canEdit?: boolean; categories?: Option[]; tags?: Option[]; deleted?: boolean; developmentMode?: boolean; initialId?: string; initialMode?: ModalMode; media?: MediaOption[]; posts: PostRecord[]; preview?: boolean; saved?: boolean }) {
   const [localPosts, setLocalPosts] = useState(initialPosts);
   const [localNotice, setLocalNotice] = useState("");
   const posts = developmentMode ? localPosts : initialPosts;
@@ -421,6 +422,7 @@ export default function PostManager({ canDelete = false, canEdit = true, categor
       editorStatus,
       category: categories.find((item) => item.id === categoryId)?.name || existing?.category || "Sem categoria",
       categoryId,
+      tagIds: formData.getAll("tagIds").map(String),
       authorName: localPostText(formData, "authorName") || "Lander Records",
       publishedAt: publishedDate && Number.isFinite(publishedDate.getTime()) ? postDisplayDate(publishedDate) : "",
       publishedAtInput,
@@ -563,6 +565,6 @@ export default function PostManager({ canDelete = false, canEdit = true, categor
       {developmentMode && !preview ? <button className={styles.deleteAction} onClick={() => deleteLocalPost(actionPost)} role="menuitem" type="button"><AdminIcon name="trash" size={14}/>Excluir</button> : canDelete && !preview ? <form action={deletePostAction} onSubmit={(event) => { const confirmed = window.confirm(`Excluir definitivamente “${actionPost.title}”?`); if (!confirmed) { event.preventDefault(); return; } closeActionMenu(); }}><input name="id" type="hidden" value={actionPost.id}/><button className={styles.deleteAction} role="menuitem" type="submit"><AdminIcon name="trash" size={14}/>Excluir</button></form> : <button aria-disabled="true" className={`${styles.deleteAction} ${styles.disabledAction}`} disabled role="menuitem" type="button"><AdminIcon name="trash" size={14}/>Excluir</button>}
     </div>, document.body) : null}
 
-    {modal?.mode === "view" && selectedPost ? <ContentViewDialog canEdit={canMutate && !preview} key={`view-${selectedPost.id}`} onClose={closeViewModal} onEdit={() => setModal({ mode: "edit", postId: selectedPost.id })} post={selectedPost}/> : modal ? <ContentEditorModal canEdit={canMutate && !preview} categories={categories} key={`${modal.mode}-${modal.postId || "new"}`} media={media} mode={modal.mode as "create" | "edit"} onClose={() => setModal(null)} onLocalSubmit={developmentMode ? saveLocalPost : undefined} post={selectedPost}/> : null}
+    {modal?.mode === "view" && selectedPost ? <ContentViewDialog canEdit={canMutate && !preview} key={`view-${selectedPost.id}`} onClose={closeViewModal} onEdit={() => setModal({ mode: "edit", postId: selectedPost.id })} post={selectedPost}/> : modal ? <ContentEditorModal canEdit={canMutate && !preview} categories={categories} tags={tags} key={`${modal.mode}-${modal.postId || "new"}`} media={media} mode={modal.mode as "create" | "edit"} onClose={() => setModal(null)} onLocalSubmit={developmentMode ? saveLocalPost : undefined} post={selectedPost}/> : null}
   </div>;
 }
