@@ -115,3 +115,5 @@ test("legacy checksum transition records recognition, not recovery of already er
 test("database connection cache closes a superseded client before replacing it",async()=>{const source=await read("lib/db/index.ts");assert.match(source,/state\.client\.end\(\{ timeout: 1 \}\)/);assert.match(source,/state\.databaseUrl !== databaseUrl/);});
 
 test("last-owner protection is serialized inside the admin user update transaction",async()=>{const source=await read("app/admin/actions.ts");assert.match(source,/pg_advisory_xact_lock\(1735289202\)/);assert.match(source,/const activeOwners = await tx\.select/);assert.match(source,/await tx\.update\(adminUsers\)/);});
+
+test("category update and delete actions verify affected rows before auditing success",async()=>{const source=await read("app/admin/actions.ts");for(const message of ["Categoria de artista não encontrada.","Categoria de notícia não encontrada."])assert.match(source,new RegExp(message.replace(/[.]/g,"\\.")));assert.match(source,/returning\(\{ id: artistCategories\.id \}\)/);assert.match(source,/returning\(\{ id: postCategories\.id \}\)/);});
