@@ -16,8 +16,9 @@ const artistActions = fs.readFileSync(new URL("../../app/admin/artist-actions.ts
 const soundcharts = fs.readFileSync(new URL("../../lib/integrations/soundcharts.ts", import.meta.url), "utf8");
 
 test("external identity normalization rejects executable, credentialed and ambiguous inputs", () => {
-  assert.equal(normalizeExternalUrl("http://www.instagram.com/lander/?utm_source=test#bio"), "https://instagram.com/lander");
+  assert.equal(normalizeExternalUrl("https://www.instagram.com/lander/?utm_source=test#bio"), "https://instagram.com/lander");
   for (const value of [
+    "http://www.instagram.com/lander",
     "javascript:alert(1)",
     "https://user:secret@instagram.com/lander",
     "https://instagram.com/lander\\evil",
