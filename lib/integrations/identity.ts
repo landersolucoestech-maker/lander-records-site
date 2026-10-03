@@ -21,6 +21,7 @@ const PLATFORM_HOSTS: Record<string, ReadonlySet<string>> = {
 export function normalizeExternalUrl(raw: string) {
   const value = raw.trim();
   if (!value) return "";
+  if (value.length > 2000) throw new Error("URL excede o limite permitido.");
   if (/[\u0000-\u001f\u007f\\]/.test(value)) throw new Error(`URL inválida: ${value}`);
   let url: URL;
   try {
