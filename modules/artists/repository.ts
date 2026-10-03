@@ -19,7 +19,7 @@ async function hydrateArtists(baseArtists: Array<typeof artists.$inferSelect>): 
       .from(artistCategoryRelations).innerJoin(artistCategories, eq(artistCategoryRelations.categoryId, artistCategories.id)).where(and(inArray(artistCategoryRelations.artistId, ids), eq(artistCategories.active, true))).orderBy(asc(artistCategoryRelations.position)),
     db.select().from(artistLinks).where(and(inArray(artistLinks.artistId, ids), eq(artistLinks.active, true))).orderBy(asc(artistLinks.position)),
     db.select().from(artistEmbeds).where(and(inArray(artistEmbeds.artistId, ids), eq(artistEmbeds.active, true))).orderBy(asc(artistEmbeds.position)),
-    db.select().from(mediaAssets).where(eq(mediaAssets.status, "active")),
+    db.select().from(mediaAssets).where(and(eq(mediaAssets.status, "active"), inArray(mediaAssets.id, [...new Set(baseArtists.flatMap((artist) => [artist.cardMediaId, artist.heroMediaId, artist.ogMediaId]).filter((id): id is string => Boolean(id)))]))),
     db.select({ artistId: artistRoleRelations.artistId, name: artistRoles.name }).from(artistRoleRelations).innerJoin(artistRoles, eq(artistRoleRelations.roleId, artistRoles.id)).where(and(inArray(artistRoleRelations.artistId, ids), eq(artistRoles.active, true))).orderBy(asc(artistRoleRelations.position)),
     db.select({ artistId: artistGenreRelations.artistId, name: musicGenres.name }).from(artistGenreRelations).innerJoin(musicGenres, eq(artistGenreRelations.genreId, musicGenres.id)).where(and(inArray(artistGenreRelations.artistId, ids), eq(musicGenres.active, true))).orderBy(asc(artistGenreRelations.position)),
     db.select().from(artistMetrics).where(and(inArray(artistMetrics.artistId, ids), eq(artistMetrics.source, "soundcharts"))),
