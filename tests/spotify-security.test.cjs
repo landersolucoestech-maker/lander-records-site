@@ -126,7 +126,9 @@ test("OAuth state remains bound to user, unexpired, and single use", () => {
   const source = fs.readFileSync(require.resolve("../lib/integrations/spotify.ts"), "utf8");
   assert.match(source, /eq\(spotifyOauthStates\.adminUserId, adminUserId\)/);
   assert.match(source, /gt\(spotifyOauthStates\.expiresAt, new Date\(\)\)/);
-  assert.match(source, /delete\(spotifyOauthStates\)\.where\(eq\(spotifyOauthStates\.stateHash, hashState\(state\)\)\)/);
+  assert.match(source, /delete\(spotifyOauthStates\)\.where\(and\(/);
+  assert.match(source, /returning\(\{ stateHash: spotifyOauthStates\.stateHash \}\)/);
+  assert.doesNotMatch(source, /select\(\)\.from\(spotifyOauthStates\)/);
 });
 
 test("token exchange disables redirects, has a timeout, and sanitizes provider errors", async () => {
