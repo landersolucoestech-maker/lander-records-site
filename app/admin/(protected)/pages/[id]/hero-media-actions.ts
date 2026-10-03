@@ -28,8 +28,21 @@ function safeFilename(name: string) {
   return sanitized || "hero-media";
 }
 
+const HERO_MEDIA_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "video/mp4", "video/webm"]);
+
 function isHeroMediaMimeType(mimeType: string) {
-  return mimeType.startsWith("image/") || mimeType.startsWith("video/");
+  return HERO_MEDIA_MIME_TYPES.has(mimeType.toLowerCase());
+}
+
+function matchesHeroMediaSignature(bytes: Uint8Array, mimeType: string) {
+  const hex = (start: number, length: number) => Array.from(bytes.slice(start, start + length)).map((value) => value.toString(16).padStart(2, "0")).join("");
+  if (mimeType === "image/jpeg") return hex(0, 3) === "ffd8ff";
+  if (mimeType === "image/png") return hex(0, 8) === "89504e470d0a1a0a";
+  if (mimeType === "image/gif") return new TextDecoder().decode(bytes.slice(0, 6)) === "GIF87a" || new TextDecoder().decode(bytes.slice(0, 6)) === "GIF89a";
+  if (mimeType === "image/webp") return new TextDecoder().decode(bytes.slice(0, 4)) === "RIFF" && new TextDecoder().decode(bytes.slice(8, 12)) === "WEBP";
+  if (mimeType === "video/mp4") return new TextDecoder().decode(bytes.slice(4, 8)) === "ftyp";
+  if (mimeType === "video/webm") return hex(0, 4) === "1a45dfa3";
+  return false;
 }
 
 async function sectionForUpdate(sectionId: string, pageId: string) {
@@ -71,7 +84,9 @@ export async function uploadPageSectionMedia(formData: FormData) {
   if (upload.size > MAX_HERO_MEDIA_BYTES) throw new Error("O arquivo do Hero deve ter no máximo 50 MB.");
 
   const storageKey = `page-sections/${pageId}/${sectionId}/${randomUUID()}-${safeFilename(upload.name)}`;
-  const stored = await uploadStoredMedia(storageKey, new Uint8Array(await upload.arrayBuffer()), upload.type);
+  const bytes = new Uint8Array(await upload.arrayBuffer());
+  if (!matchesHeroMediaSignature(bytes, upload.type)) throw new Error("O conteúdo do arquivo não corresponde ao tipo de mídia informado.");
+  const stored = await uploadStoredMedia(storageKey, bytes, upload.type);
   const altText = text(formData, "altText");
   const db = getDb();
   let mediaId = "";
