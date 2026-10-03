@@ -1,6 +1,6 @@
 "use server";
 
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { audit, requirePersistentAdmin } from "../../lib/auth";
@@ -57,10 +57,10 @@ export async function createPageSectionAction(formData: FormData) {
   if (!page) throw new Error("Página não encontrada.");
   assertMutablePageStructure(page);
 
-  const existing = await db.select({ id: pageSections.id }).from(pageSections).where(and(eq(pageSections.pageId, pageId), eq(pageSections.sectionKey, key))).limit(1);
-  if (existing.length) throw new Error("Já existe uma seção com esse identificador nesta página.");
-
   const created = await db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${pageId})::bigint)`);
+    const existing = await tx.select({ id: pageSections.id }).from(pageSections).where(and(eq(pageSections.pageId, pageId), eq(pageSections.sectionKey, key))).limit(1);
+    if (existing.length) throw new Error("Já existe uma seção com esse identificador nesta página.");
     let definition = (await tx.select({ id: sectionDefinitions.id, type: sectionDefinitions.type }).from(sectionDefinitions).where(eq(sectionDefinitions.key, key)).limit(1))[0];
     if (!definition) {
       const inserted = await tx.insert(sectionDefinitions).values({
@@ -106,19 +106,23 @@ export async function attachSectionAction(formData: FormData) {
   ]);
   if (!page[0] || !definition[0]) throw new Error("Página ou seção não encontrada.");
   assertMutablePageStructure(page[0]);
-  const existing = await db.select({ id: pageSections.id }).from(pageSections).where(and(eq(pageSections.pageId, pageId), eq(pageSections.sectionKey, definition[0].key))).limit(1);
-  if (existing.length) throw new Error("Essa seção já está vinculada à página.");
-  const positions = await db.select({ position: pageSections.position }).from(pageSections).where(eq(pageSections.pageId, pageId)).orderBy(asc(pageSections.position));
-  const position = positions.length ? Math.max(...positions.map((item) => item.position)) + 1 : 1;
-  const rows = await db.insert(pageSections).values({
-    pageId,
-    sectionKey: definition[0].key,
-    type: definition[0].type,
-    position,
-    enabled: true,
-  }).returning({ id: pageSections.id });
-  await db.insert(pageSectionBindings).values({ pageSectionId: rows[0].id, definitionId });
-  await audit(session.user.id, "page.section_attached", "page_section", rows[0].id, { pageId, definitionId, key: definition[0].key });
+  const attached = await db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${pageId})::bigint)`);
+    const existing = await tx.select({ id: pageSections.id }).from(pageSections).where(and(eq(pageSections.pageId, pageId), eq(pageSections.sectionKey, definition[0].key))).limit(1);
+    if (existing.length) throw new Error("Essa seção já está vinculada à página.");
+    const positions = await tx.select({ position: pageSections.position }).from(pageSections).where(eq(pageSections.pageId, pageId)).orderBy(asc(pageSections.position));
+    const position = positions.length ? Math.max(...positions.map((item) => item.position)) + 1 : 1;
+    const rows = await tx.insert(pageSections).values({
+      pageId,
+      sectionKey: definition[0].key,
+      type: definition[0].type,
+      position,
+      enabled: true,
+    }).returning({ id: pageSections.id });
+    await tx.insert(pageSectionBindings).values({ pageSectionId: rows[0].id, definitionId });
+    return rows[0];
+  });
+  await audit(session.user.id, "page.section_attached", "page_section", attached.id, { pageId, definitionId, key: definition[0].key });
   revalidatePagePaths([page[0].slug]);
   revalidatePath(`/admin/pages/${pageId}`);
 }
