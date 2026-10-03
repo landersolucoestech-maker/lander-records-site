@@ -12,6 +12,8 @@ test("tags are managed as a real persistent taxonomy", () => {
   const repository = read("modules/posts/repository.ts");
   assert.doesNotMatch(page, /redirect\(/);
   assert.match(page, /select\(\)\.from\(tags\)/);
+  assert.match(page, /mockDataEnabled\(\)/);
+  assert.match(page, /mockPostTags/);
   assert.match(page, /action=\{upsertTag\}/);
   assert.match(actions, /requirePersistentAdmin\("editor"\)/);
   assert.match(actions, /requirePersistentAdmin\("admin"\)/);
