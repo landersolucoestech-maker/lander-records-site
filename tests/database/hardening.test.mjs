@@ -110,3 +110,6 @@ test("legacy checksum transition records recognition, not recovery of already er
   // A checksum transition can authorize the canonical file but cannot reconstruct rows or provenance
   // that a historical destructive migration removed. Preservation is guaranteed only before 0007/0008.
 });
+
+
+test("database connection cache closes a superseded client before replacing it",()=>{const source=fs.readFileSync(new URL("../../lib/db/index.ts",import.meta.url),"utf8");assert.match(source,/state\.client\.end\(\{ timeout: 1 \}\)/);assert.match(source,/state\.databaseUrl !== databaseUrl/);});
