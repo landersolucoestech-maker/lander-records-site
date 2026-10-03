@@ -3,3 +3,6 @@ test("global response headers preserve hardened production baseline",async()=>{c
 
 
 test("reverse proxy and Server Actions both admit the contracted 50 MB hero upload",async()=>{const next=await readFile(new URL("../../next.config.mjs",import.meta.url),"utf8");const nginx=await readFile(new URL("../../infra/nginx/lander-records.conf.example",import.meta.url),"utf8");assert.match(next,/bodySizeLimit:\s*"64mb"/);assert.match(nginx,/client_max_body_size 64m;/)});
+
+
+test("cron authentication reuses the shared constant-time secret comparator",async()=>{const cron=await readFile(new URL("../../app/api/cron/integrations/route.ts",import.meta.url),"utf8");const security=await readFile(new URL("../../lib/security/index.ts",import.meta.url),"utf8");assert.match(cron,/safeCompare\(actual\.slice\(7\), secret\)/);assert.doesNotMatch(cron,/timingSafeEqual/);assert.match(security,/timingSafeEqual/);});
