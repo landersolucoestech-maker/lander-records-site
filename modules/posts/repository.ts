@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNull, lte, or } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, lte, or } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { mediaAssets, postCategories, posts, postTags, tags } from "@/lib/db/schema";
 import type { PublicPost } from "./types";
@@ -18,14 +18,15 @@ export async function getPublishedPosts(featuredOnly = false): Promise<PublicPos
   if (mockDataEnabled()) return featuredOnly ? mockPosts.slice(0, 3) : mockPosts;
   const db = getDb();
   const where = featuredOnly ? and(publishablePostWhere(), eq(posts.featuredOnHome, true)) : publishablePostWhere();
-  const [rows, mediaRows, tagRows] = await Promise.all([
+  const [rows, tagRows] = await Promise.all([
     db.select({ post: posts, categoryId: postCategories.id, categoryName: postCategories.name, categorySlug: postCategories.slug, coverUrl: mediaAssets.url })
       .from(posts).leftJoin(postCategories, eq(posts.categoryId, postCategories.id)).leftJoin(mediaAssets, eq(posts.coverMediaId, mediaAssets.id)).where(where)
       .orderBy(featuredOnly ? asc(posts.homePosition) : desc(posts.publishedAt), desc(posts.createdAt)),
-    db.select().from(mediaAssets).where(eq(mediaAssets.status, "active")),
     db.select({ postId: postTags.postId, id: tags.id, name: tags.name, slug: tags.slug }).from(postTags).innerJoin(tags, eq(postTags.tagId, tags.id)),
   ]);
-  const mediaMap = new Map(mediaRows.map((media) => [media.id, media.url]));
+  const ogMediaIds = [...new Set(rows.map(({ post }) => post.ogMediaId).filter((id): id is string => Boolean(id)))];
+  const ogMediaRows = ogMediaIds.length ? await db.select().from(mediaAssets).where(and(eq(mediaAssets.status, "active"), inArray(mediaAssets.id, ogMediaIds))) : [];
+  const mediaMap = new Map(ogMediaRows.map((media) => [media.id, media.url]));
   return rows.map(({ post, categoryId, categoryName, categorySlug, coverUrl }) => ({
     ...post,
     category: categoryId && categoryName && categorySlug ? { id: categoryId, name: categoryName, slug: categorySlug } : null,
