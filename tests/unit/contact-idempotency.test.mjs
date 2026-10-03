@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
+
+const route = readFileSync(new URL("../../app/api/contact/route.ts", import.meta.url), "utf8");
 
 import {
   createContactIdempotencyKey,
