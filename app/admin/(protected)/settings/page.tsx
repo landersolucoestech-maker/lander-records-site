@@ -4,7 +4,7 @@ import { asc, eq } from "drizzle-orm";
 import { requireAdmin } from "../../../../lib/auth";
 import { hasMinimumRole } from "../../../../lib/auth/policy";
 import { getDb } from "../../../../lib/db";
-import { mockDataEnabled, mockMedia, mockSiteSettings, mockSocialLinks } from "../../../../lib/mocks";
+import { mockDataEnabled, mockMedia, mockSiteSettings, mockSocialLinks, mockContactTopics } from "../../../../lib/mocks";
 import { contactTopics, mediaAssets, siteSettings, socialLinks } from "../../../../lib/db/schema";
 import { deleteContactTopic, updateCompanySettings, updateIdentitySettings, upsertContactTopic, upsertSocialLink } from "../../actions";
 import { AdminIcon } from "../../components/AdminIcon";
@@ -28,7 +28,7 @@ export default async function SettingsPage() {
   const settingsRows = realData ? realData[0] : [mockSiteSettings];
   const socials = realData ? realData[1] : mockSocialLinks.map((item)=>({...item}));
   const media = realData ? realData[2] : mockMedia.map((item)=>({...item}));
-  const topics = realData ? realData[3] : [];
+  const topics = realData ? realData[3] : mockContactTopics.map((item)=>({...item}));
   const settings = settingsRows[0];
   if (!settings) throw new Error("As configurações do site ainda não foram inicializadas.");
   const logo = settings.logoMediaId ? media.find((item) => item.id === settings.logoMediaId) : null;
