@@ -208,3 +208,6 @@ test("login UI does not offer a remember-session control the backend ignores",as
 
 
 test("user management preserves at least one active owner",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../app/admin/actions.ts",import.meta.url),"utf8");assert.match(source,/current\.role === "owner" && current\.isActive/);assert.match(source,/eq\(adminUsers\.role, "owner"\)/);assert.match(source,/eq\(adminUsers\.isActive, true\)/);assert.match(source,/último proprietário ativo não pode ser desativado ou rebaixado/)});
+
+
+test("login rejects oversized credential inputs before database or bcrypt work",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../app/admin/login/actions.ts",import.meta.url),"utf8");const guard=source.indexOf("email.length > 320 || password.length > 1024");const db=source.indexOf("const db = getDb()");assert.ok(guard>=0&&db>guard)});
