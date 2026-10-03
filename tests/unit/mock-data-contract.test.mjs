@@ -19,6 +19,7 @@ test("demo data has one removable centralized root",()=>{
 test("central scenario has representative depth across every visible domain",()=>{
   assert.ok((read("lib/mocks/artists.ts").match(/id:\s*["']mock-artist-/g)||[]).length>=7,"artists");
   assert.ok((read("lib/mocks/posts.ts").match(/id:\s*["']mock-post-/g)||[]).length>=10,"posts");
+  assert.match(read("lib/mocks/posts.ts"), /mockPostTags/);
   assert.ok((read("lib/mocks/media.ts").match(/id:\s*["']mock-media-/g)||[]).length>=10,"media");
   assert.ok((read("lib/mocks/media-kit.ts").match(/\bid:/g)||[]).length>=20,"media kit");
   const adminMock = read("lib/mocks/admin.ts");
@@ -60,6 +61,8 @@ test("mock mode does not grant persistent write permissions",()=>{
   assert.match(read("app/admin/(protected)/artists/new/page.tsx"),/session\.source !== "session"/);
   assert.match(read("app/admin/(protected)/artists/[id]/page.tsx"),/session\.source !== "session"/);
   assert.match(read("app/admin/(protected)/posts/page.tsx"),/const canEdit = session\.source === "session"/);
+  assert.match(read("app/admin/(protected)/posts/page.tsx"),/const developmentMode = session\.source === "development-auth-bypass"/);
+  assert.match(read("app/admin/(protected)/posts/page.tsx"),/tags=\{mockPostTags\}/);
   assert.match(read("app/admin/(protected)/pages/page.tsx"),/canEdit=\{session\.source === "session"/);
   assert.match(read("app/admin/(protected)/users/page.tsx"),/const canManage = !mockMode && session\.source === "session"/);
 });
