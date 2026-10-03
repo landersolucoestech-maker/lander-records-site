@@ -41,7 +41,8 @@ export async function buildMetadata(input: {
   const { settings, socialImageUrl } = await getSiteChrome();
   const title = input.title || settings.defaultSeoTitle || settings.brandName;
   const description = input.description || settings.defaultSeoDescription || settings.tagline;
-  const canonical = input.canonical ? resolveCanonicalUrl(input.canonical, "/") : absoluteUrl("/");
+  const canonicalInput = input.canonical?.trim();
+  const canonical = canonicalInput?.startsWith("/") ? absoluteUrl(canonicalInput) : canonicalInput ? resolveCanonicalUrl(canonicalInput, "/") : absoluteUrl("/");
   const socialImage = input.image || socialImageUrl || "";
 
   return {
