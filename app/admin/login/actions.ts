@@ -10,7 +10,7 @@ export async function loginAction(formData: FormData) {
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
 
-  if (!email || !password) redirect("/admin/login?error=credentials");
+  if (!email || !password || email.length > 320 || password.length > 1024) redirect("/admin/login?error=credentials");
 
   const db = getDb();
   const rows = await db
