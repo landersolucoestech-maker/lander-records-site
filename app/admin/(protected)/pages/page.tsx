@@ -22,7 +22,7 @@ export default async function PagesAdminPage() {
     mockPageSections.map(({ id, pageId, sectionKey, type, position, enabled, title, subtitle }) => ({ id, pageId, sectionKey, type, position, enabled, title, subtitle })),
   ] : await Promise.all([
     db!.select({ id: pages.id, key: pages.key, title: pages.title, slug: pages.slug, enabled: pages.enabled, seoTitle: pages.seoTitle, seoDescription: pages.seoDescription, updatedAt: pages.updatedAt }).from(pages).orderBy(asc(pages.title)),
-    db.select({ id: pageSections.id, pageId: pageSections.pageId, sectionKey: pageSections.sectionKey, type: pageSections.type, position: pageSections.position, enabled: pageSections.enabled, title: pageSections.title, subtitle: pageSections.subtitle }).from(pageSections).orderBy(asc(pageSections.position)),
+    db!.select({ id: pageSections.id, pageId: pageSections.pageId, sectionKey: pageSections.sectionKey, type: pageSections.type, position: pageSections.position, enabled: pageSections.enabled, title: pageSections.title, subtitle: pageSections.subtitle }).from(pageSections).orderBy(asc(pageSections.position)),
   ]);
 
   const summary: PageSummary[] = rows.map((page) => {
