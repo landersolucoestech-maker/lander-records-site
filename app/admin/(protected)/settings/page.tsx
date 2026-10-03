@@ -19,6 +19,7 @@ export default async function SettingsPage() {
   const persistent = !mockMode && session.source === "session";
   const canEdit = persistent && hasMinimumRole(session.user.role, "editor");
   const canAdmin = persistent && hasMinimumRole(session.user.role, "admin");
+  const canAudit = canAdmin;
   const canManageUsers = persistent && session.user.role === "owner";
   const realData = mockMode ? null : await Promise.all([
     getDb().select().from(siteSettings).limit(1),
@@ -98,6 +99,7 @@ export default async function SettingsPage() {
     <div className={styles.securityBox}><div><strong>Alterar senha</strong><small>Atualize sua credencial usando o fluxo autenticado existente.</small></div>{persistent ? <Link className="adminButton" href="/admin/change-password">Alterar senha</Link> : <span className="adminBadge">Somente leitura</span>}</div>
     <div className={styles.securityBox}><div><strong>Sessão atual</strong><small>{session.user.email} · papel {session.user.role}</small></div><span className={styles.statusConnected}>Ativa</span></div>
     <div className={styles.securityBox}><div><strong>Controle de acesso</strong><small>RBAC aplicado no servidor em todas as mutações administrativas.</small></div><span className="adminBadge live">Protegido</span></div>
+    <div className={styles.securityBox}><div><strong>Auditoria administrativa</strong><small>Consulte operações registradas e pendências de manutenção do conteúdo.</small></div>{canAudit ? <Link className="adminButton" href="/admin/audit">Abrir auditoria</Link> : <span className="adminBadge">Sem permissão</span>}</div>
     <div className={styles.securityBox}><div><strong>Ambiente</strong><small>A prévia de desenvolvimento permanece isolada das mutações persistentes.</small></div><span className="adminBadge">Bloqueio seguro</span></div>
   </div></div></section>;
 
