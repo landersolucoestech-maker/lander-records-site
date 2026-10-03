@@ -115,6 +115,9 @@ export async function changeOwnPassword(formData: FormData) {
     redirect("/admin/change-password?error=1");
   }
 
+  if (await verifyPassword(newPassword, user.passwordHash)) {
+    redirect("/admin/change-password?error=reused");
+  }
   const passwordHash = await hashPassword(newPassword);
   await db.update(adminUsers).set({
     passwordHash,
