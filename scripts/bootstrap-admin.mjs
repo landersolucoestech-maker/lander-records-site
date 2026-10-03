@@ -14,8 +14,8 @@ if (email.length > 320 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
   console.error("ADMIN_BOOTSTRAP_EMAIL must be a valid email address.");
   process.exit(1);
 }
-if (!name || name.length > 180) {
-  console.error("ADMIN_BOOTSTRAP_NAME must contain between 1 and 180 characters.");
+if (!name || name.length > 160) {
+  console.error("ADMIN_BOOTSTRAP_NAME must contain between 1 and 160 characters.");
   process.exit(1);
 }
 if (password.length < 12) {
