@@ -18,8 +18,8 @@ function sectionMediaId(settings: Record<string, unknown> | null | undefined) {
 
 export default async function PageContentEditor({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ section?: string }> }) {
   const session = await requireAdmin("editor");
-  void session;
-  // Development preview sessions may inspect the section editor; mutations remain guarded by the existing server actions.
+  const readOnly = mockDataEnabled() || session.source !== "session";
+  // Preview sessions may inspect canonical content; persistent mutations remain unavailable.
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const mockMode = mockDataEnabled();
   const db = mockMode ? null : getDb();
@@ -90,6 +90,7 @@ export default async function PageContentEditor({ params, searchParams }: { para
       items={editorItems}
       mediaOptions={mediaOptions}
       initialSectionId={query.section}
+      readOnly={readOnly}
     />
   </>;
 }
