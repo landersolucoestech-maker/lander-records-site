@@ -79,3 +79,6 @@ test("dev preview cannot publish before full regression, lint and typecheck gate
 
 
 test("owner bootstrap validates identity and never logs credentials",()=>{const bootstrap=read("scripts/bootstrap-admin.mjs");assert.match(bootstrap,/ADMIN_BOOTSTRAP_EMAIL must be a valid email address/);assert.match(bootstrap,/ADMIN_BOOTSTRAP_NAME must contain between 1 and 160 characters/);assert.match(bootstrap,/Password value was not printed/);assert.doesNotMatch(bootstrap,/console\.log\([^\n]*password\)/i)});
+
+
+test("dev preview repeats migrations and validates the content contract before publication",()=>{const preview=read(".github/workflows/dev-preview.yml");assert.match(preview,/name: Verify preview migration repeatability[\s\S]*run: npm run db:migrate/);assert.match(preview,/name: Validate preview content contract[\s\S]*run: npm run validate:content/);const migrate=preview.indexOf("name: Verify preview migration repeatability");const content=preview.indexOf("name: Validate preview content contract");const tunnel=preview.indexOf("name: Open temporary preview tunnel");assert.ok(migrate>0&&content>migrate&&tunnel>content)});
