@@ -39,7 +39,7 @@ export async function loadArtistEditor(id: string) {
   await requireAdmin("editor");
   if (mockDataEnabled()) return mockArtistEditor(id);
   const db = getDb();
-  const [artistRows, profileRows, categoryRows, roleRows, genreRows, destinationRows, metrics, links, embeds, mediaRows] = await Promise.all([
+  const [artistRows, profileRows, categoryRows, roleRows, genreRows, destinationRows, metrics, links, embeds] = await Promise.all([
     db.select().from(artists).where(eq(artists.id, id)).limit(1),
     db.select().from(artistProfiles).where(eq(artistProfiles.artistId, id)).limit(1),
     db.select().from(artistCategoryRelations).where(eq(artistCategoryRelations.artistId, id)).orderBy(asc(artistCategoryRelations.position)),
@@ -49,13 +49,12 @@ export async function loadArtistEditor(id: string) {
     db.select().from(artistMetrics).where(and(eq(artistMetrics.artistId, id), eq(artistMetrics.source, "soundcharts"))),
     db.select().from(artistLinks).where(and(eq(artistLinks.artistId, id), eq(artistLinks.active, true))).orderBy(asc(artistLinks.position)),
     db.select().from(artistEmbeds).where(and(eq(artistEmbeds.artistId, id), eq(artistEmbeds.active, true))).orderBy(asc(artistEmbeds.position)),
-    Promise.resolve([] as Array<{ id: string; url: string }>),
   ]);
   const artist = artistRows[0];
   if (!artist) return null;
   const profile = profileRows[0];
   const mediaIds = [artist.cardMediaId, artist.heroMediaId, artist.ogMediaId].filter((mediaId): mediaId is string => Boolean(mediaId));
-  const resolvedMediaRows = mediaIds.length ? await db.select({ id: mediaAssets.id, url: mediaAssets.url }).from(mediaAssets).where(and(eq(mediaAssets.status, "active"), inArray(mediaAssets.id, mediaIds))) : mediaRows;
+  const resolvedMediaRows = mediaIds.length ? await db.select({ id: mediaAssets.id, url: mediaAssets.url }).from(mediaAssets).where(and(eq(mediaAssets.status, "active"), inArray(mediaAssets.id, mediaIds))) : [];
   const mediaMap = new Map(resolvedMediaRows.map((media) => [media.id, media.url]));
   const linkMap = Object.fromEntries(links.map((link) => [link.platform.toLowerCase(), link.url]));
   const metricMap = Object.fromEntries(metrics.map((item) => [item.platform, item.value]));
