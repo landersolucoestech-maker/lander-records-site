@@ -87,3 +87,6 @@ test("global public revalidation includes CMS-managed legal pages", () => {
   assert.match(legacyActions, /"\/termos-e-condicoes"/);
   assert.match(guardedActions, /if \(contract\) revalidatePath\(contract\.route\)/);
 });
+
+
+test("CMS destinations bound length and validate mailto/tel payloads",()=>{assert.match(contract,/value\.length > 2000/);assert.match(contract,/\^mailto:/);assert.match(contract,/\^tel:/);assert.match(contract,/\[\^\\s@\]\+@/);assert.match(contract,/\{6,30\}/);});
