@@ -15,6 +15,7 @@ test("tags are managed as a real persistent taxonomy", () => {
   assert.match(page, /action=\{upsertTag\}/);
   assert.match(actions, /requirePersistentAdmin\("editor"\)/);
   assert.match(actions, /requirePersistentAdmin\("admin"\)/);
+  assert.match(actions, /from "\.\.\/\.\.\/lib\/auth"/);
   assert.match(actions, /tag\.created/);
   assert.match(actions, /tag\.deleted/);
   assert.match(actions, /postTags\.tagId/);
