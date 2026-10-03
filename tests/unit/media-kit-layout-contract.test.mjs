@@ -96,3 +96,5 @@ test("reference deck keeps the approved global typography while KPI labels wrap 
 test("media kit destinations reject executable, credentialed and protocol-relative URLs",()=>{assert.match(actions,/value\.length > 2000/);assert.match(actions,/!value\.startsWith\("\/\/"\)/);assert.match(actions,/parsed\.protocol === "https:" && !parsed\.username && !parsed\.password/);assert.match(actions,/\^mailto:/);assert.match(actions,/\^tel:/);assert.doesNotMatch(actions,/\^https\?:\\\/\\\//);});
 
 test("image upload MIME types use an explicit raster allowlist",()=>{assert.match(actions,/image\/jpeg/);assert.match(actions,/image\/avif/);assert.doesNotMatch(actions,/file\.type\.startsWith\("image\/"\)/);});
+
+test("media kit update and delete actions verify affected rows before audit",()=>{assert.match(actions,/returning\(\{ id: mediaKitSections\.id \}\)/);assert.match(actions,/returning\(\{ id: mediaKitItems\.id \}\)/);assert.match(actions,/if \(!updated\[0\]\) throw new Error\("Seção não encontrada\."\)/);assert.match(actions,/if \(!deleted\[0\]\) throw new Error\("Item não encontrado\."\)/);});
