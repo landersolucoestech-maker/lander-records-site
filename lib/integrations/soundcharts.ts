@@ -49,7 +49,7 @@ async function getAccessToken(force = false) {
   if (!response.ok || typeof payload.access_token !== "string") {
     throw new Error(`Falha ao autenticar no Soundcharts (${response.status}).`);
   }
-  const expiresIn = typeof payload.expires_in === "number" ? payload.expires_in : 3600;
+  const expiresIn = typeof payload.expires_in === "number" && Number.isFinite(payload.expires_in) && payload.expires_in > 0 && payload.expires_in <= 86_400 ? payload.expires_in : 3600;
   tokenCache = { accessToken: payload.access_token, expiresAt: Date.now() + expiresIn * 1000 };
   return payload.access_token;
 }
