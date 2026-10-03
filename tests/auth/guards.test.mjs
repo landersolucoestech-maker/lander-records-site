@@ -217,3 +217,5 @@ test("admin session metadata bounds stored user-agent length",async()=>{const {r
 
 
 test("unknown admin accounts execute bcrypt work instead of a fixed sleep",async()=>{const loginActions=await source("app/admin/login/actions.ts");assert.match(loginActions,/UNKNOWN_ACCOUNT_HASH/);assert.match(loginActions,/await verifyPassword\(password, UNKNOWN_ACCOUNT_HASH\)/);assert.doesNotMatch(loginActions,/setTimeout\(resolve, 350\)/);});
+
+test("admin password change rejects reuse of the current credential",async()=>{const actions=await source("app/admin/actions.ts");assert.match(actions,/verifyPassword\(newPassword, user\.passwordHash\)/);assert.match(actions,/change-password\?error=reused/);});
