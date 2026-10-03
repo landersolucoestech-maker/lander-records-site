@@ -34,4 +34,4 @@ test("artist public page renders only trusted external links", () => {
 });
 
 
-test("unexpected artist persistence failures are not returned verbatim",()=>{assert.match(artistAction,/Não foi possível salvar o artista\. Tente novamente\./);assert.doesNotMatch(artistAction,/return \{ ok: false, error: message \}/);});
+test("unexpected artist persistence failures are not returned verbatim",()=>{assert.match(actions,/Não foi possível salvar o artista\. Tente novamente\./);assert.doesNotMatch(actions,/return \{ ok: false, error: message \}/);});
