@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getPublishedPostBySlug, getPublishedPosts, getSlugRedirect, getPublicPostPresentation } from "@/modules/posts";
-import { buildMetadata, resolveCanonicalUrl } from "@/lib/seo";
+import { buildMetadata, resolveCanonicalUrl, safeJsonLd } from "@/lib/seo";
 import { trustedExternalUrl } from "@/lib/media-embed";
 import { CopyArticleLink } from "@/app/components/CopyArticleLink";
 
@@ -89,7 +89,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             "@context": "https://schema.org",
             "@type": "NewsArticle",
             headline: article.title,
