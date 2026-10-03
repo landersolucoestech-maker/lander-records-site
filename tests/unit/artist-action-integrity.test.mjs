@@ -41,3 +41,5 @@ test("image upload MIME types use an explicit raster allowlist",()=>{assert.matc
 test("artist slug changes collapse redirect chains and clear reclaimed slugs",()=>{assert.match(actions,/delete\(slugRedirects\)[\s\S]*oldSlug, slug/);assert.match(actions,/update\(slugRedirects\)\.set\(\{ newSlug: slug \}\)[\s\S]*newSlug, previousSlug/);});
 
 test("artists delete verifies the affected row",()=>{assert.match(actions,/delete\(artists\)[\s\S]*returning\(\{ id: artists\.id \}\)/);});
+
+test("artist save validates active taxonomy, destinations and media references",()=>{for(const token of ["artistCategories.active","artistRoles.active","musicGenres.active","artistPublicationDestinations.active","mediaAssets.status"])assert.match(actions,new RegExp(token.replaceAll(".","\\.")));assert.match(actions,/As mídias selecionadas do artista precisam ser imagens ativas/);assert.match(actions,/return \[\.\.\.new Set\(/);});
