@@ -29,10 +29,9 @@ export function normalizeExternalUrl(raw: string) {
   } catch {
     throw new Error(`URL inválida: ${value}`);
   }
-  if ((url.protocol !== "https:" && url.protocol !== "http:") || url.username || url.password || !url.hostname) {
+  if (url.protocol !== "https:" || url.username || url.password || !url.hostname) {
     throw new Error(`URL inválida: ${value}`);
   }
-  url.protocol = "https:";
   url.hostname = HOST_ALIASES[url.hostname.toLowerCase()] || url.hostname.toLowerCase();
   url.hash = "";
   for (const key of [...url.searchParams.keys()]) {
