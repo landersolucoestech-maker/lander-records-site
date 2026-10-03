@@ -5,6 +5,8 @@ import test from "node:test";
 const read = (path) => fs.readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 const actions = read("app/admin/actions.ts");
 const inbox = read("app/admin/(protected)/contacts/page.tsx");
+const navigation = read("app/admin/components/admin-navigation.ts");
+const preview = read(".github/workflows/dev-preview.yml");
 
 test("contact submissions expose a persistent operational workflow", () => {
   assert.match(actions, /export async function updateContactSubmissionStatus/);
