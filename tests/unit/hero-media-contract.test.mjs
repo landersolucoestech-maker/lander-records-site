@@ -75,3 +75,5 @@ test("general media library uses the same explicit raster MIME allowlist",()=>{c
 test("media archive verifies that the requested asset actually existed",()=>{const source=fs.readFileSync(new URL("../../app/admin/actions.ts",import.meta.url),"utf8");assert.match(source,/returning\(\{ id: mediaAssets\.id \}\)/);assert.match(source,/if \(!archived\[0\]\) throw new Error\("Mídia não encontrada\."\)/);});
 
 test("hero upload registers media and section reference atomically",()=>{assert.match(actions,/mediaId = await db\.transaction/);assert.match(actions,/await tx\.insert\(mediaAssets\)/);assert.match(actions,/await tx\.update\(pageSections\)/);assert.match(actions,/returning\(\{ id: pageSections\.id \}\)/);assert.match(actions,/deleteStoredMedia\(stored\.key\)/);});
+
+test("hero upload metadata is bounded before persistence",()=>{assert.match(actions,/upload\.name\.length > 500/);assert.match(actions,/altText\.length > 500/);});
