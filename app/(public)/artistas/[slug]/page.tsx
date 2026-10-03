@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { getPublishedArtistBySlug, getSlugRedirect } from "@/modules/artists";
-import { buildMetadata, resolveCanonicalUrl } from "@/lib/seo";
+import { buildMetadata, resolveCanonicalUrl, safeJsonLd } from "@/lib/seo";
 import { trustedEmbedUrl, trustedExternalUrl } from "@/lib/media-embed";
 
 export const dynamic = "force-dynamic";
@@ -133,7 +133,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             "@context": "https://schema.org",
             "@type": "MusicGroup",
             name: artist.name,
