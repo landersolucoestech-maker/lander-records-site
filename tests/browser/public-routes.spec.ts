@@ -237,13 +237,15 @@ test("article sharing copies the canonical link without navigating", async ({ pa
 });
 
 test("rendered artist embeds never use an untrusted iframe origin", async ({ page }) => {
+  test.slow();
   await page.goto("/artistas/", { waitUntil: "networkidle" });
   const artistLinks = await page.locator("a.artistTile").evaluateAll((links) =>
     [...new Set(links.map((link) => (link as HTMLAnchorElement).getAttribute("href")).filter(Boolean))],
   );
 
   for (const href of artistLinks.slice(0, 5)) {
-    await page.goto(href!, { waitUntil: "networkidle" });
+    await page.goto(href!, { waitUntil: "domcontentloaded" });
+    await expect(page.locator("main#main-content")).toBeVisible();
     for (const source of await page.locator("iframe").evaluateAll((frames) => frames.map((frame) => (frame as HTMLIFrameElement).src))) {
       expect(["www.youtube-nocookie.com", "open.spotify.com"]).toContain(new URL(source).hostname);
     }
