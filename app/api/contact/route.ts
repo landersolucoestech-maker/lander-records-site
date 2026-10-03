@@ -127,8 +127,8 @@ export async function POST(request: NextRequest) {
     return Response.json({ ok: true, id: result.submissionId, integration: delivery.delivered ? "delivered" : "queued" }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    logger.error("contact_submission_failed", { configurationError: message.includes("CONTACT_IP_HASH_SALT") || message.includes("DATABASE_URL") });
     const configurationError = message.includes("CONTACT_IP_HASH_SALT") || message.includes("DATABASE_URL");
+    logger.error("contact_submission_failed", { configurationError });
     return Response.json(
       { error: configurationError ? "O formulário está temporariamente indisponível por configuração do servidor." : "Não foi possível registrar o contato." },
       { status: configurationError ? 503 : 500 },
