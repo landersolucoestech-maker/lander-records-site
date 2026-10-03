@@ -3,6 +3,3 @@ test("global response headers preserve hardened production baseline",async()=>{c
 
 
 test("reverse proxy and Server Actions both admit the contracted 50 MB hero upload",async()=>{const next=await readFile(new URL("../../next.config.mjs",import.meta.url),"utf8");const nginx=await readFile(new URL("../../infra/nginx/lander-records.conf.example",import.meta.url),"utf8");assert.match(next,/bodySizeLimit:\s*"64mb"/);assert.match(nginx,/client_max_body_size 64m;/)});
-
-
-test("Server Action body limit stays close to the 12 MB media upload contract",()=>{assert.match(nextConfig,/bodySizeLimit:\s*"16mb"/);assert.doesNotMatch(nextConfig,/bodySizeLimit:\s*"64mb"/)});
