@@ -44,3 +44,5 @@ test("contact storage bounds user-agent metadata",()=>{assert.match(route,/user-
 
 
 test("contact client bounds stalled submissions",()=>{const source=readFileSync(new URL("../../app/(public)/contato/ContactForm.tsx",import.meta.url),"utf8");assert.match(source,/signal: AbortSignal\.timeout\(15_000\)/);});
+
+test("contact endpoint does not emit raw caught error details",()=>{const source=readFileSync(new URL("../../app/api/contact/route.ts",import.meta.url),"utf8");assert.match(source,/logger\.error\("contact_submission_failed", \{ configurationError \}\)/);assert.doesNotMatch(source,/console\.error\("contact_submission_failed", message\)/);});
