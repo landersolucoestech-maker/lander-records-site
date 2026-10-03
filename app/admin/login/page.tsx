@@ -13,11 +13,9 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
   if (session) redirect(session.user.mustChangePassword ? "/admin/change-password" : "/admin");
 
   const params = await searchParams;
-  const message = params.error === "locked"
-    ? "Acesso bloqueado temporariamente após várias tentativas inválidas."
-    : params.error
-      ? "E-mail ou senha inválidos."
-      : "";
+  const message = params.error
+    ? "Não foi possível entrar. Verifique as credenciais ou tente novamente mais tarde."
+    : "";
 
   return <main className={styles.page}>
     <section className={styles.brandPanel} aria-label="Lander Records · Área interna">
