@@ -91,3 +91,6 @@ test("reference deck keeps the approved global typography while KPI labels wrap 
   assert.match(css,/\.aboutMetrics small\{[^}]*font-size:\.68cqw[^}]*white-space:normal[^}]*word-break:keep-all/);
   assert.doesNotMatch(css,/\.aboutMetrics strong\{[^}]*white-space:nowrap|\.aboutMetrics strong\{[^}]*overflow-wrap:anywhere/);
 });
+
+
+test("media kit destinations reject executable, credentialed and protocol-relative URLs",()=>{const actions=source("app/admin/(protected)/media-kit/actions.ts");assert.match(actions,/value\.length > 2000/);assert.match(actions,/!value\.startsWith\("\/\/"\)/);assert.match(actions,/parsed\.protocol === "https:" && !parsed\.username && !parsed\.password/);assert.match(actions,/\^mailto:/);assert.match(actions,/\^tel:/);assert.doesNotMatch(actions,/\^https\?:\\\/\\\//);});
