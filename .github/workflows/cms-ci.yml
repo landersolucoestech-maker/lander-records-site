@@ -120,6 +120,8 @@ jobs:
           SITE_URL=http://127.0.0.1:3000 npm run smoke
           curl --fail --silent --show-error http://127.0.0.1:3000/artistas/ > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:3000/noticias/ > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:3000/contato/ > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:3000/sobre-nos/ > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:3000/politica-de-privacidade/ > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:3000/termos-e-condicoes/ > /dev/null
           if grep -E "Unhandled|TypeError|ReferenceError|ECONNREFUSED|Internal Server Error" /tmp/lander-next.log; then
