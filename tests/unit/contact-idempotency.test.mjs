@@ -29,3 +29,6 @@ test("a retry of the same failed operation preserves its key", () => {
 
 
 test("contact UI tolerates non-JSON gateway failures",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../app/(public)/contato/ContactForm.tsx",import.meta.url),"utf8");assert.match(source,/content-type/);assert.match(source,/includes\("application\/json"\)/);assert.match(source,/result\?\.error/)});
+
+
+test("contact endpoint rejects oversized declared bodies before JSON parsing",()=>{const guard=route.indexOf("content-length");const parse=route.indexOf("request.json()");assert.ok(guard>=0&&parse>guard);assert.match(route,/16_384/);assert.match(route,/status: 413/)});
