@@ -2,6 +2,7 @@ import { extractSoundchartsUuid, normalizeExternalUrl, spotifyArtistIdFromUrl } 
 
 const API_BASE = "https://customer.api.soundcharts.com";
 const TOKEN_URL = "https://account.soundcharts.com/oauth/token";
+const SOUNDCHARTS_REQUEST_TIMEOUT_MS = 10_000;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type TokenCache = { accessToken: string; expiresAt: number } | null;
@@ -41,6 +42,8 @@ async function getAccessToken(force = false) {
     },
     body,
     cache: "no-store",
+    redirect: "error",
+    signal: AbortSignal.timeout(SOUNDCHARTS_REQUEST_TIMEOUT_MS),
   });
   const payload = await response.json().catch(() => ({})) as Record<string, unknown>;
   if (!response.ok || typeof payload.access_token !== "string") {
@@ -58,6 +61,8 @@ async function soundchartsRequest(path: string, searchParams?: Record<string, st
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
     cache: "no-store",
+    redirect: "error",
+    signal: AbortSignal.timeout(SOUNDCHARTS_REQUEST_TIMEOUT_MS),
   });
   if (response.status === 401 && retryAuth) {
     tokenCache = null;
