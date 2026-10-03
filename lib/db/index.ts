@@ -25,6 +25,9 @@ export function getDb() {
   }
 
   if (!state.client || state.databaseUrl !== databaseUrl) {
+    if (state.client && state.databaseUrl !== databaseUrl) {
+      void state.client.end({ timeout: 1 }).catch(() => undefined);
+    }
     state.client = postgres(databaseUrl, {
       max: process.env.NODE_ENV === "production" ? 5 : 1,
       prepare: false,
