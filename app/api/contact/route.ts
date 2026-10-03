@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { logger } from "../../../lib/logging";
 import { eq } from "drizzle-orm";
+import { isContactIdempotencyConflict } from "../../../lib/contact-idempotency";
 import { z } from "zod";
 import { getDb } from "../../../lib/db";
 import { contactSubmissions, contactTopics, integrationOutbox } from "../../../lib/db/schema";
@@ -72,7 +73,9 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "O assunto selecionado não está disponível." }, { status: 422 });
     }
 
-    const result = await db.transaction(async (tx) => {
+    let result: { submissionId: string; outboxId: string };
+    try {
+      result = await db.transaction(async (tx) => {
       const submissionRows = await tx.insert(contactSubmissions).values({
         idempotencyKey: parsed.data.idempotencyKey,
         name: parsed.data.name,
@@ -121,7 +124,14 @@ export async function POST(request: NextRequest) {
       }).returning({ id: integrationOutbox.id });
 
       return { submissionId: submission.id, outboxId: outboxRows[0].id };
-    });
+      });
+    } catch (error) {
+      if (!isContactIdempotencyConflict(error)) throw error;
+      const duplicate = await db.select({ id: contactSubmissions.id }).from(contactSubmissions)
+        .where(eq(contactSubmissions.idempotencyKey, parsed.data.idempotencyKey)).limit(1);
+      if (!duplicate[0]) throw error;
+      return Response.json({ ok: true, id: duplicate[0].id, duplicate: true });
+    }
 
     const delivery = await dispatchOutboxEvent(result.outboxId);
     return Response.json({ ok: true, id: result.submissionId, integration: delivery.delivered ? "delivered" : "queued" }, { status: 201 });
