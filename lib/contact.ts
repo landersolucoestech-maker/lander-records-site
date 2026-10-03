@@ -1,5 +1,5 @@
 import { createHmac, createHash } from "node:crypto";
-import { and, asc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import { getDb } from "./db";
 import { contactSubmissions, integrationOutbox } from "./db/schema";
 
@@ -25,15 +25,6 @@ export function hashIp(ip: string) {
     throw new Error("CONTACT_IP_HASH_SALT is required before enabling the public contact endpoint.");
   }
   return createHash("sha256").update(`${salt}:${ip}`).digest("hex");
-}
-
-export async function isContactRateLimited(ipHash: string) {
-  const since = new Date(Date.now() - 10 * 60 * 1000);
-  const rows = await getDb()
-    .select({ count: sql<number>`count(*)::int` })
-    .from(contactSubmissions)
-    .where(and(eq(contactSubmissions.ipHash, ipHash), gte(contactSubmissions.createdAt, since)));
-  return (rows[0]?.count ?? 0) >= 5;
 }
 
 export async function retryDueOutboxEvents(limit = OUTBOX_RETRY_BATCH_SIZE) {
