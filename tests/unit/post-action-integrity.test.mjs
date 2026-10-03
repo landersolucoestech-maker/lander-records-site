@@ -43,3 +43,5 @@ test("image upload MIME types use an explicit raster allowlist",()=>{assert.matc
 test("post slug changes collapse redirect chains and clear reclaimed slugs",()=>{assert.match(actions,/delete\(slugRedirects\)[\s\S]*oldSlug, slug/);assert.match(actions,/update\(slugRedirects\)\.set\(\{ newSlug: slug \}\)[\s\S]*newSlug, previousSlug/);});
 
 test("posts delete verifies the affected row",()=>{assert.match(actions,/delete\(posts\)[\s\S]*returning\(\{ id: posts\.id \}\)/);});
+
+test("post save validates active category and selected media references",()=>{assert.match(actions,/eq\(postCategories\.active, true\)/);assert.match(actions,/Categoria ativa não encontrada/);assert.match(actions,/selectedMediaIds/);assert.match(actions,/eq\(mediaAssets\.status, "active"\)/);assert.match(actions,/As mídias selecionadas precisam ser imagens ativas/);});
