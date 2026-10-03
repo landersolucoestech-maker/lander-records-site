@@ -90,3 +90,5 @@ test("global public revalidation includes CMS-managed legal pages", () => {
 
 
 test("CMS destinations bound length and validate mailto/tel payloads",()=>{const contract=fs.readFileSync(new URL("../../app/admin/page-content-contract.ts",import.meta.url),"utf8");assert.match(contract,/value\.length > 2000/);assert.match(contract,/\^mailto:/);assert.match(contract,/\^tel:/);assert.match(contract,/\{6,30\}/);});
+
+test("page content mutations verify affected rows before auditing success",()=>{assert.match(actions,/returning\(\{ id: pageSections\.id \}\)/);assert.match(actions,/returning\(\{ id: pageSectionItems\.id \}\)/);assert.match(actions,/if \(!updatedSection\[0\]\)/);assert.match(actions,/if \(!updatedItem\[0\]\)/);assert.match(actions,/if \(!deletedItem\[0\]\)/);});
