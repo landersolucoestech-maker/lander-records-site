@@ -77,6 +77,15 @@ function optionalUuid(formData: FormData, name: string, label: string) {
   return value;
 }
 
+async function activeImageMediaIdOrNull(formData: FormData, name: string, label: string) {
+  const id = optionalUuid(formData, name, label);
+  if (!id) return null;
+  const media = (await getDb().select({ id: mediaAssets.id, mimeType: mediaAssets.mimeType }).from(mediaAssets)
+    .where(and(eq(mediaAssets.id, id), eq(mediaAssets.status, "active"))).limit(1))[0];
+  if (!media || !media.mimeType.startsWith("image/")) throw new Error(`${label} precisa ser uma imagem ativa.`);
+  return media.id;
+}
+
 function validAdminEmail(value: string) {
   return value.length <= 320 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
@@ -355,13 +364,15 @@ export async function updateIdentitySettings(formData: FormData) {
   const defaultSeoDescription = text(formData, "defaultSeoDescription");
   assertMaxLength(tagline, 500, "Tagline");
   assertMaxLength(defaultSeoDescription, 1000, "Descrição SEO padrão");
+  const logoMediaId = await activeImageMediaIdOrNull(formData, "logoMediaId", "Logo");
+  const socialImageMediaId = await activeImageMediaIdOrNull(formData, "socialImageMediaId", "Imagem social");
   const identityValues = {
     brandName,
     tagline,
     defaultSeoTitle,
     defaultSeoDescription,
-    logoMediaId: optionalUuid(formData, "logoMediaId", "Logo"),
-    socialImageMediaId: optionalUuid(formData, "socialImageMediaId", "Imagem social"),
+    logoMediaId,
+    socialImageMediaId,
     updatedAt: new Date(),
   };
   await getDb().insert(siteSettings).values({ id: "site", ...identityValues }).onConflictDoUpdate({
