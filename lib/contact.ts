@@ -147,17 +147,20 @@ export async function dispatchOutboxEvent(outboxId: string) {
     return { delivered: true };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown webhook error";
+    const storedError = error instanceof DOMException && error.name === "AbortError"
+      ? "Webhook request timed out."
+      : /^SaaS webhook returned \d{3}$/.test(message) ? message : "Webhook delivery failed.";
     await db
       .update(integrationOutbox)
       .set({
         status: "failed",
         attempts: event.attempts + 1,
-        lastError: message.slice(0, 2000),
+        lastError: storedError,
         nextAttemptAt: new Date(Date.now() + 15 * 60 * 1000),
         updatedAt: new Date(),
       })
       .where(eq(integrationOutbox.id, outboxId));
-    return { delivered: false, reason: message };
+    return { delivered: false, reason: storedError };
   } finally {
     clearTimeout(timer);
   }
