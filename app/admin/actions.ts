@@ -504,7 +504,10 @@ export async function upsertContactTopic(formData: FormData) {
 export async function deleteContactTopic(formData: FormData) {
   const session = await requirePersistentAdmin("admin");
   const id = requiredUuid(formData, "id", "Assunto");
-  const deleted = await getDb().delete(contactTopics).where(eq(contactTopics.id, id)).returning({ id: contactTopics.id });
+  const db = getDb();
+  const usage = await db.select({ id: contactSubmissions.id }).from(contactSubmissions).where(eq(contactSubmissions.topicId, id)).limit(1);
+  if (usage.length) throw new Error("Não é possível excluir um assunto usado por contatos recebidos. Desative-o para preservar o histórico.");
+  const deleted = await db.delete(contactTopics).where(eq(contactTopics.id, id)).returning({ id: contactTopics.id });
   if (!deleted[0]) throw new Error("Assunto não encontrado.");
   await audit(session.user.id, "contact_topic.deleted", "contact_topic", id);
   revalidatePath("/contato");
