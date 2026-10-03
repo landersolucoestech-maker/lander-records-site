@@ -2,7 +2,7 @@ import { and, desc, gte, isNull, lt, ne, sql } from "drizzle-orm";
 import { getDb } from "../../../lib/db";
 import { artists, auditLogs, contactSubmissions, pages, posts } from "../../../lib/db/schema";
 import { requireAdmin } from "../../../lib/auth";
-import { mockAdminDashboard, mockDataEnabled } from "../../../lib/mocks";
+import { mockDashboardData, mockDataEnabled } from "../../../lib/mocks";
 import { DashboardView } from "../components/DashboardView";
 
 export const dynamic = "force-dynamic";
