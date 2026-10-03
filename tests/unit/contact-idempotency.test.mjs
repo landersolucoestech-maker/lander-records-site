@@ -53,3 +53,5 @@ test("only the contact idempotency unique constraint is treated as a duplicate r
 test("idempotent contact retries resolve before the serialized rate-limit transaction",()=>{const duplicate=route.indexOf("if (existing[0])");const limiter=route.indexOf("pg_advisory_xact_lock(hashtext(${ipHash}))");assert.ok(duplicate>=0&&limiter>duplicate);});
 
 test("contact rate limiting is serialized with the insert",()=>{const source=readFileSync(new URL("../../app/api/contact/route.ts",import.meta.url),"utf8");assert.match(source,/pg_advisory_xact_lock\(hashtext\(\$\{ipHash\}\)\)/);assert.match(source,/count\(\*\)::int/);assert.match(source,/throw new ContactRateLimitError\(\)/);assert.doesNotMatch(source,/isContactRateLimited\(ipHash\)/);});
+
+test("contact rate limiting prefers proxy-normalized IP data over a client-controlled leading XFF entry",()=>{assert.match(route,/request\.headers\.get\("x-real-ip"\)\?\.trim\(\) \|\| forwardedFor\?\.at\(-1\)/);assert.doesNotMatch(route,/split\(","\)\[0\]/);});
