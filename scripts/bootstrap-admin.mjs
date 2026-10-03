@@ -10,6 +10,14 @@ if (!databaseUrl || !email || !password) {
   console.error("DATABASE_URL, ADMIN_BOOTSTRAP_EMAIL and ADMIN_BOOTSTRAP_PASSWORD are required.");
   process.exit(1);
 }
+if (email.length > 320 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  console.error("ADMIN_BOOTSTRAP_EMAIL must be a valid email address.");
+  process.exit(1);
+}
+if (!name || name.length > 180) {
+  console.error("ADMIN_BOOTSTRAP_NAME must contain between 1 and 180 characters.");
+  process.exit(1);
+}
 if (password.length < 12) {
   console.error("ADMIN_BOOTSTRAP_PASSWORD must have at least 12 characters.");
   process.exit(1);
