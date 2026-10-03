@@ -20,6 +20,7 @@ test("central scenario has representative depth across every visible domain",()=
   assert.ok((read("lib/mocks/artists.ts").match(/id:\s*["']mock-artist-/g)||[]).length>=7,"artists");
   assert.ok((read("lib/mocks/posts.ts").match(/id:\s*["']mock-post-/g)||[]).length>=10,"posts");
   assert.match(read("lib/mocks/posts.ts"), /mockPostTags/);
+  assert.match(read("lib/mocks/posts.ts"), /tagIds:index < 3/);
   assert.ok((read("lib/mocks/media.ts").match(/id:\s*["']mock-media-/g)||[]).length>=10,"media");
   assert.ok((read("lib/mocks/media-kit.ts").match(/\bid:/g)||[]).length>=20,"media kit");
   const adminMock = read("lib/mocks/admin.ts");
