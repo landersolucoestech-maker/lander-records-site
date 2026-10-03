@@ -5,8 +5,8 @@ import { requireAdmin } from "../../../../lib/auth";
 import { hasMinimumRole } from "../../../../lib/auth/policy";
 import { getDb } from "../../../../lib/db";
 import { mockDataEnabled, mockMedia, mockSiteSettings, mockSocialLinks } from "../../../../lib/mocks";
-import { mediaAssets, siteSettings, socialLinks } from "../../../../lib/db/schema";
-import { updateCompanySettings, updateIdentitySettings, upsertSocialLink } from "../../actions";
+import { contactTopics, mediaAssets, siteSettings, socialLinks } from "../../../../lib/db/schema";
+import { deleteContactTopic, updateCompanySettings, updateIdentitySettings, upsertContactTopic, upsertSocialLink } from "../../actions";
 import { AdminIcon } from "../../components/AdminIcon";
 import { SettingsTabs } from "./SettingsTabs";
 import styles from "./Settings.module.css";
@@ -23,10 +23,12 @@ export default async function SettingsPage() {
     getDb().select().from(siteSettings).limit(1),
     getDb().select().from(socialLinks).orderBy(asc(socialLinks.position)),
     getDb().select().from(mediaAssets).where(eq(mediaAssets.status, "active")).orderBy(asc(mediaAssets.originalFilename)),
+    getDb().select().from(contactTopics).orderBy(asc(contactTopics.position), asc(contactTopics.name)),
   ]);
   const settingsRows = realData ? realData[0] : [mockSiteSettings];
   const socials = realData ? realData[1] : mockSocialLinks.map((item)=>({...item}));
   const media = realData ? realData[2] : mockMedia.map((item)=>({...item}));
+  const topics = realData ? realData[3] : [];
   const settings = settingsRows[0];
   if (!settings) throw new Error("As configurações do site ainda não foram inicializadas.");
   const logo = settings.logoMediaId ? media.find((item) => item.id === settings.logoMediaId) : null;
@@ -80,6 +82,11 @@ export default async function SettingsPage() {
     </section>
   </div>;
 
+  const contact = <section className={styles.card}><div className={styles.cardHeader}><div><h2>Assuntos de contato</h2><p>Fonte persistente das opções exibidas no formulário público de contato.</p></div>{!canEdit ? <span className="adminBadge">Somente leitura</span> : null}</div><div className={styles.cardBody}><div className={styles.stack}>
+    {topics.map((topic) => <form action={upsertContactTopic} className={styles.row} key={topic.id}><input type="hidden" name="id" value={topic.id}/><input aria-label="Nome do assunto" disabled={!canEdit} name="name" defaultValue={topic.name}/><input aria-label="Slug do assunto" disabled={!canEdit} name="slug" defaultValue={topic.slug}/><input aria-label="Tipo de integração" disabled={!canEdit} name="saasType" defaultValue={topic.saasType}/><input aria-label="Posição" disabled={!canEdit} name="position" type="number" defaultValue={topic.position}/><label className={styles.check}><input disabled={!canEdit} name="active" type="checkbox" defaultChecked={topic.active}/> Ativo</label>{canEdit ? <button className="adminButton" type="submit">Salvar</button> : <span className="adminBadge">Leitura</span>}{canAdmin ? <button className="adminButton" formAction={deleteContactTopic} type="submit">Excluir</button> : null}</form>)}
+    {canEdit ? <form action={upsertContactTopic} className={`${styles.row} ${styles.newRow}`}><input name="name" placeholder="Nome do assunto" required maxLength={180}/><input name="slug" placeholder="slug-opcional" maxLength={180}/><input name="saasType" placeholder="Tipo de integração" maxLength={120}/><input name="position" type="number" defaultValue={0}/><label className={styles.check}><input name="active" type="checkbox" defaultChecked/> Ativo</label><button className="adminButton primary" type="submit">Adicionar</button></form> : null}
+  </div></div></section>;
+
   const automations = <section className={styles.card}><div className={styles.cardHeader}><div><h2>Automações</h2><p>Fluxos automáticos disponíveis a partir das integrações e regras reais do projeto.</p></div></div><div className={styles.cardBody}><div className={styles.featureList}>
     <div className={styles.featureRow}><div><strong>Publicação e revalidação</strong><small>As ações editoriais revalidam as rotas públicas conforme os contratos atuais.</small></div><span className={styles.toggleVisual} aria-label="Ativo"/></div>
     <div className={styles.featureRow}><div><strong>Sincronização de integrações</strong><small>Executada somente quando o serviço correspondente estiver realmente configurado.</small></div><Link className="adminButton" href="/admin/settings/lander-records">Gerenciar integrações</Link></div>
@@ -104,6 +111,6 @@ export default async function SettingsPage() {
   </div></div></section>;
 
   return <div className={styles.page} data-testid="settings-manager">
-    <SettingsTabs automations={automations} canManageUsers={canManageUsers} company={company} identity={identity} integrations={integrations} security={security} users={users}/>
+    <SettingsTabs automations={automations} canManageUsers={canManageUsers} company={company} contact={contact} identity={identity} integrations={integrations} security={security} users={users}/>
   </div>;
 }
