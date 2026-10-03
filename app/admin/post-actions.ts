@@ -10,7 +10,7 @@ import { normalizePlatformUrl } from "../../lib/integrations/identity";
 import { normalizeCanonicalOverride } from "../../lib/seo";
 import { deleteMedia as deleteStoredMedia, uploadMedia as uploadStoredMedia } from "@/lib/storage";
 import { postLinks, postProfiles } from "../../lib/db/news-management-schema";
-import { mediaAssets, posts, postTags, slugRedirects, tags } from "../../lib/db/schema";
+import { mediaAssets, postCategories, posts, postTags, slugRedirects, tags } from "../../lib/db/schema";
 import { slugify } from "../../lib/slug";
 
 export type PostActionState = { ok: boolean; error?: string };
@@ -123,6 +123,20 @@ export async function savePostAction(_: PostActionState, formData: FormData): Pr
     postId = await db.transaction(async (tx) => {
       let coverMediaId = uuidOrNull(text(formData, "coverMediaId"));
       let authorMediaId = uuidOrNull(text(formData, "authorMediaId"));
+      const category = (await tx.select({ id: postCategories.id }).from(postCategories)
+        .where(and(eq(postCategories.id, categoryId), eq(postCategories.active, true))).limit(1))[0];
+      if (!category) throw new Error("Categoria ativa não encontrada.");
+      const selectedMediaIds = [...new Set([
+        coverUpload ? null : coverMediaId,
+        authorUpload ? null : authorMediaId,
+      ].filter((value): value is string => Boolean(value)))];
+      if (selectedMediaIds.length) {
+        const selectedMedia = await tx.select({ id: mediaAssets.id, mimeType: mediaAssets.mimeType }).from(mediaAssets)
+          .where(and(inArray(mediaAssets.id, selectedMediaIds), eq(mediaAssets.status, "active")));
+        if (selectedMedia.length !== selectedMediaIds.length || selectedMedia.some((media) => !media.mimeType.startsWith("image/"))) {
+          throw new Error("As mídias selecionadas precisam ser imagens ativas.");
+        }
+      }
       if (coverUpload) {
         const rows = await tx.insert(mediaAssets).values({ ...coverUpload, altText: `${title} — imagem principal`, status: "active", createdBy: session.user.id, updatedBy: session.user.id }).returning({ id: mediaAssets.id });
         coverMediaId = rows[0].id;
