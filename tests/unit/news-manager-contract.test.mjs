@@ -7,7 +7,7 @@ const manager = fs.readFileSync(new URL("../../app/admin/(protected)/posts/PostM
 const preview = fs.readFileSync(new URL("../../app/cms-preview/AdminPreview.tsx", import.meta.url), "utf8");
 const pagination = fs.readFileSync(new URL("../../app/admin/components/AdminPagination.tsx", import.meta.url), "utf8");
 
-test("News read model mirrors the public publication predicate and category-only taxonomy", () => {
+test("News read model mirrors the public publication predicate and category plus tag taxonomy", () => {
   assert.match(page, /status.*published[\s\S]*archivedAt.*IS NULL[\s\S]*publishedAt.*now\(\)[\s\S]*scheduledAt.*now\(\)/);
   assert.match(page, /isPubliclyVisible: publicPost/);
   assert.match(page, /featuredOnHome: post\.featuredOnHome/);
@@ -37,6 +37,7 @@ test("News manager exposes the supported modal, actions and pagination workflow"
   assert.match(manager, /Filtrar por status/);
   assert.match(manager, /Filtrar por categoria/);
   assert.match(manager, /Filtrar por autor/);
+  assert.match(manager, /multiple name="tagIds"/);
   assert.match(manager, /Ordenar conteúdos/);
   assert.match(manager, /const filteredPosts = useMemo/);
   assert.match(manager, /totalItems=\{filteredPosts\.length\}/);
