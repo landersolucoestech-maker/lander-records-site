@@ -21,10 +21,13 @@ test("canonical overrides preserve valid HTTP(S) URLs but remove fragments", () 
 });
 
 
-test("metadata builder routes supplied canonical values through canonical normalization",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../lib/seo.ts",import.meta.url),"utf8");assert.match(source,/input\.canonical \? resolveCanonicalUrl\(input\.canonical, "\/"\) : absoluteUrl\("\/"\)/)});
+test("metadata builder routes supplied canonical values through canonical normalization",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../lib/seo.ts",import.meta.url),"utf8");assert.match(source,/canonicalInput\?\.startsWith\("\/"\) \? absoluteUrl\(canonicalInput\)/)});
 
 
 test("site exposes a first-party web manifest with branded icon",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../app/manifest.ts",import.meta.url),"utf8");assert.match(source,/name: "Lander Records"/);assert.match(source,/\/lander-records-logo\.webp/);assert.match(source,/start_url: "\/"/)});
 
 
 test("robots excludes admin, API and disposable CMS preview surfaces",async()=>{const {readFile}=await import("node:fs/promises");const source=await readFile(new URL("../../app/robots.ts",import.meta.url),"utf8");for(const path of ["/admin/","/api/","/cms-preview/"])assert.match(source,new RegExp(path.replaceAll("/","\\/")))});
+
+
+test("public index pages declare route-specific canonical fallbacks",async()=>{const {readFile}=await import("node:fs/promises");for(const [file,route] of [["artistas/page.tsx","/artistas"],["noticias/page.tsx","/noticias"],["contato/page.tsx","/contato"],["sobre-nos/page.tsx","/sobre-nos"],["politica-de-privacidade/page.tsx","/politica-de-privacidade"],["termos-e-condicoes/page.tsx","/termos-e-condicoes"]]){const source=await readFile(new URL(`../../app/(public)/${file}`,import.meta.url),"utf8");assert.match(source,new RegExp(`canonical: content\\?\\.page\\.canonicalUrl \\|\\| "${route.replaceAll("/","\\/")}"`));}});
