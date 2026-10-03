@@ -361,6 +361,8 @@ main {
 .articleHeader { margin-top: clamp(42px,5vw,62px); }
 .articleHeader h1 { text-wrap: balance; }
 .articleContent p { color: #303030; }
+.articleTags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.articleTags span { padding: 7px 10px; border: 1px solid #ddd; border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: .02em; }
 .shareRail { border-left-color: #e1e1e1; }
 
 /* Contact */
