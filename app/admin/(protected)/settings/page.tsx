@@ -15,11 +15,12 @@ export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
   const session = await requireAdmin();
-  const persistent = session.source === "session";
+  const mockMode = mockDataEnabled();
+  const persistent = !mockMode && session.source === "session";
   const canEdit = persistent && hasMinimumRole(session.user.role, "editor");
   const canAdmin = persistent && hasMinimumRole(session.user.role, "admin");
   const canManageUsers = persistent && session.user.role === "owner";
-  const realData = mockDataEnabled() ? null : await Promise.all([
+  const realData = mockMode ? null : await Promise.all([
     getDb().select().from(siteSettings).limit(1),
     getDb().select().from(socialLinks).orderBy(asc(socialLinks.position)),
     getDb().select().from(mediaAssets).where(eq(mediaAssets.status, "active")).orderBy(asc(mediaAssets.originalFilename)),
