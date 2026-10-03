@@ -134,10 +134,14 @@ export async function upsertArtistCategory(formData: FormData) {
   const name = text(formData, "name");
   const slug = slugify(text(formData, "slug") || name);
   if (!name || !slug) throw new Error("Nome e slug da categoria são obrigatórios.");
+  const description = text(formData, "description");
+  assertMaxLength(name, 120, "Nome da categoria");
+  assertMaxLength(slug, 160, "Slug da categoria");
+  assertMaxLength(description, 2000, "Descrição da categoria");
   const values = {
     name,
     slug,
-    description: text(formData, "description"),
+    description,
     position: integer(formData, "position"),
     active: checked(formData, "active"),
     showAsFilter: checked(formData, "showAsFilter"),
@@ -177,6 +181,8 @@ export async function upsertPostCategory(formData: FormData) {
   const name = text(formData, "name");
   const slug = slugify(text(formData, "slug") || name);
   if (!name || !slug) throw new Error("Nome e slug da categoria são obrigatórios.");
+  assertMaxLength(name, 120, "Nome da categoria");
+  assertMaxLength(slug, 160, "Slug da categoria");
   const values = {
     name,
     slug,
