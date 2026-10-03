@@ -41,3 +41,5 @@ test("unexpected post persistence failures are not returned verbatim",()=>{asser
 test("image upload MIME types use an explicit raster allowlist",()=>{assert.match(actions,/image\/jpeg/);assert.match(actions,/image\/avif/);assert.doesNotMatch(actions,/file\.type\.startsWith\("image\/"\)/);});
 
 test("post slug changes collapse redirect chains and clear reclaimed slugs",()=>{assert.match(actions,/delete\(slugRedirects\)[\s\S]*oldSlug, slug/);assert.match(actions,/update\(slugRedirects\)\.set\(\{ newSlug: slug \}\)[\s\S]*newSlug, previousSlug/);});
+
+test("posts delete verifies the affected row",()=>{assert.match(actions,/delete\(posts\)[\s\S]*returning\(\{ id: posts\.id \}\)/);});
