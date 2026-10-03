@@ -92,30 +92,32 @@ export async function uploadPageSectionMedia(formData: FormData) {
   let mediaId = "";
 
   try {
-    const inserted = await db.insert(mediaAssets).values({
-      storageProvider: "supabase_storage",
-      storageKey: stored.key,
-      url: stored.url,
-      mimeType: upload.type,
-      byteSize: upload.size,
-      altText,
-      originalFilename: upload.name,
-      status: "active",
-      createdBy: session.user.id,
-      updatedBy: session.user.id,
-    }).returning({ id: mediaAssets.id });
-    const insertedMediaId = inserted[0]?.id;
-    if (!insertedMediaId) throw new Error("Não foi possível registrar a mídia enviada.");
-    mediaId = insertedMediaId;
+    mediaId = await db.transaction(async (tx) => {
+      const inserted = await tx.insert(mediaAssets).values({
+        storageProvider: "supabase_storage",
+        storageKey: stored.key,
+        url: stored.url,
+        mimeType: upload.type,
+        byteSize: upload.size,
+        altText,
+        originalFilename: upload.name,
+        status: "active",
+        createdBy: session.user.id,
+        updatedBy: session.user.id,
+      }).returning({ id: mediaAssets.id });
+      const insertedMediaId = inserted[0]?.id;
+      if (!insertedMediaId) throw new Error("Não foi possível registrar a mídia enviada.");
+      const updated = await tx.update(pageSections).set({
+        settings: { ...(context.section.settings || {}), mediaId: insertedMediaId },
+        updatedAt: new Date(),
+      }).where(and(eq(pageSections.id, context.section.id), eq(pageSections.pageId, context.page.id))).returning({ id: pageSections.id });
+      if (!updated[0]) throw new Error("Página ou seção não encontrada.");
+      return insertedMediaId;
+    });
   } catch (error) {
     await deleteStoredMedia(stored.key).catch(() => undefined);
     throw error;
   }
-
-  await db.update(pageSections).set({
-    settings: { ...(context.section.settings || {}), mediaId },
-    updatedAt: new Date(),
-  }).where(and(eq(pageSections.id, context.section.id), eq(pageSections.pageId, context.page.id)));
 
   await audit(session.user.id, "page_section.hero_media_uploaded", "page_section", context.section.id, {
     pageId: context.page.id,
@@ -145,10 +147,11 @@ export async function setPageSectionMedia(formData: FormData) {
     .limit(1))[0];
   if (!media || !isHeroMediaMimeType(media.mimeType)) throw new Error("A mídia selecionada precisa ser uma imagem ou vídeo ativo.");
 
-  await db.update(pageSections).set({
+  const updated = await db.update(pageSections).set({
     settings: { ...(context.section.settings || {}), mediaId },
     updatedAt: new Date(),
-  }).where(and(eq(pageSections.id, context.section.id), eq(pageSections.pageId, context.page.id)));
+  }).where(and(eq(pageSections.id, context.section.id), eq(pageSections.pageId, context.page.id))).returning({ id: pageSections.id });
+  if (!updated[0]) throw new Error("Página ou seção não encontrada.");
 
   await audit(session.user.id, "page_section.hero_media_selected", "page_section", context.section.id, {
     pageId: context.page.id,
@@ -168,8 +171,9 @@ export async function removePageSectionMedia(formData: FormData) {
   const settings = { ...(context.section.settings || {}) };
   delete settings.mediaId;
 
-  await getDb().update(pageSections).set({ settings, updatedAt: new Date() })
-    .where(and(eq(pageSections.id, context.section.id), eq(pageSections.pageId, context.page.id)));
+  const updated = await getDb().update(pageSections).set({ settings, updatedAt: new Date() })
+    .where(and(eq(pageSections.id, context.section.id), eq(pageSections.pageId, context.page.id))).returning({ id: pageSections.id });
+  if (!updated[0]) throw new Error("Página ou seção não encontrada.");
   await audit(session.user.id, "page_section.hero_media_removed", "page_section", context.section.id, {
     pageId: context.page.id,
     pageKey: context.page.key,
