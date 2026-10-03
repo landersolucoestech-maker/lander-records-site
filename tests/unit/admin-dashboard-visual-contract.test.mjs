@@ -158,7 +158,7 @@ test("Integrations exposes mutating controls only to persistent editors", () => 
   assert.match(integrationActions, /export async function saveLanderRecordsIntegrationSettings[\s\S]*requirePersistentAdmin\("editor"\)/);
   assert.match(integrationActions, /export async function syncLanderRecordsIntegrationsAction[\s\S]*requirePersistentAdmin\("editor"\)/);
   assert.match(spotifyConnectRoute, /requireAdmin\("editor"\)/);
-  assert.match(spotifyConnectRoute, /session\.source === "development-auth-bypass"/);
+  assert.match(spotifyConnectRoute, /session\.source !== "session"/);
 });
 
 test("Home, Media, Header and Media Kit rely on the shared contextual heading", () => {
