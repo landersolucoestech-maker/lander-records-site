@@ -44,14 +44,6 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "Revise os campos obrigatórios do formulário.", details: parsed.error.flatten() }, { status: 422 });
     }
 
-    const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-    const ip = forwardedFor || request.headers.get("x-real-ip") || "unknown";
-    const ipHash = hashIp(ip);
-
-    if (await isContactRateLimited(ipHash)) {
-      return Response.json({ error: "Muitas tentativas em pouco tempo. Tente novamente em alguns minutos." }, { status: 429 });
-    }
-
     const db = getDb();
     const existing = await db
       .select({ id: contactSubmissions.id })
@@ -61,6 +53,14 @@ export async function POST(request: NextRequest) {
 
     if (existing[0]) {
       return Response.json({ ok: true, id: existing[0].id, duplicate: true });
+    }
+
+    const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+    const ip = forwardedFor || request.headers.get("x-real-ip") || "unknown";
+    const ipHash = hashIp(ip);
+
+    if (await isContactRateLimited(ipHash)) {
+      return Response.json({ error: "Muitas tentativas em pouco tempo. Tente novamente em alguns minutos." }, { status: 429 });
     }
 
     const topicRows = await db
