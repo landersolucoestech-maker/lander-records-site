@@ -85,6 +85,8 @@ test("mock-mode admin surfaces are read-only and isolate persistent inbox data",
   assert.match(read("app/admin/(protected)/settings/lander-records/page.tsx"),/const persistent = !mockMode && session\.source === "session"/);
   assert.match(read("app/admin/(protected)/settings/page.tsx"),/const persistent = !mockMode && session\.source === "session"/);
   assert.match(read("app/admin/(protected)/pages/[id]/page.tsx"),/const db = mockMode \? null : getDb\(\)/);
+  assert.match(read("app/admin/(protected)/pages/[id]/page.tsx"),/readOnly=\{readOnly\}/);
+  assert.match(read("app/admin/(protected)/pages/[id]/PageContentWorkbench.tsx"),/if \(readOnly\) return/);
   assert.match(read("app/admin/(protected)/pages/[id]/view/page.tsx"),/!mockMode && session\.source === "session"/);
   assert.match(read("app/admin/(protected)/artists/[id]/view/page.tsx"),/!mockMode \? <Link className="adminButton primary"/);
 });
