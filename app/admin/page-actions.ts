@@ -39,7 +39,8 @@ export async function deletePageAction(formData: FormData) {
   const current = (await db.select().from(pages).where(eq(pages.id, id)).limit(1))[0];
   if (!current) throw new Error("Página não encontrada.");
   assertMutablePageStructure(current);
-  await db.delete(pages).where(eq(pages.id, id));
+  const deleted = await db.delete(pages).where(eq(pages.id, id)).returning({ id: pages.id });
+  if (!deleted[0]) throw new Error("Página não encontrada.");
   await audit(session.user.id, "page.deleted", "page", id, { title: current.title, key: current.key, slug: current.slug });
   revalidatePagePaths([current.slug]);
   redirect("/admin/pages?deleted=1");
@@ -137,7 +138,8 @@ export async function detachSectionAction(formData: FormData) {
   const section = (await db.select().from(pageSections).where(and(eq(pageSections.id, sectionId), eq(pageSections.pageId, pageId))).limit(1))[0];
   if (!page || !section) throw new Error("Página ou seção não encontrada.");
   assertMutablePageStructure(page);
-  await db.delete(pageSections).where(eq(pageSections.id, sectionId));
+  const deleted = await db.delete(pageSections).where(and(eq(pageSections.id, sectionId), eq(pageSections.pageId, pageId))).returning({ id: pageSections.id });
+  if (!deleted[0]) throw new Error("Página ou seção não encontrada.");
   await audit(session.user.id, "page.section_detached", "page_section", sectionId, { pageId, key: section.sectionKey });
   revalidatePagePaths([page.slug]);
   revalidatePath(`/admin/pages/${pageId}`);
