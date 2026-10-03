@@ -54,10 +54,17 @@ async function getAccessToken(force = false) {
   return payload.access_token;
 }
 
+function soundchartsApiUrl(path: string, searchParams?: Record<string, string>) {
+  if (!path.startsWith("/") || path.startsWith("//") || /[\\?#]/.test(path)) throw new Error("Endpoint Soundcharts não permitido.");
+  const url = new URL(path, API_BASE);
+  if (url.origin !== API_BASE || url.username || url.password || url.hash) throw new Error("Endpoint Soundcharts não permitido.");
+  for (const [key, value] of Object.entries(searchParams || {})) if (value) url.searchParams.set(key, value);
+  return url;
+}
+
 async function soundchartsRequest(path: string, searchParams?: Record<string, string>, retryAuth = true): Promise<unknown> {
   const token = await getAccessToken();
-  const url = new URL(path, API_BASE);
-  for (const [key, value] of Object.entries(searchParams || {})) if (value) url.searchParams.set(key, value);
+  const url = soundchartsApiUrl(path, searchParams);
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
     cache: "no-store",
