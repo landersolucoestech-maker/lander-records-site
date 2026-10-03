@@ -9,9 +9,10 @@ export const dynamic = "force-dynamic";
 
 export default async function CategoriesPage() {
   const session = await requireAdmin();
-  const canEdit = session.source === "session" && session.user.role !== "viewer";
-  const canDelete = session.source === "session" && (session.user.role === "admin" || session.user.role === "owner");
-  if (mockDataEnabled()) {
+  const mockMode = mockDataEnabled();
+  const canEdit = !mockMode && session.source === "session" && session.user.role !== "viewer";
+  const canDelete = !mockMode && session.source === "session" && (session.user.role === "admin" || session.user.role === "owner");
+  if (mockMode) {
     return <CategoryManager artistCategories={mockArtistCategories.map((item) => ({ ...item }))} canDelete={false} canEdit={canEdit} postCategories={mockPostCategories.map((item) => ({ ...item }))} />;
   }
   const db = getDb();
