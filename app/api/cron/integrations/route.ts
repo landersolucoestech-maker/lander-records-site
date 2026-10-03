@@ -12,7 +12,7 @@ function authorized(actual: string | null, secret: string) {
 
 export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET?.trim();
-  if (!secret) return NextResponse.json({ ok: false, error: "CRON_SECRET not configured" }, { status: 503 });
+  if (!secret) return NextResponse.json({ ok: false }, { status: 503 });
   if (!authorized(request.headers.get("authorization"), secret)) return NextResponse.json({ ok: false }, { status: 401 });
   const [result, outbox] = await Promise.all([
     syncAllIntegrations(false),
