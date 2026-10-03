@@ -112,4 +112,4 @@ test("legacy checksum transition records recognition, not recovery of already er
 });
 
 
-test("database connection cache closes a superseded client before replacing it",()=>{const source=fs.readFileSync(new URL("../../lib/db/index.ts",import.meta.url),"utf8");assert.match(source,/state\.client\.end\(\{ timeout: 1 \}\)/);assert.match(source,/state\.databaseUrl !== databaseUrl/);});
+test("database connection cache closes a superseded client before replacing it",async()=>{const source=await read("lib/db/index.ts");assert.match(source,/state\.client\.end\(\{ timeout: 1 \}\)/);assert.match(source,/state\.databaseUrl !== databaseUrl/);});
