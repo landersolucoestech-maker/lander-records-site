@@ -276,7 +276,8 @@ export async function deleteArtistAction(formData: FormData) {
   if (!current) throw new Error("Artista não encontrado.");
   await db.transaction(async (tx) => {
     await tx.delete(integrationMetricCache).where(and(eq(integrationMetricCache.entityType, "artist"), eq(integrationMetricCache.entityId, id)));
-    await tx.delete(artists).where(eq(artists.id, id));
+    const deleted = await tx.delete(artists).where(eq(artists.id, id)).returning({ id: artists.id });
+    if (!deleted[0]) throw new Error("Artista não encontrado.");
   });
   await audit(session.user.id, "artist.deleted", "artist", id, { name: current.name, slug: current.slug });
   revalidateArtistContent([current.slug]);
