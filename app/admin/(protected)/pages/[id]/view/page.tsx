@@ -14,7 +14,8 @@ export const dynamic = "force-dynamic";
 export default async function PageView({ params }: { params: Promise<{ id: string }> }) {
   const session = await requireAdmin();
   const { id } = await params;
-  const [pageRows, sections] = mockDataEnabled()
+  const mockMode = mockDataEnabled();
+  const [pageRows, sections] = mockMode
     ? [
         mockPages.filter((page)=>page.id===id),
         mockPageSections.filter((section)=>section.pageId===id).map((section)=>({section,definitionName:section.title || section.sectionKey})),
@@ -36,7 +37,7 @@ export default async function PageView({ params }: { params: Promise<{ id: strin
     <div className="adminPage">
       <header className="adminPageHeader">
         <div><p className="adminEyebrow">CONSULTA DA PÁGINA</p><h1>{page.title}</h1><p>Rota, seções identificadas, SEO e status da página.</p></div>
-        <div className="adminActions">{session.user.role !== "viewer" ? <Link className="adminButton primary" href={`/admin/pages/${id}`}>Editar página</Link> : null}<Link className="adminButton" href="/admin/pages">Voltar</Link></div>
+        <div className="adminActions">{!mockMode && session.source === "session" && session.user.role !== "viewer" ? <Link className="adminButton primary" href={`/admin/pages/${id}`}>Editar página</Link> : null}<Link className="adminButton" href="/admin/pages">Voltar</Link></div>
       </header>
       <div className={styles.grid}>
         <section className={styles.card}><h2>Página</h2><div className={styles.row}><span>Nome</span><strong>{page.title}</strong></div><div className={styles.row}><span>Rota pública</span><strong>{publicRoute || "Sem rota pública disponível"}</strong></div><div className={styles.row}><span>Slug cadastrado</span><strong>{page.slug ? `/${page.slug}` : "/"}</strong></div><div className={styles.row}><span>Chave permanente</span><strong>{page.key}</strong></div><div className={styles.row}><span>Estado do conteúdo</span><span className={`adminBadge ${page.enabled ? "live" : "draft"}`}>{page.enabled ? "Habilitado" : "Desabilitado"}</span></div></section>
