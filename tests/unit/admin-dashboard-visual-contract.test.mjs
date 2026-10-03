@@ -130,7 +130,7 @@ test("canonical URL and external content links are validated on the server", () 
 });
 
 test("Settings mirrors persistent server RBAC instead of presenting fake write controls", () => {
-  assert.match(settingsPage, /const persistent = session\.source === "session"/);
+  assert.match(settingsPage, /const persistent = !mockMode && session\.source === "session"/);
   assert.match(settingsPage, /const canEdit = persistent && hasMinimumRole\(session\.user\.role, "editor"\)/);
   assert.match(settingsPage, /const canAdmin = persistent && hasMinimumRole\(session\.user\.role, "admin"\)/);
   assert.match(settingsPage, /const canManageUsers = persistent && session\.user\.role === "owner"/);
@@ -149,7 +149,7 @@ test("Settings mirrors persistent server RBAC instead of presenting fake write c
 });
 
 test("Integrations exposes mutating controls only to persistent editors", () => {
-  assert.match(integrationsPage, /const persistent = session\.source === "session"/);
+  assert.match(integrationsPage, /const persistent = !mockMode && session\.source === "session"/);
   assert.match(integrationsPage, /const canEdit = persistent && hasMinimumRole\(session\.user\.role, "editor"\)/);
   assert.match(integrationsPage, /disabled=\{!canEdit\}/);
   assert.match(integrationsPage, /canEdit && spotifyReady/);
