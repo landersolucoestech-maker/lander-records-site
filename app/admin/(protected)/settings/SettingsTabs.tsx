@@ -4,13 +4,14 @@ import { useEffect, useState, type ReactNode } from "react";
 import { AdminIcon, type IconName } from "../../components/AdminIcon";
 import styles from "./Settings.module.css";
 
-type TabKey = "company" | "identity" | "automations" | "security" | "integrations" | "users";
+type TabKey = "company" | "identity" | "contact" | "automations" | "security" | "integrations" | "users";
 
 type Tab = { key: TabKey; label: string; icon: IconName };
 
 const tabs: Tab[] = [
   { key: "company", label: "Empresa", icon: "home" },
   { key: "identity", label: "Identidade do site", icon: "media" },
+  { key: "contact", label: "Contato", icon: "posts" },
   { key: "automations", label: "Automações", icon: "activity" },
   { key: "security", label: "Segurança", icon: "shield" },
   { key: "integrations", label: "Integrações", icon: "integration" },
@@ -23,9 +24,10 @@ function tabFromHash(): TabKey {
   return tabs.some((item) => item.key === hash) ? hash : "company";
 }
 
-export function SettingsTabs({ company, identity, automations, security, integrations, users, canManageUsers }: {
+export function SettingsTabs({ company, identity, contact, automations, security, integrations, users, canManageUsers }: {
   company: ReactNode;
   identity: ReactNode;
+  contact: ReactNode;
   automations: ReactNode;
   security: ReactNode;
   integrations: ReactNode;
@@ -33,7 +35,7 @@ export function SettingsTabs({ company, identity, automations, security, integra
   canManageUsers: boolean;
 }) {
   const [tab, setTab] = useState<TabKey>("company");
-  const panels: Record<TabKey, ReactNode> = { company, identity, automations, security, integrations, users };
+  const panels: Record<TabKey, ReactNode> = { company, identity, contact, automations, security, integrations, users };
 
   useEffect(() => {
     const sync = () => setTab(tabFromHash());
