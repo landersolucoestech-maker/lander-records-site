@@ -31,7 +31,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
         <form action={loginAction} className={styles.form}>
           <label><span>E-mail</span><input name="email" type="email" autoComplete="username" placeholder="seuemail@empresa.com" required /></label>
           <label><span>Senha</span><input name="password" type="password" autoComplete="current-password" placeholder="••••••••" required /></label>
-          <div className={styles.options}><label><input name="remember" type="checkbox"/><span>Manter sessão</span></label><span>Sessões podem ser revogadas pelo backend</span></div>
+          <div className={styles.options}><span>Sessão administrativa protegida</span><span>Sessões podem ser revogadas pelo backend</span></div>
           <button className={styles.primary} type="submit"><AdminIcon name="shield" size={16}/>Entrar</button>
         </form>
         <div className={styles.demoEntry}><span>SESSÃO PROTEGIDA</span><p>Autenticação, bloqueio por tentativas e permissões continuam sendo processados pela lógica atual do projeto.</p></div>
