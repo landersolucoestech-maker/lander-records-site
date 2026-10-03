@@ -16,7 +16,8 @@ function Metric({ accent, icon, label, value, hint }: { accent: "red" | "blue" |
 export default async function PagesAdminPage() {
   const session = await requireAdmin();
   const db = getDb();
-  const [rows, sections] = mockDataEnabled() ? [
+  const mockMode = mockDataEnabled();
+  const [rows, sections] = mockMode ? [
     mockPages.map(({ id, key, title, slug, enabled, seoTitle, seoDescription, updatedAt }) => ({ id, key, title, slug, enabled, seoTitle, seoDescription, updatedAt })),
     mockPageSections.map(({ id, pageId, sectionKey, type, position, enabled, title, subtitle }) => ({ id, pageId, sectionKey, type, position, enabled, title, subtitle })),
   ] : await Promise.all([
@@ -46,6 +47,6 @@ export default async function PagesAdminPage() {
       <Metric accent="blue" icon="sliders" label="Seções" value={totalSections} hint="blocos cadastrados" />
       <Metric accent="orange" icon="eye" label="Seções ativas" value={enabledSections} hint="blocos habilitados" />
     </section>
-<PageManager canEdit={session.source === "session" && session.user.role !== "viewer"} demoMode={mockDataEnabled() || session.source === "development-auth-bypass"} pages={summary} />
+<PageManager canEdit={!mockMode && session.source === "session" && session.user.role !== "viewer"} demoMode={mockMode || session.source === "development-auth-bypass"} pages={summary} />
   </div>;
 }
