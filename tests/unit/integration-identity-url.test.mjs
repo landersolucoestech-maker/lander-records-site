@@ -64,3 +64,6 @@ test("external URL normalization rejects oversized inputs",()=>{assert.throws(()
 
 
 test("Soundcharts bearer requests have timeout and refuse redirects",()=>{assert.match(soundchartsSource,/SOUNDCHARTS_REQUEST_TIMEOUT_MS = 10_000/);assert.ok((soundchartsSource.match(/redirect: "error"/g)||[]).length>=2);assert.ok((soundchartsSource.match(/AbortSignal\.timeout\(SOUNDCHARTS_REQUEST_TIMEOUT_MS\)/g)||[]).length>=2)});
+
+
+test("Soundcharts token cache bounds provider expiry metadata",()=>{assert.match(soundchartsSource,/payload\.expires_in > 0 && payload\.expires_in <= 86_400/)});
