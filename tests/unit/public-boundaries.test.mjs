@@ -33,7 +33,7 @@ test("dynamic catalog loading states are inline and accessible", async () => {
 test("not-found boundary gives users an explicit recovery path",async()=>{const source=await readFile(new URL("../../app/not-found.tsx",import.meta.url),"utf8");assert.match(source,/Página não encontrada/);assert.match(source,/href="\/"|href=\{"\/"\}|href="\/" /);assert.match(source,/Voltar para o início/)});
 
 
-test("integration cron compares bearer secrets in constant time",async()=>{const source=await readFile(new URL("../../app/api/cron/integrations/route.ts",import.meta.url),"utf8");assert.match(source,/timingSafeEqual/);assert.match(source,/supplied\.length === expected\.length/);assert.doesNotMatch(source,/authorization\"\) !==/)});
+test("integration cron compares bearer secrets in constant time",async()=>{const source=await readFile(new URL("../../app/api/cron/integrations/route.ts",import.meta.url),"utf8");assert.match(source,/safeCompare\(actual\.slice\(7\), secret\)/);assert.doesNotMatch(source,/authorization\"\) !==/)});
 
 
 test("protected admin has a non-leaking recovery boundary",async()=>{const source=await readFile(new URL("../../app/admin/(protected)/error.tsx",import.meta.url),"utf8");assert.match(source,/Tentar novamente/);assert.match(source,/reset\(\)/);assert.doesNotMatch(source,/error\.(message|stack|digest)/);});
