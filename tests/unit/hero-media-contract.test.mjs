@@ -34,7 +34,7 @@ test("Hero editor exposes upload, library reuse and removal controls", () => {
 test("Hero media write path validates file type, size and the canonical section media contract", () => {
   assert.match(actions, /requirePersistentAdmin\("editor"\)/);
   assert.match(actions, /MAX_HERO_MEDIA_BYTES = 50 \* 1024 \* 1024/);
-  assert.match(actions, /mimeType\.startsWith\("image\/"\) \|\| mimeType\.startsWith\("video\/"\)/);
+  assert.match(actions, /HERO_MEDIA_MIME_TYPES\.has\(mimeType\.toLowerCase\(\)\)/);
   assert.match(actions, /sitePageContract\(page\.key\)/);
   assert.match(actions, /siteSectionContract\(page\.key, section\.sectionKey\)/);
   assert.match(actions, /sectionContract\.media !== "section-image-video"/);
