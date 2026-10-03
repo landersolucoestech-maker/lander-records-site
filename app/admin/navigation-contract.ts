@@ -33,7 +33,7 @@ export function isNavigationLinkType(value: string): value is NavigationLinkType
 }
 
 export function navigationDestinationError(linkType: NavigationLinkType, value: string) {
-  if (!value || /[\u0000-\u001f\u007f\\]/.test(value)) return "invalid_url";
+  if (!value || value.length > 2000 || /[\u0000-\u001f\u007f\\]/.test(value)) return "invalid_url";
   if (linkType === "internal") {
     if (!value.startsWith("/") || value.startsWith("//")) return "invalid_internal_url";
     try {
