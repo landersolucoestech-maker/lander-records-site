@@ -2,6 +2,7 @@ import { and, desc, gte, isNull, lt, ne, sql } from "drizzle-orm";
 import { getDb } from "../../../lib/db";
 import { artists, auditLogs, contactSubmissions, pages, posts } from "../../../lib/db/schema";
 import { requireAdmin } from "../../../lib/auth";
+import { mockAdminDashboard, mockDataEnabled } from "../../../lib/mocks";
 import { DashboardView } from "../components/DashboardView";
 
 export const dynamic = "force-dynamic";
@@ -86,7 +87,8 @@ export default async function AdminDashboardPage() {
   let recentPublications: PublicationItem[] = [];
   let leadCount: number | null = null;
   let previousLeadChange: number | null = null;
-  let databaseAvailable = Boolean(process.env.DATABASE_URL);
+  const mockMode = mockDataEnabled();
+  let databaseAvailable = !mockMode && Boolean(process.env.DATABASE_URL);
 
   if (databaseAvailable) {
     try {
@@ -121,7 +123,7 @@ export default async function AdminDashboardPage() {
   const dateOnly = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "America/Sao_Paulo" });
 
   return <DashboardView
-    data={{
+    data={mockMode ? mockAdminDashboard : {
       analytics: databaseAvailable && leadCount !== null ? { visitors: null, views: null, engagementRate: null, conversions: leadCount, previousConversionsChange: previousLeadChange } : null,
       recentActivity: databaseAvailable ? recentAudits.map((item) => ({ id: item.id, label: activityLabel(item.action), meta: `${entityLabel(item.entityType)} · ${dateTime.format(item.createdAt)}` })) : [],
       recentPublications: databaseAvailable ? recentPublications.map((item) => ({ id: item.id, title: item.title, type: item.type, status: item.status, updatedAt: dateOnly.format(item.updatedAt), href: item.href })) : [],
