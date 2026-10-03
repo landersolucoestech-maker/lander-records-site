@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code") || "";
   const state = request.nextUrl.searchParams.get("state") || "";
   const providerError = request.nextUrl.searchParams.get("error");
-  if (providerError || !code || !state) return adminRedirect("error");
+  if (providerError || !code || !state || code.length > 4096 || state.length > 128 || (providerError?.length || 0) > 256) return adminRedirect("error");
 
   try {
     await completeSpotifyAuthorization(code, state, session.user.id);
