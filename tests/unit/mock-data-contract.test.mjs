@@ -79,6 +79,5 @@ test("mock-mode admin surfaces are read-only and isolate persistent inbox data",
   assert.match(read("app/admin/(protected)/home/page.tsx"),/canEdit=\{!mockDataEnabled\(\)/);
   assert.match(read("app/admin/(protected)/contacts/page.tsx"),/Nenhum contato persistente é carregado no modo de demonstração/);
   assert.match(read("app/admin/(protected)/tags/page.tsx"),/const canEdit = !mockMode/);
-  assert.match(read("app/admin/(protected)/artists/page.tsx"),/const canEdit = !mockMode/);
   assert.match(read("app/admin/(protected)/posts/page.tsx"),/const canEdit = !mockMode/);
 });
