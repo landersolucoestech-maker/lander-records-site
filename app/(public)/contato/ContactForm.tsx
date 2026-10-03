@@ -46,6 +46,7 @@ export function ContactForm({ topics }: { topics: Topic[] }) {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(15_000),
       });
       const contentType = response.headers.get("content-type") || "";
       const result = contentType.includes("application/json") ? await response.json() : null;
