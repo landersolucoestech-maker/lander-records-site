@@ -16,4 +16,6 @@ test("contact submissions expose a persistent operational workflow", () => {
   assert.match(inbox, /utmSource/);
   assert.match(inbox, /action=\{updateContactSubmissionStatus\}/);
   assert.match(inbox, /session\.source === "session"/);
+  assert.match(navigation, /href: "\/admin\/contacts"/);
+  assert.match(preview, /"\/admin\/contacts"/);
 });
