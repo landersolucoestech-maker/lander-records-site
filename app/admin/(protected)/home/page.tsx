@@ -1,5 +1,6 @@
 import { requireAdmin } from "../../../../lib/auth";
 import { getPageContent } from "../../../../lib/content";
+import { mockDataEnabled } from "../../../../lib/mocks";
 import { getHomeSpotifyReleaseFeed, getLanderRecordsSocialMetrics } from "../../../../lib/integrations/sync";
 import { getPublishedArtists } from "../../../../modules/artists";
 import { getPublishedPosts } from "../../../../modules/posts";
@@ -51,5 +52,5 @@ export default async function AdminHomePage() {
     { key: "news", title: newsSection?.title || "Últimas Notícias", description: "Título editorial é editável na Home; as matérias exibidas vêm do módulo Conteúdos.", classification: "configurable", badge: "CMS + Conteúdos", detail: `Fonte: Lander Records · ${posts.length} notícias em destaque`, updatedAt: dateLabel(newsSection?.updatedAt), actionHref: editSectionHref(newsSection), actionLabel: "Editar seção", secondaryActionHref: "/admin/posts", secondaryActionLabel: "Gerenciar conteúdos", imageUrls: posts.map((post) => post.coverImage).filter(Boolean) },
   ];
 
-  return <HomeManagerView canEdit={session.source === "session" && session.user.role !== "viewer"} sections={sections} />;
+  return <HomeManagerView canEdit={!mockDataEnabled() && session.source === "session" && session.user.role !== "viewer"} sections={sections} />;
 }
